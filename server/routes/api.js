@@ -148,16 +148,26 @@ router.post('/tasks/batch', async (req, res) => {
     urlList = urls.split('\n').map(u => u.trim()).filter(Boolean);
   }
 
-  if (urlList.length === 0) {
-    return res.status(400).json({ success: false, message: 'Daftar URL tweet tidak boleh kosong.' });
+  // Strict URL Validation Guard
+  const tweetUrlRegex = /https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+/i;
+  const validUrls = urlList.filter(u => tweetUrlRegex.test(u));
+
+  if (validUrls.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Daftar URL tidak valid. Pastikan format URL tweet sesuai (contoh: https://x.com/username/status/1234567890).'
+    });
   }
 
   try {
     // Run in background
-    twitterBot.runMultiAccountBatchTask(accountIds, urlList, { like, retweet, comment, commentText })
+    twitterBot.runMultiAccountBatchTask(accountIds, validUrls, { like, retweet, comment, commentText })
       .catch(err => logger.error(`Unhandled batch error: ${err.message}`));
 
-    res.json({ success: true, message: `Otomasi dimulai untuk ${urlList.length} tweet.` });
+    res.json({
+      success: true,
+      message: `Otomasi dimulai untuk ${validUrls.length} tweet valid${validUrls.length < urlList.length ? ` (${urlList.length - validUrls.length} URL tidak valid dilewati)` : ''}.`
+    });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }

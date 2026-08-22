@@ -123,9 +123,17 @@ class LocalDB {
 
   writeFile(filePath, data) {
     try {
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+      const tempPath = `${filePath}.tmp.${process.pid}.${Date.now()}`;
+      fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
+      fs.renameSync(tempPath, filePath);
     } catch (e) {
       console.error(`Error writing ${filePath}:`, e.message);
+      // Fallback direct write
+      try {
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+      } catch (err) {
+        console.error(`Direct fallback write failed for ${filePath}:`, err.message);
+      }
     }
   }
 
@@ -148,42 +156,31 @@ class LocalDB {
     return this.cache.accounts || [];
   }
 
-  getActiveAccounts() {
-    return (this.cache.accounts || []).filter(acc => acc.enabled !== false && acc.auth_token);
+  getAccountById(id) {
+    return (this.cache.accounts || []).find(acc => acc.id === id);
   }
 
-  getAccountById(id) {
-    return (this.cache.accounts || []).find(acc => acc.id === id) || null;
+  getActiveAccounts() {
+    return (this.cache.accounts || []).filter(acc => acc.enabled !== false);
   }
 
   saveAccount(accountData) {
-    if (!this.cache.accounts) this.cache.accounts = [];
+    const id = accountData.id || 'acc_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+    const existingIndex = (this.cache.accounts || []).findIndex(acc => acc.id === id);
 
-    let id = accountData.id;
-    let existingIndex = -1;
-
-    if (id) {
-      existingIndex = this.cache.accounts.findIndex(acc => acc.id === id);
-    } else {
-      id = 'acc_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-    }
-
-    const defaultComments = [
-      "{Keren|Mantap} {bang|kak}! {Bermanfaat sekali|Top} 🔥",
-      "Wah {menarik|insightful} banget pembahasannya 👍",
-      "{Setuju banget|Sepakat}! Ditunggu update selanjutnya 🚀"
-    ];
+    const defaultComments = this.getTemplates();
+    const sanitizedId = String(id).replace(/[^a-zA-Z0-9_\-]/g, '');
 
     const updatedAccount = {
       id,
-      label: accountData.label || 'Akun X',
+      label: (accountData.label || 'Akun X').trim(),
       auth_token: (accountData.auth_token || '').trim(),
       ct0: (accountData.ct0 || '').trim(),
-      username: (accountData.username || '').trim().replace('@', ''),
-      name: accountData.name || accountData.label || 'User',
+      username: (accountData.username || '').replace(/^@/, '').trim(),
+      name: (accountData.name || '').trim(),
       avatar: accountData.avatar || '',
       proxy: (accountData.proxy || '').trim(),
-      commentsFile: accountData.commentsFile || `comments_${id}.json`,
+      commentsFile: `comments_${sanitizedId}.json`,
       enabled: accountData.enabled !== undefined ? accountData.enabled : true,
       isValid: accountData.isValid !== undefined ? accountData.isValid : false,
       lastChecked: accountData.lastChecked || null,
@@ -215,8 +212,8 @@ class LocalDB {
       const removed = this.cache.accounts.splice(index, 1)[0];
       this.save('accounts');
 
-      // Optionally delete comment file
-      const commentFilePath = path.join(this.commentsDir, removed.commentsFile || `comments_${id}.json`);
+      // Optionally delete comment file safely
+      const commentFilePath = this.getAccountCommentsFilePath(id);
       if (fs.existsSync(commentFilePath)) {
         try { fs.unlinkSync(commentFilePath); } catch (e) {}
       }
@@ -236,23 +233,28 @@ class LocalDB {
     return null;
   }
 
-  // Account Comments JSON File Management
+  // Account Comments JSON File Management with Path Traversal Hardening
   getAccountCommentsFilePath(accountId) {
-    const acc = this.getAccountById(accountId);
-    const fileName = acc?.commentsFile || `comments_${accountId}.json`;
-    return path.join(this.commentsDir, fileName);
+    const sanitizedId = String(accountId).replace(/[^a-zA-Z0-9_\-]/g, '');
+    const fileName = `comments_${sanitizedId}.json`;
+    const resolvedPath = path.resolve(this.commentsDir, fileName);
+    // Security check: ensure path is inside commentsDir
+    if (!resolvedPath.startsWith(path.resolve(this.commentsDir))) {
+      throw new Error('Security Violation: Invalid comment file path traversal detected.');
+    }
+    return resolvedPath;
   }
 
   getAccountComments(accountId) {
-    const filePath = this.getAccountCommentsFilePath(accountId);
-    if (fs.existsSync(filePath)) {
-      try {
+    try {
+      const filePath = this.getAccountCommentsFilePath(accountId);
+      if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, 'utf8');
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        console.error(`Error reading comments for ${accountId}:`, e.message);
       }
+    } catch (e) {
+      console.error(`Error reading comments for ${accountId}:`, e.message);
     }
     // Fallback to global templates
     return this.getTemplates();
@@ -263,7 +265,7 @@ class LocalDB {
       throw new Error('Comments must be an array of strings');
     }
     const filePath = this.getAccountCommentsFilePath(accountId);
-    fs.writeFileSync(filePath, JSON.stringify(commentsArray, null, 2), 'utf8');
+    this.writeFile(filePath, commentsArray);
     return commentsArray;
   }
 

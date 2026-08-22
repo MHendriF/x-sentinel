@@ -53,6 +53,69 @@ class TwitterBot {
   }
 
   /**
+   * Inject advanced anti-bot stealth scripts into Playwright browser context
+   */
+  async applyStealthScripts(context) {
+    await context.addInitScript(() => {
+      // 1. Mask navigator.webdriver
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => undefined,
+        configurable: true
+      });
+
+      // 2. Mock window.chrome runtime
+      window.chrome = {
+        runtime: {},
+        loadTimes: function() {},
+        csi: function() {},
+        app: {}
+      };
+
+      // 3. Mock navigator.plugins & mimeTypes
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [
+          { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+          { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+          { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
+        ],
+        configurable: true
+      });
+
+      // 4. Mock languages
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en', 'id'],
+        configurable: true
+      });
+
+      // 5. Mock realistic hardware concurrency & memory
+      Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8, configurable: true });
+      Object.defineProperty(navigator, 'deviceMemory', { get: () => 8, configurable: true });
+
+      // 6. Mock WebGL Vendor & Renderer (Spoof to hardware GPU)
+      try {
+        const getParameterProto = WebGLRenderingContext.prototype.getParameter;
+        WebGLRenderingContext.prototype.getParameter = function(parameter) {
+          // UNMASKED_VENDOR_WEBGL
+          if (parameter === 37445) return 'Google Inc. (NVIDIA)';
+          // UNMASKED_RENDERER_WEBGL
+          if (parameter === 37446) return 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)';
+          return getParameterProto.apply(this, arguments);
+        };
+      } catch (e) {}
+
+      // 7. Mock Notification Permissions
+      if (window.navigator.permissions) {
+        const originalQuery = window.navigator.permissions.query;
+        window.navigator.permissions.query = (parameters) => (
+          parameters.name === 'notifications'
+            ? Promise.resolve({ state: Notification.permission })
+            : originalQuery(parameters)
+        );
+      }
+    });
+  }
+
+  /**
    * Initialize Playwright Browser & Context for a specific account with its proxy and cookies
    */
   async initAccountBrowser(account, forceNew = false) {
@@ -78,7 +141,10 @@ class TwitterBot {
         '--disable-setuid-sandbox',
         '--disable-blink-features=AutomationControlled',
         '--disable-infobars',
-        '--window-size=1280,850'
+        '--window-size=1280,850',
+        '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
+        '--enforce-webrtc-ip-permission-check',
+        '--ignore-certificate-errors'
       ]
     };
 
@@ -101,10 +167,8 @@ class TwitterBot {
       timezoneId: 'Asia/Jakarta'
     });
 
-    // Stealth script
-    await this.context.addInitScript(() => {
-      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-    });
+    // Apply Stealth Scripts
+    await this.applyStealthScripts(this.context);
 
     // Inject cookies
     if (account.auth_token) {
@@ -128,7 +192,9 @@ class TwitterBot {
         await this.browser.close().catch(() => {});
         this.browser = null;
       }
-    } catch (e) {}
+    } catch (e) {
+      // ignore teardown errors
+    }
     this.currentAccount = null;
   }
 
@@ -147,7 +213,13 @@ class TwitterBot {
 
       const launchOptions = {
         headless: true,
-        args: ['--no-sandbox', '--disable-blink-features=AutomationControlled']
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-blink-features=AutomationControlled',
+          '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
+          '--enforce-webrtc-ip-permission-check'
+        ]
       };
 
       if (account.proxy) {
@@ -164,10 +236,7 @@ class TwitterBot {
         viewport: { width: 1280, height: 800 }
       });
 
-      await tempContext.addInitScript(() => {
-        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-      });
-
+      await this.applyStealthScripts(tempContext);
       await cookieManager.applyCookies(tempContext, account.auth_token, account.ct0);
 
       const page = await tempContext.newPage();

@@ -48,11 +48,54 @@ app.use((req, res) => {
   res.sendFile(path.join(staticDir, 'index.html'));
 });
 
+const twitterBot = require('./automation/twitterBot');
+
 // Start Server
-app.listen(config.PORT, () => {
+const server = app.listen(config.PORT, () => {
   logger.success(`🚀 X-SENTINEL Cockpit Engine berjalan di http://localhost:${config.PORT}`);
   console.log(`====================================================`);
   console.log(`🛡️  X-SENTINEL: Autonomous Multi-Node Fleet Engine`);
   console.log(`🌐 Buka Dashboard di browser: http://localhost:${config.PORT}`);
   console.log(`====================================================`);
+});
+
+// Graceful Shutdown & Process Lifecycle Hardening
+let isShuttingDown = false;
+const gracefulShutdown = async (signal) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  logger.warn(`🛑 Menerima sinyal ${signal}. Membersihkan proses dan mematikan engine...`);
+  
+  try {
+    // 1. Stop any ongoing task
+    if (twitterBot.isRunning) {
+      twitterBot.stopTask();
+    }
+    // 2. Cleanly close Chromium browser contexts
+    await twitterBot.closeBrowser();
+  } catch (e) {
+    // ignore
+  }
+
+  server.close(() => {
+    logger.info('👋 Server ditutup dengan aman. Sampai jumpa!');
+    process.exit(0);
+  });
+
+  // Force exit after 5 seconds if hanging
+  setTimeout(() => {
+    process.exit(0);
+  }, 5000);
+};
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+process.on('uncaughtException', (err) => {
+  logger.error(`💥 Uncaught Exception: ${err.message}`);
+  console.error(err.stack);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error(`💥 Unhandled Promise Rejection: ${reason}`);
 });

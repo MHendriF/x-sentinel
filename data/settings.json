@@ -8,5 +8,6 @@
   "scrollBeforeAction": true,
   "aiProvider": "none",
   "aiApiKey": "",
-  "aiPrompt": "Tulis balasan singkat, ramah, alami, dan relevan dalam bahasa Indonesia untuk tweet berikut:"
+  "aiPrompt": "Tulis balasan singkat, ramah, alami, dan relevan dalam bahasa Indonesia untuk tweet berikut:",
+  "_hardeningCheck": 1787410002807
 }
