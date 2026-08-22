@@ -573,6 +573,38 @@ class TwitterBot {
   }
 
   /**
+   * Parse Custom Comment Text / JSON payload into an array of replies
+   * Supports:
+   * 1. JSON object with { "replies": [...] }
+   * 2. JSON array ["reply 1", "reply 2"]
+   * 3. Multi-line separated strings
+   * 4. Plain text or Spintax string
+   */
+  parseCommentPayload(rawPayload) {
+    if (!rawPayload || typeof rawPayload !== 'string') return [];
+
+    const trimmed = rawPayload.trim();
+    if (!trimmed) return [];
+
+    // Try parsing as JSON first
+    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.map(s => String(s).trim()).filter(Boolean);
+        }
+        if (parsed && Array.isArray(parsed.replies)) {
+          return parsed.replies.map(s => String(s).trim()).filter(Boolean);
+        }
+      } catch (e) {
+        // Not valid JSON, fallback to text parsing
+      }
+    }
+
+    return [trimmed];
+  }
+
+  /**
    * Run Multi-Account Batch Task
    */
   async runMultiAccountBatchTask(accountIds, urls, options = {}) {
@@ -592,6 +624,11 @@ class TwitterBot {
       failed: 0
     };
 
+    const parsedReplies = this.parseCommentPayload(options.commentText);
+    if (parsedReplies.length > 1) {
+      logger.info(`📋 Terdeteksi ${parsedReplies.length} template balasan unik untuk didistribusikan ke ${targetAccounts.length} akun.`);
+    }
+
     logger.info(`🚀 Memulai Multi-Account Batch (${targetAccounts.length} Akun, ${urls.length} Postingan)...`);
 
     try {
@@ -608,8 +645,17 @@ class TwitterBot {
 
           logger.info(`👤 Menggunakan Akun [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`);
 
+          // Assign unique reply for this account if reply array provided
+          let accountSpecificCommentText = options.commentText;
+          if (parsedReplies.length > 0) {
+            accountSpecificCommentText = parsedReplies[a % parsedReplies.length];
+          }
+
           try {
-            await this.processTweetWithAccount(url, account, options);
+            await this.processTweetWithAccount(url, account, {
+              ...options,
+              commentText: accountSpecificCommentText
+            });
             this.currentTask.completed++;
           } catch (err) {
             if (err.message === 'TASK_ABORTED') throw err;
@@ -706,6 +752,8 @@ class TwitterBot {
       const targetList = Array.from(collectedUrls).slice(0, count);
       logger.success(`🎯 Mengumpulkan ${targetList.length} tweet untuk di-engage oleh ${targetAccounts.length} akun.`);
 
+      const parsedReplies = this.parseCommentPayload(options.commentText);
+
       // Step 2: Engage each collected tweet with each account
       for (let i = 0; i < targetList.length; i++) {
         if (this.abortController.signal.aborted) break;
@@ -719,8 +767,17 @@ class TwitterBot {
 
           logger.info(`👤 Aksi Akun [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`);
 
+          // Assign unique reply for this account if reply array provided
+          let accountSpecificCommentText = options.commentText;
+          if (parsedReplies.length > 0) {
+            accountSpecificCommentText = parsedReplies[a % parsedReplies.length];
+          }
+
           try {
-            await this.processTweetWithAccount(tweetUrl, account, options);
+            await this.processTweetWithAccount(tweetUrl, account, {
+              ...options,
+              commentText: accountSpecificCommentText
+            });
             this.currentTask.completed++;
           } catch (err) {
             if (err.message === 'TASK_ABORTED') throw err;

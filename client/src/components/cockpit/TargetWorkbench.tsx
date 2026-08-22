@@ -18,6 +18,8 @@ import {
   Square as SquareOutline,
   Layers,
   Sparkles,
+  FileJson,
+  Braces,
 } from 'lucide-react';
 
 export const TargetWorkbench: React.FC = () => {
@@ -192,21 +194,104 @@ export const TargetWorkbench: React.FC = () => {
 
             {/* Custom Comment Input (Optional Override) */}
             {comment && (
-              <div className="space-y-1.5 rounded-md border border-blue-500/30 bg-blue-500/5 p-3 animate-in fade-in-50">
+              <div className="space-y-2 rounded-lg border border-blue-500/40 bg-gradient-to-b from-blue-500/10 to-obsidian-950/80 p-3.5 shadow-lg shadow-blue-950/20 animate-in fade-in-50">
                 <div className="flex items-center justify-between">
-                  <label className="font-mono text-xs font-bold text-blue-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    SINGLE OVERRIDE COMMENT (OPTIONAL)
-                  </label>
-                  <span className="text-[10px] text-slate-400">Kosongkan untuk pakai file .json</span>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                      <FileJson className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="font-mono text-xs font-bold text-blue-200 tracking-wide">
+                      REPLY PAYLOAD MATRIX
+                    </span>
+                  </div>
+
+                  {/* Mode Detector Badge */}
+                  {(() => {
+                    if (!customComment.trim()) {
+                      return (
+                        <Badge variant="outline" className="font-mono text-[9px] border-slate-700 bg-slate-900/60 text-slate-400">
+                          📦 Node Pool Default
+                        </Badge>
+                      );
+                    }
+                    try {
+                      const parsed = JSON.parse(customComment);
+                      const count = Array.isArray(parsed) ? parsed.length : (parsed.replies ? parsed.replies.length : 0);
+                      if (count > 0) {
+                        return (
+                          <Badge variant="outline" className="font-mono text-[9px] border-emerald-500/50 bg-emerald-500/15 text-emerald-300 animate-pulse">
+                            🟢 JSON Matrix: {count} Unique Replies
+                          </Badge>
+                        );
+                      }
+                    } catch (e) {}
+                    return (
+                      <Badge variant="outline" className="font-mono text-[9px] border-blue-500/50 bg-blue-500/15 text-blue-300">
+                        ⚡ Spintax / Text Mode
+                      </Badge>
+                    );
+                  })()}
                 </div>
+
                 <Textarea
-                  rows={2}
-                  placeholder="{Keren banget|Insightful sekali}! {Makasih infonya ya|Izin bookmark}!"
+                  rows={8}
+                  placeholder={`Bisa teks biasa, Spintax {Keren|Mantap}, atau JSON Multi-Node:\n{\n  "topic": "Topic Title",\n  "replies": [\n    "balasan untuk node akun 1",\n    "balasan untuk node akun 2",\n    "balasan untuk node akun 3"\n  ]\n}`}
                   value={customComment}
                   onChange={(e) => setCustomComment(e.target.value)}
-                  className="text-xs font-mono bg-obsidian-950"
+                  className="text-xs font-mono bg-obsidian-950/90 border-blue-500/30 focus:border-blue-400 text-slate-100 placeholder:text-slate-600 font-medium min-h-[170px] resize-y leading-relaxed"
                 />
+
+                {/* Cyber Toolbar with Action Badges */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-blue-500/20">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Preset 1: AI / Tech Matrix */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomComment(JSON.stringify({
+                          topic: "Agentic AI & Web3",
+                          replies: [
+                            "the rails are commodity now, occupying them is the game. that line sums up the whole shift honestly",
+                            "stripe buying openrouter for that much money says a lot about where the actual value is moving",
+                            "tao going live on base with no admin key is a bigger deal than it sounds, agents holding and deploying it directly changes a lot"
+                          ]
+                        }, null, 2));
+                        toast.success('Sample JSON Multi-Node Matrix dimuat!');
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 hover:border-blue-400 transition-all cursor-pointer shadow-sm hover:shadow-blue-500/20 active:scale-95"
+                    >
+                      <Braces className="w-3 h-3 text-blue-400" />
+                      <span>+ Paste Sample JSON Payload</span>
+                    </button>
+
+                    {/* Preset 2: Spintax Permutation */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomComment("{Keren banget|Insightful sekali|Top markotop} {tweetnya|pembahasannya|infonya} {bang|kak}! 🔥 {Izin bookmark ya|Ditunggu update selanjutnya|Bermanfaat banget}.");
+                        toast.info('Template Spintax dimuat!');
+                      }}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-mono font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-600 transition-all cursor-pointer active:scale-95"
+                    >
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>+ Spintax Preset</span>
+                    </button>
+                  </div>
+
+                  {/* Clear button if text exists */}
+                  {customComment && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomComment('');
+                        toast.info('Kolom reply dibersihkan');
+                      }}
+                      className="text-[10px] font-mono text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
