@@ -20,10 +20,12 @@ import {
   Sparkles,
   FileJson,
   Braces,
+  Bot,
+  Info,
 } from 'lucide-react';
 
 export const TargetWorkbench: React.FC = () => {
-  const { accounts, isRunning, currentTask, setIsRunning } = useStore();
+  const { accounts, isRunning, currentTask, setIsRunning, settings } = useStore();
 
   const [urlsText, setUrlsText] = useState('');
   const [selectedAccountId, setSelectedAccountId] = useState('all');
@@ -208,9 +210,17 @@ export const TargetWorkbench: React.FC = () => {
                   {/* Mode Detector Badge */}
                   {(() => {
                     if (!customComment.trim()) {
+                      if (settings?.aiProvider && settings.aiProvider !== 'none') {
+                        return (
+                          <Badge variant="outline" className="font-mono text-[9px] border-purple-500/50 bg-purple-500/15 text-purple-300 animate-pulse flex items-center gap-1">
+                            <Bot className="w-3 h-3 text-purple-400" />
+                            🤖 Auto AI Reply Mode ({settings.aiProvider.toUpperCase()})
+                          </Badge>
+                        );
+                      }
                       return (
                         <Badge variant="outline" className="font-mono text-[9px] border-slate-700 bg-slate-900/60 text-slate-400">
-                          📦 Node Pool Default
+                          📦 Node Spintax Pool Default
                         </Badge>
                       );
                     }
@@ -227,18 +237,39 @@ export const TargetWorkbench: React.FC = () => {
                     } catch (e) {}
                     return (
                       <Badge variant="outline" className="font-mono text-[9px] border-blue-500/50 bg-blue-500/15 text-blue-300">
-                        ⚡ Spintax / Text Mode
+                        ⚡ Custom Spintax / Text Override
                       </Badge>
                     );
                   })()}
                 </div>
 
+                {/* Informative AI Auto-Reply Banner when payload is empty */}
+                {!customComment.trim() && (
+                  <div className="p-2.5 rounded-md border border-purple-500/30 bg-purple-950/30 flex items-start gap-2.5 text-xs font-mono text-purple-200 animate-in fade-in">
+                    <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <div className="font-bold text-purple-100 flex items-center gap-1.5 text-xs">
+                        <span>🤖 Mode AI Contextual Auto-Replies Aktif</span>
+                        <span className="text-[10px] font-normal px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          Payload Kosong
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                        Karena kolom payload di bawah ini <strong>dibiarkan kosong</strong>, bot akan <strong>secara otomatis membaca teks tweet target</strong> dan meracik balasan alami &amp; kontekstual menggunakan AI ({settings?.aiProvider && settings.aiProvider !== 'none' ? settings.aiProvider.toUpperCase() : '9router/LLM'}). 
+                        <span className="text-slate-400 block text-[10px] mt-0.5 font-mono">
+                          *Jika Anda mengisi teks manual/JSON di bawah, bot akan menggunakan payload tersebut alih-alih AI.
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <Textarea
-                  rows={8}
-                  placeholder={`Bisa teks biasa, Spintax {Keren|Mantap}, atau JSON Multi-Node:\n{\n  "topic": "Topic Title",\n  "replies": [\n    "balasan untuk node akun 1",\n    "balasan untuk node akun 2",\n    "balasan untuk node akun 3"\n  ]\n}`}
+                  rows={7}
+                  placeholder={`💡 KOSONGKAN kolom ini jika ingin bot otomatis meracik balasan kontekstual menggunakan AI...\n\nAtau isi teks manual / Spintax / JSON Multi-Node jika ingin menggunakan template kustom:\n{\n  "topic": "Topic Title",\n  "replies": [\n    "balasan kustom untuk akun 1",\n    "balasan kustom untuk akun 2"\n  ]\n}`}
                   value={customComment}
                   onChange={(e) => setCustomComment(e.target.value)}
-                  className="text-xs font-mono bg-obsidian-950/90 border-blue-500/30 focus:border-blue-400 text-slate-100 placeholder:text-slate-600 font-medium min-h-[170px] resize-y leading-relaxed"
+                  className="text-xs font-mono bg-obsidian-950/90 border-blue-500/30 focus:border-blue-400 text-slate-100 placeholder:text-slate-500 font-medium min-h-[160px] resize-y leading-relaxed"
                 />
 
                 {/* Cyber Toolbar with Action Badges */}
