@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { apiClient } from '@/services/apiClient';
+import { apiClient, extractProxyHostPort } from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -46,9 +46,7 @@ export const DeleteNodeDialog: React.FC = () => {
     }
   };
 
-  const cleanProxy = deletingAccount.proxy
-    ? deletingAccount.proxy.replace(/http:\/\/[^@]*@/, '').replace(/socks5:\/\/[^@]*@/, '')
-    : null;
+  const cleanProxy = extractProxyHostPort(deletingAccount.proxy);
 
   return (
     <Dialog open={isDeleteModalOpen} onOpenChange={(open) => !open && closeDeleteModal()}>

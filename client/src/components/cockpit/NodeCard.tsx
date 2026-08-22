@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AccountNode, apiClient, ProxyTestResult } from '@/services/apiClient';
+import { AccountNode, apiClient, ProxyTestResult, extractProxyHostPort } from '@/services/apiClient';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -82,9 +82,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
     openDeleteModal(account);
   };
 
-  const cleanProxy = account.proxy
-    ? account.proxy.replace(/http:\/\/[^@]*@/, '').replace(/socks5:\/\/[^@]*@/, '')
-    : null;
+  const cleanProxy = extractProxyHostPort(account.proxy);
 
   return (
     <div
@@ -137,12 +135,12 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           )}
 
           {cleanProxy ? (
-            <Badge variant="purple" className="gap-1 max-w-[190px] truncate" title={account.proxy}>
+            <Badge variant="purple" className="gap-1 max-w-[190px] truncate font-mono text-[10px]" title={`Proxy: ${cleanProxy}`}>
               <Globe className="w-3 h-3" />
               {cleanProxy}
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-slate-500 text-[10px]">
+            <Badge variant="outline" className="text-slate-500 text-[10px] font-mono">
               DIRECT IP
             </Badge>
           )}

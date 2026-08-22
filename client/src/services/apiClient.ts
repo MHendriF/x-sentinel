@@ -252,3 +252,39 @@ export const apiClient = {
     return eventSource;
   }
 };
+
+/**
+ * Format raw proxy string to clean "IP:Port" (hides username & password)
+ */
+export const extractProxyHostPort = (rawProxy?: string): string | null => {
+  if (!rawProxy || !rawProxy.trim()) return null;
+  const str = rawProxy.trim();
+
+  // If contains '@', host:port is everything after the last '@'
+  if (str.includes('@')) {
+    const afterAt = str.substring(str.lastIndexOf('@') + 1);
+    return afterAt.replace(/\/.*$/, '').trim();
+  }
+
+  // If protocol prefix without '@', e.g. http://31.56.70.92:1338
+  const cleanProto = str.replace(/^(https?|socks5?):\/\//i, '');
+
+  const parts = cleanProto.split(':');
+  if (parts.length === 4) {
+    // Check if parts[0] is IP/host (contains dot or localhost)
+    if (parts[0].includes('.') || parts[0].includes('localhost')) {
+      // format: ip:port:user:pass
+      return `${parts[0]}:${parts[1]}`;
+    } else {
+      // format: user:pass:ip:port
+      return `${parts[2]}:${parts[3]}`;
+    }
+  }
+
+  if (parts.length === 2) {
+    // ip:port
+    return `${parts[0]}:${parts[1]}`;
+  }
+
+  return cleanProto;
+};
