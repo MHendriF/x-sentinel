@@ -7,7 +7,7 @@
     "username": "example_handle",
     "name": "Display Name",
     "avatar": "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
-    "proxy": "http://username:password@ip_or_host:port",
+    "proxy": "username:password@ip_or_host:port",
     "commentsFile": "comments_acc_sample_01.json",
     "enabled": true,
     "isValid": true,

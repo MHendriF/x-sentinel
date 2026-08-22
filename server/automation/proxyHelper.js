@@ -1,17 +1,17 @@
 /**
  * Proxy Helper for Playwright Automation
- * Parses various proxy formats and formats them for Playwright browser launch
+ * Robust parser for all proxy formats:
+ * 1. user:pass@ip:port (e.g. username:password@103.145.2.1:8080)
+ * 2. http://user:pass@ip:port / socks5://user:pass@ip:port
+ * 3. ip:port:user:pass (e.g. 103.145.2.1:8080:username:password)
+ * 4. user:pass:ip:port (e.g. username:password:103.145.2.1:8080)
+ * 5. ip:port (e.g. 103.145.2.1:8080)
+ * 6. http://ip:port / socks5://ip:port
  */
 
 class ProxyHelper {
   /**
    * Parse proxy string into Playwright proxy object
-   * Supported formats:
-   * 1. http://username:password@host:port
-   * 2. host:port:username:password
-   * 3. http://host:port
-   * 4. socks5://username:password@host:port
-   * 5. socks5://host:port
    */
   parseProxy(proxyString) {
     if (!proxyString || typeof proxyString !== 'string' || !proxyString.trim()) {
@@ -21,51 +21,124 @@ class ProxyHelper {
     const trimmed = proxyString.trim();
 
     try {
-      // Format: host:port:username:password
-      const parts = trimmed.split(':');
-      if (parts.length === 4 && !trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('socks5://')) {
-        const [host, port, username, password] = parts;
-        return {
-          server: `http://${host}:${port}`,
-          username: username.trim(),
-          password: password.trim(),
-          raw: trimmed
-        };
+      let protocol = 'http:';
+      let cleanStr = trimmed;
+
+      if (trimmed.startsWith('socks5://')) {
+        protocol = 'socks5:';
+        cleanStr = trimmed.slice(9);
+      } else if (trimmed.startsWith('socks4://')) {
+        protocol = 'socks4:';
+        cleanStr = trimmed.slice(9);
+      } else if (trimmed.startsWith('http://')) {
+        protocol = 'http:';
+        cleanStr = trimmed.slice(7);
+      } else if (trimmed.startsWith('https://')) {
+        protocol = 'https:';
+        cleanStr = trimmed.slice(8);
       }
 
-      // Format: host:port
-      if (parts.length === 2 && !trimmed.includes('://')) {
+      // Case 1: user:pass@ip:port
+      if (cleanStr.includes('@')) {
+        const lastAtIndex = cleanStr.lastIndexOf('@');
+        const authPart = cleanStr.slice(0, lastAtIndex);
+        const hostPart = cleanStr.slice(lastAtIndex + 1);
+
+        const firstColonIndex = authPart.indexOf(':');
+        let username = authPart;
+        let password = '';
+        if (firstColonIndex !== -1) {
+          username = authPart.slice(0, firstColonIndex);
+          password = authPart.slice(firstColonIndex + 1);
+        }
+
+        const lastColonIndex = hostPart.lastIndexOf(':');
+        let host = hostPart;
+        let port = '';
+        if (lastColonIndex !== -1) {
+          host = hostPart.slice(0, lastColonIndex);
+          port = hostPart.slice(lastColonIndex + 1);
+        }
+
+        const server = `${protocol}//${host}${port ? `:${port}` : ''}`;
+        const result = { server, raw: trimmed };
+        if (username) result.username = username;
+        if (password) result.password = password;
+        return result;
+      }
+
+      // Case 2: 4-part colon separated (host:port:user:pass OR user:pass:host:port)
+      const parts = cleanStr.split(':');
+      if (parts.length === 4) {
+        // If 1st part is host (looks like IP or domain e.g. contains dot or is localhost)
+        const isFirstPartHost = parts[0].includes('.') || parts[0] === 'localhost';
+        const isThirdPartHost = parts[2].includes('.') || parts[2] === 'localhost';
+
+        if (isFirstPartHost && !isNaN(Number(parts[1]))) {
+          // host:port:user:pass
+          const [host, port, username, password] = parts;
+          return {
+            server: `${protocol}//${host}:${port}`,
+            username: username.trim(),
+            password: password.trim(),
+            raw: trimmed
+          };
+        } else if (isThirdPartHost && !isNaN(Number(parts[3]))) {
+          // user:pass:host:port
+          const [username, password, host, port] = parts;
+          return {
+            server: `${protocol}//${host}:${port}`,
+            username: username.trim(),
+            password: password.trim(),
+            raw: trimmed
+          };
+        } else {
+          // Default fallback to host:port:user:pass
+          const [host, port, username, password] = parts;
+          return {
+            server: `${protocol}//${host}:${port}`,
+            username: username.trim(),
+            password: password.trim(),
+            raw: trimmed
+          };
+        }
+      }
+
+      // Case 3: 2-part colon separated (host:port)
+      if (parts.length === 2) {
         const [host, port] = parts;
         return {
-          server: `http://${host}:${port}`,
+          server: `${protocol}//${host}:${port}`,
           raw: trimmed
         };
       }
 
-      // Standard URL format (http://, https://, socks5://)
-      let urlStr = trimmed;
-      if (!urlStr.includes('://')) {
-        urlStr = `http://${urlStr}`;
-      }
-
-      const parsedUrl = new URL(urlStr);
-      const protocol = parsedUrl.protocol; // http:, https:, socks5:
-      const host = parsedUrl.hostname;
-      const port = parsedUrl.port;
-      const username = parsedUrl.username ? decodeURIComponent(parsedUrl.username) : undefined;
-      const password = parsedUrl.password ? decodeURIComponent(parsedUrl.password) : undefined;
-
-      const server = `${protocol}//${host}${port ? `:${port}` : ''}`;
-
-      const result = { server, raw: trimmed };
-      if (username) result.username = username;
-      if (password) result.password = password;
-
-      return result;
+      // Case 4: Standard single host or URL
+      return {
+        server: `${protocol}//${cleanStr}`,
+        raw: trimmed
+      };
     } catch (err) {
       console.error('Error parsing proxy string:', err.message);
       return null;
     }
+  }
+
+  /**
+   * Format for Playwright launch option
+   */
+  getPlaywrightLaunchProxy(proxyString) {
+    const parsed = this.parseProxy(proxyString);
+    if (!parsed) return undefined;
+
+    const proxyConfig = {
+      server: parsed.server
+    };
+
+    if (parsed.username) proxyConfig.username = parsed.username;
+    if (parsed.password) proxyConfig.password = parsed.password;
+
+    return proxyConfig;
   }
 
   /**

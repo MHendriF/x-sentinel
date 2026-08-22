@@ -381,7 +381,7 @@ export const AccountModal: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="http://user:pass@host:port atau host:port:user:pass"
+                placeholder="user:pass@ip:port atau ip:port:user:pass"
                 value={proxy}
                 onChange={(e) => setProxy(e.target.value)}
                 className="font-mono text-xs flex-1"
