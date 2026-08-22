@@ -4,6 +4,7 @@ import { NodeCard } from './NodeCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Plus, RefreshCw, Server, AlertCircle, UploadCloud, Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const NodesGrid: React.FC = () => {
   const { accounts, loadAccounts, openAccountModal, openBulkImportModal } = useStore();
@@ -11,6 +12,11 @@ export const NodesGrid: React.FC = () => {
   useEffect(() => {
     loadAccounts();
   }, [loadAccounts]);
+
+  const handleExportFleet = () => {
+    window.open('/api/accounts/export', '_blank');
+    toast.success('Mengunduh backup seluruh armada node akun (JSON)...');
+  };
 
   return (
     <div className="space-y-5">
@@ -27,6 +33,16 @@ export const NodesGrid: React.FC = () => {
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportFleet}
+              className="gap-1.5 text-xs font-mono border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
+              title="Unduh backup seluruh node ke file .json"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              Export Fleet
+            </Button>
             <Button
               variant="outline"
               size="sm"

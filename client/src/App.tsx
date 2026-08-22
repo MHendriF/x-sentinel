@@ -9,6 +9,7 @@ import { FeedHunter } from '@/components/cockpit/FeedHunter';
 import { AnalyticsDeck } from '@/components/cockpit/AnalyticsDeck';
 import { PayloadBank } from '@/components/cockpit/PayloadBank';
 import { DefenseProtocol } from '@/components/cockpit/DefenseProtocol';
+import { AISettingsDeck } from '@/components/cockpit/AISettingsDeck';
 import { AuditLedger } from '@/components/cockpit/AuditLedger';
 import { AboutDeck } from '@/components/cockpit/AboutDeck';
 import { AccountModal } from '@/components/cockpit/AccountModal';
@@ -75,6 +76,7 @@ export const App: React.FC = () => {
           {activeTab === 'tab-batch' && <TargetWorkbench />}
           {activeTab === 'tab-hunter' && <FeedHunter />}
           {activeTab === 'tab-analytics' && <AnalyticsDeck />}
+          {activeTab === 'tab-ai' && <AISettingsDeck />}
           {activeTab === 'tab-spintax' && <PayloadBank />}
           {activeTab === 'tab-safety' && <DefenseProtocol />}
           {activeTab === 'tab-history' && <AuditLedger />}

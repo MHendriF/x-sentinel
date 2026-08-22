@@ -20,6 +20,10 @@ import {
   ExternalLink,
   Sparkles,
   Lock,
+  Bot,
+  UploadCloud,
+  Download,
+  BookOpen,
 } from 'lucide-react';
 
 export const AboutDeck: React.FC = () => {
@@ -37,7 +41,7 @@ export const AboutDeck: React.FC = () => {
               X-SENTINEL CORE v2.5
             </Badge>
             <Badge variant="outline" className="text-slate-400 font-mono text-[11px]">
-              REACT 19 · PLAYWRIGHT STEALTH · ZERO-CONFIG JSON DB
+              REACT 19 · AI REPLIES · BULK ONBOARDING · PLAYWRIGHT STEALTH
             </Badge>
           </div>
 
@@ -48,23 +52,23 @@ export const AboutDeck: React.FC = () => {
             <p className="text-slate-300 text-sm leading-relaxed">
               <strong>X-SENTINEL</strong> adalah sistem otomasi interaksi terintegrasi (*engagement cockpit*) 
               yang dirancang khusus untuk platform <strong>X (Twitter)</strong>. Menggabungkan arsitektur rotasi 
-              multi-akun (*node cluster*), isolasi tunnel proxy dedicated, kecerdasan pencarian konten (*Feed Hunter*), 
-              generator variasi balasan (*Spintax*), dan telemetri analitik visual tanpa ketergantungan database eksternal.
+              multi-akun (*node cluster*), isolasi tunnel proxy dedicated, kecerdasan balasan kontekstual AI (*OpenRouter, Groq, Gemini, Ollama*), 
+              onboarding massal (*Bulk Fleet Manager*), bank template kurasi multi-niche (*Spintax Vault*), dan telemetri analitik visual tanpa ketergantungan database eksternal.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-2 font-mono text-xs text-slate-300">
             <div className="flex items-center gap-1.5 bg-obsidian-950/80 px-3 py-1.5 rounded-md border border-slate-800">
-              <Zap className="w-4 h-4 text-amber-400" />
-              <span>Zero-Password Auth (Cookie Based)</span>
+              <Bot className="w-4 h-4 text-purple-400" />
+              <span>AI Contextual Engine (Groq / OpenRouter)</span>
             </div>
             <div className="flex items-center gap-1.5 bg-obsidian-950/80 px-3 py-1.5 rounded-md border border-slate-800">
-              <Globe className="w-4 h-4 text-purple-400" />
-              <span>Multi-Proxy GeoIP Testing</span>
+              <UploadCloud className="w-4 h-4 text-cyan-400" />
+              <span>Bulk Fleet Onboard &amp; Export</span>
             </div>
             <div className="flex items-center gap-1.5 bg-obsidian-950/80 px-3 py-1.5 rounded-md border border-slate-800">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Anti-Ban Human Cadence</span>
+              <span>Hardened Stealth &amp; Evasion</span>
             </div>
           </div>
         </CardContent>
@@ -78,49 +82,92 @@ export const AboutDeck: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Feature 1 */}
+          {/* Feature 1: Multi-Node & Bulk Fleet */}
           <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
             <CardHeader className="pb-2">
               <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-flame mb-2">
                 <Layers className="w-5 h-5" />
               </div>
-              <CardTitle className="text-base">Multi-Node &amp; Proxy Cluster</CardTitle>
+              <CardTitle className="text-base">Multi-Node &amp; Bulk Fleet Cluster</CardTitle>
               <CardDescription className="text-xs">
-                Manajemen akun terdesentralisasi dengan keamanan tingkat tinggi.
+                Manajemen armada puluhan akun terdesentralisasi dengan keamanan tingkat tinggi.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
               <ul className="list-disc pl-4 space-y-1 text-slate-400">
                 <li>Otentikasi aman via cookie <code>auth_token</code> &amp; <code>ct0</code> tanpa login password.</li>
-                <li>Dukungan proxy dedicated format <code>user:pass@ip:port</code>, <code>ip:port:user:pass</code>, dan <code>socks5://</code>.</li>
-                <li><strong>Live Proxy Ping &amp; GeoIP</strong> untuk mengecek latensi (ms), negara, dan ISP.</li>
-                <li><strong>Smart Paste Extractor</strong> untuk membaca header cookie langsung dari Network DevTools.</li>
+                <li><strong>🔒 Proxy Credential Masking</strong>: Menampilkan <code>IP:Port</code> bersih tanpa membocorkan kredensial.</li>
+                <li><strong>📥 Bulk Fleet Import</strong>: Daftarkan puluhan akun sekaligus via format teks/JSON.</li>
+                <li><strong>📤 Export Fleet Backup</strong>: Unduh backup seluruh armada node ke file <code>.json</code> dengan 1 klik.</li>
+                <li><strong>⚡ Live Proxy Ping &amp; GeoIP</strong>: Cek latensi (ms), negara, dan ISP realtime.</li>
               </ul>
             </CardContent>
           </Card>
 
-          {/* Feature 2 */}
+          {/* Feature 2: AI Contextual Engine */}
+          <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors border-purple-500/30">
+            <CardHeader className="pb-2">
+              <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-2">
+                <Bot className="w-5 h-5" />
+              </div>
+              <CardTitle className="text-base">AI Contextual Auto-Replies</CardTitle>
+              <CardDescription className="text-xs">
+                Kecerdasan buatan membaca isi tweet target untuk balasan 100% alami &amp; relevan.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
+              <ul className="list-disc pl-4 space-y-1 text-slate-400">
+                <li>Integrasi multi-provider: <strong>OpenRouter</strong>, <strong>Groq (Ultra-Fast)</strong>, <strong>OpenAI</strong>, <strong>Gemini</strong>, dan <strong>Ollama</strong>.</li>
+                <li>Membaca teks postingan target dan meracik balasan sesuai instruksi persona.</li>
+                <li><strong>Smart Fallback</strong>: Otomatis beralih ke Spintax/JSON jika AI timeout atau kuota habis.</li>
+                <li><strong>⚡ Live AI Tester</strong>: Uji respon model secara instan langsung dari dashboard.</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Feature 3: Target Workbench & Matrix */}
           <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
             <CardHeader className="pb-2">
               <div className="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mb-2">
                 <Crosshair className="w-5 h-5" />
               </div>
-              <CardTitle className="text-base">Target Engagement Workbench</CardTitle>
+              <CardTitle className="text-base">Target Workbench &amp; Reply Matrix</CardTitle>
               <CardDescription className="text-xs">
-                Eksekutor interaksi berurutan pada daftar URL tweet target.
+                Eksekutor interaksi berurutan dengan distribusi balasan unik 1-ke-1.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
               <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                <li>Input batch multi-line URL tweet dari berbagai sumber.</li>
-                <li>Pilihan aksi modular: <strong>Like</strong>, <strong>Repost / Retweet</strong>, dan <strong>Reply Komentar</strong>.</li>
-                <li>Rotasi antar node akun secara seimbang untuk mendistribusikan beban.</li>
-                <li>Indikator status progres interaktif real-time.</li>
+                <li>Input batch multi-line URL tweet target dengan penundaan humanis.</li>
+                <li>Pilihan aksi modular: <strong>Like</strong>, <strong>Repost / Retweet</strong>, dan <strong>Reply</strong>.</li>
+                <li><strong>🔀 1-to-1 Unique JSON Matrix</strong>: Distribusi balasan unik berbeda ke setiap akun node.</li>
+                <li>Dynamic waiting selector untuk merender elemen tweet secara akurat.</li>
               </ul>
             </CardContent>
           </Card>
 
-          {/* Feature 3 */}
+          {/* Feature 4: Curated Spintax Library */}
+          <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
+            <CardHeader className="pb-2">
+              <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-2">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <CardTitle className="text-base">Multi-Niche Spintax Library</CardTitle>
+              <CardDescription className="text-xs">
+                Bank template spintax kurasi untuk Web3, AI, Developer, dan Komunitas Indonesia.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
+              <ul className="list-disc pl-4 space-y-1 text-slate-400">
+                <li>5 Kategori Industri: <strong>Web3 &amp; Crypto</strong>, <strong>AI Agents</strong>, <strong>Devs &amp; SaaS</strong>, <strong>Indonesian Community</strong>, dan <strong>Viral Hooks</strong>.</li>
+                <li>Sistem isolasi file komentar per akun (<code>data/comments/comments_*.json</code>).</li>
+                <li><strong>1-Click Apply</strong>: Muat preset langsung ke pool fallback atau storage akun node.</li>
+                <li><strong>Live Permutation Tester</strong>: Uji ribuan variasi kalimat secara instan.</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Feature 5: Feed Hunter */}
           <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
             <CardHeader className="pb-2">
               <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-2">
@@ -140,65 +187,23 @@ export const AboutDeck: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Feature 4 */}
+          {/* Feature 6: Hardened Anti-Ban & Telemetry */}
           <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
             <CardHeader className="pb-2">
               <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-              <CardTitle className="text-base">Telemetry &amp; Growth Analytics</CardTitle>
-              <CardDescription className="text-xs">
-                Dasbor visualisasi performa dan analitik interaksi berbasis Recharts.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
-              <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                <li><strong>Activity Velocity (Area Chart)</strong>: Tren harian volume Like, Repost, dan Balasan.</li>
-                <li><strong>Node Workload Share (Donut Chart)</strong>: Pembagian proporsi eksekusi per node akun.</li>
-                <li><strong>Cumulative Vector Totals</strong>: Bar chart komparatif total interaksi.</li>
-                <li>Metrik KPI: Total eksekusi, Success Rate (%), dan rasio kesehatan akun.</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Feature 5 */}
-          <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
-            <CardHeader className="pb-2">
-              <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-2">
-                <Sliders className="w-5 h-5" />
-              </div>
-              <CardTitle className="text-base">Payload Bank &amp; Spintax Engine</CardTitle>
-              <CardDescription className="text-xs">
-                Generator variasi teks balasan alami anti-duplikasi.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
-              <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                <li>Sistem isolasi file komentar per akun (<code>data/comments/comments_*.json</code>).</li>
-                <li>Engine Spintax multi-level berformat <code>{'{Keren|Mantap|Top}'}</code>.</li>
-                <li>Live Permutation Previewer untuk menguji ribuan variasi kalimat secara instan.</li>
-                <li>Dukungan fallback ke AI Reply Generator (Gemini / OpenAI).</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Feature 6 */}
-          <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
-            <CardHeader className="pb-2">
-              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-2">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <CardTitle className="text-base">Anti-Ban Defense Protocol</CardTitle>
+              <CardTitle className="text-base">Hardened Defense &amp; Telemetry</CardTitle>
               <CardDescription className="text-xs">
-                Perlindungan bot detection dengan emulasi perilaku manusia alami.
+                Perlindungan bot detection tingkat tinggi &amp; visualisasi Recharts.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
               <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                <li>Interval jeda acak (*natural randomized delay*) yang dapat diatur secara presisi.</li>
-                <li>Emulasi pengetikan per karakter (*human-like typing cadence*) dan simulasi scroll.</li>
-                <li>Batas eksekusi per jam (*hourly limit*) dan per hari (*daily limit*).</li>
-                <li>Buku besar riwayat audit (*Audit Ledger*) untuk mencegah duplikasi interaksi.</li>
+                <li><strong>Stealth Evasions</strong>: Masking webdriver, WebGL vendor GPU spoofing, dan WebRTC IP leak shield.</li>
+                <li><strong>Atomic File Writes</strong>: File swap <code>.tmp</code> + <code>renameSync</code> anti-korupsi data JSON.</li>
+                <li><strong>Recharts Telemetry</strong>: Visualisasi tren velocity dan node workload share donut.</li>
+                <li>Interval jeda acak manusia, emulasi pengetikan per karakter, dan simulasi scroll.</li>
               </ul>
             </CardContent>
           </Card>
@@ -240,10 +245,10 @@ export const AboutDeck: React.FC = () => {
               <div className="text-xs text-slate-400 space-y-1 font-mono">
                 <div>• Node.js &amp; Express 5</div>
                 <div>• Microsoft Playwright Engine</div>
-                <div>• Stealth Context Emulation</div>
+                <div>• Multi-Provider AI LLM Service</div>
+                <div>• Stealth Context &amp; WebRTC Shield</div>
                 <div>• Server-Sent Events (SSE) Stream</div>
                 <div>• SOCKS5 &amp; HTTP Tunneling</div>
-                <div>• Spintax Recursive Parser</div>
               </div>
             </div>
 
@@ -254,10 +259,10 @@ export const AboutDeck: React.FC = () => {
               </div>
               <div className="text-xs text-slate-400 space-y-1 font-mono">
                 <div>• Zero-Dependency JSON DB</div>
-                <div>• Synchronous Atomic File I/O</div>
+                <div>• Atomic Temp File Writes</div>
                 <div>• Isolated Payload Pool Directory</div>
                 <div>• Git-Ignored Kredensial Lokal</div>
-                <div>• Starter Template Examples</div>
+                <div>• Bulk Fleet Backup &amp; Export</div>
                 <div>• 100% On-Premise Data Sovereignty</div>
               </div>
             </div>

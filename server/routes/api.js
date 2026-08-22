@@ -382,10 +382,43 @@ router.post('/settings', (req, res) => {
   res.json({ success: true, settings: updated });
 });
 
-// POST /api/settings/test-ai - Test AI Connection & Model Response
+// POST /api/settings/test-ai - Test AI Connection & Model Ping
 router.post('/settings/test-ai', async (req, res) => {
   const result = await aiService.testConnection(req.body);
   res.json(result);
+});
+
+// POST /api/settings/generate-ai-test - Test Contextual AI Reply Generation
+router.post('/settings/generate-ai-test', async (req, res) => {
+  const { tweetText, aiProvider, aiApiKey, aiModel, aiBaseUrl, aiPrompt } = req.body;
+  if (!tweetText || !tweetText.trim()) {
+    return res.status(400).json({ success: false, message: 'Sample tweet text wajib diisi.' });
+  }
+
+  const startTime = Date.now();
+  const reply = await aiService.generateContextualReply(
+    tweetText.trim(),
+    {},
+    { aiProvider, aiApiKey, aiModel, aiBaseUrl, aiPrompt }
+  );
+
+  const duration = Date.now() - startTime;
+  if (reply) {
+    res.json({
+      success: true,
+      latency: duration,
+      model: aiModel || 'default',
+      provider: aiProvider,
+      sampleOutput: reply,
+      message: `Berhasil meracik balasan AI (${duration}ms)!`
+    });
+  } else {
+    res.json({
+      success: false,
+      latency: duration,
+      message: 'AI gagal merespons atau timeout. Periksa kembali endpoint, model, atau API Key.'
+    });
+  }
 });
 
 // GET /api/templates - Global Templates

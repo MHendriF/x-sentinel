@@ -12,6 +12,7 @@ import {
   Info,
   X,
   Radio,
+  Bot,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -37,9 +38,14 @@ const NAV_ITEMS = [
     icon: BarChart3,
   },
   {
+    id: 'tab-ai',
+    label: 'AI Provider Settings',
+    section: 'INTELLIGENCE & DEFENSE',
+    icon: Bot,
+  },
+  {
     id: 'tab-spintax',
     label: 'Payload & Spintax',
-    section: 'PAYLOAD & DEFENSE',
     icon: Sliders,
   },
   {

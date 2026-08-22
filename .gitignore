@@ -10,6 +10,9 @@ data/browser_profile/
 data/accounts.json
 data/auth.json
 data/history.json
+data/settings.json
+data/stats.json
+data/comments/
 
 # Temporary files and logs
 *.log

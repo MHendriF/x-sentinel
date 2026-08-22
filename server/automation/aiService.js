@@ -10,9 +10,18 @@ class AIService {
     const customBaseUrl = settings.aiBaseUrl ? settings.aiBaseUrl.trim().replace(/\/+$/, '') : '';
 
     switch (provider.toLowerCase()) {
+      case '9router':
+        return {
+          baseUrl: customBaseUrl || 'https://api.9router.com/v1',
+          defaultModel: 'openai/gpt-4o-mini',
+          headers: {
+            'HTTP-Referer': 'https://x-sentinel.local',
+            'X-Title': 'X-SENTINEL Cockpit'
+          }
+        };
       case 'openrouter':
         return {
-          baseUrl: 'https://openrouter.ai/api/v1',
+          baseUrl: customBaseUrl || 'https://openrouter.ai/api/v1',
           defaultModel: 'openai/gpt-4o-mini',
           headers: {
             'HTTP-Referer': 'https://x-sentinel.local',
@@ -21,19 +30,19 @@ class AIService {
         };
       case 'openai':
         return {
-          baseUrl: 'https://api.openai.com/v1',
+          baseUrl: customBaseUrl || 'https://api.openai.com/v1',
           defaultModel: 'gpt-4o-mini',
           headers: {}
         };
       case 'groq':
         return {
-          baseUrl: 'https://api.groq.com/openai/v1',
+          baseUrl: customBaseUrl || 'https://api.groq.com/openai/v1',
           defaultModel: 'llama-3.3-70b-versatile',
           headers: {}
         };
       case 'gemini':
         return {
-          baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+          baseUrl: customBaseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai',
           defaultModel: 'gemini-1.5-flash',
           headers: {}
         };
@@ -52,6 +61,131 @@ class AIService {
       default:
         return null;
     }
+  }
+
+  /**
+   * Safely parse AI response bodies handling single JSON, SSE streams, and concatenated chunks
+   */
+  safeParseResponse(rawText) {
+    if (!rawText || !rawText.trim()) {
+      throw new Error('Respons dari endpoint AI kosong.');
+    }
+
+    const trimmed = rawText.trim();
+
+    // 1. Direct standard JSON
+    try {
+      return JSON.parse(trimmed);
+    } catch (e) {
+      // Continue to resilient fallback parsers
+    }
+
+    // 2. Markdown codeblock (```json ... ```)
+    const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (codeBlockMatch && codeBlockMatch[1]) {
+      try {
+        return JSON.parse(codeBlockMatch[1].trim());
+      } catch (e) {}
+    }
+
+    // 3. SSE Stream chunk lines (data: {...}\n\ndata: {...})
+    if (trimmed.includes('data:')) {
+      const lines = trimmed.split('\n');
+      let combinedContent = '';
+      let lastDataObj = null;
+
+      for (const line of lines) {
+        const lineTrimmed = line.trim();
+        if (lineTrimmed.startsWith('data:') && !lineTrimmed.includes('[DONE]')) {
+          const jsonStr = lineTrimmed.replace(/^data:\s*/, '').trim();
+          if (jsonStr) {
+            try {
+              const chunk = JSON.parse(jsonStr);
+              lastDataObj = chunk;
+              const delta =
+                chunk?.choices?.[0]?.delta?.content ||
+                chunk?.choices?.[0]?.message?.content ||
+                chunk?.choices?.[0]?.text ||
+                '';
+              combinedContent += delta;
+            } catch (err) {}
+          }
+        }
+      }
+
+      if (combinedContent || (lastDataObj && lastDataObj.choices)) {
+        return {
+          choices: [
+            {
+              message: {
+                content:
+                  combinedContent ||
+                  lastDataObj?.choices?.[0]?.message?.content ||
+                  lastDataObj?.choices?.[0]?.text ||
+                  ''
+              }
+            }
+          ]
+        };
+      }
+    }
+
+    // 4. Concatenated JSON chunks or trailing characters
+    const firstBrace = trimmed.indexOf('{');
+    if (firstBrace !== -1) {
+      let depth = 0;
+      let endBrace = -1;
+      let inString = false;
+      let escape = false;
+
+      for (let i = firstBrace; i < trimmed.length; i++) {
+        const char = trimmed[i];
+        if (escape) {
+          escape = false;
+          continue;
+        }
+        if (char === '\\') {
+          escape = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (!inString) {
+          if (char === '{') depth++;
+          else if (char === '}') {
+            depth--;
+            if (depth === 0) {
+              endBrace = i;
+              break;
+            }
+          }
+        }
+      }
+
+      if (endBrace !== -1) {
+        try {
+          const validSubJson = trimmed.substring(firstBrace, endBrace + 1);
+          return JSON.parse(validSubJson);
+        } catch (err) {}
+      }
+    }
+
+    // 5. Fallback as raw text if not HTML
+    if (trimmed.length > 0 && !trimmed.startsWith('<')) {
+      return {
+        choices: [
+          {
+            message: {
+              content: trimmed
+            }
+          }
+        ]
+      };
+    }
+
+    throw new Error(`Format respons AI tidak valid: ${trimmed.slice(0, 100)}`);
   }
 
   /**
@@ -81,19 +215,22 @@ class AIService {
     }
 
     const model = (settings.aiModel || '').trim() || providerConfig.defaultModel;
-    const personaPrompt = settings.aiPrompt || 'Tulis 1 balasan singkat, santai, alami, relevan, dan menarik untuk tweet berikut. Jangan gunakan tanda petik atau hashtag berlebihan.';
+    const personaPrompt =
+      settings.aiPrompt ||
+      'Write a sharp, authentic, and context-aware 1-sentence English reply as a crypto/tech native. Be insightful, peer-to-peer, and zero generic praise.';
 
-    const systemPrompt = `You are a savvy, genuine human user on X (Twitter).
-Your task is to write a single natural, thoughtful, and contextually relevant reply to a tweet.
-Guidelines:
-- Keep it concise (1 to 2 sentences maximum, under 180 characters).
-- Sound like a real person, not an AI bot.
-- Directly address the points or sentiment in the tweet.
-- Do NOT use robotic phrases like "Great post!", "As an AI", or introductory greetings unless natural.
-- Do NOT put quotes around your response.
-- Follow this persona/instruction: "${personaPrompt}"`;
+    const systemPrompt = `You are a sharp, native, authentic human commenter on X (Twitter).
+Your task is to write a single, natural, human-grade reply to the focal tweet.
 
-    const userMessage = `Tweet Content:\n"${tweetText}"\n\nGenerate your reply:`;
+STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
+1. ZERO AI SLOP OR BOT CLICHES: Never use generic bot phrases like "Great insights!", "Fascinating perspective!", "Thanks for sharing!", "In today's fast-paced world...", "It's important to remember that...", "Spot on!", "Couldn't agree more!".
+2. ZERO SYCOPHANCY: Sound like an actual peer, developer, degen, or industry practitioner. Be conversational, direct, and slightly understated.
+3. CONCISE & PUNCHY: Exactly 1 single sentence (12-25 words max). Do NOT write multi-sentence essays or bullet points.
+4. NO FORMATTING ARTIFACTS: Never use quotation marks, never use bullet points, never use hashtags, and do not overuse emojis (at most 1 contextual emoji or none).
+5. TWEET CONTEXT RELEVANCE: Directly reference a specific concept, tradeoff, or angle mentioned in the tweet rather than giving a vague reaction.
+6. ADHERE TO THIS USER PERSONA: "${personaPrompt}"`;
+
+    const userMessage = `Tweet Content:\n"${tweetText}"\n\nWrite your single natural human reply:`;
 
     try {
       logger.info(`🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk meracik balasan...`);
@@ -107,7 +244,7 @@ Guidelines:
       const endpoint = `${providerConfig.baseUrl}/chat/completions`;
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 sec timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 sec timeout for deep reasoning models
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -119,21 +256,26 @@ Guidelines:
             { role: 'user', content: userMessage }
           ],
           max_tokens: 100,
-          temperature: 0.8
+          temperature: 0.8,
+          stream: false
         }),
         signal: controller.signal
       });
 
       clearTimeout(timeoutId);
 
+      const rawText = await response.text();
+
       if (!response.ok) {
-        const errorText = await response.text();
-        logger.warn(`⚠️ AI API Error (${response.status}): ${errorText.slice(0, 120)}`);
+        logger.warn(`⚠️ AI API Error (${response.status}): ${rawText.slice(0, 120)}`);
         return null;
       }
 
-      const data = await response.json();
-      const rawReply = data?.choices?.[0]?.message?.content?.trim();
+      const data = this.safeParseResponse(rawText);
+      const rawReply =
+        data?.choices?.[0]?.message?.content?.trim() ||
+        data?.choices?.[0]?.text?.trim() ||
+        '';
 
       if (!rawReply) {
         logger.warn('⚠️ AI API tidak mengembalikan konten balasan.');
@@ -187,7 +329,7 @@ Guidelines:
       const endpoint = `${providerConfig.baseUrl}/chat/completions`;
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -198,24 +340,29 @@ Guidelines:
             { role: 'user', content: 'Say "X-SENTINEL AI ONLINE" in 4 words.' }
           ],
           max_tokens: 30,
-          temperature: 0.5
+          temperature: 0.5,
+          stream: false
         }),
         signal: controller.signal
       });
 
       clearTimeout(timeoutId);
 
+      const rawText = await response.text();
+
       if (!response.ok) {
-        const errorText = await response.text();
         return {
           success: false,
           status: response.status,
-          message: `API Error (${response.status}): ${errorText.slice(0, 180)}`
+          message: `API Error (${response.status}): ${rawText.slice(0, 180)}`
         };
       }
 
-      const data = await response.json();
-      const reply = data?.choices?.[0]?.message?.content?.trim();
+      const data = this.safeParseResponse(rawText);
+      const reply =
+        data?.choices?.[0]?.message?.content?.trim() ||
+        data?.choices?.[0]?.text?.trim() ||
+        '';
 
       return {
         success: true,

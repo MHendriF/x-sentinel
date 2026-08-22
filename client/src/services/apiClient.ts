@@ -257,6 +257,28 @@ export const apiClient = {
     return res.json();
   },
 
+  async generateAITest(payload: {
+    tweetText: string;
+    aiProvider: string;
+    aiApiKey: string;
+    aiModel?: string;
+    aiBaseUrl?: string;
+    aiPrompt?: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    latency?: number;
+    model?: string;
+    sampleOutput?: string;
+  }> {
+    const res = await fetch('/api/settings/generate-ai-test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+
   // Audit History
   async getHistory(limit = 100): Promise<{ success: boolean; history: HistoryItem[]; stats: Stats }> {
     const res = await fetch(`/api/history?limit=${limit}`);

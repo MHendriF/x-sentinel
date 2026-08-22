@@ -111,12 +111,25 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
           <Button
             size="sm"
-            variant={account.enabled !== false ? 'secondary' : 'outline'}
-            className="h-7 text-xs font-mono"
+            variant="outline"
+            className={`h-7 text-xs font-mono font-bold transition-all ${
+              account.enabled !== false
+                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 shadow-sm shadow-emerald-950/40'
+                : 'border-slate-700 bg-obsidian-900 text-slate-400 hover:bg-slate-800'
+            }`}
             onClick={handleToggle}
           >
-            <Power className="w-3 h-3 mr-1" />
-            {account.enabled !== false ? 'ONLINE' : 'PAUSED'}
+            {account.enabled !== false ? (
+              <span className="flex items-center text-emerald-400 font-bold tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1.5" />
+                ONLINE
+              </span>
+            ) : (
+              <span className="flex items-center text-slate-400">
+                <Power className="w-3 h-3 mr-1 text-slate-400" />
+                PAUSED
+              </span>
+            )}
           </Button>
         </div>
 

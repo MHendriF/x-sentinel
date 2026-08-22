@@ -43,7 +43,7 @@ class LocalDB {
       scrollBeforeAction: config.DEFAULTS.scrollBeforeAction,
       aiProvider: 'none',
       aiApiKey: '',
-      aiPrompt: 'Tulis balasan singkat, ramah, alami, dan relevan dalam bahasa Indonesia untuk tweet berikut:'
+      aiPrompt: 'Write a sharp, authentic, and context-aware 1-sentence English reply as a crypto/tech native. Be insightful, peer-to-peer, and zero generic praise.'
     });
 
     // Default global templates
