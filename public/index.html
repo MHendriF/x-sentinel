@@ -3,233 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>X-AutoEngage PRO - Multi-Akun, Proxy & Automation Tool</title>
+  <title>X-AutoEngage — Industrial X/Twitter Automation Cockpit</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-          </svg>
+  <div class="cockpit-layout">
+    <!-- Left Navigation Deck -->
+    <aside class="nav-deck">
+      <div class="deck-brand">
+        <div class="brand-monogram">
+          <span>𝕏</span>
         </div>
-        <div class="brand-text">
-          <h2>X-AutoEngage</h2>
-          <span class="badge-pro">MULTI-ACCOUNT v2.0</span>
+        <div class="brand-meta">
+          <div class="brand-title">X-AUTOENGAGE</div>
+          <div class="brand-version">ENGINE v2.4 · PROXY READY</div>
         </div>
       </div>
 
-      <nav class="nav-menu">
-        <button class="nav-item active" data-tab="tab-accounts">
-          <span class="nav-icon">👥</span>
-          <span class="nav-label">Multi-Akun & Proxy</span>
+      <!-- Telemetry Node Status -->
+      <div class="telemetry-node">
+        <div class="node-header">
+          <span class="pulse-indicator online" id="systemStatusDot"></span>
+          <span class="node-label" id="systemStatusText">CORE ONLINE</span>
+        </div>
+        <div class="node-grid">
+          <div class="node-stat">
+            <span class="stat-caption">NODES</span>
+            <span class="stat-value" id="sidebarTotalAccounts">0</span>
+          </div>
+          <div class="node-stat">
+            <span class="stat-caption">ACTIVE</span>
+            <span class="stat-value highlight" id="sidebarActiveAccounts">0</span>
+          </div>
+          <div class="node-stat">
+            <span class="stat-caption">RATE</span>
+            <span class="stat-value" id="sidebarRateMetric">AUTO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Menu -->
+      <nav class="deck-nav">
+        <div class="nav-section-title">CONTROL SURFACES</div>
+        <button class="deck-tab active" data-tab="tab-accounts">
+          <span class="tab-glyph">⎔</span>
+          <span class="tab-label">Multi-Node & Proxy</span>
         </button>
-        <button class="nav-item" data-tab="tab-batch">
-          <span class="nav-icon">🎯</span>
-          <span class="nav-label">Target URL Postingan</span>
+        <button class="deck-tab" data-tab="tab-batch">
+          <span class="tab-glyph">⌖</span>
+          <span class="tab-label">Target Engagement</span>
         </button>
-        <button class="nav-item" data-tab="tab-hunter">
-          <span class="nav-icon">🔍</span>
-          <span class="nav-label">Auto Hunter (Keyword)</span>
+        <button class="deck-tab" data-tab="tab-hunter">
+          <span class="tab-glyph">◈</span>
+          <span class="tab-label">Feed Hunter</span>
         </button>
-        <button class="nav-item" data-tab="tab-spintax">
-          <span class="nav-icon">📝</span>
-          <span class="nav-label">Spintax & Template</span>
+
+        <div class="nav-section-title mt-3">PAYLOAD & DEFENSE</div>
+        <button class="deck-tab" data-tab="tab-spintax">
+          <span class="tab-glyph">⌥</span>
+          <span class="tab-label">Payload & Spintax</span>
         </button>
-        <button class="nav-item" data-tab="tab-safety">
-          <span class="nav-icon">🛡️</span>
-          <span class="nav-label">Proteksi Anti-Ban</span>
+        <button class="deck-tab" data-tab="tab-safety">
+          <span class="tab-glyph">⛨</span>
+          <span class="tab-label">Anti-Ban Protocol</span>
         </button>
-        <button class="nav-item" data-tab="tab-history">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Riwayat & Log</span>
+        <button class="deck-tab" data-tab="tab-history">
+          <span class="tab-glyph">☵</span>
+          <span class="tab-label">Audit Logs</span>
         </button>
       </nav>
 
-      <!-- Multi-Account Summary Widget -->
-      <div class="account-card">
-        <div class="account-header">
-          <div class="status-indicator-dot active" id="systemStatusDot"></div>
-          <span class="status-title" id="systemStatusText">Sistem Siap</span>
-        </div>
-        <div class="account-stats-mini mt-2">
-          <div class="stat-row">
-            <span>Total Akun:</span>
-            <strong id="sidebarTotalAccounts">0</strong>
-          </div>
-          <div class="stat-row">
-            <span>Akun Aktif:</span>
-            <strong id="sidebarActiveAccounts" style="color: var(--accent-cyan);">0</strong>
-          </div>
+      <!-- Bottom Session Info -->
+      <div class="deck-footer">
+        <div class="footer-indicator">
+          <span class="dot-sm"></span>
+          <span>HTTP/2 Stealth Playwright</span>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Top Header Stats Bar -->
-      <header class="top-header">
-        <div class="header-left">
-          <h1 id="pageTitle">Manajemen Multi-Akun & Proxy</h1>
-          <p id="pageSubtitle">Kelola banyak akun X dengan proxy individual dan bank komentar JSON kustom</p>
+    <!-- Main Workspace Control Area -->
+    <main class="cockpit-workspace">
+      <!-- Top Telemetry Ribbon -->
+      <header class="telemetry-ribbon">
+        <div class="ribbon-headline">
+          <h1 id="pageTitle">Multi-Node & Proxy Management</h1>
+          <p id="pageSubtitle">Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.</p>
         </div>
-        <div class="header-stats">
-          <div class="stat-pill">
-            <span class="stat-icon">❤️</span>
-            <span class="stat-num" id="statLikes">0</span>
-            <span class="stat-name">Likes</span>
+
+        <div class="ribbon-metrics">
+          <div class="metric-chip">
+            <span class="metric-icon">♥</span>
+            <div class="metric-data">
+              <span class="metric-count" id="statLikes">0</span>
+              <span class="metric-type">LIKES</span>
+            </div>
           </div>
-          <div class="stat-pill">
-            <span class="stat-icon">🔁</span>
-            <span class="stat-num" id="statRetweets">0</span>
-            <span class="stat-name">Retweets</span>
+          <div class="metric-chip">
+            <span class="metric-icon">⟳</span>
+            <div class="metric-data">
+              <span class="metric-count" id="statRetweets">0</span>
+              <span class="metric-type">REPOSTS</span>
+            </div>
           </div>
-          <div class="stat-pill">
-            <span class="stat-icon">💬</span>
-            <span class="stat-num" id="statComments">0</span>
-            <span class="stat-name">Comments</span>
+          <div class="metric-chip">
+            <span class="metric-icon">💬</span>
+            <div class="metric-data">
+              <span class="metric-count" id="statComments">0</span>
+              <span class="metric-type">REPLIES</span>
+            </div>
           </div>
         </div>
       </header>
 
       <!-- TAB 1: MULTI-ACCOUNTS & PROXY MANAGEMENT -->
       <section class="tab-content active" id="tab-accounts">
-        <div class="card glass-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="badge-icon">👥</span>
-              <div>
-                <h3>Daftar Akun X & Konfigurasi Proxy</h3>
-                <p>Setiap akun mendukung cookie <code>auth_token</code>, <code>ct0</code>, Proxy independen, dan file komentar <code>.json</code> unik.</p>
-              </div>
+        <div class="hallmark-panel">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <span class="panel-tag">ACCOUNT CLUSTER</span>
+              <h2>Registered X Nodes</h2>
             </div>
-            <button class="btn btn-primary" id="btnOpenAddAccountModal">✨ + Tambah Akun Baru</button>
+            <button class="btn btn-hallmark-primary" id="btnOpenAddAccountModal">
+              <span>+ Register New Node</span>
+            </button>
           </div>
 
-          <div class="card-body">
-            <!-- Accounts Grid -->
-            <div id="accountsGridContainer" class="accounts-grid">
-              <!-- Populated dynamically -->
+          <div class="panel-body">
+            <div id="accountsGridContainer" class="nodes-grid">
+              <!-- Dynamically populated -->
             </div>
           </div>
         </div>
       </section>
 
-      <!-- TAB 2: BATCH / SINGLE TARGET POSTS -->
+      <!-- TAB 2: TARGET ENGAGEMENT WORKBENCH -->
       <section class="tab-content" id="tab-batch">
-        <div class="grid-2-col">
-          <div class="card glass-card">
-            <div class="card-header">
-              <div class="card-icon-title">
-                <span class="badge-icon">🎯</span>
-                <div>
-                  <h3>Target Link Postingan X</h3>
-                  <p>Masukkan daftar URL tweet target (1 URL per baris)</p>
-                </div>
+        <div class="cockpit-grid-2">
+          <!-- Parameter Deck -->
+          <div class="hallmark-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-tag">MISSION PARAMETERS</span>
+                <h2>Target Tweet URLs</h2>
               </div>
-              <span class="badge-counter" id="urlCounter">0 Postingan</span>
+              <span class="badge-mono" id="urlCounter">0 TARGETS</span>
             </div>
 
-            <div class="card-body">
-              <!-- Account Selection -->
-              <div class="form-group">
-                <label for="batchAccountSelector"><strong>Pilih Akun yang Dijalankan:</strong></label>
-                <select id="batchAccountSelector">
-                  <option value="all">✨ Semua Akun Aktif (Multi-Account Rotation)</option>
+            <div class="panel-body">
+              <div class="field-block">
+                <label class="field-label" for="batchAccountSelector">EXECUTING NODE CLUSTER</label>
+                <select class="field-select" id="batchAccountSelector">
+                  <option value="all">⚡ All Active Nodes (Sequential Rotation)</option>
                 </select>
-                <small class="field-hint">Setiap akun akan berinteraksi dengan postingan secara bergiliran menggunakan proxy & komentar JSON masing-masing.</small>
+                <span class="field-caption">Each active node will execute the sequence with randomized timing intervals.</span>
               </div>
 
-              <div class="form-group mt-3">
-                <label for="targetUrls"><strong>Daftar URL Postingan:</strong></label>
-                <textarea id="targetUrls" rows="6" placeholder="https://x.com/username/status/1891234567890&#10;https://x.com/tech_indo/status/1899876543210"></textarea>
+              <div class="field-block mt-3">
+                <label class="field-label" for="targetUrls">TARGET URLs (ONE PER LINE)</label>
+                <textarea class="field-textarea font-mono" id="targetUrls" rows="5" placeholder="https://x.com/username/status/1891234567890&#10;https://x.com/tech/status/1899876543210"></textarea>
               </div>
 
-              <div class="section-divider"><span>PILIH AKSI OTOMASI</span></div>
+              <div class="module-divider"><span>INTERACTION VECTORS</span></div>
 
-              <div class="action-toggles-grid">
-                <label class="toggle-card">
+              <div class="vector-selector-grid">
+                <label class="vector-card">
                   <input type="checkbox" id="checkLike" checked>
-                  <div class="toggle-content">
-                    <span class="toggle-icon">❤️</span>
-                    <span class="toggle-title">Auto Like</span>
+                  <div class="vector-content">
+                    <span class="vector-symbol">♥</span>
+                    <span class="vector-title">Auto-Like</span>
+                    <span class="vector-sub">Verify & favorite</span>
                   </div>
                 </label>
 
-                <label class="toggle-card">
+                <label class="vector-card">
                   <input type="checkbox" id="checkRetweet" checked>
-                  <div class="toggle-content">
-                    <span class="toggle-icon">🔁</span>
-                    <span class="toggle-title">Auto Retweet</span>
+                  <div class="vector-content">
+                    <span class="vector-symbol">⟳</span>
+                    <span class="vector-title">Auto-Repost</span>
+                    <span class="vector-sub">Confirm retweet</span>
                   </div>
                 </label>
 
-                <label class="toggle-card">
+                <label class="vector-card">
                   <input type="checkbox" id="checkComment" checked>
-                  <div class="toggle-content">
-                    <span class="toggle-icon">💬</span>
-                    <span class="toggle-title">Auto Comment</span>
+                  <div class="vector-content">
+                    <span class="vector-symbol">💬</span>
+                    <span class="vector-title">Auto-Reply</span>
+                    <span class="vector-sub">Spintax payload</span>
                   </div>
                 </label>
               </div>
 
-              <div class="form-group mt-3" id="commentSourceGroup">
-                <label for="customCommentInput">
-                  <strong>Override Komentar Manual (Opsional):</strong>
-                </label>
-                <textarea id="customCommentInput" rows="2" placeholder="Kosongkan untuk menggunakan file .json komentar spesifik masing-masing akun"></textarea>
+              <div class="field-block mt-3">
+                <label class="field-label" for="customCommentInput">PAYLOAD OVERRIDE (OPTIONAL)</label>
+                <textarea class="field-textarea" id="customCommentInput" rows="2" placeholder="Leave empty to use each node's assigned JSON comment file"></textarea>
               </div>
 
               <div class="control-actions mt-4">
-                <button class="btn btn-primary btn-lg w-100" id="btnStartBatch">
-                  <span id="btnBatchText">🚀 Jalankan Otomasi Multi-Akun</span>
+                <button class="btn btn-hallmark-execute w-100" id="btnStartBatch">
+                  <span id="btnBatchText">EXECUTE ENGAGEMENT SEQUENCE</span>
                 </button>
-                <button class="btn btn-danger btn-lg w-100 mt-2" id="btnStopTask" style="display: none;">
-                  🛑 Hentikan Proses Otomasi
+                <button class="btn btn-hallmark-danger w-100 mt-2" id="btnStopTask" style="display: none;">
+                  ABORT MISSION
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Live Task Status & Mini Console -->
-          <div class="card glass-card">
-            <div class="card-header">
-              <div class="card-icon-title">
-                <span class="badge-icon">⚡</span>
-                <div>
-                  <h3>Status Tugas Aktif</h3>
-                  <p>Pemantauan proses rotasi multi-akun secara real-time</p>
-                </div>
+          <!-- Real-Time Telemetry Stream -->
+          <div class="hallmark-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-tag">REALTIME TELEMETRY</span>
+                <h2>Mission Status & Stream</h2>
               </div>
-              <span class="status-pill status-idle" id="taskStatusBadge">Siap</span>
+              <span class="status-indicator-badge status-idle" id="taskStatusBadge">STANDBY</span>
             </div>
-            <div class="card-body">
-              <div class="progress-container">
-                <div class="progress-labels">
-                  <span id="progressLabel">Menunggu perintah...</span>
-                  <span id="progressPercent">0%</span>
+
+            <div class="panel-body">
+              <div class="mission-progress-bar">
+                <div class="progress-meta">
+                  <span class="mono-label" id="progressLabel">Awaiting trigger...</span>
+                  <span class="mono-pct" id="progressPercent">0%</span>
                 </div>
-                <div class="progress-bar-bg">
-                  <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                <div class="track-bg">
+                  <div class="track-fill" id="progressBarFill" style="width: 0%;"></div>
                 </div>
               </div>
 
-              <div class="terminal-container mt-4">
-                <div class="terminal-header">
-                  <div class="terminal-dots">
-                    <span></span><span></span><span></span>
-                  </div>
-                  <span class="terminal-title">LIVE MULTI-ACCOUNT LOG STREAM</span>
-                  <button class="btn-clear-term" id="btnClearTerminal">Hapus</button>
+              <!-- Terminal Deck -->
+              <div class="terminal-deck mt-3">
+                <div class="deck-topbar">
+                  <div class="terminal-title">LIVE EXECUTION CONSOLE</div>
+                  <button class="btn-term-clear" id="btnClearTerminal">CLEAR</button>
                 </div>
-                <div class="terminal-body" id="liveTerminalOutput">
-                  <div class="term-line info">[SYS] Menghubungkan ke live log stream...</div>
+                <div class="terminal-screen" id="liveTerminalOutput">
+                  <div class="term-line info">[SYS] Telemetry stream initialized. Awaiting pipeline events...</div>
                 </div>
               </div>
             </div>
@@ -237,73 +250,72 @@
         </div>
       </section>
 
-      <!-- TAB 3: AUTO HUNTER (KEYWORD / HASHTAG) -->
+      <!-- TAB 3: AUTO HUNTER -->
       <section class="tab-content" id="tab-hunter">
-        <div class="card glass-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="badge-icon">🔍</span>
-              <div>
-                <h3>Auto Hunter: Search & Engage Berdasarkan Keyword</h3>
-                <p>Cari postingan terbaru di X dan lakukan rotasi interaksi dengan multi-akun.</p>
-              </div>
+        <div class="hallmark-panel">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <span class="panel-tag">INTELLIGENCE MODULE</span>
+              <h2>Feed Hunter: Keyword & Topic Surveillance</h2>
             </div>
           </div>
 
-          <div class="card-body">
-            <div class="grid-2-col">
-              <div class="form-group">
-                <label for="hunterAccountSelector"><strong>Pilih Akun:</strong></label>
-                <select id="hunterAccountSelector">
-                  <option value="all">✨ Semua Akun Aktif (Multi-Account Rotation)</option>
+          <div class="panel-body">
+            <div class="cockpit-grid-2">
+              <div class="field-block">
+                <label class="field-label" for="hunterAccountSelector">EXECUTING NODE CLUSTER</label>
+                <select class="field-select" id="hunterAccountSelector">
+                  <option value="all">⚡ All Active Nodes (Sequential Rotation)</option>
                 </select>
               </div>
 
-              <div class="form-group">
-                <label for="hunterCount"><strong>Target Jumlah Postingan:</strong></label>
-                <select id="hunterCount">
-                  <option value="5">5 Postingan</option>
-                  <option value="10" selected>10 Postingan (Disarankan)</option>
-                  <option value="20">20 Postingan</option>
-                  <option value="35">35 Postingan</option>
+              <div class="field-block">
+                <label class="field-label" for="hunterCount">HARVEST TARGET QUOTA</label>
+                <select class="field-select" id="hunterCount">
+                  <option value="5">5 Postings (Fast Probe)</option>
+                  <option value="10" selected>10 Postings (Optimal)</option>
+                  <option value="20">20 Postings (High Engagement)</option>
+                  <option value="35">35 Postings (Deep Scan)</option>
                 </select>
               </div>
             </div>
 
-            <div class="form-group mt-2">
-              <label for="hunterKeyword"><strong>Kata Kunci atau Hashtag Pencarian:</strong> <span class="required-star">*</span></label>
-              <input type="text" id="hunterKeyword" placeholder="Misal: #TechTwitter, AI Indonesia, Crypto, dll">
+            <div class="field-block mt-3">
+              <label class="field-label" for="hunterKeyword">SEARCH QUERY / TOPIC HASHTAG <span class="req-star">*</span></label>
+              <input type="text" class="field-input font-mono" id="hunterKeyword" placeholder="e.g. #TechTwitter, AI Engineering, Web3, Startup Indo">
             </div>
 
-            <div class="action-toggles-grid mt-3">
-              <label class="toggle-card">
+            <div class="module-divider mt-4"><span>INTERACTION VECTORS</span></div>
+
+            <div class="vector-selector-grid">
+              <label class="vector-card">
                 <input type="checkbox" id="hunterCheckLike" checked>
-                <div class="toggle-content">
-                  <span class="toggle-icon">❤️</span>
-                  <span class="toggle-title">Auto Like</span>
+                <div class="vector-content">
+                  <span class="vector-symbol">♥</span>
+                  <span class="vector-title">Auto-Like</span>
                 </div>
               </label>
 
-              <label class="toggle-card">
+              <label class="vector-card">
                 <input type="checkbox" id="hunterCheckRetweet" checked>
-                <div class="toggle-content">
-                  <span class="toggle-icon">🔁</span>
-                  <span class="toggle-title">Auto Retweet</span>
+                <div class="vector-content">
+                  <span class="vector-symbol">⟳</span>
+                  <span class="vector-title">Auto-Repost</span>
                 </div>
               </label>
 
-              <label class="toggle-card">
+              <label class="vector-card">
                 <input type="checkbox" id="hunterCheckComment" checked>
-                <div class="toggle-content">
-                  <span class="toggle-icon">💬</span>
-                  <span class="toggle-title">Auto Comment</span>
+                <div class="vector-content">
+                  <span class="vector-symbol">💬</span>
+                  <span class="vector-title">Auto-Reply</span>
                 </div>
               </label>
             </div>
 
             <div class="control-actions mt-4">
-              <button class="btn btn-primary btn-lg" id="btnStartHunter">
-                <span>🔍 Jalankan Multi-Akun Auto Hunter</span>
+              <button class="btn btn-hallmark-execute" id="btnStartHunter">
+                LAUNCH FEED HUNTER MISSION
               </button>
             </div>
           </div>
@@ -312,153 +324,142 @@
 
       <!-- TAB 4: SPINTAX & TEMPLATES -->
       <section class="tab-content" id="tab-spintax">
-        <div class="grid-2-col">
-          <!-- Template List -->
-          <div class="card glass-card">
-            <div class="card-header">
-              <div class="card-icon-title">
-                <span class="badge-icon">📝</span>
-                <div>
-                  <h3>Template Komentar Default / Global</h3>
-                  <p>Digunakan sebagai fallback jika akun belum memiliki file JSON khusus</p>
-                </div>
+        <div class="cockpit-grid-2">
+          <!-- Template Bank -->
+          <div class="hallmark-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-tag">GLOBAL FALLBACK</span>
+                <h2>Standard Spintax Templates</h2>
               </div>
-              <button class="btn btn-secondary btn-sm" id="btnAddNewTemplate">+ Tambah</button>
+              <button class="btn btn-hallmark-secondary btn-sm" id="btnAddNewTemplate">+ Add Row</button>
             </div>
 
-            <div class="card-body">
-              <div id="templateListContainer" class="template-list"></div>
-              <button class="btn btn-primary mt-3 w-100" id="btnSaveTemplates">💾 Simpan Template Global</button>
+            <div class="panel-body">
+              <div id="templateListContainer" class="spintax-stack"></div>
+              <button class="btn btn-hallmark-primary mt-3 w-100" id="btnSaveTemplates">Save Global Templates</button>
             </div>
           </div>
 
-          <!-- Spintax Tester & AI Config -->
-          <div class="card glass-card">
-            <div class="card-header">
-              <div class="card-icon-title">
-                <span class="badge-icon">🧪</span>
-                <div>
-                  <h3>Penguji Spintax</h3>
-                  <p>Uji variasi teks secara instan</p>
-                </div>
+          <!-- Spintax Tester -->
+          <div class="hallmark-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-tag">SYNTAX VALIDATOR</span>
+                <h2>Spintax Permutation Tester</h2>
               </div>
             </div>
 
-            <div class="card-body">
-              <div class="form-group">
-                <label><strong>Ketik Format Spintax:</strong></label>
-                <textarea id="spintaxTesterInput" rows="3">{Halo|Hai|Permisi} {kak|bang}, {postingan ini sangat {menarik|berguna}|insight yang sangat bagus}! 🔥</textarea>
+            <div class="panel-body">
+              <div class="field-block">
+                <label class="field-label">SPINTAX EXPRESSION</label>
+                <textarea class="field-textarea" id="spintaxTesterInput" rows="3">{Halo|Hai|Permisi} {kak|bang}, {postingan ini sangat {menarik|berguna}|insight yang sangat bagus}! 🔥</textarea>
               </div>
 
-              <button class="btn btn-secondary btn-sm" id="btnRunSpintaxTest">⚡ Generate 5 Variasi Acak</button>
+              <button class="btn btn-hallmark-secondary mt-2 btn-sm" id="btnRunSpintaxTest">⚡ Generate 5 Random Permutations</button>
 
-              <div class="spintax-results mt-3" id="spintaxResultsContainer" style="display: none;">
-                <h5>Hasil Acak yang Dihasilkan:</h5>
-                <ul id="spintaxVariationList"></ul>
+              <div class="tester-output-box mt-3" id="spintaxResultsContainer" style="display: none;">
+                <div class="output-header">GENERATED SAMPLES:</div>
+                <ul class="sample-list" id="spintaxVariationList"></ul>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- TAB 5: ANTI-BAN & SAFETY SETTINGS -->
+      <!-- TAB 5: ANTI-BAN PROTOCOL -->
       <section class="tab-content" id="tab-safety">
-        <div class="card glass-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="badge-icon">🛡️</span>
-              <div>
-                <h3>Konfigurasi Proteksi Anti-Ban & Multi-Akun Delay</h3>
-                <p>Pengaturan waktu tunggu rotasi antar akun dan jeda aksi.</p>
-              </div>
+        <div class="hallmark-panel">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <span class="panel-tag">DEFENSE ENGINE</span>
+              <h2>Anti-Detection & Rate Throttling</h2>
             </div>
           </div>
 
-          <div class="card-body">
-            <div class="grid-2-col">
-              <div class="form-group">
-                <label for="minDelaySec"><strong>Jeda Minimum Antar Postingan (Detik)</strong></label>
-                <input type="number" id="minDelaySec" min="5" max="300" value="15">
+          <div class="panel-body">
+            <div class="cockpit-grid-2">
+              <div class="field-block">
+                <label class="field-label" for="minDelaySec">MINIMUM INTER-POST DELAY (SECONDS)</label>
+                <input type="number" class="field-input" id="minDelaySec" min="5" max="300" value="15">
+                <span class="field-caption">Recommended: 15–20s for natural human pace.</span>
               </div>
 
-              <div class="form-group">
-                <label for="maxDelaySec"><strong>Jeda Maksimum Antar Postingan (Detik)</strong></label>
-                <input type="number" id="maxDelaySec" min="10" max="600" value="35">
+              <div class="field-block">
+                <label class="field-label" for="maxDelaySec">MAXIMUM INTER-POST DELAY (SECONDS)</label>
+                <input type="number" class="field-input" id="maxDelaySec" min="10" max="600" value="35">
+                <span class="field-caption">Upper bound of random jitter interval.</span>
               </div>
 
-              <div class="form-group">
-                <label for="accountSwitchDelaySec">
-                  <strong>Jeda Rotasi Antar Akun (Detik)</strong>
-                  <span class="field-hint">(Waktu tunggu sebelum berganti ke akun berikutnya)</span>
-                </label>
-                <input type="number" id="accountSwitchDelaySec" min="3" max="120" value="10">
+              <div class="field-block">
+                <label class="field-label" for="accountSwitchDelaySec">INTER-NODE ROTATION COOLDOWN (SECONDS)</label>
+                <input type="number" class="field-input" id="accountSwitchDelaySec" min="3" max="120" value="10">
+                <span class="field-caption">Pause before switching to the next node tunnel.</span>
               </div>
 
-              <div class="form-group">
-                <label for="dailyLimit"><strong>Batas Aksi per Akun per Hari</strong></label>
-                <input type="number" id="dailyLimit" min="10" max="500" value="150">
+              <div class="field-block">
+                <label class="field-label" for="dailyLimit">MAXIMUM ACTIONS PER NODE / DAY</label>
+                <input type="number" class="field-input" id="dailyLimit" min="10" max="500" value="150">
+                <span class="field-caption">Hard cap to prevent platform throttling.</span>
               </div>
             </div>
 
-            <div class="section-divider"><span>PERILAKU BROWSER</span></div>
+            <div class="module-divider mt-4"><span>BROWSER EMULATION FLAGS</span></div>
 
-            <div class="grid-2-col">
-              <label class="toggle-card">
+            <div class="cockpit-grid-2">
+              <label class="vector-card">
                 <input type="checkbox" id="checkHeadless">
-                <div class="toggle-content">
-                  <span class="toggle-icon">👻</span>
-                  <span class="toggle-title">Headless Mode (Latar Belakang)</span>
-                  <span class="toggle-sub">Jalankan browser tanpa menampilkan jendela</span>
+                <div class="vector-content">
+                  <span class="vector-symbol">👁</span>
+                  <span class="vector-title">Headless Mode</span>
+                  <span class="vector-sub">Run without displaying browser window</span>
                 </div>
               </label>
 
-              <label class="toggle-card">
+              <label class="vector-card">
                 <input type="checkbox" id="checkScrollAction" checked>
-                <div class="toggle-content">
-                  <span class="toggle-icon">📜</span>
-                  <span class="toggle-title">Human-like Scrolling</span>
-                  <span class="toggle-sub">Scroll halaman secara natural sebelum like/komentar</span>
+                <div class="vector-content">
+                  <span class="vector-symbol">📜</span>
+                  <span class="vector-title">Natural Scroll Physics</span>
+                  <span class="vector-sub">Simulate viewport scroll before engagement</span>
                 </div>
               </label>
             </div>
 
             <div class="control-actions mt-4">
-              <button class="btn btn-primary" id="btnSaveSafetySettings">💾 Simpan Pengaturan Keamanan</button>
+              <button class="btn btn-hallmark-primary" id="btnSaveSafetySettings">Save Defense Settings</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- TAB 6: HISTORY & LOGS -->
+      <!-- TAB 6: AUDIT LOGS -->
       <section class="tab-content" id="tab-history">
-        <div class="card glass-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="badge-icon">📊</span>
-              <div>
-                <h3>Riwayat Interaksi Postingan</h3>
-                <p>Histori aksi like, retweet, dan komentar per akun.</p>
-              </div>
+        <div class="hallmark-panel">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <span class="panel-tag">AUDIT TRAIL</span>
+              <h2>Interaction Audit Ledger</h2>
             </div>
-            <button class="btn btn-secondary btn-sm" id="btnRefreshHistory">🔄 Segarkan</button>
+            <button class="btn btn-hallmark-secondary btn-sm" id="btnRefreshHistory">⟳ Refresh Ledger</button>
           </div>
 
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="data-table">
+          <div class="panel-body">
+            <div class="ledger-container">
+              <table class="ledger-table font-mono">
                 <thead>
                   <tr>
-                    <th>Waktu</th>
-                    <th>Akun X</th>
-                    <th>Aksi</th>
-                    <th>URL Postingan</th>
-                    <th>Status</th>
-                    <th>Keterangan / Balasan</th>
+                    <th>TIMESTAMP</th>
+                    <th>NODE ID</th>
+                    <th>VECTOR</th>
+                    <th>TARGET POST</th>
+                    <th>STATUS</th>
+                    <th>PAYLOAD / REMARKS</th>
                   </tr>
                 </thead>
                 <tbody id="historyTableBody">
                   <tr>
-                    <td colspan="6" class="text-center">Belum ada riwayat aktivitas.</td>
+                    <td colspan="6" class="text-center py-4">No audit events recorded yet.</td>
                   </tr>
                 </tbody>
               </table>
@@ -469,82 +470,84 @@
     </main>
   </div>
 
-  <!-- MODAL: ADD / EDIT ACCOUNT -->
-  <div class="modal-overlay" id="accountModal" style="display: none;">
-    <div class="modal-card">
+  <!-- MODAL: ADD / EDIT NODE -->
+  <div class="modal-backdrop" id="accountModal" style="display: none;">
+    <div class="modal-panel">
       <div class="modal-header">
-        <h3 id="modalAccountTitle">Tambah Akun X Baru</h3>
-        <button class="btn-close-modal" id="btnCloseAccountModal">&times;</button>
+        <div class="modal-tag">NODE CONFIGURATION</div>
+        <h3 id="modalAccountTitle">Register New X Node</h3>
+        <button class="btn-modal-close" id="btnCloseAccountModal">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="editAccountId">
 
-        <div class="form-group">
-          <label for="accInputLabel"><strong>Label / Nama Akun:</strong> <span class="required-star">*</span></label>
-          <input type="text" id="accInputLabel" placeholder="Misal: Akun Buzzer 1, Akun Pribadi, dll">
+        <div class="field-block">
+          <label class="field-label" for="accInputLabel">NODE LABEL / IDENTIFIER <span class="req-star">*</span></label>
+          <input type="text" class="field-input" id="accInputLabel" placeholder="e.g. Node-Alpha (Main), Node-Beta (Buzzer)">
         </div>
 
-        <div class="form-group">
-          <label for="accInputAuthToken"><strong>auth_token:</strong> <span class="required-star">*</span></label>
-          <div class="input-with-action">
-            <input type="password" id="accInputAuthToken" placeholder="Cookie auth_token dari X...">
-            <button class="btn-toggle-eye" type="button" data-target="accInputAuthToken">👁️</button>
+        <div class="field-block mt-3">
+          <label class="field-label" for="accInputAuthToken">AUTH_TOKEN COOKIE <span class="req-star">*</span></label>
+          <div class="input-action-group">
+            <input type="password" class="field-input font-mono" id="accInputAuthToken" placeholder="Cookie auth_token from X session...">
+            <button class="btn-peek" type="button" data-target="accInputAuthToken">👁</button>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="accInputCt0"><strong>ct0:</strong></label>
-          <div class="input-with-action">
-            <input type="password" id="accInputCt0" placeholder="Cookie ct0 dari X...">
-            <button class="btn-toggle-eye" type="button" data-target="accInputCt0">👁️</button>
+        <div class="field-block mt-3">
+          <label class="field-label" for="accInputCt0">CT0 CSRF COOKIE</label>
+          <div class="input-action-group">
+            <input type="password" class="field-input font-mono" id="accInputCt0" placeholder="Cookie ct0 from X session...">
+            <button class="btn-peek" type="button" data-target="accInputCt0">👁</button>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="accInputProxy">
-            <strong>Proxy (Opsional):</strong>
-            <span class="field-hint">Format: <code>http://user:pass@ip:port</code> atau <code>ip:port:user:pass</code></span>
+        <div class="field-block mt-3">
+          <label class="field-label" for="accInputProxy">
+            DEDICATED PROXY TUNNEL
+            <span class="field-caption">(Format: <code>http://user:pass@host:port</code> or <code>host:port:user:pass</code>)</span>
           </label>
-          <input type="text" id="accInputProxy" placeholder="Contoh: http://proxyuser:pass@123.45.67.89:8080">
+          <input type="text" class="field-input font-mono" id="accInputProxy" placeholder="e.g. http://proxyuser:pass@142.250.190.46:8080">
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="btnCancelAccountModal">Batal</button>
-        <button class="btn btn-primary" id="btnSaveAccountModal">💾 Simpan Akun</button>
+        <button class="btn btn-hallmark-secondary" id="btnCancelAccountModal">Cancel</button>
+        <button class="btn btn-hallmark-primary" id="btnSaveAccountModal">Save Node</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: ACCOUNT COMMENTS JSON EDITOR & UPLOADER -->
-  <div class="modal-overlay" id="commentsModal" style="display: none;">
-    <div class="modal-card modal-lg">
+  <div class="modal-backdrop" id="commentsModal" style="display: none;">
+    <div class="modal-panel modal-wide">
       <div class="modal-header">
         <div>
-          <h3 id="commentsModalTitle">Bank Komentar JSON untuk Akun</h3>
-          <p id="commentsModalSubtitle" class="modal-sub">File: <code>data/comments/...</code></p>
+          <div class="modal-tag">PAYLOAD SPECIFICATION</div>
+          <h3 id="commentsModalTitle">JSON Payload Bank for Node</h3>
+          <p id="commentsModalSubtitle" class="font-mono text-muted">File: <code>data/comments/...</code></p>
         </div>
-        <button class="btn-close-modal" id="btnCloseCommentsModal">&times;</button>
+        <button class="btn-modal-close" id="btnCloseCommentsModal">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="commentsModalAccountId">
 
-        <div class="upload-json-zone">
-          <label class="btn btn-secondary btn-sm">
-            📁 Unggah File .json
+        <div class="upload-dropzone">
+          <label class="btn btn-hallmark-secondary btn-sm">
+            📁 Import .json Payload
             <input type="file" id="inputFileUploadComments" accept=".json" style="display: none;">
           </label>
-          <span class="upload-hint">Pilih file .json dari komputer Anda (Format: array string <code>["komentar 1", "komentar 2"]</code>)</span>
+          <span class="dropzone-text">Upload custom array JSON: <code>["Comment template 1", "{Option A|Option B}"]</code></span>
         </div>
 
-        <div class="form-group mt-3">
-          <label><strong>Daftar Template Komentar Akun Ini (Mendukung Spintax):</strong></label>
-          <div id="accountCommentsList" class="template-list" style="max-height: 250px;"></div>
-          <button class="btn btn-secondary btn-sm mt-2" id="btnAddAccountCommentRow">+ Tambah Komentar</button>
+        <div class="field-block mt-3">
+          <label class="field-label">NODE-SPECIFIC COMMENT TEMPLATES (SPINTAX ENABLED)</label>
+          <div id="accountCommentsList" class="spintax-stack" style="max-height: 260px;"></div>
+          <button class="btn btn-hallmark-secondary btn-sm mt-2" id="btnAddAccountCommentRow">+ Add Template Entry</button>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="btnCancelCommentsModal">Batal</button>
-        <button class="btn btn-primary" id="btnSaveAccountCommentsModal">💾 Simpan File Komentar JSON</button>
+        <button class="btn btn-hallmark-secondary" id="btnCancelCommentsModal">Cancel</button>
+        <button class="btn btn-hallmark-primary" id="btnSaveAccountCommentsModal">Save JSON Payload</button>
       </div>
     </div>
   </div>

@@ -1,18 +1,19 @@
-// X-AutoEngage PRO - Multi-Account & Proxy Automation Frontend Logic
+// X-AutoEngage — Hallmark Precision Cockpit Logic
 
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
-  const navItems = document.querySelectorAll('.nav-item');
+  const deckTabs = document.querySelectorAll('.deck-tab');
   const tabContents = document.querySelectorAll('.tab-content');
   const pageTitle = document.getElementById('pageTitle');
   const pageSubtitle = document.getElementById('pageSubtitle');
 
-  // Stats Elements
+  // Telemetry Elements
   const statLikes = document.getElementById('statLikes');
   const statRetweets = document.getElementById('statRetweets');
   const statComments = document.getElementById('statComments');
   const sidebarTotalAccounts = document.getElementById('sidebarTotalAccounts');
   const sidebarActiveAccounts = document.getElementById('sidebarActiveAccounts');
+  const sidebarRateMetric = document.getElementById('sidebarRateMetric');
 
   // Accounts Management Elements
   const accountsGridContainer = document.getElementById('accountsGridContainer');
@@ -98,19 +99,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Tab Titles Map
   const tabTitles = {
-    'tab-accounts': { title: 'Manajemen Multi-Akun & Proxy', subtitle: 'Kelola akun X dengan proxy individual dan bank komentar JSON kustom' },
-    'tab-batch': { title: 'Target Postingan Tunggal & Batch', subtitle: 'Jalankan rotasi multi-akun untuk Like, Retweet, dan Komentar' },
-    'tab-hunter': { title: 'Auto Hunter (Keyword / Hashtag)', subtitle: 'Cari topik & hashtag di X lalu auto-engage secara cerdas' },
-    'tab-spintax': { title: 'Template Komentar Global', subtitle: 'Kelola variasi teks komentar default dan pengujian Spintax' },
-    'tab-safety': { title: 'Pengaturan Anti-Ban & Keamanan', subtitle: 'Atur jeda waktu alami dan batas kuota aksi akun' },
-    'tab-history': { title: 'Riwayat & Log Aktivitas', subtitle: 'Pantau histori tweet yang telah berhasil diinteraksikan per akun' }
+    'tab-accounts': { title: 'Multi-Node & Proxy Management', subtitle: 'Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.' },
+    'tab-batch': { title: 'Target Engagement Workbench', subtitle: 'Execute multi-node sequential engagement for Like, Repost, and Custom Reply vectors.' },
+    'tab-hunter': { title: 'Feed Hunter Intelligence', subtitle: 'Autonomous keyword scanning and multi-node engagement sequence.' },
+    'tab-spintax': { title: 'Payload Bank & Spintax Generator', subtitle: 'Configure global fallback payloads and test spintax permutations.' },
+    'tab-safety': { title: 'Anti-Detection & Defense Protocol', subtitle: 'Configure rate limits, natural delay intervals, and browser emulation flags.' },
+    'tab-history': { title: 'Interaction Audit Ledger', subtitle: 'Full immutable record of all processed interactions per node.' }
   };
 
   // 1. Tab Navigation
-  navItems.forEach(item => {
+  deckTabs.forEach(item => {
     item.addEventListener('click', () => {
       const tabId = item.getAttribute('data-tab');
-      navItems.forEach(n => n.classList.remove('active'));
+      deckTabs.forEach(n => n.classList.remove('active'));
       tabContents.forEach(t => t.classList.remove('active'));
 
       item.classList.add('active');
@@ -127,8 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Password visibility toggle
-  document.querySelectorAll('.btn-toggle-eye').forEach(btn => {
+  // Password Peek
+  document.querySelectorAll('.btn-peek').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-target');
       const input = document.getElementById(targetId);
@@ -138,10 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Target URLs counter
+  // URL Target Counter
   targetUrls.addEventListener('input', () => {
     const urls = targetUrls.value.split('\n').map(u => u.trim()).filter(Boolean);
-    urlCounter.innerText = `${urls.length} Postingan`;
+    urlCounter.innerText = `${urls.length} TARGETS`;
   });
 
   // 2. Terminal Live Logging (SSE)
@@ -168,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     liveTerminalOutput.innerHTML = '';
   });
 
-  // 3. Accounts Management & Rendering
+  // 3. Accounts Management
   async function loadAccounts() {
     try {
       const res = await fetch('/api/accounts');
@@ -189,15 +190,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const active = accounts.filter(a => a.enabled !== false).length;
     sidebarTotalAccounts.innerText = total;
     sidebarActiveAccounts.innerText = active;
+    if (sidebarRateMetric) {
+      sidebarRateMetric.innerText = active > 0 ? `${active}x TUNNEL` : 'IDLE';
+    }
   }
 
   function updateAccountDropdowns(accounts) {
     const activeAccounts = accounts.filter(a => a.enabled !== false);
 
     const generateOptions = () => {
-      let html = `<option value="all">✨ Semua Akun Aktif (${activeAccounts.length} Akun - Rotasi Otomatis)</option>`;
+      let html = `<option value="all">⚡ All Active Nodes (${activeAccounts.length} Nodes - Sequential Rotation)</option>`;
       accounts.forEach(acc => {
-        const statusEmoji = acc.enabled === false ? '⏸️' : (acc.isValid ? '✅' : '⚠️');
+        const statusEmoji = acc.enabled === false ? '⏸' : (acc.isValid ? '●' : '○');
         html += `<option value="${acc.id}">${statusEmoji} ${acc.label} (@${acc.username || 'user'})</option>`;
       });
       return html;
@@ -212,10 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (accounts.length === 0) {
       accountsGridContainer.innerHTML = `
-        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-          <h4>Belum ada akun X yang ditambahkan</h4>
-          <p style="color: var(--text-muted); margin: 8px 0 16px;">Tambahkan akun X pertama Anda beserta cookie auth_token, ct0, dan proxy.</p>
-          <button class="btn btn-primary" onclick="document.getElementById('btnOpenAddAccountModal').click()">✨ Tambah Akun Sekarang</button>
+        <div class="node-item-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+          <h4 style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--text-pure);">No Registered Nodes Found</h4>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin: 8px 0 16px;">Register your primary X account cookie and proxy tunnel to initialize node cluster.</p>
+          <button class="btn btn-hallmark-primary" onclick="document.getElementById('btnOpenAddAccountModal').click()">+ Register First Node</button>
         </div>
       `;
       return;
@@ -223,55 +227,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     accounts.forEach(acc => {
       const card = document.createElement('div');
-      card.className = `account-item-card ${acc.enabled === false ? 'disabled' : ''}`;
+      card.className = `node-item-card ${acc.enabled === false ? 'disabled' : ''}`;
       
       const avatarSrc = acc.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
       const proxyBadge = acc.proxy
-        ? `<span class="badge-tag badge-proxy" title="${acc.proxy}">🌐 Proxy: ${acc.proxy.replace(/http:\/\/[^@]*@/, '')}</span>`
-        : `<span class="badge-tag" style="background: rgba(255,255,255,0.05); color: var(--text-muted);">🌐 Tanpa Proxy</span>`;
+        ? `<span class="node-badge badge-proxy-tag" title="${acc.proxy}">TUNNEL: ${acc.proxy.replace(/http:\/\/[^@]*@/, '')}</span>`
+        : `<span class="node-badge" style="background: rgba(255,255,255,0.03); color: var(--text-dim);">DIRECT IP</span>`;
       
       const statusBadge = acc.isValid
-        ? `<span class="badge-tag badge-status-valid">✅ Aktif & Valid</span>`
-        : `<span class="badge-tag badge-status-unverified">⚠️ Belum Terverifikasi</span>`;
+        ? `<span class="node-badge badge-valid-tag">● VALID SESSION</span>`
+        : `<span class="node-badge badge-unverified-tag">○ UNVERIFIED</span>`;
 
       const commentsCount = acc.commentsCount !== undefined ? acc.commentsCount : 3;
 
       card.innerHTML = `
-        <div class="acc-card-top">
-          <div class="acc-user-meta">
-            <img src="${avatarSrc}" alt="Avatar" class="acc-avatar">
-            <div class="acc-title-group">
-              <h4>${acc.label || 'Akun X'}</h4>
-              <div class="acc-handle">@${acc.username || 'unknown'}</div>
+        <div class="card-node-head">
+          <div class="node-identity">
+            <img src="${avatarSrc}" alt="Avatar" class="node-avatar">
+            <div class="node-title-group">
+              <h4>${acc.label || 'Node'}</h4>
+              <div class="node-handle">@${acc.username || 'unauthenticated'}</div>
             </div>
           </div>
-          <button class="btn btn-sm ${acc.enabled !== false ? 'btn-secondary' : 'btn-outline'}" data-action="toggle" data-id="${acc.id}" title="Toggle Aktif/Nonaktif">
-            ${acc.enabled !== false ? '🟢 Aktif' : '⏸️ Nonaktif'}
+          <button class="btn btn-sm ${acc.enabled !== false ? 'btn-hallmark-secondary' : 'btn-outline'}" data-action="toggle" data-id="${acc.id}">
+            ${acc.enabled !== false ? 'ONLINE' : 'PAUSED'}
           </button>
         </div>
 
-        <div class="acc-badges">
+        <div class="node-tags-row">
           ${statusBadge}
           ${proxyBadge}
-          <span class="badge-tag badge-comments-count" data-action="comments" data-id="${acc.id}" title="Klik untuk edit/upload JSON komentar">
-            💬 ${commentsCount} Komentar JSON ✏️
+          <span class="node-badge badge-payload-tag" data-action="comments" data-id="${acc.id}">
+            💬 ${commentsCount} PAYLOAD ENTRIES
           </span>
         </div>
 
-        <div class="acc-card-actions">
-          <button class="btn btn-secondary btn-sm" data-action="verify" data-id="${acc.id}" title="Cek status login & proxy">
-            ⚡ Verifikasi
+        <div class="card-node-actions">
+          <button class="btn btn-hallmark-secondary btn-sm" data-action="verify" data-id="${acc.id}">
+            ⚡ Test Probe
           </button>
           <button class="btn btn-outline btn-sm" data-action="edit" data-id="${acc.id}">
-            ✏️ Edit
+            Config
           </button>
-          <button class="btn btn-danger-outline btn-sm" data-action="delete" data-id="${acc.id}" title="Hapus Akun">
-            🗑️
+          <button class="btn btn-outline btn-sm" data-action="delete" data-id="${acc.id}" title="Remove Node" style="color: var(--accent-crimson);">
+            ✕
           </button>
         </div>
       `;
 
-      // Attach Card Actions
       card.querySelector('[data-action="toggle"]').addEventListener('click', () => toggleAccount(acc.id));
       card.querySelector('[data-action="verify"]').addEventListener('click', () => verifyAccount(acc.id));
       card.querySelector('[data-action="edit"]').addEventListener('click', () => openEditAccountModal(acc));
@@ -282,11 +285,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Account Modal Actions
+  // Account Modal
   btnOpenAddAccountModal.addEventListener('click', () => {
     editAccountId.value = '';
-    modalAccountTitle.innerText = 'Tambah Akun X Baru';
-    accInputLabel.value = `Akun ${accountsList.length + 1}`;
+    modalAccountTitle.innerText = 'Register New X Node';
+    accInputLabel.value = `Node-${accountsList.length + 1}`;
     accInputAuthToken.value = '';
     accInputCt0.value = '';
     accInputProxy.value = '';
@@ -318,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const proxy = accInputProxy.value.trim();
 
     if (!auth_token) {
-      alert('Cookie auth_token wajib diisi.');
+      alert('auth_token cookie is required.');
       return;
     }
 
@@ -337,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeAccountModal();
         loadAccounts();
       } else {
-        alert(data.message || 'Gagal menyimpan akun.');
+        alert(data.message || 'Failed to save account.');
       }
     } catch (e) {
       alert(`Error: ${e.message}`);
@@ -352,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function deleteAccount(id) {
-    if (!confirm('Apakah Anda yakin ingin menghapus akun ini?')) return;
+    if (!confirm('Are you sure you want to remove this node?')) return;
     try {
       await fetch(`/api/accounts/${id}`, { method: 'DELETE' });
       loadAccounts();
@@ -361,25 +364,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function verifyAccount(id) {
     const btn = document.querySelector(`[data-action="verify"][data-id="${id}"]`);
-    if (btn) btn.innerText = '⏳ Memeriksa...';
+    if (btn) btn.innerText = 'PROBING...';
     try {
       const res = await fetch(`/api/accounts/${id}/verify`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        alert(`🎉 Akun @${data.account.username} (${data.account.name}) berhasil diverifikasi!`);
+        alert(`Node verified: @${data.account.username} (${data.account.name})`);
       } else {
-        alert(`❌ Verifikasi gagal: ${data.message}`);
+        alert(`Verification failed: ${data.message}`);
       }
       loadAccounts();
     } catch (e) {
-      alert(`Error verifikasi: ${e.message}`);
+      alert(`Error: ${e.message}`);
     }
   }
 
   // 4. Comments JSON Modal & Uploader
   async function openCommentsModal(acc) {
     commentsModalAccountId.value = acc.id;
-    commentsModalTitle.innerText = `Bank Komentar JSON: ${acc.label} (@${acc.username || 'user'})`;
+    commentsModalTitle.innerText = `Payload Bank: ${acc.label} (@${acc.username || 'user'})`;
     commentsModalSubtitle.innerText = `File: data/comments/${acc.commentsFile || `comments_${acc.id}.json`}`;
     
     try {
@@ -404,8 +407,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const div = document.createElement('div');
     div.className = 'template-item';
     div.innerHTML = `
-      <textarea rows="2" class="acc-comment-text" placeholder="Masukkan komentar (mendukung spintax {Keren|Mantap})...">${text}</textarea>
-      <button class="btn-remove-template" title="Hapus">🗑️</button>
+      <textarea rows="2" class="field-textarea acc-comment-text font-mono" placeholder="Enter template entry (supports spintax {Option 1|Option 2})...">${text}</textarea>
+      <button class="btn-remove-template" title="Delete">✕</button>
     `;
     div.querySelector('.btn-remove-template').addEventListener('click', () => div.remove());
     accountCommentsList.appendChild(div);
@@ -420,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCloseCommentsModal.addEventListener('click', closeCommentsModal);
   btnCancelCommentsModal.addEventListener('click', closeCommentsModal);
 
-  // Upload .json File
   inputFileUploadComments.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -431,12 +433,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const parsed = JSON.parse(event.target.result);
         if (Array.isArray(parsed)) {
           renderAccountCommentsList(parsed);
-          alert(`✅ Berhasil memuat ${parsed.length} komentar dari file ${file.name}`);
+          alert(`Imported ${parsed.length} entries from ${file.name}`);
         } else {
-          alert('Format JSON harus berupa array string: ["komentar 1", "komentar 2"]');
+          alert('JSON format must be an array of strings: ["comment 1", "comment 2"]');
         }
       } catch (err) {
-        alert(`Gagal membaca file JSON: ${err.message}`);
+        alert(`Error reading JSON: ${err.message}`);
       }
     };
     reader.readAsText(file);
@@ -448,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const comments = Array.from(textareas).map(t => t.value.trim()).filter(Boolean);
 
     if (comments.length === 0) {
-      alert('Minimal harus ada 1 komentar.');
+      alert('At least 1 comment template entry is required.');
       return;
     }
 
@@ -460,20 +462,19 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (data.success) {
-        alert('💾 File JSON komentar akun berhasil disimpan!');
         closeCommentsModal();
         loadAccounts();
       }
     } catch (e) {
-      alert('Gagal menyimpan file komentar.');
+      alert('Failed to save payload bank.');
     }
   });
 
-  // 5. Batch Automation Runner (Multi-Account)
+  // 5. Batch Automation Runner
   btnStartBatch.addEventListener('click', async () => {
     const urls = targetUrls.value.split('\n').map(u => u.trim()).filter(Boolean);
     if (urls.length === 0) {
-      alert('Silakan masukkan minimal satu URL postingan tweet.');
+      alert('Please specify at least one target tweet URL.');
       return;
     }
 
@@ -484,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const commentText = customCommentInput.value.trim();
 
     if (!like && !retweet && !comment) {
-      alert('Pilih minimal satu aksi (Like, Retweet, atau Comment).');
+      alert('Select at least one interaction vector.');
       return;
     }
 
@@ -498,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.success) {
         updateRunningTaskUI(true, { total: urls.length, completed: 0 });
       } else {
-        alert(data.message || 'Gagal memulai tugas.');
+        alert(data.message || 'Failed to start mission.');
       }
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -512,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
   });
 
-  // 6. Hunter Runner (Multi-Account)
+  // 6. Hunter Runner
   btnStartHunter.addEventListener('click', async () => {
     const keyword = hunterKeyword.value.trim();
     const count = parseInt(hunterCount.value, 10) || 10;
@@ -522,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const comment = hunterCheckComment.checked;
 
     if (!keyword) {
-      alert('Silakan masukkan kata kunci atau hashtag pencarian.');
+      alert('Search query / hashtag is required.');
       return;
     }
 
@@ -538,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (batchNav) batchNav.click();
         updateRunningTaskUI(true, { targetCount: count, completed: 0 });
       } else {
-        alert(data.message || 'Gagal memulai Auto Hunter.');
+        alert(data.message || 'Failed to start Feed Hunter.');
       }
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -556,8 +557,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const item = document.createElement('div');
           item.className = 'template-item';
           item.innerHTML = `
-            <textarea rows="2" class="template-text">${tmpl}</textarea>
-            <button class="btn-remove-template" title="Hapus">🗑️</button>
+            <textarea rows="2" class="field-textarea template-text font-mono">${tmpl}</textarea>
+            <button class="btn-remove-template" title="Delete">✕</button>
           `;
           item.querySelector('.btn-remove-template').addEventListener('click', () => item.remove());
           templateListContainer.appendChild(item);
@@ -570,8 +571,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const item = document.createElement('div');
     item.className = 'template-item';
     item.innerHTML = `
-      <textarea rows="2" class="template-text" placeholder="Masukkan template spintax {pilihan 1|pilihan 2}..."></textarea>
-      <button class="btn-remove-template" title="Hapus">🗑️</button>
+      <textarea rows="2" class="field-textarea template-text font-mono" placeholder="Enter template entry {Option A|Option B}..."></textarea>
+      <button class="btn-remove-template" title="Delete">✕</button>
     `;
     item.querySelector('.btn-remove-template').addEventListener('click', () => item.remove());
     templateListContainer.prepend(item);
@@ -589,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (data.success) {
-        alert('✅ Template global berhasil disimpan.');
+        alert('Global fallback templates saved.');
       }
     } catch (e) {}
   });
@@ -651,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (data.success) {
-        alert('✅ Pengaturan keamanan berhasil disimpan!');
+        alert('Defense protocol settings saved.');
       }
     } catch (e) {}
   });
@@ -675,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderHistoryTable(items) {
     historyTableBody.innerHTML = '';
     if (items.length === 0) {
-      historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada riwayat aktivitas.</td></tr>';
+      historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No audit events recorded yet.</td></tr>';
       return;
     }
 
@@ -697,9 +698,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tr.innerHTML = `
         <td>${item.timeFormatted || item.timestamp?.slice(11, 19) || '-'}</td>
-        <td><strong>${item.accountName ? `@${item.accountName}` : 'Akun'}</strong></td>
+        <td><strong>${item.accountName ? `@${item.accountName}` : 'NODE'}</strong></td>
         <td><span class="action-badge ${actionClass}">${item.action}</span></td>
-        <td><a href="${item.tweetUrl}" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">${shortUrl}</a></td>
+        <td><a href="${item.tweetUrl}" target="_blank" style="color: var(--accent-amber); text-decoration: none;">${shortUrl}</a></td>
         <td><span class="status-badge ${statusClass}">${item.status}</span></td>
         <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.details || item.message || '-'}</td>
       `;
@@ -711,8 +712,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateRunningTaskUI(isRunning, task) {
     if (isRunning) {
-      taskStatusBadge.className = 'status-pill status-running';
-      taskStatusBadge.innerText = 'Berjalan';
+      taskStatusBadge.className = 'status-indicator-badge status-running';
+      taskStatusBadge.innerText = 'EXECUTING';
       btnStartBatch.style.display = 'none';
       btnStopTask.style.display = 'block';
       btnStartHunter.disabled = true;
@@ -721,20 +722,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const total = task.total || task.targetCount || 1;
         const current = task.completed || 0;
         const pct = Math.min(100, Math.round((current / total) * 100));
-        progressLabel.innerText = `Memproses: ${current}/${total} aksi (${task.accountsCount || 1} akun)`;
+        progressLabel.innerText = `PIPELINE: ${current}/${total} ACTIONS (${task.accountsCount || 1} NODES)`;
         progressPercent.innerText = `${pct}%`;
         progressBarFill.style.width = `${pct}%`;
       }
     } else {
-      taskStatusBadge.className = 'status-pill status-idle';
-      taskStatusBadge.innerText = 'Siap';
+      taskStatusBadge.className = 'status-indicator-badge status-idle';
+      taskStatusBadge.innerText = 'STANDBY';
       btnStartBatch.style.display = 'block';
       btnStopTask.style.display = 'none';
       btnStartHunter.disabled = false;
     }
   }
 
-  // Periodic Status Poll
+  // Periodic Telemetry Poll
   setInterval(async () => {
     try {
       const res = await fetch('/api/status');
