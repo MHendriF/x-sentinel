@@ -50,8 +50,9 @@ app.use((req, res) => {
 
 // Start Server
 app.listen(config.PORT, () => {
-  logger.success(`🚀 X Engagement Automation Tool berjalan di http://localhost:${config.PORT}`);
+  logger.success(`🚀 X-SENTINEL Cockpit Engine berjalan di http://localhost:${config.PORT}`);
   console.log(`====================================================`);
+  console.log(`🛡️  X-SENTINEL: Autonomous Multi-Node Fleet Engine`);
   console.log(`🌐 Buka Dashboard di browser: http://localhost:${config.PORT}`);
   console.log(`====================================================`);
 });

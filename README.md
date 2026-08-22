@@ -1,59 +1,87 @@
-# X-AutoEngage: Tool Otomasi Engagement X (Twitter)
-Otomasi Like, Retweet, dan Komentar Berbasis Cookie (`auth_token` & `ct0`) dengan Proteksi Anti-Ban dan Web Dashboard Modern.
+# 🛡️ X-SENTINEL: Autonomous Multi-Node Engagement & Stealth Cockpit for X
+
+> **X-SENTINEL** adalah sistem otomatisasi engagement enterprise untuk platform **X (Twitter)** berbasis **Playwright stealth engine**, **Multi-Node Account Rotation**, **Dedicated Proxy Tunneling**, **Spintax / AI Reply Payloads**, dan **Cockpit UI (React 19 + TypeScript + Tailwind CSS + shadcn/ui + Recharts)**.
 
 ---
 
-## 🌟 Fitur Utama
-- **Autentikasi Cookie Aman**: Gunakan `auth_token` dan `ct0` langsung tanpa perlu memasukkan password akun.
-- **Engagement Lengkap**:
-  - ❤️ **Auto Like**: Menyukai tweet target secara akurat.
-  - 🔁 **Auto Retweet / Repost**: Me-repost postingan target.
-  - 💬 **Smart Comment / Reply**: Mengirim balasan acak berbasis **Spintax** atau **AI Generated Reply** (Google Gemini / OpenAI).
-- **Targeting Fleksibel**:
-  - **Batch URLs**: Masukkan daftar URL postingan X (1 link per baris).
-  - **Auto Hunter**: Cari postingan terkini berdasarkan kata kunci / hashtag tertentu.
-- **Proteksi Anti-Ban & Human Behavior**:
-  - Jeda acak (*random delay*) yang dapat diatur (contoh 15-40 detik).
-  - Simulasi ketikan manusia per karakter dan scroll acak.
-  - Anti-duplikasi riwayat interaksi.
-- **Web Dashboard & Live Console**:
-  - Dashboard modern bernuansa dark mode & glassmorphism.
-  - Live log streaming via Server-Sent Events (SSE).
-  - Riwayat interaksi lengkap dan statistik harian.
+## 🌟 Fitur Utama (Core Surfaces)
+
+1. **🛡️ Multi-Node & Proxy Management**:
+   - Rotasi akun multi-node tanpa batas.
+   - Dukungan autentikasi berbasis cookie aman (`auth_token` & `ct0`) tanpa password.
+   - **Dedicated Proxy Tunneling** per node (`user:pass@ip:port`, `ip:port:user:pass`, `socks5://`).
+   - **⚡ Live Proxy Ping & GeoIP**: Uji latensi (ms), status hidup/mati, IP publik, dan ISP sebelum menjalankan tugas.
+   - **✨ Smart Cookie Extractor**: Ekstraksi instan dari string header cookie mentah maupun JSON.
+
+2. **🎯 Target Engagement Workbench**:
+   - Eksekusi serentak atau berurutan untuk daftar tweet target (*Batch URLs*).
+   - Vektor interaksi modular: **❤️ Like**, **🔁 Repost / Retweet**, dan **💬 Custom Reply**.
+
+3. **📡 Feed Hunter Intelligence**:
+   - Radar pencarian otomatis postingan terkini berdasarkan kata kunci (*keywords*) atau hashtag.
+   - Menjalankan interaksi bertingkat langsung dari hasil tangkapan radar.
+
+4. **📊 Telemetry & Growth Analytics (Recharts)**:
+   - Visualisasi tren kecepatan interaksi (*Activity Velocity Area Chart*).
+   - Distribusi beban kerja antar node akun (*Node Workload Donut Chart*).
+   - Pelacak rasio keberhasilan (*Success Rate*) dan akumulasi volume interaksi.
+
+5. **🎲 Payload Bank & Spintax Generator**:
+   - Kumpulan template komentar global dan terisolasi per akun (*JSON Payload Pool*).
+   - Generator Spintax dengan ribuan permutasi kalimat alami anti-spam.
+
+6. **🔒 Anti-Ban & Defense Protocol**:
+   - Penundaan waktu acak antar-aksi (*Natural Jeda Delay*).
+   - Emulasi pengetikan manusia per karakter (*human-like typing*) dan simulasi scroll.
+   - Pemeriksaan duplikasi riwayat interaksi (*Audit Ledger*).
 
 ---
 
-## 🚀 Cara Menjalankan
+## 🚀 Cara Menjalankan Aplikasi
 
-1. **Jalankan Aplikasi**:
-   ```bash
-   npm start
-   ```
-2. **Buka Web Dashboard**:
-   Buka browser Anda dan akses: **[http://localhost:3000](http://localhost:3000)**
+### 1. Prasyarat:
+* Node.js versi 18+ atau 20+
+* Browser Chromium (Playwright)
+
+### 2. Instalasi & Menjalankan:
+```bash
+# Clone repository
+git clone https://github.com/MHendriF/x-automation.git
+cd x-automation
+
+# Install dependencies root & client
+npm install
+cd client && npm install && npm run build && cd ..
+
+# Jalankan server
+npm start
+```
+
+Buka browser dan akses cockpit di: **`http://localhost:3000`**
 
 ---
 
-## 🔑 Cara Mengambil `auth_token` & `ct0` dari Browser
-1. Buka [https://x.com](https://x.com) di browser Anda dan pastikan sudah login.
-2. Tekan tombol `F12` atau klik kanan lalu pilih **Inspect (Periksa)**.
-3. Masuk ke tab **Application (Aplikasi)** -> pilih menu **Cookies** -> `https://x.com`.
-4. Salin nilai (Value) dari `auth_token` dan `ct0`.
-5. Tempelkan ke formulir di menu **Autentikasi Cookie** pada Dashboard Web dan klik **Verifikasi & Simpan Sesi**.
-
----
-
-## 📁 Struktur Folder
+## 📁 Arsitektur Direktori
 ```
 x-automation/
-├── data/               # Penyimpanan database lokal (settings, history, auth, templates)
-├── public/             # Frontend Dashboard (HTML, CSS, JS)
+├── client/                     # Frontend Cockpit (React 19, TypeScript, Tailwind CSS, shadcn/ui, Recharts)
+│   ├── src/components/cockpit/ # Modular Domain Cockpit Decks
+│   └── src/services/apiClient.ts # Type-safe REST & SSE Client
+├── data/                       # Local JSON Document Storage (Git Ignored)
+│   ├── accounts.json           # Cluster Akun Terdaftar
+│   ├── comments/               # Isolated Payload Files per Node
+│   ├── settings.json           # Defense & Anti-Ban Config
+│   ├── stats.json              # Cumulative System Metrics
+│   └── history.json            # Immutable Interaction Ledger
 ├── server/
-│   ├── automation/     # Engine Playwright, Cookie Manager, & Spintax
-│   ├── routes/         # REST API routes
-│   ├── config.js       # Konfigurasi sistem
-│   ├── db.js           # Database handler JSON
-│   ├── logger.js       # SSE Live logger
-│   └── index.js        # Server Express
+│   ├── automation/             # Playwright Engine, ProxyHelper, CookieManager, Spintax
+│   ├── routes/api.js           # REST API Controller
+│   ├── db.js                   # JSON Storage Handler
+│   └── index.js                # Express Application Server & SSE Stream
 └── package.json
 ```
+
+---
+
+## 📜 Lisensi & Keamanan
+Proyek ini dibuat untuk tujuan riset otomatisasi dan manajemen media sosial secara sah. Kredensial akun dan file data pribadi dilindungi secara lokal dan di-ignore oleh `.gitignore`.

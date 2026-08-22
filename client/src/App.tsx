@@ -10,6 +10,7 @@ import { AnalyticsDeck } from '@/components/cockpit/AnalyticsDeck';
 import { PayloadBank } from '@/components/cockpit/PayloadBank';
 import { DefenseProtocol } from '@/components/cockpit/DefenseProtocol';
 import { AuditLedger } from '@/components/cockpit/AuditLedger';
+import { AboutDeck } from '@/components/cockpit/AboutDeck';
 import { AccountModal } from '@/components/cockpit/AccountModal';
 import { CommentsModal } from '@/components/cockpit/CommentsModal';
 import { DeleteNodeDialog } from '@/components/cockpit/DeleteNodeDialog';
@@ -68,6 +69,7 @@ export const App: React.FC = () => {
           {activeTab === 'tab-spintax' && <PayloadBank />}
           {activeTab === 'tab-safety' && <DefenseProtocol />}
           {activeTab === 'tab-history' && <AuditLedger />}
+          {activeTab === 'tab-about' && <AboutDeck />}
         </div>
       </main>
 

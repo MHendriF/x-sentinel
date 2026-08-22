@@ -9,6 +9,7 @@ import {
   ShieldAlert,
   FileSpreadsheet,
   BarChart3,
+  Info,
   X,
   Radio,
 } from 'lucide-react';
@@ -51,6 +52,12 @@ const NAV_ITEMS = [
     label: 'Audit Logs',
     icon: FileSpreadsheet,
   },
+  {
+    id: 'tab-about',
+    label: 'About & System Specs',
+    section: 'SYSTEM & INTEL',
+    icon: Info,
+  },
 ];
 
 export const NavDeck: React.FC = () => {
@@ -83,11 +90,12 @@ export const NavDeck: React.FC = () => {
               𝕏
             </div>
             <div>
-              <div className="font-heading font-bold text-sm tracking-tight text-white">
-                X-AUTOENGAGE
+              <div className="font-heading font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+                X-SENTINEL
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-flame/20 text-flame border border-flame/30">v2.5</span>
               </div>
-              <div className="font-mono text-[10px] text-flame tracking-wider">
-                REACT 19 · PROXY CLUSTER
+              <div className="font-mono text-[9px] text-muted-foreground tracking-wider uppercase">
+                Autonomous Fleet Control
               </div>
             </div>
           </div>

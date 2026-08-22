@@ -31,6 +31,10 @@ const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
     title: 'Interaction Audit Ledger',
     subtitle: 'Full immutable record of all processed interactions per node.',
   },
+  'tab-about': {
+    title: 'About & System Specifications',
+    subtitle: 'Architecture overview, technical specifications, and core capabilities of X-SENTINEL.',
+  },
 };
 
 export const TelemetryRibbon: React.FC = () => {
