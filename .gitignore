@@ -17,6 +17,11 @@ scratch/
 test-results/
 playwright-report/
 
+# Build artifacts
+dist/
+client/dist/
+
 # OS metadata
 .DS_Store
 Thumbs.db
+

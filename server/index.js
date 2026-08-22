@@ -12,8 +12,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static frontend dashboard
-app.use(express.static(path.join(config.ROOT_DIR, 'public')));
+// Serve static frontend dashboard (React 19 build or public fallback)
+const fs = require('fs');
+const clientDist = path.join(config.ROOT_DIR, 'client', 'dist');
+const staticDir = fs.existsSync(clientDist) ? clientDist : path.join(config.ROOT_DIR, 'public');
+
+app.use(express.static(staticDir));
 
 // Server-Sent Events (SSE) for Realtime Log Streaming
 app.get('/api/logs/stream', (req, res) => {
@@ -41,7 +45,7 @@ app.use('/api', apiRoutes);
 
 // Catch all fallback to serve frontend
 app.use((req, res) => {
-  res.sendFile(path.join(config.ROOT_DIR, 'public', 'index.html'));
+  res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 // Start Server
