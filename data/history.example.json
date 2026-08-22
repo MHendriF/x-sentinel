@@ -1,0 +1,36 @@
+[
+  {
+    "id": "hist_sample_01",
+    "timestamp": "2026-08-22T08:00:00.000Z",
+    "timeFormatted": "15.00.00",
+    "accountId": "acc_sample_01",
+    "accountName": "example_handle",
+    "tweetUrl": "https://x.com/tech_creator/status/1891234567890123456",
+    "tweetId": "1891234567890123456",
+    "action": "LIKE",
+    "status": "SUCCESS"
+  },
+  {
+    "id": "hist_sample_02",
+    "timestamp": "2026-08-22T08:00:25.000Z",
+    "timeFormatted": "15.00.25",
+    "accountId": "acc_sample_01",
+    "accountName": "example_handle",
+    "tweetUrl": "https://x.com/tech_creator/status/1891234567890123456",
+    "tweetId": "1891234567890123456",
+    "action": "RETWEET",
+    "status": "SUCCESS"
+  },
+  {
+    "id": "hist_sample_03",
+    "timestamp": "2026-08-22T08:00:50.000Z",
+    "timeFormatted": "15.00.50",
+    "accountId": "acc_sample_01",
+    "accountName": "example_handle",
+    "tweetUrl": "https://x.com/tech_creator/status/1891234567890123456",
+    "tweetId": "1891234567890123456",
+    "action": "COMMENT",
+    "status": "SUCCESS",
+    "details": "Keren banget infonya bang! 🔥 Izin bookmark ya."
+  }
+]

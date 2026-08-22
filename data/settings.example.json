@@ -1,0 +1,13 @@
+{
+  "minDelaySeconds": 15,
+  "maxDelaySeconds": 35,
+  "accountSwitchDelaySec": 10,
+  "hourlyLimit": 25,
+  "dailyLimit": 150,
+  "headless": false,
+  "humanTypingDelayMs": 65,
+  "scrollBeforeAction": true,
+  "aiProvider": "none",
+  "aiApiKey": "",
+  "aiPrompt": "Tulis balasan singkat, ramah, alami, dan relevan dalam bahasa Indonesia untuk tweet berikut:"
+}

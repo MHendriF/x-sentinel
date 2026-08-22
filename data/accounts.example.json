@@ -1,0 +1,40 @@
+[
+  {
+    "id": "acc_sample_01",
+    "label": "Node-Alpha (Main Account)",
+    "auth_token": "your_auth_token_cookie_here",
+    "ct0": "your_ct0_cookie_here",
+    "username": "example_handle",
+    "name": "Display Name",
+    "avatar": "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "proxy": "http://username:password@ip_or_host:port",
+    "commentsFile": "comments_acc_sample_01.json",
+    "enabled": true,
+    "isValid": true,
+    "lastChecked": "2026-08-22T00:00:00.000Z",
+    "stats": {
+      "likes": 0,
+      "retweets": 0,
+      "comments": 0
+    }
+  },
+  {
+    "id": "acc_sample_02",
+    "label": "Node-Beta (Buzzer Account)",
+    "auth_token": "another_auth_token_cookie_here",
+    "ct0": "another_ct0_cookie_here",
+    "username": "buzzer_handle",
+    "name": "Buzzer Node",
+    "avatar": "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    "proxy": "socks5://ip_or_host:1080",
+    "commentsFile": "comments_acc_sample_02.json",
+    "enabled": true,
+    "isValid": false,
+    "lastChecked": null,
+    "stats": {
+      "likes": 0,
+      "retweets": 0,
+      "comments": 0
+    }
+  }
+]
