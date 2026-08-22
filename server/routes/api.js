@@ -192,25 +192,15 @@ router.post('/tasks/stop', (req, res) => {
   res.json({ success: true, stopped });
 });
 
-// POST /api/proxy/test - Validate Proxy String Format
-router.post('/proxy/test', (req, res) => {
-  const { proxy } = req.body;
-  const parsed = proxyHelper.parseProxy(proxy);
-  if (!parsed) {
-    return res.json({ valid: false, message: 'Format proxy tidak valid. Gunakan format http://user:pass@host:port atau host:port:user:pass' });
-  }
-  res.json({ valid: true, parsed, message: `Format proxy valid: ${parsed.server}` });
-});
-
 // POST /api/proxy/test - Live ping & GeoIP test for any proxy string
 router.post('/proxy/test', async (req, res) => {
   const { proxy } = req.body;
-  if (!proxy) {
+  if (!proxy || !proxy.trim()) {
     return res.status(400).json({ success: false, message: 'String proxy wajib diisi.' });
   }
 
   logger.info(`🌐 Menguji koneksi proxy: ${proxy.replace(/http:\/\/[^@]*@/, '')}...`);
-  const result = await proxyHelper.testProxy(proxy);
+  const result = await proxyHelper.testProxy(proxy.trim());
   if (result.success) {
     logger.success(`✅ Proxy aktif: ${result.ip} (${result.country}) - Latency: ${result.latency}ms`);
   } else {

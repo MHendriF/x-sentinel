@@ -176,20 +176,37 @@ class ProxyHelper {
           status: 'ALIVE'
         };
       } else {
+        const status = response.status();
         await apiContext.dispose();
+        let message = `Proxy HTTP Error: ${status}`;
+        if (status === 407) {
+          message = 'Proxy Auth Failed (407): Username atau Password proxy salah / IP belum di-whitelist.';
+        } else if (status === 403) {
+          message = 'Proxy Forbidden (403): Akses ke target ditolak oleh proxy provider.';
+        } else if (status === 502 || status === 503) {
+          message = `Proxy Bad Gateway (${status}): Server proxy sedang offline.`;
+        }
         return {
           success: false,
           latency,
-          message: `Proxy HTTP Error: ${response.status()}`,
+          message,
           status: 'DEAD'
         };
       }
     } catch (err) {
       const latency = Date.now() - startTime;
+      let msg = err.message;
+      if (msg.includes('timeout')) {
+        msg = 'Connection Timeout (8s): Server proxy tidak merespon.';
+      } else if (msg.includes('ECONNREFUSED')) {
+        msg = 'Connection Refused: IP / Port proxy tidak aktif.';
+      } else if (msg.includes('ENOTFOUND')) {
+        msg = 'Host Not Found: Domain / IP proxy tidak valid.';
+      }
       return {
         success: false,
         latency,
-        message: err.message.includes('timeout') ? 'Connection Timeout (8s)' : err.message,
+        message: msg,
         status: 'DEAD'
       };
     }
