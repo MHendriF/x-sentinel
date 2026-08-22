@@ -93,7 +93,7 @@ router.post('/accounts/:id/toggle', (req, res) => {
 });
 
 // POST /api/accounts/:id/verify - Verify account session & proxy on X
-router.post('/api/accounts/:id/verify', async (req, res) => {
+router.post('/accounts/:id/verify', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
