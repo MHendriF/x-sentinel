@@ -107,6 +107,26 @@ document.addEventListener('DOMContentLoaded', () => {
     'tab-history': { title: 'Interaction Audit Ledger', subtitle: 'Full immutable record of all processed interactions per node.' }
   };
 
+  // Mobile Drawer Elements
+  const btnDeckToggle = document.getElementById('btnDeckToggle');
+  const btnDeckClose = document.getElementById('btnDeckClose');
+  const navDeck = document.getElementById('navDeck');
+  const deckBackdrop = document.getElementById('deckBackdrop');
+
+  function openMobileDeck() {
+    if (navDeck) navDeck.classList.add('open');
+    if (deckBackdrop) deckBackdrop.classList.add('open');
+  }
+
+  function closeMobileDeck() {
+    if (navDeck) navDeck.classList.remove('open');
+    if (deckBackdrop) deckBackdrop.classList.remove('open');
+  }
+
+  if (btnDeckToggle) btnDeckToggle.addEventListener('click', openMobileDeck);
+  if (btnDeckClose) btnDeckClose.addEventListener('click', closeMobileDeck);
+  if (deckBackdrop) deckBackdrop.addEventListener('click', closeMobileDeck);
+
   // 1. Tab Navigation
   deckTabs.forEach(item => {
     item.addEventListener('click', () => {
@@ -122,6 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
         pageTitle.innerText = tabTitles[tabId].title;
         pageSubtitle.innerText = tabTitles[tabId].subtitle;
       }
+
+      closeMobileDeck();
 
       if (tabId === 'tab-accounts') loadAccounts();
       if (tabId === 'tab-history') loadHistory();

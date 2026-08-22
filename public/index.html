@@ -10,9 +10,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Mobile Header Bar -->
+  <div class="mobile-topbar">
+    <button class="btn-deck-toggle" id="btnDeckToggle" aria-label="Toggle navigation">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+    <div class="mobile-brand">
+      <span class="brand-mono">𝕏</span>
+      <span class="brand-text">X-AUTOENGAGE</span>
+    </div>
+    <div class="mobile-status-dot pulse-indicator online" title="Core Online"></div>
+  </div>
+
+  <!-- Mobile Drawer Backdrop -->
+  <div class="deck-backdrop" id="deckBackdrop"></div>
+
   <div class="cockpit-layout">
     <!-- Left Navigation Deck -->
-    <aside class="nav-deck">
+    <aside class="nav-deck" id="navDeck">
       <div class="deck-brand">
         <div class="brand-monogram">
           <span>𝕏</span>
@@ -21,6 +38,7 @@
           <div class="brand-title">X-AUTOENGAGE</div>
           <div class="brand-version">ENGINE v2.4 · PROXY READY</div>
         </div>
+        <button class="btn-deck-close" id="btnDeckClose" aria-label="Close navigation">&times;</button>
       </div>
 
       <!-- Telemetry Node Status -->
@@ -552,6 +570,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
