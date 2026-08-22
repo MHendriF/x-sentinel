@@ -39,6 +39,11 @@ interface AppState {
   openCommentsModal: (account: AccountNode) => void;
   closeCommentsModal: () => void;
 
+  isDeleteModalOpen: boolean;
+  deletingAccount: AccountNode | null;
+  openDeleteModal: (account: AccountNode) => void;
+  closeDeleteModal: () => void;
+
   // Mobile Drawer
   isMobileDrawerOpen: boolean;
   setIsMobileDrawerOpen: (open: boolean) => void;
@@ -109,6 +114,11 @@ export const useStore = create<AppState>((set, get) => ({
   commentsAccount: null,
   openCommentsModal: (commentsAccount) => set({ isCommentsModalOpen: true, commentsAccount }),
   closeCommentsModal: () => set({ isCommentsModalOpen: false, commentsAccount: null }),
+
+  isDeleteModalOpen: false,
+  deletingAccount: null,
+  openDeleteModal: (deletingAccount) => set({ isDeleteModalOpen: true, deletingAccount }),
+  closeDeleteModal: () => set({ isDeleteModalOpen: false, deletingAccount: null }),
 
   // Mobile Drawer
   isMobileDrawerOpen: false,

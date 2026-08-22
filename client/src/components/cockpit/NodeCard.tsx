@@ -23,7 +23,7 @@ interface NodeCardProps {
 }
 
 export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
-  const { loadAccounts, openAccountModal, openCommentsModal } = useStore();
+  const { loadAccounts, openAccountModal, openCommentsModal, openDeleteModal } = useStore();
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPingingProxy, setIsPingingProxy] = useState(false);
   const [proxyTest, setProxyTest] = useState<ProxyTestResult | null>(null);
@@ -78,15 +78,8 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm(`Hapus node "${account.label}"?`)) return;
-    try {
-      await apiClient.deleteAccount(account.id);
-      loadAccounts();
-      toast.success(`Node ${account.label} berhasil dihapus.`);
-    } catch (err: any) {
-      toast.error(`Gagal menghapus node: ${err.message}`);
-    }
+  const handleDelete = () => {
+    openDeleteModal(account);
   };
 
   const cleanProxy = account.proxy

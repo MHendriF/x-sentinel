@@ -12,6 +12,7 @@ import { DefenseProtocol } from '@/components/cockpit/DefenseProtocol';
 import { AuditLedger } from '@/components/cockpit/AuditLedger';
 import { AccountModal } from '@/components/cockpit/AccountModal';
 import { CommentsModal } from '@/components/cockpit/CommentsModal';
+import { DeleteNodeDialog } from '@/components/cockpit/DeleteNodeDialog';
 import { Toaster } from '@/components/ui/sonner';
 
 export const App: React.FC = () => {
@@ -73,6 +74,7 @@ export const App: React.FC = () => {
       {/* Global Modals & Notifications */}
       <AccountModal />
       <CommentsModal />
+      <DeleteNodeDialog />
       <Toaster position="bottom-right" richColors />
     </div>
   );
