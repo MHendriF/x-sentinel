@@ -5,6 +5,7 @@ const logger = require('../logger');
 const twitterBot = require('../automation/twitterBot');
 const proxyHelper = require('../automation/proxyHelper');
 const spintax = require('../automation/spintax');
+const aiService = require('../automation/aiService');
 
 // GET /api/status - Get current bot status, active accounts & stats
 router.get('/status', (req, res) => {
@@ -78,6 +79,139 @@ router.delete('/accounts/:id', (req, res) => {
   } else {
     res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
   }
+});
+
+// POST /api/accounts/bulk-import - Bulk import accounts via text/CSV/JSON
+router.post('/accounts/bulk-import', (req, res) => {
+  const { rawText, accounts: jsonAccounts } = req.body;
+  let toImport = [];
+
+  if (Array.isArray(jsonAccounts) && jsonAccounts.length > 0) {
+    toImport = jsonAccounts;
+  } else if (typeof rawText === 'string' && rawText.trim()) {
+    const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+
+    lines.forEach((line, idx) => {
+      // 1. Check if JSON line
+      if (line.startsWith('{') && line.endsWith('}')) {
+        try {
+          const obj = JSON.parse(line);
+          if (obj.auth_token) toImport.push(obj);
+          return;
+        } catch (e) {}
+      }
+
+      // 2. Delimiter parsing (| or :)
+      let parts = [];
+      if (line.includes('|')) {
+        parts = line.split('|').map(p => p.trim());
+      } else {
+        // Handle colon format: token:ct0:proxy:label or token:ct0:user:pass@ip:port:label
+        parts = line.split(':').map(p => p.trim());
+      }
+
+      if (parts.length >= 2) {
+        const auth_token = parts[0];
+        const ct0 = parts[1];
+        let proxy = '';
+        let label = `Node ${idx + 1}`;
+
+        if (parts.length === 3) {
+          // Could be token:ct0:proxy or token:ct0:label
+          if (parts[2].includes('.') || parts[2].includes('@')) {
+            proxy = parts[2];
+          } else {
+            label = parts[2];
+          }
+        } else if (parts.length >= 4) {
+          // token:ct0:user:pass@ip:port:label OR token:ct0:ip:port:label
+          if (line.includes('|')) {
+            proxy = parts[2] || '';
+            label = parts[3] || `Node ${idx + 1}`;
+          } else {
+            // Check if parts[2] has @ or is part of proxy
+            const remaining = parts.slice(2);
+            label = remaining.pop(); // last is label
+            proxy = remaining.join(':'); // rest is proxy
+          }
+        }
+
+        toImport.push({
+          auth_token,
+          ct0,
+          proxy,
+          label: label || `Node ${idx + 1}`
+        });
+      }
+    });
+  }
+
+  if (toImport.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Tidak ada data akun yang valid untuk diimpor. Periksa format teks/JSON.'
+    });
+  }
+
+  const addedAccounts = [];
+  const errors = [];
+
+  toImport.forEach((item, i) => {
+    if (!item.auth_token || item.auth_token.trim().length < 20) {
+      errors.push(`Baris ${i + 1}: auth_token tidak valid.`);
+      return;
+    }
+
+    try {
+      const saved = db.saveAccount({
+        label: item.label || `Node ${i + 1}`,
+        auth_token: item.auth_token.trim(),
+        ct0: (item.ct0 || '').trim(),
+        proxy: (item.proxy || '').trim(),
+        username: (item.username || '').trim(),
+        name: (item.name || '').trim(),
+        enabled: true
+      });
+      addedAccounts.push(saved);
+    } catch (err) {
+      errors.push(`Baris ${i + 1}: ${err.message}`);
+    }
+  });
+
+  logger.success(`📥 Bulk Import Selesai: Berhasil mengimpor ${addedAccounts.length} node akun.`);
+  res.json({
+    success: true,
+    addedCount: addedAccounts.length,
+    failedCount: errors.length,
+    errors,
+    message: `Berhasil mengimpor ${addedAccounts.length} akun${errors.length > 0 ? ` (${errors.length} gagal)` : ''}.`
+  });
+});
+
+// GET /api/accounts/export - Export Fleet Backup (JSON)
+router.get('/accounts/export', (req, res) => {
+  const accounts = db.getAccounts();
+  const exportData = {
+    version: '2.5',
+    timestamp: new Date().toISOString(),
+    totalNodes: accounts.length,
+    fleet: accounts.map(a => ({
+      id: a.id,
+      label: a.label,
+      auth_token: a.auth_token,
+      ct0: a.ct0,
+      username: a.username,
+      name: a.name,
+      proxy: a.proxy,
+      enabled: a.enabled,
+      isValid: a.isValid,
+      stats: a.stats
+    }))
+  };
+
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="x-sentinel-fleet-backup-${Date.now()}.json"`);
+  res.send(JSON.stringify(exportData, null, 2));
 });
 
 // POST /api/accounts/:id/toggle - Toggle enabled/disabled status
@@ -246,6 +380,12 @@ router.post('/settings', (req, res) => {
   const updated = db.saveSettings(req.body);
   logger.info('⚙️ Pengaturan sistem diperbarui.');
   res.json({ success: true, settings: updated });
+});
+
+// POST /api/settings/test-ai - Test AI Connection & Model Response
+router.post('/settings/test-ai', async (req, res) => {
+  const result = await aiService.testConnection(req.body);
+  res.json(result);
 });
 
 // GET /api/templates - Global Templates

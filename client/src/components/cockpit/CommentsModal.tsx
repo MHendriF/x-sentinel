@@ -12,7 +12,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Upload, Trash2, Save, FileJson, MessageSquare } from 'lucide-react';
+import { Plus, Upload, Trash2, Save, FileJson, MessageSquare, Sparkles, Layers } from 'lucide-react';
+import { PRESET_LIBRARY } from '@/lib/presetLibrary';
 
 export const CommentsModal: React.FC = () => {
   const { isCommentsModalOpen, commentsAccount, closeCommentsModal, loadAccounts } = useStore();
@@ -141,6 +142,31 @@ export const CommentsModal: React.FC = () => {
                 Upload JSON
               </span>
             </label>
+          </div>
+
+          {/* Niche Presets Quick-Loader */}
+          <div className="space-y-1.5 p-3 rounded-md border border-amber-500/20 bg-amber-500/5">
+            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-amber-300">
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                LOAD FROM CURATED PRESET LIBRARY
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {PRESET_LIBRARY.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => {
+                    setComments([...preset.templates]);
+                    toast.success(`Memuat ${preset.templates.length} template "${preset.name}"!`);
+                  }}
+                  className="px-2.5 py-1 rounded text-[10px] font-mono font-medium bg-obsidian-950 border border-slate-700 hover:border-amber-500/50 hover:bg-amber-500/10 text-slate-200 hover:text-amber-300 transition-all cursor-pointer"
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Comment Stack List */}

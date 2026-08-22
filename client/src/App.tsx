@@ -14,10 +14,19 @@ import { AboutDeck } from '@/components/cockpit/AboutDeck';
 import { AccountModal } from '@/components/cockpit/AccountModal';
 import { CommentsModal } from '@/components/cockpit/CommentsModal';
 import { DeleteNodeDialog } from '@/components/cockpit/DeleteNodeDialog';
+import { BulkImportModal } from '@/components/cockpit/BulkImportModal';
 import { Toaster } from '@/components/ui/sonner';
 
 export const App: React.FC = () => {
-  const { activeTab, loadAccounts, setStats, setIsRunning, addLog } = useStore();
+  const {
+    activeTab,
+    loadAccounts,
+    setStats,
+    setIsRunning,
+    addLog,
+    isBulkImportOpen,
+    closeBulkImportModal
+  } = useStore();
 
   // Initial Data Load & SSE Subscription
   useEffect(() => {
@@ -77,6 +86,7 @@ export const App: React.FC = () => {
       <AccountModal />
       <CommentsModal />
       <DeleteNodeDialog />
+      <BulkImportModal isOpen={isBulkImportOpen} onClose={closeBulkImportModal} />
       <Toaster position="bottom-right" richColors />
     </div>
   );

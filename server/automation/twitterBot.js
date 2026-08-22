@@ -5,6 +5,7 @@ const logger = require('../logger');
 const cookieManager = require('./cookieManager');
 const proxyHelper = require('./proxyHelper');
 const spintax = require('./spintax');
+const aiService = require('./aiService');
 
 class TwitterBot {
   constructor() {
@@ -461,12 +462,30 @@ class TwitterBot {
       if (customReplyText && customReplyText.trim()) {
         replyText = spintax.parseSpintax(customReplyText.trim());
       } else {
-        // Load comment pool specifically for this account from its JSON file
-        const accountComments = db.getAccountComments(account.id);
-        replyText = spintax.getRandomTemplate(accountComments);
+        const settings = db.getSettings();
+        if (settings.aiProvider && settings.aiProvider !== 'none') {
+          // Extract tweet text from page
+          let tweetText = await page.$eval('[data-testid="tweetText"]', el => el.innerText).catch(() => '');
+          if (!tweetText) {
+            tweetText = await page.$eval('article [lang]', el => el.innerText).catch(() => '');
+          }
+
+          if (tweetText && tweetText.trim()) {
+            const aiGenerated = await aiService.generateContextualReply(tweetText.trim(), account);
+            if (aiGenerated) {
+              replyText = aiGenerated;
+            }
+          }
+        }
+
+        // Fallback to Account's specific JSON comment pool
+        if (!replyText) {
+          const accountComments = db.getAccountComments(account.id);
+          replyText = spintax.getRandomTemplate(accountComments);
+        }
       }
 
-      logger.info(`💬 [@${account.username || account.label}] Komentar (dari ${account.commentsFile || 'JSON'}): "${replyText}"`);
+      logger.info(`💬 [@${account.username || account.label}] Komentar: "${replyText}"`);
 
       let textarea = await page.$('[data-testid="tweetTextarea_0"], article [data-testid="tweetTextarea_0"]');
       if (!textarea) {

@@ -3,10 +3,10 @@ import { useStore } from '@/store/useStore';
 import { NodeCard } from './NodeCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Plus, RefreshCw, Server, AlertCircle } from 'lucide-react';
+import { Plus, RefreshCw, Server, AlertCircle, UploadCloud, Download } from 'lucide-react';
 
 export const NodesGrid: React.FC = () => {
-  const { accounts, loadAccounts, openAccountModal } = useStore();
+  const { accounts, loadAccounts, openAccountModal, openBulkImportModal } = useStore();
 
   useEffect(() => {
     loadAccounts();
@@ -16,22 +16,31 @@ export const NodesGrid: React.FC = () => {
     <div className="space-y-5">
       {/* Top Banner / Actions */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
+        <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between pb-3 gap-3">
           <div>
             <div className="font-mono text-[10px] font-bold text-flame tracking-wider">
               CLUSTER TOPOLOGY
             </div>
-            <CardTitle className="text-lg">Registered Computing Nodes</CardTitle>
+            <CardTitle className="text-lg">Registered Computing Nodes ({accounts.length})</CardTitle>
             <CardDescription>
               Setiap node mewakili sesi akun X independen dengan pool komentar dan routing proxy tersendiri.
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openBulkImportModal()}
+              className="gap-1.5 text-xs font-mono border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10"
+            >
+              <UploadCloud className="w-3.5 h-3.5 text-cyan-400" />
+              Bulk Import
+            </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => loadAccounts()}
-              className="gap-1 text-xs"
+              className="gap-1 text-xs font-mono"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Refresh
@@ -43,7 +52,7 @@ export const NodesGrid: React.FC = () => {
               className="gap-1.5 text-xs font-heading font-bold"
             >
               <Plus className="w-4 h-4" />
-              Register New Node
+              Register Node
             </Button>
           </div>
         </CardHeader>

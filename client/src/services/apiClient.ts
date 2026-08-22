@@ -38,6 +38,8 @@ export interface Settings {
   scrollBeforeAction: boolean;
   aiProvider?: string;
   aiApiKey?: string;
+  aiModel?: string;
+  aiBaseUrl?: string;
   aiPrompt?: string;
 }
 
@@ -227,6 +229,30 @@ export const apiClient = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+
+  async bulkImportAccounts(payload: { rawText?: string; accounts?: any[] }) {
+    const res = await fetch('/api/accounts/bulk-import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+
+  async testAISettings(settings: Partial<Settings>): Promise<{
+    success: boolean;
+    message: string;
+    model?: string;
+    sampleOutput?: string;
+    status?: number;
+  }> {
+    const res = await fetch('/api/settings/test-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
     });
     return res.json();
   },

@@ -44,6 +44,10 @@ interface AppState {
   openDeleteModal: (account: AccountNode) => void;
   closeDeleteModal: () => void;
 
+  isBulkImportOpen: boolean;
+  openBulkImportModal: () => void;
+  closeBulkImportModal: () => void;
+
   // Mobile Drawer
   isMobileDrawerOpen: boolean;
   setIsMobileDrawerOpen: (open: boolean) => void;
@@ -119,6 +123,10 @@ export const useStore = create<AppState>((set, get) => ({
   deletingAccount: null,
   openDeleteModal: (deletingAccount) => set({ isDeleteModalOpen: true, deletingAccount }),
   closeDeleteModal: () => set({ isDeleteModalOpen: false, deletingAccount: null }),
+
+  isBulkImportOpen: false,
+  openBulkImportModal: () => set({ isBulkImportOpen: true }),
+  closeBulkImportModal: () => set({ isBulkImportOpen: false }),
 
   // Mobile Drawer
   isMobileDrawerOpen: false,
