@@ -278,23 +278,29 @@ class TwitterBot {
   }
 
   /**
-   * Like Tweet
+   * Like Tweet with multi-fallback selectors
    */
   async likeTweet(page, tweetUrl, account) {
     const tweetId = this.extractTweetId(tweetUrl);
     logger.action(`[@${account.username || account.label}] Mencoba Like: ${tweetUrl}`);
 
     try {
-      const unlikeBtn = await page.$('article [data-testid="unlike"]');
+      // 1. Check if already liked
+      const unlikeBtn = await page.$('[data-testid="unlike"], article [data-testid="unlike"], button[aria-label*="Liked"], button[aria-label*="Batal Suka"]');
       if (unlikeBtn) {
         logger.info(`ℹ️ [@${account.username || account.label}] Postingan sudah di-Like sebelumnya.`);
         db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'LIKE', status: 'ALREADY_DONE', message: 'Sudah di-like' });
         return { success: true, status: 'ALREADY_DONE' };
       }
 
-      const likeBtn = await page.$('article [data-testid="like"]');
+      // 2. Find Like button (with retry wait)
+      let likeBtn = await page.$('[data-testid="like"], article [data-testid="like"], button[aria-label*="Like"], button[aria-label*="Suka"]');
       if (!likeBtn) {
-        logger.warn(`⚠️ [@${account.username || account.label}] Tombol Like tidak ditemukan.`);
+        likeBtn = await page.waitForSelector('[data-testid="like"], article [data-testid="like"]', { timeout: 8000 }).catch(() => null);
+      }
+
+      if (!likeBtn) {
+        logger.warn(`⚠️ [@${account.username || account.label}] Tombol Like tidak ditemukan pada halaman.`);
         return { success: false, message: 'Tombol Like tidak ditemukan' };
       }
 
@@ -303,7 +309,8 @@ class TwitterBot {
       await likeBtn.click();
       await this.sleep(1200);
 
-      const isLiked = await page.$('article [data-testid="unlike"]');
+      // 3. Verify like state
+      const isLiked = await page.$('[data-testid="unlike"], article [data-testid="unlike"]');
       if (isLiked) {
         logger.success(`❤️ [@${account.username || account.label}] Berhasil Like: ${tweetUrl}`);
         db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'LIKE', status: 'SUCCESS' });
@@ -319,21 +326,27 @@ class TwitterBot {
   }
 
   /**
-   * Retweet Post
+   * Retweet / Repost Post with multi-fallback selectors
    */
   async retweetTweet(page, tweetUrl, account) {
     const tweetId = this.extractTweetId(tweetUrl);
     logger.action(`[@${account.username || account.label}] Mencoba Retweet: ${tweetUrl}`);
 
     try {
-      const unretweetBtn = await page.$('article [data-testid="unretweet"]');
+      // 1. Check if already reposted
+      const unretweetBtn = await page.$('[data-testid="unretweet"], article [data-testid="unretweet"], button[aria-label*="Undo Repost"], button[aria-label*="Batal mem-posting ulang"]');
       if (unretweetBtn) {
         logger.info(`ℹ️ [@${account.username || account.label}] Postingan sudah di-Retweet sebelumnya.`);
         db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'RETWEET', status: 'ALREADY_DONE', message: 'Sudah di-retweet' });
         return { success: true, status: 'ALREADY_DONE' };
       }
 
-      const retweetBtn = await page.$('article [data-testid="retweet"]');
+      // 2. Find Retweet button (with retry wait)
+      let retweetBtn = await page.$('[data-testid="retweet"], article [data-testid="retweet"], button[aria-label*="Repost"], button[aria-label*="Posting ulang"]');
+      if (!retweetBtn) {
+        retweetBtn = await page.waitForSelector('[data-testid="retweet"], article [data-testid="retweet"]', { timeout: 8000 }).catch(() => null);
+      }
+
       if (!retweetBtn) {
         logger.warn(`⚠️ [@${account.username || account.label}] Tombol Retweet tidak ditemukan.`);
         return { success: false, message: 'Tombol Retweet tidak ditemukan' };
@@ -344,13 +357,15 @@ class TwitterBot {
       await retweetBtn.click();
       await this.sleep(800);
 
-      const confirmBtn = await page.waitForSelector('[data-testid="retweetConfirm"]', { timeout: 5000 }).catch(() => null);
+      // 3. Confirm popup modal
+      const confirmBtn = await page.waitForSelector('[data-testid="retweetConfirm"], [role="menuitem"][data-testid="retweetConfirm"]', { timeout: 6000 }).catch(() => null);
       if (confirmBtn) {
         await confirmBtn.click();
         await this.sleep(1500);
       }
 
-      const isRetweeted = await page.$('article [data-testid="unretweet"]');
+      // 4. Verify repost state
+      const isRetweeted = await page.$('[data-testid="unretweet"], article [data-testid="unretweet"]');
       if (isRetweeted) {
         logger.success(`🔁 [@${account.username || account.label}] Berhasil Retweet: ${tweetUrl}`);
         db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'RETWEET', status: 'SUCCESS' });
@@ -384,14 +399,14 @@ class TwitterBot {
 
       logger.info(`💬 [@${account.username || account.label}] Komentar (dari ${account.commentsFile || 'JSON'}): "${replyText}"`);
 
-      let textarea = await page.$('article [data-testid="tweetTextarea_0"]');
+      let textarea = await page.$('[data-testid="tweetTextarea_0"], article [data-testid="tweetTextarea_0"]');
       if (!textarea) {
-        const replyIcon = await page.$('article [data-testid="reply"]');
+        const replyIcon = await page.$('[data-testid="reply"], article [data-testid="reply"]');
         if (replyIcon) {
           await replyIcon.click();
-          await this.sleep(800);
+          await this.sleep(1000);
         }
-        textarea = await page.waitForSelector('[data-testid="tweetTextarea_0"]', { timeout: 7000 }).catch(() => null);
+        textarea = await page.waitForSelector('[data-testid="tweetTextarea_0"]', { timeout: 8000 }).catch(() => null);
       }
 
       if (!textarea) {
@@ -432,7 +447,17 @@ class TwitterBot {
 
     logger.info(`🌐 [@${account.username || account.label}] Membuka: ${tweetUrl}`);
     await page.goto(tweetUrl, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3000);
+    
+    // Wait for the tweet content / focal article to finish rendering
+    await page.waitForSelector('[data-testid="tweet"], article, [data-testid="like"], [data-testid="unlike"]', { timeout: 15000 }).catch(() => null);
+    await page.waitForTimeout(2000);
+
+    // Check if redirected to login
+    if (page.url().includes('/login') || page.url().includes('/i/flow/login')) {
+      logger.error(`❌ [@${account.username || account.label}] Sesi login kedaluwarsa / dialihkan ke halaman login.`);
+      db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, action: 'SESSION', status: 'FAILED', message: 'Sesi login kedaluwarsa' });
+      return { success: false, message: 'Sesi login kedaluwarsa' };
+    }
 
     if (db.getSettings().scrollBeforeAction) {
       await this.humanScroll(page);

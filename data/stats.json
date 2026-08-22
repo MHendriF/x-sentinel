@@ -1,9 +1,9 @@
 {
-  "totalLikes": 0,
-  "totalRetweets": 0,
-  "totalComments": 0,
-  "todayLikes": 0,
-  "todayRetweets": 0,
-  "todayComments": 0,
+  "totalLikes": 1,
+  "totalRetweets": 1,
+  "totalComments": 1,
+  "todayLikes": 1,
+  "todayRetweets": 1,
+  "todayComments": 1,
   "lastResetDate": "2026-08-22"
 }
