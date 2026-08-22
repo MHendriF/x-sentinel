@@ -1,0 +1,22 @@
+# Node.js dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Browser profiles and sensitive session data
+data/browser_profile/
+data/accounts.json
+data/auth.json
+data/history.json
+
+# Temporary files and logs
+*.log
+scratch/
+test-results/
+playwright-report/
+
+# OS metadata
+.DS_Store
+Thumbs.db

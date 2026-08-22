@@ -1,0 +1,682 @@
+const { chromium } = require('playwright');
+const config = require('../config');
+const db = require('../db');
+const logger = require('../logger');
+const cookieManager = require('./cookieManager');
+const proxyHelper = require('./proxyHelper');
+const spintax = require('./spintax');
+
+class TwitterBot {
+  constructor() {
+    this.browser = null;
+    this.context = null;
+    this.page = null;
+    this.currentAccount = null;
+    this.isRunning = false;
+    this.abortController = null;
+    this.currentTask = null;
+  }
+
+  /**
+   * Helper delay with cancellation support
+   */
+  async sleep(ms) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(resolve, ms);
+      if (this.abortController?.signal) {
+        this.abortController.signal.addEventListener('abort', () => {
+          clearTimeout(timer);
+          reject(new Error('TASK_ABORTED'));
+        }, { once: true });
+      }
+    });
+  }
+
+  /**
+   * Random delay between min and max seconds
+   */
+  async randomDelay(minSec, maxSec) {
+    const min = minSec || db.getSettings().minDelaySeconds || 15;
+    const max = maxSec || db.getSettings().maxDelaySeconds || 35;
+    const delayMs = Math.floor((Math.random() * (max - min + 1) + min) * 1000);
+    logger.info(`⏳ Jeda humanized delay selama ${(delayMs / 1000).toFixed(1)} detik...`);
+    await this.sleep(delayMs);
+  }
+
+  /**
+   * Extract Tweet ID from URL
+   */
+  extractTweetId(url) {
+    if (!url) return null;
+    const match = url.match(/\/status\/(\d+)/);
+    return match ? match[1] : null;
+  }
+
+  /**
+   * Initialize Playwright Browser & Context for a specific account with its proxy and cookies
+   */
+  async initAccountBrowser(account, forceNew = false) {
+    if (!account) {
+      throw new Error('Akun tidak ditemukan atau belum dipilih.');
+    }
+
+    // Reuse if same account
+    if (this.browser && this.context && this.currentAccount?.id === account.id && !forceNew) {
+      return { browser: this.browser, context: this.context };
+    }
+
+    await this.closeBrowser();
+
+    this.currentAccount = account;
+    const settings = db.getSettings();
+    const isHeadless = Boolean(settings.headless);
+
+    const launchOptions = {
+      headless: isHeadless,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-blink-features=AutomationControlled',
+        '--disable-infobars',
+        '--window-size=1280,850'
+      ]
+    };
+
+    // Apply Proxy if specified for this account
+    if (account.proxy) {
+      const proxyLaunch = proxyHelper.getPlaywrightLaunchProxy(account.proxy);
+      if (proxyLaunch) {
+        launchOptions.proxy = proxyLaunch;
+        logger.info(`🌐 Menggunakan Proxy untuk @${account.username || account.label}: ${proxyLaunch.server}`);
+      }
+    }
+
+    logger.info(`🚀 Membuka browser untuk akun @${account.username || account.label} (Headless: ${isHeadless ? 'Aktif' : 'Nonaktif'})...`);
+    this.browser = await chromium.launch(launchOptions);
+
+    this.context = await this.browser.newContext({
+      userAgent: config.USER_AGENT,
+      viewport: { width: 1280, height: 850 },
+      locale: 'en-US',
+      timezoneId: 'Asia/Jakarta'
+    });
+
+    // Stealth script
+    await this.context.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    });
+
+    // Inject cookies
+    if (account.auth_token) {
+      await cookieManager.applyCookies(this.context, account.auth_token, account.ct0);
+    }
+
+    return { browser: this.browser, context: this.context };
+  }
+
+  async closeBrowser() {
+    try {
+      if (this.page) {
+        await this.page.close().catch(() => {});
+        this.page = null;
+      }
+      if (this.context) {
+        await this.context.close().catch(() => {});
+        this.context = null;
+      }
+      if (this.browser) {
+        await this.browser.close().catch(() => {});
+        this.browser = null;
+      }
+    } catch (e) {}
+    this.currentAccount = null;
+  }
+
+  /**
+   * Verify an Account's session and proxy connection on X
+   */
+  async verifyAccount(account) {
+    let tempBrowser = null;
+    try {
+      logger.info(`🔍 Memverifikasi akun: ${account.label} (@${account.username || 'unknown'})...`);
+
+      const validation = cookieManager.validateFormat(account.auth_token, account.ct0);
+      if (!validation.valid) {
+        return { success: false, message: validation.message };
+      }
+
+      const launchOptions = {
+        headless: true,
+        args: ['--no-sandbox', '--disable-blink-features=AutomationControlled']
+      };
+
+      if (account.proxy) {
+        const proxyLaunch = proxyHelper.getPlaywrightLaunchProxy(account.proxy);
+        if (proxyLaunch) {
+          launchOptions.proxy = proxyLaunch;
+          logger.info(`🌐 Memeriksa koneksi melalui Proxy: ${proxyLaunch.server}`);
+        }
+      }
+
+      tempBrowser = await chromium.launch(launchOptions);
+      const tempContext = await tempBrowser.newContext({
+        userAgent: config.USER_AGENT,
+        viewport: { width: 1280, height: 800 }
+      });
+
+      await tempContext.addInitScript(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+      });
+
+      await cookieManager.applyCookies(tempContext, account.auth_token, account.ct0);
+
+      const page = await tempContext.newPage();
+      page.setDefaultTimeout(30000);
+
+      await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(4000);
+
+      const currentUrl = page.url();
+
+      if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
+        logger.error(`❌ Cookie untuk ${account.label} tidak valid atau kedaluwarsa.`);
+        db.saveAccount({ ...account, isValid: false, lastChecked: new Date().toISOString() });
+        return { success: false, message: 'Cookie auth_token tidak valid atau sudah kedaluwarsa.' };
+      }
+
+      let username = '';
+      let name = '';
+      let avatar = '';
+
+      try {
+        const accountSwitcher = await page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', { timeout: 8000 }).catch(() => null);
+        if (accountSwitcher) {
+          const accountText = await accountSwitcher.innerText();
+          const lines = accountText.split('\n').map(s => s.trim()).filter(Boolean);
+          if (lines.length > 0) {
+            name = lines[0] || '';
+            username = lines.find(l => l.startsWith('@')) || '';
+          }
+          const imgEl = await accountSwitcher.$('img');
+          if (imgEl) {
+            avatar = await imgEl.getAttribute('src');
+          }
+        }
+      } catch (e) {}
+
+      if (!username) {
+        const isHome = await page.$('[data-testid="primaryColumn"]');
+        if (isHome) {
+          username = account.username ? `@${account.username}` : '@ActiveUser';
+          name = account.name || 'X User';
+        }
+      }
+
+      if (username) {
+        const updated = db.saveAccount({
+          ...account,
+          username: username.replace('@', ''),
+          name: name || username,
+          avatar: avatar || account.avatar || '',
+          isValid: true,
+          lastChecked: new Date().toISOString()
+        });
+
+        logger.success(`🎉 Berhasil terhubung ke akun: @${updated.username} (${updated.name})`);
+        return { success: true, account: updated };
+      } else {
+        return { success: false, message: 'Gagal memverifikasi akun. Periksa cookie & proxy.' };
+      }
+    } catch (err) {
+      logger.error(`❌ Error verifikasi ${account.label}: ${err.message}`);
+      return { success: false, message: `Gagal verifikasi: ${err.message}` };
+    } finally {
+      if (tempBrowser) {
+        await tempBrowser.close().catch(() => {});
+      }
+    }
+  }
+
+  /**
+   * Verify session legacy helper
+   */
+  async verifySession(authToken, ct0) {
+    const acc = db.getAuth();
+    acc.auth_token = authToken;
+    acc.ct0 = ct0;
+    return this.verifyAccount(acc);
+  }
+
+  /**
+   * Ensure page is open for current account
+   */
+  async getOrCreatePageForAccount(account) {
+    await this.initAccountBrowser(account);
+    if (!this.page || this.page.isClosed()) {
+      this.page = await this.context.newPage();
+      this.page.setDefaultTimeout(35000);
+    }
+    return this.page;
+  }
+
+  async humanScroll(page) {
+    try {
+      const scrollDistance = Math.floor(Math.random() * 250) + 150;
+      await page.mouse.wheel(0, scrollDistance);
+      await page.waitForTimeout(600 + Math.floor(Math.random() * 400));
+    } catch (e) {}
+  }
+
+  async humanType(element, text) {
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      await element.type(char, { delay: Math.floor(Math.random() * 50) + 35 });
+      if (Math.random() < 0.08) {
+        await this.sleep(Math.floor(Math.random() * 150) + 80);
+      }
+    }
+  }
+
+  /**
+   * Like Tweet
+   */
+  async likeTweet(page, tweetUrl, account) {
+    const tweetId = this.extractTweetId(tweetUrl);
+    logger.action(`[@${account.username || account.label}] Mencoba Like: ${tweetUrl}`);
+
+    try {
+      const unlikeBtn = await page.$('article [data-testid="unlike"]');
+      if (unlikeBtn) {
+        logger.info(`ℹ️ [@${account.username || account.label}] Postingan sudah di-Like sebelumnya.`);
+        db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'LIKE', status: 'ALREADY_DONE', message: 'Sudah di-like' });
+        return { success: true, status: 'ALREADY_DONE' };
+      }
+
+      const likeBtn = await page.$('article [data-testid="like"]');
+      if (!likeBtn) {
+        logger.warn(`⚠️ [@${account.username || account.label}] Tombol Like tidak ditemukan.`);
+        return { success: false, message: 'Tombol Like tidak ditemukan' };
+      }
+
+      await likeBtn.scrollIntoViewIfNeeded().catch(() => {});
+      await this.sleep(400);
+      await likeBtn.click();
+      await this.sleep(1200);
+
+      const isLiked = await page.$('article [data-testid="unlike"]');
+      if (isLiked) {
+        logger.success(`❤️ [@${account.username || account.label}] Berhasil Like: ${tweetUrl}`);
+        db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'LIKE', status: 'SUCCESS' });
+        return { success: true, status: 'SUCCESS' };
+      } else {
+        return { success: false, message: 'Verifikasi Like gagal' };
+      }
+    } catch (err) {
+      logger.error(`❌ [@${account.username || account.label}] Gagal Like: ${err.message}`);
+      db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'LIKE', status: 'FAILED', message: err.message });
+      return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Retweet Post
+   */
+  async retweetTweet(page, tweetUrl, account) {
+    const tweetId = this.extractTweetId(tweetUrl);
+    logger.action(`[@${account.username || account.label}] Mencoba Retweet: ${tweetUrl}`);
+
+    try {
+      const unretweetBtn = await page.$('article [data-testid="unretweet"]');
+      if (unretweetBtn) {
+        logger.info(`ℹ️ [@${account.username || account.label}] Postingan sudah di-Retweet sebelumnya.`);
+        db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'RETWEET', status: 'ALREADY_DONE', message: 'Sudah di-retweet' });
+        return { success: true, status: 'ALREADY_DONE' };
+      }
+
+      const retweetBtn = await page.$('article [data-testid="retweet"]');
+      if (!retweetBtn) {
+        logger.warn(`⚠️ [@${account.username || account.label}] Tombol Retweet tidak ditemukan.`);
+        return { success: false, message: 'Tombol Retweet tidak ditemukan' };
+      }
+
+      await retweetBtn.scrollIntoViewIfNeeded().catch(() => {});
+      await this.sleep(400);
+      await retweetBtn.click();
+      await this.sleep(800);
+
+      const confirmBtn = await page.waitForSelector('[data-testid="retweetConfirm"]', { timeout: 5000 }).catch(() => null);
+      if (confirmBtn) {
+        await confirmBtn.click();
+        await this.sleep(1500);
+      }
+
+      const isRetweeted = await page.$('article [data-testid="unretweet"]');
+      if (isRetweeted) {
+        logger.success(`🔁 [@${account.username || account.label}] Berhasil Retweet: ${tweetUrl}`);
+        db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'RETWEET', status: 'SUCCESS' });
+        return { success: true, status: 'SUCCESS' };
+      } else {
+        return { success: false, message: 'Verifikasi Retweet gagal' };
+      }
+    } catch (err) {
+      logger.error(`❌ [@${account.username || account.label}] Gagal Retweet: ${err.message}`);
+      db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'RETWEET', status: 'FAILED', message: err.message });
+      return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Comment on Tweet using Account's specific JSON Comments File
+   */
+  async commentTweet(page, tweetUrl, account, customReplyText = null) {
+    const tweetId = this.extractTweetId(tweetUrl);
+    logger.action(`[@${account.username || account.label}] Mencoba Comment: ${tweetUrl}`);
+
+    try {
+      let replyText = '';
+      if (customReplyText && customReplyText.trim()) {
+        replyText = spintax.parseSpintax(customReplyText.trim());
+      } else {
+        // Load comment pool specifically for this account from its JSON file
+        const accountComments = db.getAccountComments(account.id);
+        replyText = spintax.getRandomTemplate(accountComments);
+      }
+
+      logger.info(`💬 [@${account.username || account.label}] Komentar (dari ${account.commentsFile || 'JSON'}): "${replyText}"`);
+
+      let textarea = await page.$('article [data-testid="tweetTextarea_0"]');
+      if (!textarea) {
+        const replyIcon = await page.$('article [data-testid="reply"]');
+        if (replyIcon) {
+          await replyIcon.click();
+          await this.sleep(800);
+        }
+        textarea = await page.waitForSelector('[data-testid="tweetTextarea_0"]', { timeout: 7000 }).catch(() => null);
+      }
+
+      if (!textarea) {
+        logger.warn(`⚠️ [@${account.username || account.label}] Kolom komentar tidak ditemukan.`);
+        return { success: false, message: 'Kolom komentar tidak dapat diakses' };
+      }
+
+      await textarea.click();
+      await this.sleep(400);
+
+      await this.humanType(textarea, replyText);
+      await this.sleep(800);
+
+      const replyBtn = await page.waitForSelector('[data-testid="tweetButtonInline"], [data-testid="tweetButton"]', { timeout: 6000 }).catch(() => null);
+      if (!replyBtn) {
+        return { success: false, message: 'Tombol kirim balasan tidak ditemukan' };
+      }
+
+      await replyBtn.click();
+      await this.sleep(2000);
+
+      logger.success(`💬 [@${account.username || account.label}] Berhasil kirim komentar: "${replyText}"`);
+      db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'COMMENT', status: 'SUCCESS', details: replyText });
+      return { success: true, status: 'SUCCESS', replyText };
+    } catch (err) {
+      logger.error(`❌ [@${account.username || account.label}] Gagal komentar: ${err.message}`);
+      db.addHistory({ accountId: account.id, accountName: account.username || account.label, tweetUrl, tweetId, action: 'COMMENT', status: 'FAILED', message: err.message });
+      return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Process a single tweet URL with a specific account
+   */
+  async processTweetWithAccount(tweetUrl, account, options = {}) {
+    const { like = true, retweet = true, comment = true, commentText = null } = options;
+    const page = await this.getOrCreatePageForAccount(account);
+
+    logger.info(`🌐 [@${account.username || account.label}] Membuka: ${tweetUrl}`);
+    await page.goto(tweetUrl, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
+
+    if (db.getSettings().scrollBeforeAction) {
+      await this.humanScroll(page);
+    }
+
+    const results = { tweetUrl, accountId: account.id };
+
+    if (like) {
+      results.like = await this.likeTweet(page, tweetUrl, account);
+      if (retweet || comment) await this.sleep(2000 + Math.floor(Math.random() * 2000));
+    }
+
+    if (retweet) {
+      results.retweet = await this.retweetTweet(page, tweetUrl, account);
+      if (comment) await this.sleep(2500 + Math.floor(Math.random() * 2000));
+    }
+
+    if (comment) {
+      results.comment = await this.commentTweet(page, tweetUrl, account, commentText);
+    }
+
+    return results;
+  }
+
+  /**
+   * Resolve Accounts for Task Execution
+   */
+  resolveTaskAccounts(accountIds) {
+    if (!accountIds || accountIds === 'all' || (Array.isArray(accountIds) && accountIds.includes('all'))) {
+      const active = db.getActiveAccounts();
+      if (active.length === 0) throw new Error('Tidak ada akun aktif yang ditemukan. Silakan tambahkan atau aktifkan akun di menu Multi-Akun.');
+      return active;
+    }
+
+    if (Array.isArray(accountIds)) {
+      const matched = accountIds.map(id => db.getAccountById(id)).filter(Boolean);
+      if (matched.length === 0) throw new Error('Akun yang dipilih tidak valid.');
+      return matched;
+    }
+
+    const single = db.getAccountById(accountIds);
+    if (!single) throw new Error('Akun yang dipilih tidak ditemukan.');
+    return [single];
+  }
+
+  /**
+   * Run Multi-Account Batch Task
+   */
+  async runMultiAccountBatchTask(accountIds, urls, options = {}) {
+    if (this.isRunning) {
+      throw new Error('Sebuah proses otomasi sedang berjalan.');
+    }
+
+    const targetAccounts = this.resolveTaskAccounts(accountIds);
+    this.isRunning = true;
+    this.abortController = new AbortController();
+    this.currentTask = {
+      type: 'MULTI_BATCH',
+      accountsCount: targetAccounts.length,
+      urlsCount: urls.length,
+      total: urls.length * targetAccounts.length,
+      completed: 0,
+      failed: 0
+    };
+
+    logger.info(`🚀 Memulai Multi-Account Batch (${targetAccounts.length} Akun, ${urls.length} Postingan)...`);
+
+    try {
+      for (let u = 0; u < urls.length; u++) {
+        if (this.abortController.signal.aborted) break;
+        const url = urls[u].trim();
+        if (!url) continue;
+
+        logger.action(`📌 [Target ${u + 1}/${urls.length}] Menjalankan rotasi engagement: ${url}`);
+
+        for (let a = 0; a < targetAccounts.length; a++) {
+          if (this.abortController.signal.aborted) break;
+          const account = targetAccounts[a];
+
+          logger.info(`👤 Menggunakan Akun [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`);
+
+          try {
+            await this.processTweetWithAccount(url, account, options);
+            this.currentTask.completed++;
+          } catch (err) {
+            if (err.message === 'TASK_ABORTED') throw err;
+            logger.error(`❌ Error pada akun ${account.label}: ${err.message}`);
+            this.currentTask.failed++;
+          }
+
+          // Delay between accounts
+          if (a < targetAccounts.length - 1) {
+            const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
+            logger.info(`⏳ Jeda rotasi antar akun ${switchDelay} detik...`);
+            await this.sleep(switchDelay * 1000);
+          }
+        }
+
+        // Delay before next target tweet
+        if (u < urls.length - 1) {
+          await this.randomDelay(options.minDelay, options.maxDelay);
+        }
+      }
+
+      logger.success(`🏁 Selesai memproses seluruh target engagement dengan ${targetAccounts.length} akun.`);
+    } catch (err) {
+      if (err.message === 'TASK_ABORTED') {
+        logger.warn(`🛑 Tugas multi-akun dihentikan pengguna.`);
+      } else {
+        logger.error(`❌ Terjadi error pada runner: ${err.message}`);
+      }
+    } finally {
+      await this.closeBrowser();
+      this.isRunning = false;
+      this.currentTask = null;
+      this.abortController = null;
+    }
+  }
+
+  /**
+   * Run Multi-Account Keyword Hunter
+   */
+  async runMultiAccountHunter(accountIds, keyword, count = 10, options = {}) {
+    if (this.isRunning) {
+      throw new Error('Sebuah proses otomasi sedang berjalan.');
+    }
+
+    const targetAccounts = this.resolveTaskAccounts(accountIds);
+    this.isRunning = true;
+    this.abortController = new AbortController();
+    this.currentTask = {
+      type: 'MULTI_HUNTER',
+      keyword,
+      accountsCount: targetAccounts.length,
+      targetCount: count,
+      completed: 0
+    };
+
+    logger.info(`🔍 Memulai Multi-Account Auto Hunter untuk "${keyword}" (${targetAccounts.length} Akun)...`);
+
+    try {
+      // Step 1: Scrape target tweets using primary account
+      const scraperAccount = targetAccounts[0];
+      const page = await this.getOrCreatePageForAccount(scraperAccount);
+      const searchUrl = `https://x.com/search?q=${encodeURIComponent(keyword)}&f=live`;
+
+      logger.info(`🌐 Mengumpulkan tweet dari X: ${searchUrl}`);
+      await page.goto(searchUrl, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(4000);
+
+      const collectedUrls = new Set();
+      let scrollAttempts = 0;
+      const maxScrolls = 15;
+
+      while (collectedUrls.size < count && scrollAttempts < maxScrolls) {
+        if (this.abortController.signal.aborted) break;
+
+        const tweetLinks = await page.$$eval('article a[href*="/status/"]', (links) => {
+          return links
+            .map(a => a.href)
+            .filter(href => !href.includes('/photo/') && !href.includes('/video/') && !href.includes('/analytics'));
+        });
+
+        tweetLinks.forEach(url => {
+          const cleanUrl = url.split('?')[0];
+          if (cleanUrl.match(/\/status\/\d+$/)) {
+            collectedUrls.add(cleanUrl);
+          }
+        });
+
+        if (collectedUrls.size >= count) break;
+        await this.humanScroll(page);
+        await this.sleep(2000);
+        scrollAttempts++;
+      }
+
+      const targetList = Array.from(collectedUrls).slice(0, count);
+      logger.success(`🎯 Mengumpulkan ${targetList.length} tweet untuk di-engage oleh ${targetAccounts.length} akun.`);
+
+      // Step 2: Engage each collected tweet with each account
+      for (let i = 0; i < targetList.length; i++) {
+        if (this.abortController.signal.aborted) break;
+        const tweetUrl = targetList[i];
+
+        logger.action(`📌 [Hunter ${i + 1}/${targetList.length}] Target: ${tweetUrl}`);
+
+        for (let a = 0; a < targetAccounts.length; a++) {
+          if (this.abortController.signal.aborted) break;
+          const account = targetAccounts[a];
+
+          logger.info(`👤 Aksi Akun [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`);
+
+          try {
+            await this.processTweetWithAccount(tweetUrl, account, options);
+            this.currentTask.completed++;
+          } catch (err) {
+            if (err.message === 'TASK_ABORTED') throw err;
+            logger.error(`❌ Gagal interaksi dengan akun ${account.label}: ${err.message}`);
+          }
+
+          if (a < targetAccounts.length - 1) {
+            const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
+            await this.sleep(switchDelay * 1000);
+          }
+        }
+
+        if (i < targetList.length - 1) {
+          await this.randomDelay(options.minDelay, options.maxDelay);
+        }
+      }
+
+      logger.success(`🏁 Multi-Account Hunter selesai memproses seluruh postingan.`);
+    } catch (err) {
+      if (err.message === 'TASK_ABORTED') {
+        logger.warn(`🛑 Auto Hunter multi-akun dihentikan.`);
+      } else {
+        logger.error(`❌ Error Hunter: ${err.message}`);
+      }
+    } finally {
+      await this.closeBrowser();
+      this.isRunning = false;
+      this.currentTask = null;
+      this.abortController = null;
+    }
+  }
+
+  stopTask() {
+    if (this.isRunning && this.abortController) {
+      logger.warn(`⚠️ Mengirim sinyal penghentian ke bot runner...`);
+      this.abortController.abort();
+      return true;
+    }
+    return false;
+  }
+
+  getStatus() {
+    return {
+      isRunning: this.isRunning,
+      currentTask: this.currentTask,
+      accounts: db.getAccounts(),
+      activeAccountsCount: db.getActiveAccounts().length,
+      stats: db.getStats()
+    };
+  }
+}
+
+module.exports = new TwitterBot();

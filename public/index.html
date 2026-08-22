@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-AutoEngage PRO - Multi-Akun, Proxy & Automation Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h2>X-AutoEngage</h2>
+          <span class="badge-pro">MULTI-ACCOUNT v2.0</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="tab-accounts">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Multi-Akun & Proxy</span>
+        </button>
+        <button class="nav-item" data-tab="tab-batch">
+          <span class="nav-icon">🎯</span>
+          <span class="nav-label">Target URL Postingan</span>
+        </button>
+        <button class="nav-item" data-tab="tab-hunter">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-label">Auto Hunter (Keyword)</span>
+        </button>
+        <button class="nav-item" data-tab="tab-spintax">
+          <span class="nav-icon">📝</span>
+          <span class="nav-label">Spintax & Template</span>
+        </button>
+        <button class="nav-item" data-tab="tab-safety">
+          <span class="nav-icon">🛡️</span>
+          <span class="nav-label">Proteksi Anti-Ban</span>
+        </button>
+        <button class="nav-item" data-tab="tab-history">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Riwayat & Log</span>
+        </button>
+      </nav>
+
+      <!-- Multi-Account Summary Widget -->
+      <div class="account-card">
+        <div class="account-header">
+          <div class="status-indicator-dot active" id="systemStatusDot"></div>
+          <span class="status-title" id="systemStatusText">Sistem Siap</span>
+        </div>
+        <div class="account-stats-mini mt-2">
+          <div class="stat-row">
+            <span>Total Akun:</span>
+            <strong id="sidebarTotalAccounts">0</strong>
+          </div>
+          <div class="stat-row">
+            <span>Akun Aktif:</span>
+            <strong id="sidebarActiveAccounts" style="color: var(--accent-cyan);">0</strong>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header Stats Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 id="pageTitle">Manajemen Multi-Akun & Proxy</h1>
+          <p id="pageSubtitle">Kelola banyak akun X dengan proxy individual dan bank komentar JSON kustom</p>
+        </div>
+        <div class="header-stats">
+          <div class="stat-pill">
+            <span class="stat-icon">❤️</span>
+            <span class="stat-num" id="statLikes">0</span>
+            <span class="stat-name">Likes</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-icon">🔁</span>
+            <span class="stat-num" id="statRetweets">0</span>
+            <span class="stat-name">Retweets</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-icon">💬</span>
+            <span class="stat-num" id="statComments">0</span>
+            <span class="stat-name">Comments</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB 1: MULTI-ACCOUNTS & PROXY MANAGEMENT -->
+      <section class="tab-content active" id="tab-accounts">
+        <div class="card glass-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="badge-icon">👥</span>
+              <div>
+                <h3>Daftar Akun X & Konfigurasi Proxy</h3>
+                <p>Setiap akun mendukung cookie <code>auth_token</code>, <code>ct0</code>, Proxy independen, dan file komentar <code>.json</code> unik.</p>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="btnOpenAddAccountModal">✨ + Tambah Akun Baru</button>
+          </div>
+
+          <div class="card-body">
+            <!-- Accounts Grid -->
+            <div id="accountsGridContainer" class="accounts-grid">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: BATCH / SINGLE TARGET POSTS -->
+      <section class="tab-content" id="tab-batch">
+        <div class="grid-2-col">
+          <div class="card glass-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="badge-icon">🎯</span>
+                <div>
+                  <h3>Target Link Postingan X</h3>
+                  <p>Masukkan daftar URL tweet target (1 URL per baris)</p>
+                </div>
+              </div>
+              <span class="badge-counter" id="urlCounter">0 Postingan</span>
+            </div>
+
+            <div class="card-body">
+              <!-- Account Selection -->
+              <div class="form-group">
+                <label for="batchAccountSelector"><strong>Pilih Akun yang Dijalankan:</strong></label>
+                <select id="batchAccountSelector">
+                  <option value="all">✨ Semua Akun Aktif (Multi-Account Rotation)</option>
+                </select>
+                <small class="field-hint">Setiap akun akan berinteraksi dengan postingan secara bergiliran menggunakan proxy & komentar JSON masing-masing.</small>
+              </div>
+
+              <div class="form-group mt-3">
+                <label for="targetUrls"><strong>Daftar URL Postingan:</strong></label>
+                <textarea id="targetUrls" rows="6" placeholder="https://x.com/username/status/1891234567890&#10;https://x.com/tech_indo/status/1899876543210"></textarea>
+              </div>
+
+              <div class="section-divider"><span>PILIH AKSI OTOMASI</span></div>
+
+              <div class="action-toggles-grid">
+                <label class="toggle-card">
+                  <input type="checkbox" id="checkLike" checked>
+                  <div class="toggle-content">
+                    <span class="toggle-icon">❤️</span>
+                    <span class="toggle-title">Auto Like</span>
+                  </div>
+                </label>
+
+                <label class="toggle-card">
+                  <input type="checkbox" id="checkRetweet" checked>
+                  <div class="toggle-content">
+                    <span class="toggle-icon">🔁</span>
+                    <span class="toggle-title">Auto Retweet</span>
+                  </div>
+                </label>
+
+                <label class="toggle-card">
+                  <input type="checkbox" id="checkComment" checked>
+                  <div class="toggle-content">
+                    <span class="toggle-icon">💬</span>
+                    <span class="toggle-title">Auto Comment</span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="form-group mt-3" id="commentSourceGroup">
+                <label for="customCommentInput">
+                  <strong>Override Komentar Manual (Opsional):</strong>
+                </label>
+                <textarea id="customCommentInput" rows="2" placeholder="Kosongkan untuk menggunakan file .json komentar spesifik masing-masing akun"></textarea>
+              </div>
+
+              <div class="control-actions mt-4">
+                <button class="btn btn-primary btn-lg w-100" id="btnStartBatch">
+                  <span id="btnBatchText">🚀 Jalankan Otomasi Multi-Akun</span>
+                </button>
+                <button class="btn btn-danger btn-lg w-100 mt-2" id="btnStopTask" style="display: none;">
+                  🛑 Hentikan Proses Otomasi
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Task Status & Mini Console -->
+          <div class="card glass-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="badge-icon">⚡</span>
+                <div>
+                  <h3>Status Tugas Aktif</h3>
+                  <p>Pemantauan proses rotasi multi-akun secara real-time</p>
+                </div>
+              </div>
+              <span class="status-pill status-idle" id="taskStatusBadge">Siap</span>
+            </div>
+            <div class="card-body">
+              <div class="progress-container">
+                <div class="progress-labels">
+                  <span id="progressLabel">Menunggu perintah...</span>
+                  <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="terminal-container mt-4">
+                <div class="terminal-header">
+                  <div class="terminal-dots">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <span class="terminal-title">LIVE MULTI-ACCOUNT LOG STREAM</span>
+                  <button class="btn-clear-term" id="btnClearTerminal">Hapus</button>
+                </div>
+                <div class="terminal-body" id="liveTerminalOutput">
+                  <div class="term-line info">[SYS] Menghubungkan ke live log stream...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: AUTO HUNTER (KEYWORD / HASHTAG) -->
+      <section class="tab-content" id="tab-hunter">
+        <div class="card glass-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="badge-icon">🔍</span>
+              <div>
+                <h3>Auto Hunter: Search & Engage Berdasarkan Keyword</h3>
+                <p>Cari postingan terbaru di X dan lakukan rotasi interaksi dengan multi-akun.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="grid-2-col">
+              <div class="form-group">
+                <label for="hunterAccountSelector"><strong>Pilih Akun:</strong></label>
+                <select id="hunterAccountSelector">
+                  <option value="all">✨ Semua Akun Aktif (Multi-Account Rotation)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="hunterCount"><strong>Target Jumlah Postingan:</strong></label>
+                <select id="hunterCount">
+                  <option value="5">5 Postingan</option>
+                  <option value="10" selected>10 Postingan (Disarankan)</option>
+                  <option value="20">20 Postingan</option>
+                  <option value="35">35 Postingan</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group mt-2">
+              <label for="hunterKeyword"><strong>Kata Kunci atau Hashtag Pencarian:</strong> <span class="required-star">*</span></label>
+              <input type="text" id="hunterKeyword" placeholder="Misal: #TechTwitter, AI Indonesia, Crypto, dll">
+            </div>
+
+            <div class="action-toggles-grid mt-3">
+              <label class="toggle-card">
+                <input type="checkbox" id="hunterCheckLike" checked>
+                <div class="toggle-content">
+                  <span class="toggle-icon">❤️</span>
+                  <span class="toggle-title">Auto Like</span>
+                </div>
+              </label>
+
+              <label class="toggle-card">
+                <input type="checkbox" id="hunterCheckRetweet" checked>
+                <div class="toggle-content">
+                  <span class="toggle-icon">🔁</span>
+                  <span class="toggle-title">Auto Retweet</span>
+                </div>
+              </label>
+
+              <label class="toggle-card">
+                <input type="checkbox" id="hunterCheckComment" checked>
+                <div class="toggle-content">
+                  <span class="toggle-icon">💬</span>
+                  <span class="toggle-title">Auto Comment</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="control-actions mt-4">
+              <button class="btn btn-primary btn-lg" id="btnStartHunter">
+                <span>🔍 Jalankan Multi-Akun Auto Hunter</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: SPINTAX & TEMPLATES -->
+      <section class="tab-content" id="tab-spintax">
+        <div class="grid-2-col">
+          <!-- Template List -->
+          <div class="card glass-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="badge-icon">📝</span>
+                <div>
+                  <h3>Template Komentar Default / Global</h3>
+                  <p>Digunakan sebagai fallback jika akun belum memiliki file JSON khusus</p>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btnAddNewTemplate">+ Tambah</button>
+            </div>
+
+            <div class="card-body">
+              <div id="templateListContainer" class="template-list"></div>
+              <button class="btn btn-primary mt-3 w-100" id="btnSaveTemplates">💾 Simpan Template Global</button>
+            </div>
+          </div>
+
+          <!-- Spintax Tester & AI Config -->
+          <div class="card glass-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="badge-icon">🧪</span>
+                <div>
+                  <h3>Penguji Spintax</h3>
+                  <p>Uji variasi teks secara instan</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="form-group">
+                <label><strong>Ketik Format Spintax:</strong></label>
+                <textarea id="spintaxTesterInput" rows="3">{Halo|Hai|Permisi} {kak|bang}, {postingan ini sangat {menarik|berguna}|insight yang sangat bagus}! 🔥</textarea>
+              </div>
+
+              <button class="btn btn-secondary btn-sm" id="btnRunSpintaxTest">⚡ Generate 5 Variasi Acak</button>
+
+              <div class="spintax-results mt-3" id="spintaxResultsContainer" style="display: none;">
+                <h5>Hasil Acak yang Dihasilkan:</h5>
+                <ul id="spintaxVariationList"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: ANTI-BAN & SAFETY SETTINGS -->
+      <section class="tab-content" id="tab-safety">
+        <div class="card glass-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="badge-icon">🛡️</span>
+              <div>
+                <h3>Konfigurasi Proteksi Anti-Ban & Multi-Akun Delay</h3>
+                <p>Pengaturan waktu tunggu rotasi antar akun dan jeda aksi.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="grid-2-col">
+              <div class="form-group">
+                <label for="minDelaySec"><strong>Jeda Minimum Antar Postingan (Detik)</strong></label>
+                <input type="number" id="minDelaySec" min="5" max="300" value="15">
+              </div>
+
+              <div class="form-group">
+                <label for="maxDelaySec"><strong>Jeda Maksimum Antar Postingan (Detik)</strong></label>
+                <input type="number" id="maxDelaySec" min="10" max="600" value="35">
+              </div>
+
+              <div class="form-group">
+                <label for="accountSwitchDelaySec">
+                  <strong>Jeda Rotasi Antar Akun (Detik)</strong>
+                  <span class="field-hint">(Waktu tunggu sebelum berganti ke akun berikutnya)</span>
+                </label>
+                <input type="number" id="accountSwitchDelaySec" min="3" max="120" value="10">
+              </div>
+
+              <div class="form-group">
+                <label for="dailyLimit"><strong>Batas Aksi per Akun per Hari</strong></label>
+                <input type="number" id="dailyLimit" min="10" max="500" value="150">
+              </div>
+            </div>
+
+            <div class="section-divider"><span>PERILAKU BROWSER</span></div>
+
+            <div class="grid-2-col">
+              <label class="toggle-card">
+                <input type="checkbox" id="checkHeadless">
+                <div class="toggle-content">
+                  <span class="toggle-icon">👻</span>
+                  <span class="toggle-title">Headless Mode (Latar Belakang)</span>
+                  <span class="toggle-sub">Jalankan browser tanpa menampilkan jendela</span>
+                </div>
+              </label>
+
+              <label class="toggle-card">
+                <input type="checkbox" id="checkScrollAction" checked>
+                <div class="toggle-content">
+                  <span class="toggle-icon">📜</span>
+                  <span class="toggle-title">Human-like Scrolling</span>
+                  <span class="toggle-sub">Scroll halaman secara natural sebelum like/komentar</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="control-actions mt-4">
+              <button class="btn btn-primary" id="btnSaveSafetySettings">💾 Simpan Pengaturan Keamanan</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: HISTORY & LOGS -->
+      <section class="tab-content" id="tab-history">
+        <div class="card glass-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="badge-icon">📊</span>
+              <div>
+                <h3>Riwayat Interaksi Postingan</h3>
+                <p>Histori aksi like, retweet, dan komentar per akun.</p>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnRefreshHistory">🔄 Segarkan</button>
+          </div>
+
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Waktu</th>
+                    <th>Akun X</th>
+                    <th>Aksi</th>
+                    <th>URL Postingan</th>
+                    <th>Status</th>
+                    <th>Keterangan / Balasan</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                  <tr>
+                    <td colspan="6" class="text-center">Belum ada riwayat aktivitas.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL: ADD / EDIT ACCOUNT -->
+  <div class="modal-overlay" id="accountModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalAccountTitle">Tambah Akun X Baru</h3>
+        <button class="btn-close-modal" id="btnCloseAccountModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editAccountId">
+
+        <div class="form-group">
+          <label for="accInputLabel"><strong>Label / Nama Akun:</strong> <span class="required-star">*</span></label>
+          <input type="text" id="accInputLabel" placeholder="Misal: Akun Buzzer 1, Akun Pribadi, dll">
+        </div>
+
+        <div class="form-group">
+          <label for="accInputAuthToken"><strong>auth_token:</strong> <span class="required-star">*</span></label>
+          <div class="input-with-action">
+            <input type="password" id="accInputAuthToken" placeholder="Cookie auth_token dari X...">
+            <button class="btn-toggle-eye" type="button" data-target="accInputAuthToken">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="accInputCt0"><strong>ct0:</strong></label>
+          <div class="input-with-action">
+            <input type="password" id="accInputCt0" placeholder="Cookie ct0 dari X...">
+            <button class="btn-toggle-eye" type="button" data-target="accInputCt0">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="accInputProxy">
+            <strong>Proxy (Opsional):</strong>
+            <span class="field-hint">Format: <code>http://user:pass@ip:port</code> atau <code>ip:port:user:pass</code></span>
+          </label>
+          <input type="text" id="accInputProxy" placeholder="Contoh: http://proxyuser:pass@123.45.67.89:8080">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelAccountModal">Batal</button>
+        <button class="btn btn-primary" id="btnSaveAccountModal">💾 Simpan Akun</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ACCOUNT COMMENTS JSON EDITOR & UPLOADER -->
+  <div class="modal-overlay" id="commentsModal" style="display: none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3 id="commentsModalTitle">Bank Komentar JSON untuk Akun</h3>
+          <p id="commentsModalSubtitle" class="modal-sub">File: <code>data/comments/...</code></p>
+        </div>
+        <button class="btn-close-modal" id="btnCloseCommentsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="commentsModalAccountId">
+
+        <div class="upload-json-zone">
+          <label class="btn btn-secondary btn-sm">
+            📁 Unggah File .json
+            <input type="file" id="inputFileUploadComments" accept=".json" style="display: none;">
+          </label>
+          <span class="upload-hint">Pilih file .json dari komputer Anda (Format: array string <code>["komentar 1", "komentar 2"]</code>)</span>
+        </div>
+
+        <div class="form-group mt-3">
+          <label><strong>Daftar Template Komentar Akun Ini (Mendukung Spintax):</strong></label>
+          <div id="accountCommentsList" class="template-list" style="max-height: 250px;"></div>
+          <button class="btn btn-secondary btn-sm mt-2" id="btnAddAccountCommentRow">+ Tambah Komentar</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelCommentsModal">Batal</button>
+        <button class="btn btn-primary" id="btnSaveAccountCommentsModal">💾 Simpan File Komentar JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
