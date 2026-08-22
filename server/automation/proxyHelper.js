@@ -69,20 +69,57 @@ class ProxyHelper {
   }
 
   /**
-   * Format for Playwright launch option
+   * Test proxy connection and fetch GeoIP data with latency measurement
    */
-  getPlaywrightLaunchProxy(proxyString) {
-    const parsed = this.parseProxy(proxyString);
-    if (!parsed) return undefined;
+  async testProxy(proxyString) {
+    const parsed = this.getPlaywrightLaunchProxy(proxyString);
+    if (!parsed) {
+      return { success: false, message: 'Format proxy tidak valid atau kosong.' };
+    }
 
-    const proxyConfig = {
-      server: parsed.server
-    };
+    const { request } = require('playwright');
+    const startTime = Date.now();
 
-    if (parsed.username) proxyConfig.username = parsed.username;
-    if (parsed.password) proxyConfig.password = parsed.password;
+    try {
+      const apiContext = await request.newContext({
+        proxy: parsed,
+        timeout: 8000
+      });
 
-    return proxyConfig;
+      const response = await apiContext.get('http://ip-api.com/json', { timeout: 8000 });
+      const latency = Date.now() - startTime;
+
+      if (response.ok()) {
+        const data = await response.json();
+        await apiContext.dispose();
+        return {
+          success: true,
+          latency,
+          ip: data.query,
+          country: data.country,
+          countryCode: data.countryCode,
+          city: data.city,
+          isp: data.isp || data.org,
+          status: 'ALIVE'
+        };
+      } else {
+        await apiContext.dispose();
+        return {
+          success: false,
+          latency,
+          message: `Proxy HTTP Error: ${response.status()}`,
+          status: 'DEAD'
+        };
+      }
+    } catch (err) {
+      const latency = Date.now() - startTime;
+      return {
+        success: false,
+        latency,
+        message: err.message.includes('timeout') ? 'Connection Timeout (8s)' : err.message,
+        status: 'DEAD'
+      };
+    }
   }
 }
 

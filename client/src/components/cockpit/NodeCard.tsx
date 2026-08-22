@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AccountNode, apiClient } from '@/services/apiClient';
+import { AccountNode, apiClient, ProxyTestResult } from '@/services/apiClient';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   HelpCircle,
   Power,
-  ShieldCheck,
+  Activity,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 
 interface NodeCardProps {
@@ -23,6 +25,8 @@ interface NodeCardProps {
 export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
   const { loadAccounts, openAccountModal, openCommentsModal } = useStore();
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isPingingProxy, setIsPingingProxy] = useState(false);
+  const [proxyTest, setProxyTest] = useState<ProxyTestResult | null>(null);
 
   const handleToggle = async () => {
     try {
@@ -52,6 +56,25 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
       toast.error(`Error: ${err.message}`);
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  const handlePingProxy = async () => {
+    setIsPingingProxy(true);
+    try {
+      const res = await apiClient.testAccountProxy(account.id);
+      setProxyTest(res);
+      if (res.isDirect) {
+        toast.info('Node menggunakan koneksi Direct IP (tanpa proxy).');
+      } else if (res.success) {
+        toast.success(`Proxy Online: ${res.ip} (${res.country}) · Latency: ${res.latency}ms`);
+      } else {
+        toast.error(`Proxy Error: ${res.message}`);
+      }
+    } catch (err: any) {
+      toast.error(`Gagal menguji proxy: ${err.message}`);
+    } finally {
+      setIsPingingProxy(false);
     }
   };
 
@@ -121,13 +144,33 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           )}
 
           {cleanProxy ? (
-            <Badge variant="purple" className="gap-1 max-w-[200px] truncate" title={account.proxy}>
+            <Badge variant="purple" className="gap-1 max-w-[190px] truncate" title={account.proxy}>
               <Globe className="w-3 h-3" />
               {cleanProxy}
             </Badge>
           ) : (
             <Badge variant="outline" className="text-slate-500 text-[10px]">
               DIRECT IP
+            </Badge>
+          )}
+
+          {/* Proxy Ping Live Status */}
+          {proxyTest && !proxyTest.isDirect && (
+            <Badge
+              variant={proxyTest.success ? 'success' : 'destructive'}
+              className="gap-1 animate-in fade-in text-[10px]"
+            >
+              {proxyTest.success ? (
+                <>
+                  <Wifi className="w-3 h-3" />
+                  {proxyTest.latency}ms · {proxyTest.countryCode || 'OK'}
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3" />
+                  DEAD ({proxyTest.latency}ms)
+                </>
+              )}
             </Badge>
           )}
 
@@ -143,7 +186,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center gap-2 pt-3 border-t border-border/60">
+      <div className="flex items-center gap-1.5 pt-3 border-t border-border/60">
         <Button
           size="sm"
           variant="secondary"
@@ -152,13 +195,26 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           disabled={isVerifying}
         >
           <Zap className="w-3 h-3 mr-1 text-amber-400" />
-          {isVerifying ? 'PROBING...' : 'Test Probe'}
+          {isVerifying ? 'PROBING...' : 'Verify Session'}
         </Button>
+
+        {account.proxy && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs px-2"
+            onClick={handlePingProxy}
+            disabled={isPingingProxy}
+            title="Ping Proxy Latency & Location"
+          >
+            <Activity className={`w-3.5 h-3.5 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`} />
+          </Button>
+        )}
 
         <Button
           size="sm"
           variant="outline"
-          className="text-xs px-2.5"
+          className="text-xs px-2"
           onClick={() => openAccountModal(account)}
           title="Edit Node Config"
         >
@@ -168,7 +224,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
         <Button
           size="sm"
           variant="destructive"
-          className="text-xs px-2.5"
+          className="text-xs px-2"
           onClick={handleDelete}
           title="Remove Node"
         >

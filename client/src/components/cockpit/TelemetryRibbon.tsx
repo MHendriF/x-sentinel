@@ -15,6 +15,10 @@ const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
     title: 'Feed Hunter Intelligence',
     subtitle: 'Autonomous keyword scanning and multi-node engagement sequence.',
   },
+  'tab-analytics': {
+    title: 'Analytics & Growth Intelligence',
+    subtitle: 'Interactive telemetry trends, node cluster distribution, and execution velocity metrics.',
+  },
   'tab-spintax': {
     title: 'Payload Bank & Spintax Generator',
     subtitle: 'Configure global fallback payloads and test spintax permutations.',

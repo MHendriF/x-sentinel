@@ -8,6 +8,7 @@ import {
   Sliders,
   ShieldAlert,
   FileSpreadsheet,
+  BarChart3,
   X,
   Radio,
 } from 'lucide-react';
@@ -28,6 +29,11 @@ const NAV_ITEMS = [
     id: 'tab-hunter',
     label: 'Feed Hunter',
     icon: Radar,
+  },
+  {
+    id: 'tab-analytics',
+    label: 'Analytics & Growth',
+    icon: BarChart3,
   },
   {
     id: 'tab-spintax',

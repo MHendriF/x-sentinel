@@ -6,6 +6,7 @@ import { TelemetryRibbon } from '@/components/cockpit/TelemetryRibbon';
 import { NodesGrid } from '@/components/cockpit/NodesGrid';
 import { TargetWorkbench } from '@/components/cockpit/TargetWorkbench';
 import { FeedHunter } from '@/components/cockpit/FeedHunter';
+import { AnalyticsDeck } from '@/components/cockpit/AnalyticsDeck';
 import { PayloadBank } from '@/components/cockpit/PayloadBank';
 import { DefenseProtocol } from '@/components/cockpit/DefenseProtocol';
 import { AuditLedger } from '@/components/cockpit/AuditLedger';
@@ -62,6 +63,7 @@ export const App: React.FC = () => {
           {activeTab === 'tab-accounts' && <NodesGrid />}
           {activeTab === 'tab-batch' && <TargetWorkbench />}
           {activeTab === 'tab-hunter' && <FeedHunter />}
+          {activeTab === 'tab-analytics' && <AnalyticsDeck />}
           {activeTab === 'tab-spintax' && <PayloadBank />}
           {activeTab === 'tab-safety' && <DefenseProtocol />}
           {activeTab === 'tab-history' && <AuditLedger />}

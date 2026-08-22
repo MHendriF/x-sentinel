@@ -202,6 +202,40 @@ router.post('/proxy/test', (req, res) => {
   res.json({ valid: true, parsed, message: `Format proxy valid: ${parsed.server}` });
 });
 
+// POST /api/proxy/test - Live ping & GeoIP test for any proxy string
+router.post('/proxy/test', async (req, res) => {
+  const { proxy } = req.body;
+  if (!proxy) {
+    return res.status(400).json({ success: false, message: 'String proxy wajib diisi.' });
+  }
+
+  logger.info(`🌐 Menguji koneksi proxy: ${proxy.replace(/http:\/\/[^@]*@/, '')}...`);
+  const result = await proxyHelper.testProxy(proxy);
+  if (result.success) {
+    logger.success(`✅ Proxy aktif: ${result.ip} (${result.country}) - Latency: ${result.latency}ms`);
+  } else {
+    logger.warn(`❌ Proxy gagal: ${result.message} (${result.latency}ms)`);
+  }
+  res.json(result);
+});
+
+// POST /api/accounts/:id/test-proxy - Live ping test for specific account's proxy
+router.post('/accounts/:id/test-proxy', async (req, res) => {
+  const { id } = req.params;
+  const account = db.getAccountById(id);
+  if (!account) {
+    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+  }
+
+  if (!account.proxy) {
+    return res.json({ success: true, isDirect: true, message: 'Akun menggunakan koneksi Direct IP (tanpa proxy).' });
+  }
+
+  logger.info(`🌐 Menguji proxy node ${account.label}...`);
+  const result = await proxyHelper.testProxy(account.proxy);
+  res.json(result);
+});
+
 // GET /api/settings - Get settings
 router.get('/settings', (req, res) => {
   res.json({ success: true, settings: db.getSettings() });

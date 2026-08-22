@@ -63,7 +63,37 @@ export interface LogEntry {
   meta?: any;
 }
 
+export interface ProxyTestResult {
+  success: boolean;
+  isDirect?: boolean;
+  latency?: number;
+  ip?: string;
+  country?: string;
+  countryCode?: string;
+  city?: string;
+  isp?: string;
+  status?: 'ALIVE' | 'DEAD';
+  message?: string;
+}
+
 export const apiClient = {
+  // Proxy Testing
+  async testProxy(proxy: string): Promise<ProxyTestResult> {
+    const res = await fetch('/api/proxy/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ proxy }),
+    });
+    return res.json();
+  },
+
+  async testAccountProxy(id: string): Promise<ProxyTestResult> {
+    const res = await fetch(`/api/accounts/${id}/test-proxy`, {
+      method: 'POST',
+    });
+    return res.json();
+  },
+
   // Status
   async getStatus() {
     const res = await fetch('/api/status');
