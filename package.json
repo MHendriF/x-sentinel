@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "node server/index.js",
-    "client:dev": "npm --prefix client run dev",
-    "client:build": "npm --prefix client run build",
-    "build": "npm --prefix client run build"
+    "dev": "node --watch server/index.js",
+    "client:dev": "bun run --cwd client dev",
+    "client:build": "bun run --cwd client build",
+    "build": "bun run --cwd client build",
+    "test": "node test/verify.js"
   },
   "keywords": [],
   "author": "",

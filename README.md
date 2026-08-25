@@ -56,7 +56,7 @@
 ## 🚀 Cara Menjalankan Aplikasi
 
 ### 1. Prasyarat:
-* Node.js versi 18+ atau 20+
+* Bun versi 1.0+ (atau Node.js 18+)
 * Browser Chromium (Playwright)
 
 ### 2. Instalasi & Menjalankan:
@@ -66,11 +66,11 @@ git clone https://github.com/MHendriF/x-automation.git
 cd x-automation
 
 # Install dependencies root & client
-npm install
-cd client && npm install && npm run build && cd ..
+bun install
+bun run build
 
 # Jalankan server
-npm start
+bun start
 ```
 
 Buka browser dan akses cockpit di: **`http://localhost:3000`**
