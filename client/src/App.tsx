@@ -21,6 +21,7 @@ import { Toaster } from '@/components/ui/sonner';
 export const App: React.FC = () => {
   const {
     activeTab,
+    setActiveTab,
     loadAccounts,
     setStats,
     setIsRunning,
@@ -28,6 +29,41 @@ export const App: React.FC = () => {
     isBulkImportOpen,
     closeBulkImportModal
   } = useStore();
+
+  // URL Hash Synchronizer for Browser Navigation (Back/Forward)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+      const VALID_TABS = [
+        'tab-accounts',
+        'tab-batch',
+        'tab-hunter',
+        'tab-analytics',
+        'tab-ai',
+        'tab-spintax',
+        'tab-safety',
+        'tab-history',
+        'tab-about',
+      ];
+      if (hash) {
+        const candidate = hash.startsWith('tab-') ? hash : `tab-${hash}`;
+        if (VALID_TABS.includes(candidate)) {
+          setActiveTab(candidate);
+        } else if (hash === 'workbench') {
+          setActiveTab('tab-batch');
+        } else if (hash === 'payloads' || hash === 'payload') {
+          setActiveTab('tab-spintax');
+        } else if (hash === 'logs' || hash === 'audit') {
+          setActiveTab('tab-history');
+        } else if (hash === 'nodes' || hash === 'proxies') {
+          setActiveTab('tab-accounts');
+        }
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [setActiveTab]);
 
   // Initial Data Load & SSE Subscription
   useEffect(() => {

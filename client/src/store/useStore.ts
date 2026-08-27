@@ -53,9 +53,57 @@ interface AppState {
   setIsMobileDrawerOpen: (open: boolean) => void;
 }
 
+// Helper to get initial active tab from URL hash or localStorage
+const getInitialTab = (): string => {
+  if (typeof window !== 'undefined') {
+    const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+    const VALID_TABS = [
+      'tab-accounts',
+      'tab-batch',
+      'tab-hunter',
+      'tab-analytics',
+      'tab-ai',
+      'tab-spintax',
+      'tab-safety',
+      'tab-history',
+      'tab-about',
+    ];
+
+    if (hash) {
+      const candidate = hash.startsWith('tab-') ? hash : `tab-${hash}`;
+      if (VALID_TABS.includes(candidate)) return candidate;
+      if (hash === 'workbench') return 'tab-batch';
+      if (hash === 'payloads' || hash === 'payload') return 'tab-spintax';
+      if (hash === 'logs' || hash === 'audit') return 'tab-history';
+      if (hash === 'nodes' || hash === 'proxies') return 'tab-accounts';
+    }
+
+    try {
+      const saved = localStorage.getItem('x_sentinel_active_tab');
+      if (saved && VALID_TABS.includes(saved)) return saved;
+    } catch {
+      // ignore localStorage errors
+    }
+  }
+  return 'tab-accounts';
+};
+
 export const useStore = create<AppState>((set, get) => ({
-  activeTab: 'tab-accounts',
-  setActiveTab: (activeTab) => set({ activeTab, isMobileDrawerOpen: false }),
+  activeTab: getInitialTab(),
+  setActiveTab: (activeTab) => {
+    if (typeof window !== 'undefined') {
+      const slug = activeTab.replace(/^tab-/, '');
+      if (window.location.hash !== `#${slug}`) {
+        window.history.replaceState(null, '', `#${slug}`);
+      }
+      try {
+        localStorage.setItem('x_sentinel_active_tab', activeTab);
+      } catch {
+        // ignore localStorage errors
+      }
+    }
+    set({ activeTab, isMobileDrawerOpen: false });
+  },
 
   accounts: [],
   setAccounts: (accounts) => set({ accounts }),

@@ -62,8 +62,8 @@
 ### 2. Instalasi & Menjalankan:
 ```bash
 # Clone repository
-git clone https://github.com/MHendriF/x-automation.git
-cd x-automation
+git clone https://github.com/MHendriF/x-sentinel.git
+cd x-sentinel
 
 # Install dependencies root & client
 bun install
@@ -79,7 +79,7 @@ Buka browser dan akses cockpit di: **`http://localhost:3000`**
 
 ## 📁 Arsitektur Direktori
 ```
-x-automation/
+x-sentinel/
 ├── client/                     # Frontend Cockpit (React 19, TypeScript, Tailwind CSS, shadcn/ui, Recharts)
 │   ├── src/components/cockpit/ # Modular Domain Cockpit Decks (NodesGrid, Workbench, DefenseProtocol, etc.)
 │   ├── src/lib/presetLibrary.ts # Curated Multi-Niche Spintax Templates (Web3, AI, Devs, Indo, Viral)
