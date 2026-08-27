@@ -24,6 +24,7 @@ export const App: React.FC = () => {
     activeTab,
     setActiveTab,
     loadAccounts,
+    loadSettings,
     setStats,
     setIsRunning,
     addLog,
@@ -72,6 +73,7 @@ export const App: React.FC = () => {
   // Initial Data Load & SSE Subscription
   useEffect(() => {
     loadAccounts();
+    loadSettings();
 
     // SSE Log Stream
     const eventSource = apiClient.subscribeLogs((log) => {

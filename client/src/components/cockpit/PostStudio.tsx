@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ import {
   Lightbulb,
   Terminal,
   Square,
+  ChevronRight,
 } from 'lucide-react';
 
 const STYLE_OPTIONS = [
@@ -69,7 +70,12 @@ const PRESET_KEYWORDS = [
 ];
 
 export const PostStudio: React.FC = () => {
-  const { accounts, settings, isRunning } = useStore();
+  const { accounts, settings, loadSettings, setActiveTab, isRunning } = useStore();
+
+  // Ensure settings are loaded when PostStudio mounts
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   // Generator State
   const [keyword, setKeyword] = useState('');
@@ -98,6 +104,16 @@ export const PostStudio: React.FC = () => {
   const charCount = activeDraftText.length;
   const charLimit = 280;
   const isOverLimit = charCount > charLimit;
+
+  // Compute active AI Provider details
+  const hasConfiguredAI = Boolean(
+    settings?.aiProvider &&
+    settings.aiProvider !== 'none' &&
+    settings?.aiApiKey &&
+    settings.aiApiKey.trim().length > 0
+  );
+  const aiProviderName = (settings?.aiProvider || 'none').toUpperCase();
+  const aiModelName = settings?.aiModel;
 
   // Handle AI Post Generation
   const handleGenerate = async () => {
@@ -221,7 +237,7 @@ export const PostStudio: React.FC = () => {
               <h1 className="font-heading font-bold text-xl text-white tracking-tight flex items-center gap-2">
                 AI Post Studio & Fleet Publisher
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald/20 text-emerald border border-emerald/30">
-                  NEW v2.5
+                  NEW v3.0
                 </span>
               </h1>
             </div>
@@ -231,20 +247,49 @@ export const PostStudio: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-obsidian-900/80 border border-border/60 px-3 py-2 text-right">
-              <div className="font-mono text-[9px] text-slate-500 uppercase">AI Provider Aktif</div>
-              <div className="font-mono text-xs font-bold text-flame flex items-center justify-end gap-1.5">
-                <Bot className="w-3.5 h-3.5" />
-                {(settings?.aiProvider || 'none').toUpperCase()}
+            {/* Clickable AI Provider Quick Badge */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('tab-ai')}
+              title="Klik untuk mengubah atau menguji konfigurasi AI"
+              className={cn(
+                'rounded-lg border px-3 py-2 text-right transition-all group flex flex-col items-end',
+                hasConfiguredAI
+                  ? 'bg-obsidian-900/90 hover:bg-obsidian-850 border-purple-500/40 hover:border-purple-400/80 text-white shadow-sm'
+                  : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-300'
+              )}
+            >
+              <div className="font-mono text-[9px] text-slate-400 group-hover:text-flame uppercase flex items-center gap-1">
+                <span>AI Provider Aktif</span>
+                <Sliders className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100 transition-opacity" />
               </div>
-            </div>
-            <div className="rounded-lg bg-obsidian-900/80 border border-border/60 px-3 py-2 text-right">
-              <div className="font-mono text-[9px] text-slate-500 uppercase">Active Fleet</div>
-              <div className="font-mono text-xs font-bold text-emerald flex items-center justify-end gap-1.5">
+              <div className="font-mono text-xs font-bold text-flame flex items-center gap-1.5 mt-0.5">
+                <Bot className={cn('w-3.5 h-3.5', hasConfiguredAI ? 'text-purple-400' : 'text-amber-400')} />
+                <span>{hasConfiguredAI ? aiProviderName : (settings?.aiProvider ? `${aiProviderName} (No Key)` : 'FALLBACK TEMPLATE')}</span>
+                {hasConfiguredAI && aiModelName && (
+                  <span className="text-[10px] text-slate-400 font-normal truncate max-w-[120px]">
+                    ({aiModelName})
+                  </span>
+                )}
+              </div>
+            </button>
+
+            {/* Active Fleet Badge */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('tab-accounts')}
+              title="Klik untuk mengelola Akun Node"
+              className="rounded-lg bg-obsidian-900/80 hover:bg-obsidian-850 border border-border/60 hover:border-emerald/40 px-3 py-2 text-right transition-all group flex flex-col items-end"
+            >
+              <div className="font-mono text-[9px] text-slate-500 group-hover:text-emerald uppercase flex items-center gap-1">
+                <span>Active Fleet</span>
+                <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="font-mono text-xs font-bold text-emerald flex items-center justify-end gap-1.5 mt-0.5">
                 <Layers className="w-3.5 h-3.5" />
                 {activeAccounts.length} Nodes
               </div>
-            </div>
+            </button>
           </div>
         </div>
       </div>
