@@ -24,16 +24,16 @@ export class FeedHunter {
     if (this.btnStart) {
       this.btnStart.addEventListener('click', () => this.startHunter());
     }
-    store.on('accounts', accounts => this.updateAccountDropdown(accounts));
+    store.on('accounts', (accounts) => this.updateAccountDropdown(accounts));
   }
 
   updateAccountDropdown(accounts) {
     if (!this.accountSelector || !Array.isArray(accounts)) return;
-    const activeAccounts = accounts.filter(a => a.enabled !== false);
+    const activeAccounts = accounts.filter((a) => a.enabled !== false);
 
     let html = `<option value="all">⚡ All Active Nodes (${activeAccounts.length} Nodes - Sequential Rotation)</option>`;
-    accounts.forEach(acc => {
-      const statusEmoji = acc.enabled === false ? '⏸' : (acc.isValid ? '●' : '○');
+    accounts.forEach((acc) => {
+      const statusEmoji = acc.enabled === false ? '⏸' : acc.isValid ? '●' : '○';
       html += `<option value="${acc.id}">${statusEmoji} ${acc.label} (@${acc.username || 'user'})</option>`;
     });
     this.accountSelector.innerHTML = html;
@@ -53,14 +53,21 @@ export class FeedHunter {
     }
 
     try {
-      const data = await api.startHunterTask({ accountIds, keyword, count, like, retweet, comment });
+      const data = await api.startHunterTask({
+        accountIds,
+        keyword,
+        count,
+        like,
+        retweet,
+        comment,
+      });
       if (data.success) {
         if (this.navigation) {
           this.navigation.switchTab('tab-batch');
         }
         store.update({
           isRunning: true,
-          currentTask: { targetCount: count, completed: 0 }
+          currentTask: { targetCount: count, completed: 0 },
         });
       } else {
         alert(data.message || 'Failed to start Feed Hunter.');

@@ -37,7 +37,7 @@ export class Modals {
 
   init() {
     // Password Peeker
-    document.querySelectorAll('.btn-peek').forEach(btn => {
+    document.querySelectorAll('.btn-peek').forEach((btn) => {
       btn.addEventListener('click', () => {
         const targetId = btn.getAttribute('data-target');
         const input = document.getElementById(targetId);
@@ -48,15 +48,22 @@ export class Modals {
     });
 
     // Account Modal Controls
-    if (this.btnCloseAccount) this.btnCloseAccount.addEventListener('click', () => this.closeAccountModal());
-    if (this.btnCancelAccount) this.btnCancelAccount.addEventListener('click', () => this.closeAccountModal());
-    if (this.btnSaveAccount) this.btnSaveAccount.addEventListener('click', () => this.saveAccount());
+    if (this.btnCloseAccount)
+      this.btnCloseAccount.addEventListener('click', () => this.closeAccountModal());
+    if (this.btnCancelAccount)
+      this.btnCancelAccount.addEventListener('click', () => this.closeAccountModal());
+    if (this.btnSaveAccount)
+      this.btnSaveAccount.addEventListener('click', () => this.saveAccount());
 
     // Comments Modal Controls
-    if (this.btnCloseComments) this.btnCloseComments.addEventListener('click', () => this.closeCommentsModal());
-    if (this.btnCancelComments) this.btnCancelComments.addEventListener('click', () => this.closeCommentsModal());
-    if (this.btnSaveComments) this.btnSaveComments.addEventListener('click', () => this.saveComments());
-    if (this.btnAddCommentRow) this.btnAddCommentRow.addEventListener('click', () => this.addCommentRow(''));
+    if (this.btnCloseComments)
+      this.btnCloseComments.addEventListener('click', () => this.closeCommentsModal());
+    if (this.btnCancelComments)
+      this.btnCancelComments.addEventListener('click', () => this.closeCommentsModal());
+    if (this.btnSaveComments)
+      this.btnSaveComments.addEventListener('click', () => this.saveComments());
+    if (this.btnAddCommentRow)
+      this.btnAddCommentRow.addEventListener('click', () => this.addCommentRow(''));
 
     // File Upload .json
     if (this.inputFileUpload) {
@@ -126,7 +133,7 @@ export class Modals {
     this.commentsModalAccountId.value = acc.id;
     this.commentsModalTitle.innerText = `Payload Bank: ${acc.label} (@${acc.username || 'user'})`;
     this.commentsModalSubtitle.innerText = `File: data/comments/${acc.commentsFile || `comments_${acc.id}.json`}`;
-    
+
     try {
       const data = await api.getAccountComments(acc.id);
       this.renderCommentsList(data.comments || []);
@@ -143,7 +150,7 @@ export class Modals {
 
   renderCommentsList(comments) {
     this.accountCommentsList.innerHTML = '';
-    comments.forEach(c => this.addCommentRow(c));
+    comments.forEach((c) => this.addCommentRow(c));
   }
 
   addCommentRow(text = '') {
@@ -181,7 +188,9 @@ export class Modals {
   async saveComments() {
     const id = this.commentsModalAccountId.value;
     const textareas = this.accountCommentsList.querySelectorAll('.acc-comment-text');
-    const comments = Array.from(textareas).map(t => t.value.trim()).filter(Boolean);
+    const comments = Array.from(textareas)
+      .map((t) => t.value.trim())
+      .filter(Boolean);
 
     if (comments.length === 0) {
       alert('At least 1 comment template entry is required.');

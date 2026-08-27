@@ -135,7 +135,10 @@ body {
 .deck-backdrop {
   display: none;
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   z-index: 95;
@@ -445,8 +448,14 @@ body {
 }
 
 @keyframes tabFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==========================================================================
@@ -730,7 +739,7 @@ body {
   cursor: pointer;
 }
 
-.vector-card input[type="checkbox"] {
+.vector-card input[type='checkbox'] {
   position: absolute;
   opacity: 0;
 }
@@ -855,10 +864,18 @@ body {
   font-size: 0.75rem;
 }
 
-.w-100 { width: 100%; }
-.mt-2 { margin-top: 8px; }
-.mt-3 { margin-top: 14px; }
-.mt-4 { margin-top: 20px; }
+.w-100 {
+  width: 100%;
+}
+.mt-2 {
+  margin-top: 8px;
+}
+.mt-3 {
+  margin-top: 14px;
+}
+.mt-4 {
+  margin-top: 20px;
+}
 
 /* Status Badges & Telemetry Bar */
 .badge-mono {
@@ -971,11 +988,22 @@ body {
   gap: 3px;
 }
 
-.term-line.info { color: #94a3b8; }
-.term-line.success { color: #34d399; }
-.term-line.warn { color: #fbbf24; }
-.term-line.error { color: #f87171; }
-.term-line.action { color: #38bdf8; font-weight: 600; }
+.term-line.info {
+  color: #94a3b8;
+}
+.term-line.success {
+  color: #34d399;
+}
+.term-line.warn {
+  color: #fbbf24;
+}
+.term-line.error {
+  color: #f87171;
+}
+.term-line.action {
+  color: #38bdf8;
+  font-weight: 600;
+}
 
 /* ==========================================================================
    MODALS
@@ -983,7 +1011,10 @@ body {
 
 .modal-backdrop {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(4, 5, 8, 0.82);
   backdrop-filter: blur(4px);
   display: flex;
@@ -1162,9 +1193,18 @@ body {
   font-weight: 700;
 }
 
-.action-like { background: var(--accent-crimson-dim); color: #f87171; }
-.action-retweet { background: var(--accent-emerald-dim); color: #34d399; }
-.action-comment { background: var(--accent-cobalt-dim); color: #60a5fa; }
+.action-like {
+  background: var(--accent-crimson-dim);
+  color: #f87171;
+}
+.action-retweet {
+  background: var(--accent-emerald-dim);
+  color: #34d399;
+}
+.action-comment {
+  background: var(--accent-cobalt-dim);
+  color: #60a5fa;
+}
 
 .status-badge {
   padding: 2px 6px;
@@ -1173,12 +1213,26 @@ body {
   font-weight: 600;
 }
 
-.status-success { background: var(--accent-emerald-dim); color: #34d399; }
-.status-already { background: var(--accent-amber-dim); color: #fbbf24; }
-.status-failed { background: var(--accent-crimson-dim); color: #f87171; }
+.status-success {
+  background: var(--accent-emerald-dim);
+  color: #34d399;
+}
+.status-already {
+  background: var(--accent-amber-dim);
+  color: #fbbf24;
+}
+.status-failed {
+  background: var(--accent-crimson-dim);
+  color: #f87171;
+}
 
-.text-center { text-align: center; }
-.py-4 { padding-top: 16px; padding-bottom: 16px; }
+.text-center {
+  text-align: center;
+}
+.py-4 {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
 
 /* ==========================================================================
    RESPONSIVE MEDIA QUERIES (MOBILE, TABLET & DESKTOP)

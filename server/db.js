@@ -8,7 +8,7 @@ class LocalDB {
     this.commentsDir = path.join(this.dataDir, 'comments');
     this.mediaDir = path.join(this.dataDir, 'media');
     this.ensureDirs();
-    
+
     this.files = {
       settings: path.join(this.dataDir, 'settings.json'),
       accounts: path.join(this.dataDir, 'accounts.json'),
@@ -16,7 +16,7 @@ class LocalDB {
       history: path.join(this.dataDir, 'history.json'),
       templates: path.join(this.dataDir, 'templates.json'),
       stats: path.join(this.dataDir, 'stats.json'),
-      schedules: path.join(this.dataDir, 'schedules.json')
+      schedules: path.join(this.dataDir, 'schedules.json'),
     };
 
     this.cache = {};
@@ -48,19 +48,20 @@ class LocalDB {
       scrollBeforeAction: config.DEFAULTS.scrollBeforeAction,
       aiProvider: 'none',
       aiApiKey: '',
-      aiPrompt: 'Write a sharp, authentic, and context-aware 1-sentence English reply as a crypto/tech native. Be insightful, peer-to-peer, and zero generic praise.',
+      aiPrompt:
+        'Write a sharp, authentic, and context-aware 1-sentence English reply as a crypto/tech native. Be insightful, peer-to-peer, and zero generic praise.',
       telegramEnabled: false,
       telegramBotToken: '',
       telegramChatId: '',
       discordEnabled: false,
-      discordWebhookUrl: ''
+      discordWebhookUrl: '',
     });
 
     // Default global templates
     const defaultTemplates = [
-      "{Keren banget|Mantap sekali|Insightful banget} {infonya|pembahasannya|tweetnya} {bang|kak|gan}! 🔥 {Izin bookmark ya|Ditunggu update selanjutnya|Bermanfaat banget}.",
-      "{Setuju banget|Sepakat|Benar sekali} dengan poin ini. {Sangat menginspirasi|Membuka wawasan|Top markotop} 👍",
-      "{Wah gokil|Menarik banget|Keren nih}, {makasih sudah sharing|makasih infonya ya|semoga makin sukses} {kak|bang|mas}! 🚀"
+      '{Keren banget|Mantap sekali|Insightful banget} {infonya|pembahasannya|tweetnya} {bang|kak|gan}! 🔥 {Izin bookmark ya|Ditunggu update selanjutnya|Bermanfaat banget}.',
+      '{Setuju banget|Sepakat|Benar sekali} dengan poin ini. {Sangat menginspirasi|Membuka wawasan|Top markotop} 👍',
+      '{Wah gokil|Menarik banget|Keren nih}, {makasih sudah sharing|makasih infonya ya|semoga makin sukses} {kak|bang|mas}! 🚀',
     ];
     this.cache.templates = this.readFile(this.files.templates, defaultTemplates);
 
@@ -86,7 +87,7 @@ class LocalDB {
         enabled: true,
         isValid: legacyAuth.isValid || false,
         lastChecked: legacyAuth.lastChecked || null,
-        stats: { likes: 0, retweets: 0, comments: 0 }
+        stats: { likes: 0, retweets: 0, comments: 0 },
       };
       this.cache.accounts.push(initialAcc);
       this.save('accounts');
@@ -106,7 +107,7 @@ class LocalDB {
       todayRetweets: 0,
       todayComments: 0,
       todayPosts: 0,
-      lastResetDate: new Date().toISOString().slice(0, 10)
+      lastResetDate: new Date().toISOString().slice(0, 10),
     });
 
     this.checkAndResetDailyStats();
@@ -160,7 +161,9 @@ class LocalDB {
   }
 
   // Settings
-  getSettings() { return this.cache.settings; }
+  getSettings() {
+    return this.cache.settings;
+  }
   saveSettings(newSettings) {
     this.cache.settings = { ...this.cache.settings, ...newSettings };
     this.save('settings');
@@ -173,16 +176,17 @@ class LocalDB {
   }
 
   getAccountById(id) {
-    return (this.cache.accounts || []).find(acc => acc.id === id);
+    return (this.cache.accounts || []).find((acc) => acc.id === id);
   }
 
   getActiveAccounts() {
-    return (this.cache.accounts || []).filter(acc => acc.enabled !== false);
+    return (this.cache.accounts || []).filter((acc) => acc.enabled !== false);
   }
 
   saveAccount(accountData) {
-    const id = accountData.id || 'acc_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-    const existingIndex = (this.cache.accounts || []).findIndex(acc => acc.id === id);
+    const id =
+      accountData.id || 'acc_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+    const existingIndex = (this.cache.accounts || []).findIndex((acc) => acc.id === id);
 
     const defaultComments = this.getTemplates();
     const sanitizedId = String(id).replace(/[^a-zA-Z0-9_\-]/g, '');
@@ -200,13 +204,13 @@ class LocalDB {
       enabled: accountData.enabled !== undefined ? accountData.enabled : true,
       isValid: accountData.isValid !== undefined ? accountData.isValid : false,
       lastChecked: accountData.lastChecked || null,
-      stats: accountData.stats || { likes: 0, retweets: 0, comments: 0 }
+      stats: accountData.stats || { likes: 0, retweets: 0, comments: 0 },
     };
 
     if (existingIndex >= 0) {
       this.cache.accounts[existingIndex] = {
         ...this.cache.accounts[existingIndex],
-        ...updatedAccount
+        ...updatedAccount,
       };
     } else {
       this.cache.accounts.push(updatedAccount);
@@ -223,7 +227,7 @@ class LocalDB {
   }
 
   deleteAccount(id) {
-    const index = (this.cache.accounts || []).findIndex(acc => acc.id === id);
+    const index = (this.cache.accounts || []).findIndex((acc) => acc.id === id);
     if (index >= 0) {
       const removed = this.cache.accounts.splice(index, 1)[0];
       this.save('accounts');
@@ -231,7 +235,9 @@ class LocalDB {
       // Optionally delete comment file safely
       const commentFilePath = this.getAccountCommentsFilePath(id);
       if (fs.existsSync(commentFilePath)) {
-        try { fs.unlinkSync(commentFilePath); } catch (e) {}
+        try {
+          fs.unlinkSync(commentFilePath);
+        } catch (e) {}
       }
 
       return true;
@@ -314,8 +320,9 @@ class LocalDB {
   }
 
   hasInteracted(tweetId, actionType, accountId = null) {
-    return this.cache.history.some(item => {
-      const match = item.tweetId === tweetId && item.action === actionType && item.status === 'SUCCESS';
+    return this.cache.history.some((item) => {
+      const match =
+        item.tweetId === tweetId && item.action === actionType && item.status === 'SUCCESS';
       return accountId ? match && item.accountId === accountId : match;
     });
   }
@@ -325,7 +332,7 @@ class LocalDB {
       id: Date.now() + '-' + Math.random().toString(36).substr(2, 4),
       timestamp: new Date().toISOString(),
       timeFormatted: new Date().toLocaleTimeString('id-ID'),
-      ...entry
+      ...entry,
     };
     this.cache.history.push(item);
     if (this.cache.history.length > 2000) {
@@ -359,7 +366,8 @@ class LocalDB {
           if (item.action === 'LIKE') acc.stats.likes = (acc.stats.likes || 0) + 1;
           if (item.action === 'RETWEET') acc.stats.retweets = (acc.stats.retweets || 0) + 1;
           if (item.action === 'COMMENT') acc.stats.comments = (acc.stats.comments || 0) + 1;
-          if (item.action === 'POST' || item.action === 'TWEET') acc.stats.posts = (acc.stats.posts || 0) + 1;
+          if (item.action === 'POST' || item.action === 'TWEET')
+            acc.stats.posts = (acc.stats.posts || 0) + 1;
           this.save('accounts');
         }
       }
@@ -368,7 +376,9 @@ class LocalDB {
     return item;
   }
 
-  getTemplates() { return this.cache.templates; }
+  getTemplates() {
+    return this.cache.templates;
+  }
   saveTemplates(templates) {
     if (Array.isArray(templates)) {
       this.cache.templates = templates;
@@ -390,25 +400,27 @@ class LocalDB {
   }
 
   getScheduleById(id) {
-    return (this.cache.schedules || []).find(s => s.id === id);
+    return (this.cache.schedules || []).find((s) => s.id === id);
   }
 
   saveSchedule(data) {
-    const id = data.id || 'sch_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 3);
+    const id =
+      data.id || 'sch_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 3);
     const schedules = this.cache.schedules || [];
-    const index = schedules.findIndex(s => s.id === id);
+    const index = schedules.findIndex((s) => s.id === id);
 
     const scheduleItem = {
       id,
       type: data.type || 'POST_QUEUE', // 'POST_QUEUE' or 'RECURRING_HUNTER'
-      title: data.title || (data.type === 'RECURRING_HUNTER' ? 'Recurring Hunter' : 'Scheduled Post'),
+      title:
+        data.title || (data.type === 'RECURRING_HUNTER' ? 'Recurring Hunter' : 'Scheduled Post'),
       enabled: data.enabled !== false,
       status: data.status || 'PENDING', // 'PENDING', 'RUNNING', 'COMPLETED', 'FAILED'
       scheduledAt: data.scheduledAt || new Date(Date.now() + 60000).toISOString(),
       intervalMinutes: Number(data.intervalMinutes) || 60,
       lastRunAt: data.lastRunAt || null,
       accountIds: data.accountIds || 'all',
-      posts: Array.isArray(data.posts) ? data.posts : (data.postText ? [data.postText] : []),
+      posts: Array.isArray(data.posts) ? data.posts : data.postText ? [data.postText] : [],
       mediaPaths: Array.isArray(data.mediaPaths) ? data.mediaPaths : [],
       delaySeconds: Number(data.delaySeconds) || 15,
       // Hunter specific
@@ -416,7 +428,7 @@ class LocalDB {
       vectors: Array.isArray(data.vectors) ? data.vectors : ['LIKE', 'RETWEET', 'COMMENT'],
       maxTweets: Number(data.maxTweets) || 3,
       createdAt: data.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     if (index >= 0) {
@@ -432,7 +444,7 @@ class LocalDB {
 
   deleteSchedule(id) {
     const initialLen = (this.cache.schedules || []).length;
-    this.cache.schedules = (this.cache.schedules || []).filter(s => s.id !== id);
+    this.cache.schedules = (this.cache.schedules || []).filter((s) => s.id !== id);
     if (this.cache.schedules.length !== initialLen) {
       this.save('schedules');
       return true;
@@ -459,11 +471,11 @@ class LocalDB {
     const now = Date.now();
     const cutoffMs = olderThanDays ? olderThanDays * 24 * 60 * 60 * 1000 : null;
 
-    const remaining = list.filter(item => {
+    const remaining = list.filter((item) => {
       // Filter by days
       if (cutoffMs && item.timestamp) {
         const itemTime = new Date(item.timestamp).getTime();
-        if (!isNaN(itemTime) && (now - itemTime) > cutoffMs) {
+        if (!isNaN(itemTime) && now - itemTime > cutoffMs) {
           // If status specified as well
           if (!status || item.status === status) return false; // delete this
         }

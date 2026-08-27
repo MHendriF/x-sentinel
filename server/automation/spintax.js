@@ -22,7 +22,7 @@ function parseSpintax(text) {
 
 function getRandomTemplate(templates) {
   if (!Array.isArray(templates) || templates.length === 0) {
-    return "Keren banget infonya bang! 🔥";
+    return 'Keren banget infonya bang! 🔥';
   }
   const randomIndex = Math.floor(Math.random() * templates.length);
   return parseSpintax(templates[randomIndex]);
@@ -40,17 +40,20 @@ async function generateAiReply(tweetText, author, provider, apiKey, customPrompt
 
   try {
     if (provider === 'gemini') {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            maxOutputTokens: 60,
-            temperature: 0.7
-          }
-        })
-      });
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              maxOutputTokens: 60,
+              temperature: 0.7,
+            },
+          }),
+        }
+      );
       const data = await response.json();
       if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
         return data.candidates[0].content.parts[0].text.trim().replace(/^["']|["']$/g, '');
@@ -60,14 +63,14 @@ async function generateAiReply(tweetText, author, provider, apiKey, customPrompt
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           messages: [{ role: 'user', content: prompt }],
           max_tokens: 60,
-          temperature: 0.7
-        })
+          temperature: 0.7,
+        }),
       });
       const data = await response.json();
       if (data.choices && data.choices[0]?.message?.content) {
@@ -83,5 +86,5 @@ async function generateAiReply(tweetText, author, provider, apiKey, customPrompt
 module.exports = {
   parseSpintax,
   getRandomTemplate,
-  generateAiReply
+  generateAiReply,
 };

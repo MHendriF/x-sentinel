@@ -7,6 +7,7 @@ All JSON requests should include the header `Content-Type: application/json`.
 ---
 
 ## 📑 Table of Contents
+
 1. [System Status & Telemetry](#1-system-status--telemetry)
 2. [Multi-Node Account Management](#2-multi-node-account-management)
 3. [Fleet Health & Session Validation](#3-fleet-health--session-validation)
@@ -24,9 +25,11 @@ All JSON requests should include the header `Content-Type: application/json`.
 ## 1. System Status & Telemetry
 
 ### `GET /api/status`
+
 Returns current automation runner state, active task progress, and system statistics.
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -48,9 +51,11 @@ Returns current automation runner state, active task progress, and system statis
 ```
 
 ### `GET /api/logs/stream` (SSE)
+
 Establishes a Server-Sent Events stream for real-time log messages.
 
 **Event Format:**
+
 ```
 data: {"id":"1724749200000","timestamp":"16:07:53","level":"success","message":"Berhasil memposting tweet..."}
 ```
@@ -60,12 +65,15 @@ data: {"id":"1724749200000","timestamp":"16:07:53","level":"success","message":"
 ## 2. Multi-Node Account Management
 
 ### `GET /api/accounts`
+
 Lists all registered node accounts.
 
 ### `POST /api/accounts`
+
 Registers a new node account.
 
 **Request Body:**
+
 ```json
 {
   "label": "Alpha Trader Node",
@@ -76,18 +84,23 @@ Registers a new node account.
 ```
 
 ### `PUT /api/accounts/:id`
+
 Updates an existing node account configuration.
 
 ### `DELETE /api/accounts/:id`
+
 Deletes a node account.
 
 ### `POST /api/accounts/:id/toggle`
+
 Toggles account status between enabled (`ONLINE`) and paused (`PAUSED`).
 
 ### `POST /api/accounts/bulk-import`
+
 Imports multiple accounts via multi-line text or JSON array.
 
 **Request Body:**
+
 ```json
 {
   "rawText": "token1:ct0_1:proxy1:Node 1\ntoken2:ct0_2:proxy2:Node 2"
@@ -95,6 +108,7 @@ Imports multiple accounts via multi-line text or JSON array.
 ```
 
 ### `GET /api/accounts/export`
+
 Downloads a JSON backup file of all registered accounts.
 
 ---
@@ -102,9 +116,11 @@ Downloads a JSON backup file of all registered accounts.
 ## 3. Fleet Health & Session Validation
 
 ### `POST /api/accounts/check-health`
+
 Runs a mass validation check on all registered accounts (checks proxy alive + probes X home page).
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -124,6 +140,7 @@ Runs a mass validation check on all registered accounts (checks proxy alive + pr
 ```
 
 ### `POST /api/accounts/:id/check-health`
+
 Checks health and session validity of a specific node.
 
 ---
@@ -131,9 +148,11 @@ Checks health and session validity of a specific node.
 ## 4. Account Warm-up Protocol
 
 ### `POST /api/accounts/:id/warmup`
+
 Triggers an automated warmup routine (timeline browsing and organic likes based on `warmupDay` 1-7).
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -146,9 +165,11 @@ Triggers an automated warmup routine (timeline browsing and organic likes based 
 ## 5. Engagement & Publishing Tasks
 
 ### `POST /api/tasks/post`
+
 Publishes a post or broadcasts unique posts across target accounts.
 
 **Request Body:**
+
 ```json
 {
   "accountIds": "all",
@@ -159,14 +180,14 @@ Publishes a post or broadcasts unique posts across target accounts.
 ```
 
 ### `POST /api/tasks/batch`
+
 Executes targeted engagement on a batch of tweet URLs.
 
 **Request Body:**
+
 ```json
 {
-  "urls": [
-    "https://x.com/elonmusk/status/1890000000000000000"
-  ],
+  "urls": ["https://x.com/elonmusk/status/1890000000000000000"],
   "vectors": ["LIKE", "RETWEET", "COMMENT"],
   "replyMatrix": {
     "topic": "Solana Velocity",
@@ -177,9 +198,11 @@ Executes targeted engagement on a batch of tweet URLs.
 ```
 
 ### `POST /api/tasks/hunter`
+
 Executes autonomous Feed Hunter keyword search and engagement.
 
 **Request Body:**
+
 ```json
 {
   "keywords": ["solana defi", "arbitrum l2"],
@@ -190,6 +213,7 @@ Executes autonomous Feed Hunter keyword search and engagement.
 ```
 
 ### `POST /api/tasks/stop`
+
 Sends an abort signal to terminate any active automation task immediately.
 
 ---
@@ -197,9 +221,11 @@ Sends an abort signal to terminate any active automation task immediately.
 ## 6. AI Post Studio & Contextual Inference
 
 ### `POST /api/ai/generate-post`
+
 Generates high-engagement X posts based on a topic and persona style.
 
 **Request Body:**
+
 ```json
 {
   "keyword": "Solana throughput and Firedancer",
@@ -211,6 +237,7 @@ Generates high-engagement X posts based on a topic and persona style.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -226,12 +253,15 @@ Generates high-engagement X posts based on a topic and persona style.
 ## 7. Cron Scheduler & Post Queue
 
 ### `GET /api/schedules`
+
 Lists all scheduled post queues and recurring tasks.
 
 ### `POST /api/schedules`
+
 Creates or updates a scheduled task.
 
 **Request Body:**
+
 ```json
 {
   "type": "POST_QUEUE",
@@ -246,9 +276,11 @@ Creates or updates a scheduled task.
 ```
 
 ### `DELETE /api/schedules/:id`
+
 Deletes a scheduled task.
 
 ### `POST /api/schedules/:id/toggle`
+
 Toggles active state of a scheduled task.
 
 ---
@@ -256,9 +288,11 @@ Toggles active state of a scheduled task.
 ## 8. Media & Image Uploads
 
 ### `POST /api/media/upload`
+
 Uploads an image file (Base64) to the server's local storage (`data/media/`).
 
 **Request Body:**
+
 ```json
 {
   "imageBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
@@ -267,6 +301,7 @@ Uploads an image file (Base64) to the server's local storage (`data/media/`).
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -281,15 +316,19 @@ Uploads an image file (Base64) to the server's local storage (`data/media/`).
 ## 9. Webhooks & Settings
 
 ### `GET /api/settings`
+
 Retrieves defense and webhook settings.
 
 ### `POST /api/settings`
+
 Saves updated defense protocol and webhook settings.
 
 ### `POST /api/settings/test-webhook`
+
 Sends a test notification to Telegram or Discord.
 
 **Request Body:**
+
 ```json
 {
   "type": "telegram",
@@ -303,12 +342,15 @@ Sends a test notification to Telegram or Discord.
 ## 10. Audit Ledger & Maintenance
 
 ### `GET /api/history?limit=100`
+
 Retrieves engagement history records and cumulative stats.
 
 ### `POST /api/history/prune`
+
 Prunes interaction history records based on age or status.
 
 **Request Body:**
+
 ```json
 {
   "olderThanDays": 30,
@@ -317,6 +359,7 @@ Prunes interaction history records based on age or status.
 ```
 
 ### `POST /api/history/clear-all`
+
 Clears 100% of interaction audit history records.
 
 ---
@@ -324,9 +367,11 @@ Clears 100% of interaction audit history records.
 ## 11. Proxy & Spintax Utilities
 
 ### `POST /api/proxy/test`
+
 Performs a live latency and GeoIP ping check for any proxy string.
 
 **Request Body:**
+
 ```json
 {
   "proxy": "user:pass@123.45.67.89:8080"
@@ -334,9 +379,11 @@ Performs a live latency and GeoIP ping check for any proxy string.
 ```
 
 ### `POST /api/spintax/preview`
+
 Generates live permutations for a Spintax string.
 
 **Request Body:**
+
 ```json
 {
   "text": "{Keren|Mantap|Luar biasa} {banget|sekali}!",

@@ -52,38 +52,41 @@ export const DeleteNodeDialog: React.FC = () => {
     <Dialog open={isDeleteModalOpen} onOpenChange={(open) => !open && closeDeleteModal()}>
       <DialogContent className="max-w-md border-red-500/30 bg-obsidian-900 shadow-2xl">
         <DialogHeader className="border-b-red-500/20">
-          <div className="flex items-center gap-2 text-red-400 font-mono text-[10px] font-bold tracking-wider">
-            <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse" />
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-red-400">
+            <ShieldAlert className="h-4 w-4 animate-pulse text-red-500" />
             CRITICAL SYSTEM ACTION · DECOMMISSION NODE
           </div>
-          <DialogTitle className="text-lg text-white font-heading">
+          <DialogTitle className="font-heading text-lg text-white">
             Konfirmasi Hapus Node Akun?
           </DialogTitle>
-          <DialogDescription className="text-slate-400 text-xs">
+          <DialogDescription className="text-xs text-slate-400">
             Tindakan ini akan mencabut node dari sistem dan menghapus file konfigurasinya.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-3 space-y-3">
+        <div className="space-y-3 py-3">
           {/* Target Account Summary Card */}
-          <div className="p-3.5 rounded-lg border border-red-500/20 bg-obsidian-950/80 flex items-start gap-3">
+          <div className="flex items-start gap-3 rounded-lg border border-red-500/20 bg-obsidian-950/80 p-3.5">
             <img
-              src={deletingAccount.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}
+              src={
+                deletingAccount.avatar ||
+                'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'
+              }
               alt={deletingAccount.label}
-              className="w-12 h-12 rounded-md border border-slate-700 object-cover bg-obsidian-900 shrink-0"
+              className="h-12 w-12 shrink-0 rounded-md border border-slate-700 bg-obsidian-900 object-cover"
             />
-            <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="min-w-0 flex-1 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <h4 className="font-heading font-bold text-sm text-white truncate">
+                <h4 className="truncate font-heading text-sm font-bold text-white">
                   {deletingAccount.label}
                 </h4>
                 {deletingAccount.isValid ? (
-                  <Badge variant="success" className="h-5 text-[9px] gap-1 px-1.5">
-                    <CheckCircle2 className="w-2.5 h-2.5" /> VALID
+                  <Badge variant="success" className="h-5 gap-1 px-1.5 text-[9px]">
+                    <CheckCircle2 className="h-2.5 w-2.5" /> VALID
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="h-5 text-[9px] text-slate-400 px-1.5">
-                    <HelpCircle className="w-2.5 h-2.5" /> UNVERIFIED
+                  <Badge variant="secondary" className="h-5 px-1.5 text-[9px] text-slate-400">
+                    <HelpCircle className="h-2.5 w-2.5" /> UNVERIFIED
                   </Badge>
                 )}
               </div>
@@ -94,8 +97,8 @@ export const DeleteNodeDialog: React.FC = () => {
 
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 {cleanProxy ? (
-                  <Badge variant="purple" className="text-[10px] gap-1 max-w-[170px] truncate">
-                    <Globe className="w-2.5 h-2.5" /> {cleanProxy}
+                  <Badge variant="purple" className="max-w-[170px] gap-1 truncate text-[10px]">
+                    <Globe className="h-2.5 w-2.5" /> {cleanProxy}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-[10px] text-slate-500">
@@ -103,24 +106,26 @@ export const DeleteNodeDialog: React.FC = () => {
                   </Badge>
                 )}
 
-                <Badge variant="default" className="text-[10px] gap-1">
-                  <MessageSquare className="w-2.5 h-2.5" /> {deletingAccount.commentsCount ?? 3} Payloads
+                <Badge variant="default" className="gap-1 text-[10px]">
+                  <MessageSquare className="h-2.5 w-2.5" /> {deletingAccount.commentsCount ?? 3}{' '}
+                  Payloads
                 </Badge>
               </div>
             </div>
           </div>
 
           {/* Destructive Warning Box */}
-          <div className="p-3 rounded-md border border-red-500/30 bg-red-500/10 flex items-start gap-2.5 text-xs text-red-300/90 font-mono leading-relaxed">
-            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2.5 rounded-md border border-red-500/30 bg-red-500/10 p-3 font-mono text-xs leading-relaxed text-red-300/90">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
             <div>
-              <strong className="text-red-300 font-bold block mb-0.5">Dampak Penghapusan:</strong>
-              Node ini tidak akan lagi diikutsertakan dalam rotasi batch atau feed hunter. Token otentikasi lokal akan dimusnahkan.
+              <strong className="mb-0.5 block font-bold text-red-300">Dampak Penghapusan:</strong>
+              Node ini tidak akan lagi diikutsertakan dalam rotasi batch atau feed hunter. Token
+              otentikasi lokal akan dimusnahkan.
             </div>
           </div>
         </div>
 
-        <DialogFooter className="gap-2 pt-3 border-t border-border/60">
+        <DialogFooter className="gap-2 border-t border-border/60 pt-3">
           <Button
             variant="outline"
             size="sm"
@@ -135,9 +140,9 @@ export const DeleteNodeDialog: React.FC = () => {
             size="sm"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="font-heading font-bold gap-1.5 text-xs shadow-lg shadow-red-500/20"
+            className="gap-1.5 font-heading text-xs font-bold shadow-lg shadow-red-500/20"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="h-3.5 w-3.5" />
             {isDeleting ? 'Mendekomisi...' : 'Hapus & Dekomisi Node'}
           </Button>
         </DialogFooter>

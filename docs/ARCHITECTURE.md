@@ -75,6 +75,7 @@ graph TD
 ## 🧩 Core Architectural Layers
 
 ### 1. Presentation Layer (`client/`)
+
 - **Framework**: React 19 with TypeScript, bundled by Vite.
 - **State Management**: Single centralized store in `client/src/store/useStore.ts` (Zustand).
 - **Styling**: Vanilla Tailwind CSS + dark mode obsidian design system + shadcn/ui primitives.
@@ -82,12 +83,14 @@ graph TD
 - **Live Stream Terminal**: EventSource SSE stream connected to `/api/logs/stream` in `TerminalConsole.tsx`.
 
 ### 2. Application & Controller Layer (`server/`)
+
 - **Web Server**: Express 5 on Bun/Node.js runtime.
 - **Real-Time Streaming**: Server-Sent Events (SSE) broadcasting real-time logs from `server/logger.js`.
 - **API Routing**: `server/routes/api.js` exposes structured endpoints for accounts, tasks, AI post generator, proxy testing, scheduling, webhooks, and history pruning.
 - **Process Hardening**: Graceful shutdown handles `SIGINT`/`SIGTERM`, safely closing Chromium browser contexts and background timers.
 
 ### 3. Automation & Intelligence Layer (`server/automation/`)
+
 - **`twitterBot.js`**: Core Playwright runner executing browser automation.
   - Multi-node isolated browser contexts with per-node proxy routing.
   - Natural human emulation: mouse jitter, typing delays, randomized action intervals.
@@ -102,6 +105,7 @@ graph TD
 - **`spintax.js`**: Recursive parser for nested `{synonym1|synonym2}` templates.
 
 ### 4. Storage & Persistence Layer (`server/db.js`)
+
 - **Atomic JSON Storage**: Uses in-memory caching combined with atomic file writes (writing to `.tmp` before `fs.renameSync`) to eliminate data corruption risks during sudden power loss or process termination.
 - **Zero External Database Dependency**: All data is self-contained in local `.json` files inside the `data/` folder (git-ignored for security).
 
@@ -110,6 +114,7 @@ graph TD
 ## 🔄 Key Operational Workflows
 
 ### A. AI Post Generation & Publishing Flow
+
 ```
 [User Input Keyword / Topic]
          │
@@ -125,6 +130,7 @@ graph TD
 ```
 
 ### B. Fleet Health & Proxy Check Flow
+
 ```
 [User Clicks "Fleet Health"]
          │

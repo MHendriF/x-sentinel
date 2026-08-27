@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Build outputs
+dist/
+client/dist/
+*.tsbuildinfo
+
+# Runtime storage & persistent databases
+data/
+*.log
+scratch/
+test-results/
+playwright-report/
+
+# Lockfiles & Git
+bun.lock
+package-lock.json
+.git/

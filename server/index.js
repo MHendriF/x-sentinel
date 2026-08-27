@@ -24,10 +24,12 @@ app.get('/api/logs/stream', (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    Connection: 'keep-alive',
   });
 
-  res.write(`data: ${JSON.stringify({ type: 'CONNECTED', message: 'Live log stream active' })}\n\n`);
+  res.write(
+    `data: ${JSON.stringify({ type: 'CONNECTED', message: 'Live log stream active' })}\n\n`
+  );
 
   const onLog = (logEntry) => {
     res.write(`data: ${JSON.stringify(logEntry)}\n\n`);
@@ -69,7 +71,7 @@ const gracefulShutdown = async (signal) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
   logger.warn(`🛑 Menerima sinyal ${signal}. Membersihkan proses dan mematikan engine...`);
-  
+
   try {
     scheduler.stop();
     // 1. Stop any ongoing task

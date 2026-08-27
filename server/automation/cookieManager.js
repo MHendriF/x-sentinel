@@ -27,7 +27,7 @@ class CookieManager {
     const domains = ['.x.com', '.twitter.com'];
     const cookies = [];
 
-    domains.forEach(domain => {
+    domains.forEach((domain) => {
       cookies.push({
         name: 'auth_token',
         value: cleanAuth,
@@ -35,7 +35,7 @@ class CookieManager {
         path: '/',
         secure: true,
         httpOnly: true,
-        sameSite: 'Lax'
+        sameSite: 'Lax',
       });
 
       if (cleanCt0) {
@@ -46,7 +46,7 @@ class CookieManager {
           path: '/',
           secure: true,
           httpOnly: false,
-          sameSite: 'Lax'
+          sameSite: 'Lax',
         });
       }
     });

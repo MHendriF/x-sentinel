@@ -5,7 +5,8 @@ const cookieManager = require('../server/automation/cookieManager');
 console.log('=== 🧪 VERIFYING X AUTOMATION MODULES ===');
 
 // 1. Test Spintax Parser
-const template = "{Keren|Mantap|Luar biasa} {bang|kak|gan}, {infonya sangat bermanfaat|makasih banyak}! 🚀";
+const template =
+  '{Keren|Mantap|Luar biasa} {bang|kak|gan}, {infonya sangat bermanfaat|makasih banyak}! 🚀';
 console.log('\n1. Spintax Test:');
 for (let i = 1; i <= 3; i++) {
   console.log(`   Sample ${i}: "${spintax.parseSpintax(template)}"`);

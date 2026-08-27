@@ -12,7 +12,9 @@ X-SENTINEL avoids fragile and risky username/password logins. Instead, it utiliz
 2. **`ct0`**: CSRF protection token required for valid API mutations and state operations.
 
 ### Cookie Injection Mechanism (`server/automation/cookieManager.js`)
+
 When a node begins an automated task:
+
 - An isolated Chromium `BrowserContext` is instantiated.
 - Cookies are formatted with appropriate `domain: ".x.com"`, `path: "/"`, `secure: true`, and `sameSite: "Lax"`.
 - Injected via `await context.addCookies(cookies)` prior to any navigation.
@@ -24,7 +26,9 @@ When a node begins an automated task:
 X (Twitter) utilizes sophisticated client-side fingerprinting. X-SENTINEL counters this through multiple stealth layers:
 
 ### A. Webdriver & Navigator Shielding
+
 Every new page applies an initialization script before DOM content loads:
+
 ```javascript
 await context.addInitScript(() => {
   // 1. Mask navigator.webdriver
@@ -36,7 +40,7 @@ await context.addInitScript(() => {
 
   // 3. WebGL Vendor & Renderer Spoofing
   const getParameter = WebGLRenderingContext.prototype.getParameter;
-  WebGLRenderingContext.prototype.getParameter = function(parameter) {
+  WebGLRenderingContext.prototype.getParameter = function (parameter) {
     if (parameter === 37445) return 'Intel Inc.'; // UNMASKED_VENDOR_WEBGL
     if (parameter === 37446) return 'Intel Iris OpenGL Engine'; // UNMASKED_RENDERER_WEBGL
     return getParameter.apply(this, arguments);
@@ -45,6 +49,7 @@ await context.addInitScript(() => {
 ```
 
 ### B. Per-Node Dedicated Proxy Isolation
+
 - Each account node routes traffic exclusively through its configured proxy server (`http`, `https`, or `socks5`).
 - If an account has no proxy, it connects directly.
 - **Auto-Pause on Proxy Failure**: If a proxy becomes unreachable, the node is immediately paused to prevent leaking the host's direct residential/datacenter IP address.
@@ -71,13 +76,13 @@ Automated scripts that type at constant speeds or click instantly are easily fla
 
 New or dormant accounts that immediately blast dozens of tweets are subject to shadowbans or account locks. The Warm-up Protocol gradually establishes trust:
 
-| Warmup Day | Permitted Activities | Target Actions |
-| :--- | :--- | :--- |
-| **Day 1** | Timeline browsing, mouse scrolling ($30-60\text{s}$) | $2-3$ organic likes |
-| **Day 2** | Timeline browsing, reading feeds | $3-5$ organic likes, $1$ retweet |
-| **Day 3** | Timeline browsing, keyword search | $5-7$ likes, $1-2$ retweets |
-| **Day 4** | Timeline browsing + 1 manual comment | $6-8$ likes, $2$ retweets, $1$ comment |
-| **Day 5+** | Full automation enabled (Fleet Publisher / Feed Hunter) | Standard operational quotas |
+| Warmup Day | Permitted Activities                                    | Target Actions                         |
+| :--------- | :------------------------------------------------------ | :------------------------------------- |
+| **Day 1**  | Timeline browsing, mouse scrolling ($30-60\text{s}$)    | $2-3$ organic likes                    |
+| **Day 2**  | Timeline browsing, reading feeds                        | $3-5$ organic likes, $1$ retweet       |
+| **Day 3**  | Timeline browsing, keyword search                       | $5-7$ likes, $1-2$ retweets            |
+| **Day 4**  | Timeline browsing + 1 manual comment                    | $6-8$ likes, $2$ retweets, $1$ comment |
+| **Day 5+** | Full automation enabled (Fleet Publisher / Feed Hunter) | Standard operational quotas            |
 
 ---
 

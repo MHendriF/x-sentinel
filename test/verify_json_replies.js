@@ -5,12 +5,12 @@ console.log('=== 🧪 VERIFY JSON REPLIES & UNIQUE DISTRIBUTION ===\n');
 let allPassed = true;
 
 const samplePayload = JSON.stringify({
-  "topic": "Agentic AI getting counterparties, not just rails",
-  "replies": [
-    "the rails are commodity now, occupying them is the game. that line sums up the whole shift honestly",
-    "stripe buying openrouter for that much money says a lot about where the actual value is moving",
-    "tao going live on base with no admin key is a bigger deal than it sounds, agents holding and deploying it directly changes a lot"
-  ]
+  topic: 'Agentic AI getting counterparties, not just rails',
+  replies: [
+    'the rails are commodity now, occupying them is the game. that line sums up the whole shift honestly',
+    'stripe buying openrouter for that much money says a lot about where the actual value is moving',
+    'tao going live on base with no admin key is a bigger deal than it sounds, agents holding and deploying it directly changes a lot',
+  ],
 });
 
 // 1. Test parsing
@@ -30,7 +30,7 @@ console.log('\n2. Testing 1-to-1 distribution for 3 accounts...');
 const mockAccounts = [
   { id: 'acc_1', label: 'Node Alpha' },
   { id: 'acc_2', label: 'Node Beta' },
-  { id: 'acc_3', label: 'Node Gamma' }
+  { id: 'acc_3', label: 'Node Gamma' },
 ];
 
 mockAccounts.forEach((acc, a) => {
@@ -52,7 +52,7 @@ if (assignedSet.size === mockAccounts.length) {
 
 // 4. Test Array of Strings format
 console.log('\n3. Testing JSON Array format ["r1", "r2"]...');
-const arrayPayload = JSON.stringify(["Balasan A", "Balasan B"]);
+const arrayPayload = JSON.stringify(['Balasan A', 'Balasan B']);
 const arrayExtracted = twitterBot.parseCommentPayload(arrayPayload);
 if (arrayExtracted.length === 2 && arrayExtracted[0] === 'Balasan A') {
   console.log('✅ Correctly parsed JSON array of strings.');

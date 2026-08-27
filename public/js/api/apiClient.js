@@ -20,7 +20,7 @@ export const api = {
     const res = await fetch('/api/accounts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -29,7 +29,7 @@ export const api = {
     const res = await fetch(`/api/accounts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -59,7 +59,7 @@ export const api = {
     const res = await fetch(`/api/accounts/${id}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comments })
+      body: JSON.stringify({ comments }),
     });
     return res.json();
   },
@@ -69,7 +69,7 @@ export const api = {
     const res = await fetch('/api/tasks/batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -78,7 +78,7 @@ export const api = {
     const res = await fetch('/api/tasks/hunter', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -98,7 +98,7 @@ export const api = {
     const res = await fetch('/api/templates', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ templates })
+      body: JSON.stringify({ templates }),
     });
     return res.json();
   },
@@ -107,7 +107,7 @@ export const api = {
     const res = await fetch('/api/spintax/preview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, count })
+      body: JSON.stringify({ text, count }),
     });
     return res.json();
   },
@@ -122,7 +122,7 @@ export const api = {
     const res = await fetch('/api/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -147,5 +147,5 @@ export const api = {
     };
     if (onError) eventSource.onerror = onError;
     return eventSource;
-  }
+  },
 };

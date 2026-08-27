@@ -37,14 +37,17 @@ bunx playwright install chromium
 ## 🚀 3. Running Locally
 
 ### Development Mode (with Live Reload & Hot Reloading)
+
 ```bash
 # Start backend server + Vite dev server concurrently
 bun run dev
 ```
+
 - Dashboard runs at `http://localhost:5173` (proxied to API on port 3000).
 - Express backend runs at `http://localhost:3000`.
 
 ### Production Build Mode
+
 ```bash
 # 1. Compile React 19 frontend
 bun run build
@@ -52,6 +55,7 @@ bun run build
 # 2. Start Express Production Server
 bun start
 ```
+
 - Dashboard runs at `http://localhost:3000`.
 
 ---
@@ -102,13 +106,17 @@ x-sentinel/
 ## 🧪 5. Testing & Verification
 
 ### Build & Typecheck Verification
+
 Always verify TypeScript compilation and bundle packaging before committing:
+
 ```bash
 bun run --cwd client build
 ```
 
 ### Automation Test Scripts
+
 Run automated test scripts located in the `test/` folder:
+
 ```bash
 # Run unit & endpoint tests
 bun test

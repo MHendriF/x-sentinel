@@ -1,575 +1,704 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>X-AutoEngage — Industrial X/Twitter Automation Cockpit</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <!-- Mobile Header Bar -->
-  <div class="mobile-topbar">
-    <button class="btn-deck-toggle" id="btnDeckToggle" aria-label="Toggle navigation">
-      <span class="bar"></span>
-      <span class="bar"></span>
-      <span class="bar"></span>
-    </button>
-    <div class="mobile-brand">
-      <span class="brand-mono">𝕏</span>
-      <span class="brand-text">X-AUTOENGAGE</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>X-AutoEngage — Industrial X/Twitter Automation Cockpit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Mobile Header Bar -->
+    <div class="mobile-topbar">
+      <button class="btn-deck-toggle" id="btnDeckToggle" aria-label="Toggle navigation">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      <div class="mobile-brand">
+        <span class="brand-mono">𝕏</span>
+        <span class="brand-text">X-AUTOENGAGE</span>
+      </div>
+      <div class="mobile-status-dot pulse-indicator online" title="Core Online"></div>
     </div>
-    <div class="mobile-status-dot pulse-indicator online" title="Core Online"></div>
-  </div>
 
-  <!-- Mobile Drawer Backdrop -->
-  <div class="deck-backdrop" id="deckBackdrop"></div>
+    <!-- Mobile Drawer Backdrop -->
+    <div class="deck-backdrop" id="deckBackdrop"></div>
 
-  <div class="cockpit-layout">
-    <!-- Left Navigation Deck -->
-    <aside class="nav-deck" id="navDeck">
-      <div class="deck-brand">
-        <div class="brand-monogram">
-          <span>𝕏</span>
-        </div>
-        <div class="brand-meta">
-          <div class="brand-title">X-AUTOENGAGE</div>
-          <div class="brand-version">ENGINE v2.4 · PROXY READY</div>
-        </div>
-        <button class="btn-deck-close" id="btnDeckClose" aria-label="Close navigation">&times;</button>
-      </div>
-
-      <!-- Telemetry Node Status -->
-      <div class="telemetry-node">
-        <div class="node-header">
-          <span class="pulse-indicator online" id="systemStatusDot"></span>
-          <span class="node-label" id="systemStatusText">CORE ONLINE</span>
-        </div>
-        <div class="node-grid">
-          <div class="node-stat">
-            <span class="stat-caption">NODES</span>
-            <span class="stat-value" id="sidebarTotalAccounts">0</span>
+    <div class="cockpit-layout">
+      <!-- Left Navigation Deck -->
+      <aside class="nav-deck" id="navDeck">
+        <div class="deck-brand">
+          <div class="brand-monogram">
+            <span>𝕏</span>
           </div>
-          <div class="node-stat">
-            <span class="stat-caption">ACTIVE</span>
-            <span class="stat-value highlight" id="sidebarActiveAccounts">0</span>
+          <div class="brand-meta">
+            <div class="brand-title">X-AUTOENGAGE</div>
+            <div class="brand-version">ENGINE v2.4 · PROXY READY</div>
           </div>
-          <div class="node-stat">
-            <span class="stat-caption">RATE</span>
-            <span class="stat-value" id="sidebarRateMetric">AUTO</span>
+          <button class="btn-deck-close" id="btnDeckClose" aria-label="Close navigation">
+            &times;
+          </button>
+        </div>
+
+        <!-- Telemetry Node Status -->
+        <div class="telemetry-node">
+          <div class="node-header">
+            <span class="pulse-indicator online" id="systemStatusDot"></span>
+            <span class="node-label" id="systemStatusText">CORE ONLINE</span>
           </div>
-        </div>
-      </div>
-
-      <!-- Main Navigation Menu -->
-      <nav class="deck-nav">
-        <div class="nav-section-title">CONTROL SURFACES</div>
-        <button class="deck-tab active" data-tab="tab-accounts">
-          <span class="tab-glyph">⎔</span>
-          <span class="tab-label">Multi-Node & Proxy</span>
-        </button>
-        <button class="deck-tab" data-tab="tab-batch">
-          <span class="tab-glyph">⌖</span>
-          <span class="tab-label">Target Engagement</span>
-        </button>
-        <button class="deck-tab" data-tab="tab-hunter">
-          <span class="tab-glyph">◈</span>
-          <span class="tab-label">Feed Hunter</span>
-        </button>
-
-        <div class="nav-section-title mt-3">PAYLOAD & DEFENSE</div>
-        <button class="deck-tab" data-tab="tab-spintax">
-          <span class="tab-glyph">⌥</span>
-          <span class="tab-label">Payload & Spintax</span>
-        </button>
-        <button class="deck-tab" data-tab="tab-safety">
-          <span class="tab-glyph">⛨</span>
-          <span class="tab-label">Anti-Ban Protocol</span>
-        </button>
-        <button class="deck-tab" data-tab="tab-history">
-          <span class="tab-glyph">☵</span>
-          <span class="tab-label">Audit Logs</span>
-        </button>
-      </nav>
-
-      <!-- Bottom Session Info -->
-      <div class="deck-footer">
-        <div class="footer-indicator">
-          <span class="dot-sm"></span>
-          <span>HTTP/2 Stealth Playwright</span>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Workspace Control Area -->
-    <main class="cockpit-workspace">
-      <!-- Top Telemetry Ribbon -->
-      <header class="telemetry-ribbon">
-        <div class="ribbon-headline">
-          <h1 id="pageTitle">Multi-Node & Proxy Management</h1>
-          <p id="pageSubtitle">Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.</p>
-        </div>
-
-        <div class="ribbon-metrics">
-          <div class="metric-chip">
-            <span class="metric-icon">♥</span>
-            <div class="metric-data">
-              <span class="metric-count" id="statLikes">0</span>
-              <span class="metric-type">LIKES</span>
+          <div class="node-grid">
+            <div class="node-stat">
+              <span class="stat-caption">NODES</span>
+              <span class="stat-value" id="sidebarTotalAccounts">0</span>
             </div>
-          </div>
-          <div class="metric-chip">
-            <span class="metric-icon">⟳</span>
-            <div class="metric-data">
-              <span class="metric-count" id="statRetweets">0</span>
-              <span class="metric-type">REPOSTS</span>
+            <div class="node-stat">
+              <span class="stat-caption">ACTIVE</span>
+              <span class="stat-value highlight" id="sidebarActiveAccounts">0</span>
             </div>
-          </div>
-          <div class="metric-chip">
-            <span class="metric-icon">💬</span>
-            <div class="metric-data">
-              <span class="metric-count" id="statComments">0</span>
-              <span class="metric-type">REPLIES</span>
+            <div class="node-stat">
+              <span class="stat-caption">RATE</span>
+              <span class="stat-value" id="sidebarRateMetric">AUTO</span>
             </div>
           </div>
         </div>
-      </header>
 
-      <!-- TAB 1: MULTI-ACCOUNTS & PROXY MANAGEMENT -->
-      <section class="tab-content active" id="tab-accounts">
-        <div class="hallmark-panel">
-          <div class="panel-header">
-            <div class="panel-title-wrap">
-              <span class="panel-tag">ACCOUNT CLUSTER</span>
-              <h2>Registered X Nodes</h2>
-            </div>
-            <button class="btn btn-hallmark-primary" id="btnOpenAddAccountModal">
-              <span>+ Register New Node</span>
-            </button>
-          </div>
+        <!-- Main Navigation Menu -->
+        <nav class="deck-nav">
+          <div class="nav-section-title">CONTROL SURFACES</div>
+          <button class="deck-tab active" data-tab="tab-accounts">
+            <span class="tab-glyph">⎔</span>
+            <span class="tab-label">Multi-Node & Proxy</span>
+          </button>
+          <button class="deck-tab" data-tab="tab-batch">
+            <span class="tab-glyph">⌖</span>
+            <span class="tab-label">Target Engagement</span>
+          </button>
+          <button class="deck-tab" data-tab="tab-hunter">
+            <span class="tab-glyph">◈</span>
+            <span class="tab-label">Feed Hunter</span>
+          </button>
 
-          <div class="panel-body">
-            <div id="accountsGridContainer" class="nodes-grid">
-              <!-- Dynamically populated -->
-            </div>
+          <div class="nav-section-title mt-3">PAYLOAD & DEFENSE</div>
+          <button class="deck-tab" data-tab="tab-spintax">
+            <span class="tab-glyph">⌥</span>
+            <span class="tab-label">Payload & Spintax</span>
+          </button>
+          <button class="deck-tab" data-tab="tab-safety">
+            <span class="tab-glyph">⛨</span>
+            <span class="tab-label">Anti-Ban Protocol</span>
+          </button>
+          <button class="deck-tab" data-tab="tab-history">
+            <span class="tab-glyph">☵</span>
+            <span class="tab-label">Audit Logs</span>
+          </button>
+        </nav>
+
+        <!-- Bottom Session Info -->
+        <div class="deck-footer">
+          <div class="footer-indicator">
+            <span class="dot-sm"></span>
+            <span>HTTP/2 Stealth Playwright</span>
           </div>
         </div>
-      </section>
+      </aside>
 
-      <!-- TAB 2: TARGET ENGAGEMENT WORKBENCH -->
-      <section class="tab-content" id="tab-batch">
-        <div class="cockpit-grid-2">
-          <!-- Parameter Deck -->
+      <!-- Main Workspace Control Area -->
+      <main class="cockpit-workspace">
+        <!-- Top Telemetry Ribbon -->
+        <header class="telemetry-ribbon">
+          <div class="ribbon-headline">
+            <h1 id="pageTitle">Multi-Node & Proxy Management</h1>
+            <p id="pageSubtitle">
+              Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.
+            </p>
+          </div>
+
+          <div class="ribbon-metrics">
+            <div class="metric-chip">
+              <span class="metric-icon">♥</span>
+              <div class="metric-data">
+                <span class="metric-count" id="statLikes">0</span>
+                <span class="metric-type">LIKES</span>
+              </div>
+            </div>
+            <div class="metric-chip">
+              <span class="metric-icon">⟳</span>
+              <div class="metric-data">
+                <span class="metric-count" id="statRetweets">0</span>
+                <span class="metric-type">REPOSTS</span>
+              </div>
+            </div>
+            <div class="metric-chip">
+              <span class="metric-icon">💬</span>
+              <div class="metric-data">
+                <span class="metric-count" id="statComments">0</span>
+                <span class="metric-type">REPLIES</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- TAB 1: MULTI-ACCOUNTS & PROXY MANAGEMENT -->
+        <section class="tab-content active" id="tab-accounts">
           <div class="hallmark-panel">
             <div class="panel-header">
               <div class="panel-title-wrap">
-                <span class="panel-tag">MISSION PARAMETERS</span>
-                <h2>Target Tweet URLs</h2>
+                <span class="panel-tag">ACCOUNT CLUSTER</span>
+                <h2>Registered X Nodes</h2>
               </div>
-              <span class="badge-mono" id="urlCounter">0 TARGETS</span>
+              <button class="btn btn-hallmark-primary" id="btnOpenAddAccountModal">
+                <span>+ Register New Node</span>
+              </button>
             </div>
 
             <div class="panel-body">
-              <div class="field-block">
-                <label class="field-label" for="batchAccountSelector">EXECUTING NODE CLUSTER</label>
-                <select class="field-select" id="batchAccountSelector">
-                  <option value="all">⚡ All Active Nodes (Sequential Rotation)</option>
-                </select>
-                <span class="field-caption">Each active node will execute the sequence with randomized timing intervals.</span>
+              <div id="accountsGridContainer" class="nodes-grid">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: TARGET ENGAGEMENT WORKBENCH -->
+        <section class="tab-content" id="tab-batch">
+          <div class="cockpit-grid-2">
+            <!-- Parameter Deck -->
+            <div class="hallmark-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-tag">MISSION PARAMETERS</span>
+                  <h2>Target Tweet URLs</h2>
+                </div>
+                <span class="badge-mono" id="urlCounter">0 TARGETS</span>
+              </div>
+
+              <div class="panel-body">
+                <div class="field-block">
+                  <label class="field-label" for="batchAccountSelector"
+                    >EXECUTING NODE CLUSTER</label
+                  >
+                  <select class="field-select" id="batchAccountSelector">
+                    <option value="all">⚡ All Active Nodes (Sequential Rotation)</option>
+                  </select>
+                  <span class="field-caption"
+                    >Each active node will execute the sequence with randomized timing
+                    intervals.</span
+                  >
+                </div>
+
+                <div class="field-block mt-3">
+                  <label class="field-label" for="targetUrls">TARGET URLs (ONE PER LINE)</label>
+                  <textarea
+                    class="field-textarea font-mono"
+                    id="targetUrls"
+                    rows="5"
+                    placeholder="https://x.com/username/status/1891234567890&#10;https://x.com/tech/status/1899876543210"
+                  ></textarea>
+                </div>
+
+                <div class="module-divider"><span>INTERACTION VECTORS</span></div>
+
+                <div class="vector-selector-grid">
+                  <label class="vector-card">
+                    <input type="checkbox" id="checkLike" checked />
+                    <div class="vector-content">
+                      <span class="vector-symbol">♥</span>
+                      <span class="vector-title">Auto-Like</span>
+                      <span class="vector-sub">Verify & favorite</span>
+                    </div>
+                  </label>
+
+                  <label class="vector-card">
+                    <input type="checkbox" id="checkRetweet" checked />
+                    <div class="vector-content">
+                      <span class="vector-symbol">⟳</span>
+                      <span class="vector-title">Auto-Repost</span>
+                      <span class="vector-sub">Confirm retweet</span>
+                    </div>
+                  </label>
+
+                  <label class="vector-card">
+                    <input type="checkbox" id="checkComment" checked />
+                    <div class="vector-content">
+                      <span class="vector-symbol">💬</span>
+                      <span class="vector-title">Auto-Reply</span>
+                      <span class="vector-sub">Spintax payload</span>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="field-block mt-3">
+                  <label class="field-label" for="customCommentInput"
+                    >PAYLOAD OVERRIDE (OPTIONAL)</label
+                  >
+                  <textarea
+                    class="field-textarea"
+                    id="customCommentInput"
+                    rows="2"
+                    placeholder="Leave empty to use each node's assigned JSON comment file"
+                  ></textarea>
+                </div>
+
+                <div class="control-actions mt-4">
+                  <button class="btn btn-hallmark-execute w-100" id="btnStartBatch">
+                    <span id="btnBatchText">EXECUTE ENGAGEMENT SEQUENCE</span>
+                  </button>
+                  <button
+                    class="btn btn-hallmark-danger mt-2 w-100"
+                    id="btnStopTask"
+                    style="display: none"
+                  >
+                    ABORT MISSION
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Real-Time Telemetry Stream -->
+            <div class="hallmark-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-tag">REALTIME TELEMETRY</span>
+                  <h2>Mission Status & Stream</h2>
+                </div>
+                <span class="status-indicator-badge status-idle" id="taskStatusBadge">STANDBY</span>
+              </div>
+
+              <div class="panel-body">
+                <div class="mission-progress-bar">
+                  <div class="progress-meta">
+                    <span class="mono-label" id="progressLabel">Awaiting trigger...</span>
+                    <span class="mono-pct" id="progressPercent">0%</span>
+                  </div>
+                  <div class="track-bg">
+                    <div class="track-fill" id="progressBarFill" style="width: 0%"></div>
+                  </div>
+                </div>
+
+                <!-- Terminal Deck -->
+                <div class="terminal-deck mt-3">
+                  <div class="deck-topbar">
+                    <div class="terminal-title">LIVE EXECUTION CONSOLE</div>
+                    <button class="btn-term-clear" id="btnClearTerminal">CLEAR</button>
+                  </div>
+                  <div class="terminal-screen" id="liveTerminalOutput">
+                    <div class="term-line info">
+                      [SYS] Telemetry stream initialized. Awaiting pipeline events...
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: AUTO HUNTER -->
+        <section class="tab-content" id="tab-hunter">
+          <div class="hallmark-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-tag">INTELLIGENCE MODULE</span>
+                <h2>Feed Hunter: Keyword & Topic Surveillance</h2>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <div class="cockpit-grid-2">
+                <div class="field-block">
+                  <label class="field-label" for="hunterAccountSelector"
+                    >EXECUTING NODE CLUSTER</label
+                  >
+                  <select class="field-select" id="hunterAccountSelector">
+                    <option value="all">⚡ All Active Nodes (Sequential Rotation)</option>
+                  </select>
+                </div>
+
+                <div class="field-block">
+                  <label class="field-label" for="hunterCount">HARVEST TARGET QUOTA</label>
+                  <select class="field-select" id="hunterCount">
+                    <option value="5">5 Postings (Fast Probe)</option>
+                    <option value="10" selected>10 Postings (Optimal)</option>
+                    <option value="20">20 Postings (High Engagement)</option>
+                    <option value="35">35 Postings (Deep Scan)</option>
+                  </select>
+                </div>
               </div>
 
               <div class="field-block mt-3">
-                <label class="field-label" for="targetUrls">TARGET URLs (ONE PER LINE)</label>
-                <textarea class="field-textarea font-mono" id="targetUrls" rows="5" placeholder="https://x.com/username/status/1891234567890&#10;https://x.com/tech/status/1899876543210"></textarea>
+                <label class="field-label" for="hunterKeyword"
+                  >SEARCH QUERY / TOPIC HASHTAG <span class="req-star">*</span></label
+                >
+                <input
+                  type="text"
+                  class="field-input font-mono"
+                  id="hunterKeyword"
+                  placeholder="e.g. #TechTwitter, AI Engineering, Web3, Startup Indo"
+                />
               </div>
 
-              <div class="module-divider"><span>INTERACTION VECTORS</span></div>
+              <div class="module-divider mt-4"><span>INTERACTION VECTORS</span></div>
 
               <div class="vector-selector-grid">
                 <label class="vector-card">
-                  <input type="checkbox" id="checkLike" checked>
+                  <input type="checkbox" id="hunterCheckLike" checked />
                   <div class="vector-content">
                     <span class="vector-symbol">♥</span>
                     <span class="vector-title">Auto-Like</span>
-                    <span class="vector-sub">Verify & favorite</span>
                   </div>
                 </label>
 
                 <label class="vector-card">
-                  <input type="checkbox" id="checkRetweet" checked>
+                  <input type="checkbox" id="hunterCheckRetweet" checked />
                   <div class="vector-content">
                     <span class="vector-symbol">⟳</span>
                     <span class="vector-title">Auto-Repost</span>
-                    <span class="vector-sub">Confirm retweet</span>
                   </div>
                 </label>
 
                 <label class="vector-card">
-                  <input type="checkbox" id="checkComment" checked>
+                  <input type="checkbox" id="hunterCheckComment" checked />
                   <div class="vector-content">
                     <span class="vector-symbol">💬</span>
                     <span class="vector-title">Auto-Reply</span>
-                    <span class="vector-sub">Spintax payload</span>
                   </div>
                 </label>
               </div>
 
-              <div class="field-block mt-3">
-                <label class="field-label" for="customCommentInput">PAYLOAD OVERRIDE (OPTIONAL)</label>
-                <textarea class="field-textarea" id="customCommentInput" rows="2" placeholder="Leave empty to use each node's assigned JSON comment file"></textarea>
+              <div class="control-actions mt-4">
+                <button class="btn btn-hallmark-execute" id="btnStartHunter">
+                  LAUNCH FEED HUNTER MISSION
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: SPINTAX & TEMPLATES -->
+        <section class="tab-content" id="tab-spintax">
+          <div class="cockpit-grid-2">
+            <!-- Template Bank -->
+            <div class="hallmark-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-tag">GLOBAL FALLBACK</span>
+                  <h2>Standard Spintax Templates</h2>
+                </div>
+                <button class="btn btn-hallmark-secondary btn-sm" id="btnAddNewTemplate">
+                  + Add Row
+                </button>
+              </div>
+
+              <div class="panel-body">
+                <div id="templateListContainer" class="spintax-stack"></div>
+                <button class="btn btn-hallmark-primary mt-3 w-100" id="btnSaveTemplates">
+                  Save Global Templates
+                </button>
+              </div>
+            </div>
+
+            <!-- Spintax Tester -->
+            <div class="hallmark-panel">
+              <div class="panel-header">
+                <div class="panel-title-wrap">
+                  <span class="panel-tag">SYNTAX VALIDATOR</span>
+                  <h2>Spintax Permutation Tester</h2>
+                </div>
+              </div>
+
+              <div class="panel-body">
+                <div class="field-block">
+                  <label class="field-label">SPINTAX EXPRESSION</label>
+                  <textarea class="field-textarea" id="spintaxTesterInput" rows="3">
+{Halo|Hai|Permisi} {kak|bang}, {postingan ini sangat {menarik|berguna}|insight yang sangat bagus}! 🔥</textarea>
+                </div>
+
+                <button class="btn btn-hallmark-secondary btn-sm mt-2" id="btnRunSpintaxTest">
+                  ⚡ Generate 5 Random Permutations
+                </button>
+
+                <div
+                  class="tester-output-box mt-3"
+                  id="spintaxResultsContainer"
+                  style="display: none"
+                >
+                  <div class="output-header">GENERATED SAMPLES:</div>
+                  <ul class="sample-list" id="spintaxVariationList"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: ANTI-BAN PROTOCOL -->
+        <section class="tab-content" id="tab-safety">
+          <div class="hallmark-panel">
+            <div class="panel-header">
+              <div class="panel-title-wrap">
+                <span class="panel-tag">DEFENSE ENGINE</span>
+                <h2>Anti-Detection & Rate Throttling</h2>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <div class="cockpit-grid-2">
+                <div class="field-block">
+                  <label class="field-label" for="minDelaySec"
+                    >MINIMUM INTER-POST DELAY (SECONDS)</label
+                  >
+                  <input
+                    type="number"
+                    class="field-input"
+                    id="minDelaySec"
+                    min="5"
+                    max="300"
+                    value="15"
+                  />
+                  <span class="field-caption">Recommended: 15–20s for natural human pace.</span>
+                </div>
+
+                <div class="field-block">
+                  <label class="field-label" for="maxDelaySec"
+                    >MAXIMUM INTER-POST DELAY (SECONDS)</label
+                  >
+                  <input
+                    type="number"
+                    class="field-input"
+                    id="maxDelaySec"
+                    min="10"
+                    max="600"
+                    value="35"
+                  />
+                  <span class="field-caption">Upper bound of random jitter interval.</span>
+                </div>
+
+                <div class="field-block">
+                  <label class="field-label" for="accountSwitchDelaySec"
+                    >INTER-NODE ROTATION COOLDOWN (SECONDS)</label
+                  >
+                  <input
+                    type="number"
+                    class="field-input"
+                    id="accountSwitchDelaySec"
+                    min="3"
+                    max="120"
+                    value="10"
+                  />
+                  <span class="field-caption">Pause before switching to the next node tunnel.</span>
+                </div>
+
+                <div class="field-block">
+                  <label class="field-label" for="dailyLimit">MAXIMUM ACTIONS PER NODE / DAY</label>
+                  <input
+                    type="number"
+                    class="field-input"
+                    id="dailyLimit"
+                    min="10"
+                    max="500"
+                    value="150"
+                  />
+                  <span class="field-caption">Hard cap to prevent platform throttling.</span>
+                </div>
+              </div>
+
+              <div class="module-divider mt-4"><span>BROWSER EMULATION FLAGS</span></div>
+
+              <div class="cockpit-grid-2">
+                <label class="vector-card">
+                  <input type="checkbox" id="checkHeadless" />
+                  <div class="vector-content">
+                    <span class="vector-symbol">👁</span>
+                    <span class="vector-title">Headless Mode</span>
+                    <span class="vector-sub">Run without displaying browser window</span>
+                  </div>
+                </label>
+
+                <label class="vector-card">
+                  <input type="checkbox" id="checkScrollAction" checked />
+                  <div class="vector-content">
+                    <span class="vector-symbol">📜</span>
+                    <span class="vector-title">Natural Scroll Physics</span>
+                    <span class="vector-sub">Simulate viewport scroll before engagement</span>
+                  </div>
+                </label>
               </div>
 
               <div class="control-actions mt-4">
-                <button class="btn btn-hallmark-execute w-100" id="btnStartBatch">
-                  <span id="btnBatchText">EXECUTE ENGAGEMENT SEQUENCE</span>
-                </button>
-                <button class="btn btn-hallmark-danger w-100 mt-2" id="btnStopTask" style="display: none;">
-                  ABORT MISSION
+                <button class="btn btn-hallmark-primary" id="btnSaveSafetySettings">
+                  Save Defense Settings
                 </button>
               </div>
             </div>
           </div>
+        </section>
 
-          <!-- Real-Time Telemetry Stream -->
+        <!-- TAB 6: AUDIT LOGS -->
+        <section class="tab-content" id="tab-history">
           <div class="hallmark-panel">
             <div class="panel-header">
               <div class="panel-title-wrap">
-                <span class="panel-tag">REALTIME TELEMETRY</span>
-                <h2>Mission Status & Stream</h2>
+                <span class="panel-tag">AUDIT TRAIL</span>
+                <h2>Interaction Audit Ledger</h2>
               </div>
-              <span class="status-indicator-badge status-idle" id="taskStatusBadge">STANDBY</span>
-            </div>
-
-            <div class="panel-body">
-              <div class="mission-progress-bar">
-                <div class="progress-meta">
-                  <span class="mono-label" id="progressLabel">Awaiting trigger...</span>
-                  <span class="mono-pct" id="progressPercent">0%</span>
-                </div>
-                <div class="track-bg">
-                  <div class="track-fill" id="progressBarFill" style="width: 0%;"></div>
-                </div>
-              </div>
-
-              <!-- Terminal Deck -->
-              <div class="terminal-deck mt-3">
-                <div class="deck-topbar">
-                  <div class="terminal-title">LIVE EXECUTION CONSOLE</div>
-                  <button class="btn-term-clear" id="btnClearTerminal">CLEAR</button>
-                </div>
-                <div class="terminal-screen" id="liveTerminalOutput">
-                  <div class="term-line info">[SYS] Telemetry stream initialized. Awaiting pipeline events...</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 3: AUTO HUNTER -->
-      <section class="tab-content" id="tab-hunter">
-        <div class="hallmark-panel">
-          <div class="panel-header">
-            <div class="panel-title-wrap">
-              <span class="panel-tag">INTELLIGENCE MODULE</span>
-              <h2>Feed Hunter: Keyword & Topic Surveillance</h2>
-            </div>
-          </div>
-
-          <div class="panel-body">
-            <div class="cockpit-grid-2">
-              <div class="field-block">
-                <label class="field-label" for="hunterAccountSelector">EXECUTING NODE CLUSTER</label>
-                <select class="field-select" id="hunterAccountSelector">
-                  <option value="all">⚡ All Active Nodes (Sequential Rotation)</option>
-                </select>
-              </div>
-
-              <div class="field-block">
-                <label class="field-label" for="hunterCount">HARVEST TARGET QUOTA</label>
-                <select class="field-select" id="hunterCount">
-                  <option value="5">5 Postings (Fast Probe)</option>
-                  <option value="10" selected>10 Postings (Optimal)</option>
-                  <option value="20">20 Postings (High Engagement)</option>
-                  <option value="35">35 Postings (Deep Scan)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="field-block mt-3">
-              <label class="field-label" for="hunterKeyword">SEARCH QUERY / TOPIC HASHTAG <span class="req-star">*</span></label>
-              <input type="text" class="field-input font-mono" id="hunterKeyword" placeholder="e.g. #TechTwitter, AI Engineering, Web3, Startup Indo">
-            </div>
-
-            <div class="module-divider mt-4"><span>INTERACTION VECTORS</span></div>
-
-            <div class="vector-selector-grid">
-              <label class="vector-card">
-                <input type="checkbox" id="hunterCheckLike" checked>
-                <div class="vector-content">
-                  <span class="vector-symbol">♥</span>
-                  <span class="vector-title">Auto-Like</span>
-                </div>
-              </label>
-
-              <label class="vector-card">
-                <input type="checkbox" id="hunterCheckRetweet" checked>
-                <div class="vector-content">
-                  <span class="vector-symbol">⟳</span>
-                  <span class="vector-title">Auto-Repost</span>
-                </div>
-              </label>
-
-              <label class="vector-card">
-                <input type="checkbox" id="hunterCheckComment" checked>
-                <div class="vector-content">
-                  <span class="vector-symbol">💬</span>
-                  <span class="vector-title">Auto-Reply</span>
-                </div>
-              </label>
-            </div>
-
-            <div class="control-actions mt-4">
-              <button class="btn btn-hallmark-execute" id="btnStartHunter">
-                LAUNCH FEED HUNTER MISSION
+              <button class="btn btn-hallmark-secondary btn-sm" id="btnRefreshHistory">
+                ⟳ Refresh Ledger
               </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 4: SPINTAX & TEMPLATES -->
-      <section class="tab-content" id="tab-spintax">
-        <div class="cockpit-grid-2">
-          <!-- Template Bank -->
-          <div class="hallmark-panel">
-            <div class="panel-header">
-              <div class="panel-title-wrap">
-                <span class="panel-tag">GLOBAL FALLBACK</span>
-                <h2>Standard Spintax Templates</h2>
-              </div>
-              <button class="btn btn-hallmark-secondary btn-sm" id="btnAddNewTemplate">+ Add Row</button>
-            </div>
 
             <div class="panel-body">
-              <div id="templateListContainer" class="spintax-stack"></div>
-              <button class="btn btn-hallmark-primary mt-3 w-100" id="btnSaveTemplates">Save Global Templates</button>
-            </div>
-          </div>
-
-          <!-- Spintax Tester -->
-          <div class="hallmark-panel">
-            <div class="panel-header">
-              <div class="panel-title-wrap">
-                <span class="panel-tag">SYNTAX VALIDATOR</span>
-                <h2>Spintax Permutation Tester</h2>
-              </div>
-            </div>
-
-            <div class="panel-body">
-              <div class="field-block">
-                <label class="field-label">SPINTAX EXPRESSION</label>
-                <textarea class="field-textarea" id="spintaxTesterInput" rows="3">{Halo|Hai|Permisi} {kak|bang}, {postingan ini sangat {menarik|berguna}|insight yang sangat bagus}! 🔥</textarea>
-              </div>
-
-              <button class="btn btn-hallmark-secondary mt-2 btn-sm" id="btnRunSpintaxTest">⚡ Generate 5 Random Permutations</button>
-
-              <div class="tester-output-box mt-3" id="spintaxResultsContainer" style="display: none;">
-                <div class="output-header">GENERATED SAMPLES:</div>
-                <ul class="sample-list" id="spintaxVariationList"></ul>
+              <div class="ledger-container">
+                <table class="ledger-table font-mono">
+                  <thead>
+                    <tr>
+                      <th>TIMESTAMP</th>
+                      <th>NODE ID</th>
+                      <th>VECTOR</th>
+                      <th>TARGET POST</th>
+                      <th>STATUS</th>
+                      <th>PAYLOAD / REMARKS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historyTableBody">
+                    <tr>
+                      <td colspan="6" class="py-4 text-center">No audit events recorded yet.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
+    </div>
 
-      <!-- TAB 5: ANTI-BAN PROTOCOL -->
-      <section class="tab-content" id="tab-safety">
-        <div class="hallmark-panel">
-          <div class="panel-header">
-            <div class="panel-title-wrap">
-              <span class="panel-tag">DEFENSE ENGINE</span>
-              <h2>Anti-Detection & Rate Throttling</h2>
+    <!-- MODAL: ADD / EDIT NODE -->
+    <div class="modal-backdrop" id="accountModal" style="display: none">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <div class="modal-tag">NODE CONFIGURATION</div>
+          <h3 id="modalAccountTitle">Register New X Node</h3>
+          <button class="btn-modal-close" id="btnCloseAccountModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editAccountId" />
+
+          <div class="field-block">
+            <label class="field-label" for="accInputLabel"
+              >NODE LABEL / IDENTIFIER <span class="req-star">*</span></label
+            >
+            <input
+              type="text"
+              class="field-input"
+              id="accInputLabel"
+              placeholder="e.g. Node-Alpha (Main), Node-Beta (Buzzer)"
+            />
+          </div>
+
+          <div class="field-block mt-3">
+            <label class="field-label" for="accInputAuthToken"
+              >AUTH_TOKEN COOKIE <span class="req-star">*</span></label
+            >
+            <div class="input-action-group">
+              <input
+                type="password"
+                class="field-input font-mono"
+                id="accInputAuthToken"
+                placeholder="Cookie auth_token from X session..."
+              />
+              <button class="btn-peek" type="button" data-target="accInputAuthToken">👁</button>
             </div>
           </div>
 
-          <div class="panel-body">
-            <div class="cockpit-grid-2">
-              <div class="field-block">
-                <label class="field-label" for="minDelaySec">MINIMUM INTER-POST DELAY (SECONDS)</label>
-                <input type="number" class="field-input" id="minDelaySec" min="5" max="300" value="15">
-                <span class="field-caption">Recommended: 15–20s for natural human pace.</span>
-              </div>
-
-              <div class="field-block">
-                <label class="field-label" for="maxDelaySec">MAXIMUM INTER-POST DELAY (SECONDS)</label>
-                <input type="number" class="field-input" id="maxDelaySec" min="10" max="600" value="35">
-                <span class="field-caption">Upper bound of random jitter interval.</span>
-              </div>
-
-              <div class="field-block">
-                <label class="field-label" for="accountSwitchDelaySec">INTER-NODE ROTATION COOLDOWN (SECONDS)</label>
-                <input type="number" class="field-input" id="accountSwitchDelaySec" min="3" max="120" value="10">
-                <span class="field-caption">Pause before switching to the next node tunnel.</span>
-              </div>
-
-              <div class="field-block">
-                <label class="field-label" for="dailyLimit">MAXIMUM ACTIONS PER NODE / DAY</label>
-                <input type="number" class="field-input" id="dailyLimit" min="10" max="500" value="150">
-                <span class="field-caption">Hard cap to prevent platform throttling.</span>
-              </div>
-            </div>
-
-            <div class="module-divider mt-4"><span>BROWSER EMULATION FLAGS</span></div>
-
-            <div class="cockpit-grid-2">
-              <label class="vector-card">
-                <input type="checkbox" id="checkHeadless">
-                <div class="vector-content">
-                  <span class="vector-symbol">👁</span>
-                  <span class="vector-title">Headless Mode</span>
-                  <span class="vector-sub">Run without displaying browser window</span>
-                </div>
-              </label>
-
-              <label class="vector-card">
-                <input type="checkbox" id="checkScrollAction" checked>
-                <div class="vector-content">
-                  <span class="vector-symbol">📜</span>
-                  <span class="vector-title">Natural Scroll Physics</span>
-                  <span class="vector-sub">Simulate viewport scroll before engagement</span>
-                </div>
-              </label>
-            </div>
-
-            <div class="control-actions mt-4">
-              <button class="btn btn-hallmark-primary" id="btnSaveSafetySettings">Save Defense Settings</button>
+          <div class="field-block mt-3">
+            <label class="field-label" for="accInputCt0">CT0 CSRF COOKIE</label>
+            <div class="input-action-group">
+              <input
+                type="password"
+                class="field-input font-mono"
+                id="accInputCt0"
+                placeholder="Cookie ct0 from X session..."
+              />
+              <button class="btn-peek" type="button" data-target="accInputCt0">👁</button>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- TAB 6: AUDIT LOGS -->
-      <section class="tab-content" id="tab-history">
-        <div class="hallmark-panel">
-          <div class="panel-header">
-            <div class="panel-title-wrap">
-              <span class="panel-tag">AUDIT TRAIL</span>
-              <h2>Interaction Audit Ledger</h2>
-            </div>
-            <button class="btn btn-hallmark-secondary btn-sm" id="btnRefreshHistory">⟳ Refresh Ledger</button>
-          </div>
-
-          <div class="panel-body">
-            <div class="ledger-container">
-              <table class="ledger-table font-mono">
-                <thead>
-                  <tr>
-                    <th>TIMESTAMP</th>
-                    <th>NODE ID</th>
-                    <th>VECTOR</th>
-                    <th>TARGET POST</th>
-                    <th>STATUS</th>
-                    <th>PAYLOAD / REMARKS</th>
-                  </tr>
-                </thead>
-                <tbody id="historyTableBody">
-                  <tr>
-                    <td colspan="6" class="text-center py-4">No audit events recorded yet.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="field-block mt-3">
+            <label class="field-label" for="accInputProxy">
+              DEDICATED PROXY TUNNEL
+              <span class="field-caption"
+                >(Format: <code>http://user:pass@host:port</code> or
+                <code>host:port:user:pass</code>)</span
+              >
+            </label>
+            <input
+              type="text"
+              class="field-input font-mono"
+              id="accInputProxy"
+              placeholder="e.g. http://proxyuser:pass@142.250.190.46:8080"
+            />
           </div>
         </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- MODAL: ADD / EDIT NODE -->
-  <div class="modal-backdrop" id="accountModal" style="display: none;">
-    <div class="modal-panel">
-      <div class="modal-header">
-        <div class="modal-tag">NODE CONFIGURATION</div>
-        <h3 id="modalAccountTitle">Register New X Node</h3>
-        <button class="btn-modal-close" id="btnCloseAccountModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="editAccountId">
-
-        <div class="field-block">
-          <label class="field-label" for="accInputLabel">NODE LABEL / IDENTIFIER <span class="req-star">*</span></label>
-          <input type="text" class="field-input" id="accInputLabel" placeholder="e.g. Node-Alpha (Main), Node-Beta (Buzzer)">
+        <div class="modal-footer">
+          <button class="btn btn-hallmark-secondary" id="btnCancelAccountModal">Cancel</button>
+          <button class="btn btn-hallmark-primary" id="btnSaveAccountModal">Save Node</button>
         </div>
-
-        <div class="field-block mt-3">
-          <label class="field-label" for="accInputAuthToken">AUTH_TOKEN COOKIE <span class="req-star">*</span></label>
-          <div class="input-action-group">
-            <input type="password" class="field-input font-mono" id="accInputAuthToken" placeholder="Cookie auth_token from X session...">
-            <button class="btn-peek" type="button" data-target="accInputAuthToken">👁</button>
-          </div>
-        </div>
-
-        <div class="field-block mt-3">
-          <label class="field-label" for="accInputCt0">CT0 CSRF COOKIE</label>
-          <div class="input-action-group">
-            <input type="password" class="field-input font-mono" id="accInputCt0" placeholder="Cookie ct0 from X session...">
-            <button class="btn-peek" type="button" data-target="accInputCt0">👁</button>
-          </div>
-        </div>
-
-        <div class="field-block mt-3">
-          <label class="field-label" for="accInputProxy">
-            DEDICATED PROXY TUNNEL
-            <span class="field-caption">(Format: <code>http://user:pass@host:port</code> or <code>host:port:user:pass</code>)</span>
-          </label>
-          <input type="text" class="field-input font-mono" id="accInputProxy" placeholder="e.g. http://proxyuser:pass@142.250.190.46:8080">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-hallmark-secondary" id="btnCancelAccountModal">Cancel</button>
-        <button class="btn btn-hallmark-primary" id="btnSaveAccountModal">Save Node</button>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL: ACCOUNT COMMENTS JSON EDITOR & UPLOADER -->
-  <div class="modal-backdrop" id="commentsModal" style="display: none;">
-    <div class="modal-panel modal-wide">
-      <div class="modal-header">
-        <div>
-          <div class="modal-tag">PAYLOAD SPECIFICATION</div>
-          <h3 id="commentsModalTitle">JSON Payload Bank for Node</h3>
-          <p id="commentsModalSubtitle" class="font-mono text-muted">File: <code>data/comments/...</code></p>
+    <!-- MODAL: ACCOUNT COMMENTS JSON EDITOR & UPLOADER -->
+    <div class="modal-backdrop" id="commentsModal" style="display: none">
+      <div class="modal-panel modal-wide">
+        <div class="modal-header">
+          <div>
+            <div class="modal-tag">PAYLOAD SPECIFICATION</div>
+            <h3 id="commentsModalTitle">JSON Payload Bank for Node</h3>
+            <p id="commentsModalSubtitle" class="text-muted font-mono">
+              File: <code>data/comments/...</code>
+            </p>
+          </div>
+          <button class="btn-modal-close" id="btnCloseCommentsModal">&times;</button>
         </div>
-        <button class="btn-modal-close" id="btnCloseCommentsModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="commentsModalAccountId">
+        <div class="modal-body">
+          <input type="hidden" id="commentsModalAccountId" />
 
-        <div class="upload-dropzone">
-          <label class="btn btn-hallmark-secondary btn-sm">
-            📁 Import .json Payload
-            <input type="file" id="inputFileUploadComments" accept=".json" style="display: none;">
-          </label>
-          <span class="dropzone-text">Upload custom array JSON: <code>["Comment template 1", "{Option A|Option B}"]</code></span>
-        </div>
+          <div class="upload-dropzone">
+            <label class="btn btn-hallmark-secondary btn-sm">
+              📁 Import .json Payload
+              <input
+                type="file"
+                id="inputFileUploadComments"
+                accept=".json"
+                style="display: none"
+              />
+            </label>
+            <span class="dropzone-text"
+              >Upload custom array JSON:
+              <code>["Comment template 1", "{Option A|Option B}"]</code></span
+            >
+          </div>
 
-        <div class="field-block mt-3">
-          <label class="field-label">NODE-SPECIFIC COMMENT TEMPLATES (SPINTAX ENABLED)</label>
-          <div id="accountCommentsList" class="spintax-stack" style="max-height: 260px;"></div>
-          <button class="btn btn-hallmark-secondary btn-sm mt-2" id="btnAddAccountCommentRow">+ Add Template Entry</button>
+          <div class="field-block mt-3">
+            <label class="field-label">NODE-SPECIFIC COMMENT TEMPLATES (SPINTAX ENABLED)</label>
+            <div id="accountCommentsList" class="spintax-stack" style="max-height: 260px"></div>
+            <button class="btn btn-hallmark-secondary btn-sm mt-2" id="btnAddAccountCommentRow">
+              + Add Template Entry
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-hallmark-secondary" id="btnCancelCommentsModal">Cancel</button>
-        <button class="btn btn-hallmark-primary" id="btnSaveAccountCommentsModal">Save JSON Payload</button>
+        <div class="modal-footer">
+          <button class="btn btn-hallmark-secondary" id="btnCancelCommentsModal">Cancel</button>
+          <button class="btn btn-hallmark-primary" id="btnSaveAccountCommentsModal">
+            Save JSON Payload
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script type="module" src="js/main.js"></script>
-</body>
+    <script type="module" src="js/main.js"></script>
+  </body>
 </html>

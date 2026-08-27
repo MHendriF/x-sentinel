@@ -12,7 +12,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Upload, Trash2, Save, FileJson, MessageSquare, Sparkles, Layers } from 'lucide-react';
+import {
+  Plus,
+  Upload,
+  Trash2,
+  Save,
+  FileJson,
+  MessageSquare,
+  Sparkles,
+  Layers,
+} from 'lucide-react';
 import { PRESET_LIBRARY } from '@/lib/presetLibrary';
 
 export const CommentsModal: React.FC = () => {
@@ -103,10 +112,10 @@ export const CommentsModal: React.FC = () => {
 
   return (
     <Dialog open={isCommentsModalOpen} onOpenChange={(open) => !open && closeCommentsModal()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+      <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col">
         <DialogHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-flame tracking-wider">
-            <MessageSquare className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+            <MessageSquare className="h-3.5 w-3.5" />
             NODE PAYLOAD STORAGE
           </div>
           <DialogTitle>
@@ -117,38 +126,35 @@ export const CommentsModal: React.FC = () => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-4 py-2 pr-1">
+        <div className="flex-1 space-y-4 overflow-y-auto py-2 pr-1">
           {/* File Uploader Dropzone */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-md border border-dashed border-slate-700 bg-obsidian-950">
+          <div className="flex flex-col items-center justify-between gap-3 rounded-md border border-dashed border-slate-700 bg-obsidian-950 p-3.5 sm:flex-row">
             <div className="flex items-center gap-3">
-              <FileJson className="w-6 h-6 text-amber-400 shrink-0" />
+              <FileJson className="h-6 w-6 shrink-0 text-amber-400" />
               <div>
-                <div className="text-xs font-semibold text-white">Import Komentar dari File .JSON</div>
-                <div className="text-[10px] text-muted-foreground font-mono">
+                <div className="text-xs font-semibold text-white">
+                  Import Komentar dari File .JSON
+                </div>
+                <div className="font-mono text-[10px] text-muted-foreground">
                   Format: [&quot;Keren banget!&quot;, &quot;&#123;Opsi 1|Opsi 2&#125;&quot;]
                 </div>
               </div>
             </div>
 
-            <label className="cursor-pointer shrink-0">
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-obsidian-800 text-xs font-semibold text-slate-200 hover:bg-obsidian-750 hover:text-white transition-colors">
-                <Upload className="w-3.5 h-3.5" />
+            <label className="shrink-0 cursor-pointer">
+              <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-obsidian-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:bg-obsidian-750 hover:text-white">
+                <Upload className="h-3.5 w-3.5" />
                 Upload JSON
               </span>
             </label>
           </div>
 
           {/* Niche Presets Quick-Loader */}
-          <div className="space-y-1.5 p-3 rounded-md border border-amber-500/20 bg-amber-500/5">
-            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-amber-300">
+          <div className="space-y-1.5 rounded-md border border-amber-500/20 bg-amber-500/5 p-3">
+            <div className="flex items-center justify-between font-mono text-[11px] font-bold text-amber-300">
               <span className="flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
                 LOAD FROM CURATED PRESET LIBRARY
               </span>
             </div>
@@ -161,7 +167,7 @@ export const CommentsModal: React.FC = () => {
                     setComments([...preset.templates]);
                     toast.success(`Memuat ${preset.templates.length} template "${preset.name}"!`);
                   }}
-                  className="px-2.5 py-1 rounded text-[10px] font-mono font-medium bg-obsidian-950 border border-slate-700 hover:border-amber-500/50 hover:bg-amber-500/10 text-slate-200 hover:text-amber-300 transition-all cursor-pointer"
+                  className="cursor-pointer rounded border border-slate-700 bg-obsidian-950 px-2.5 py-1 font-mono text-[10px] font-medium text-slate-200 transition-all hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-300"
                 >
                   {preset.name}
                 </button>
@@ -175,30 +181,35 @@ export const CommentsModal: React.FC = () => {
               <span className="font-mono text-xs font-bold text-slate-300">
                 ACTIVE COMMENTS ({comments.length} ENTRIES)
               </span>
-              <Button size="sm" variant="outline" onClick={handleAddComment} className="h-7 text-xs gap-1">
-                <Plus className="w-3 h-3" />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddComment}
+                className="h-7 gap-1 text-xs"
+              >
+                <Plus className="h-3 w-3" />
                 Add Entry
               </Button>
             </div>
 
-            <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+            <div className="max-h-[260px] space-y-2 overflow-y-auto pr-1">
               {comments.map((comment, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <Textarea
                     rows={2}
                     value={comment}
                     onChange={(e) => handleUpdateComment(idx, e.target.value)}
-                    className="text-xs font-mono"
+                    className="font-mono text-xs"
                     placeholder="Mendukung spintax {Opsi 1|Opsi 2}..."
                   />
                   <Button
                     size="sm"
                     variant="destructive"
-                    className="px-2.5 h-9 shrink-0"
+                    className="h-9 shrink-0 px-2.5"
                     onClick={() => handleRemoveComment(idx)}
                     title="Hapus baris"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
@@ -206,7 +217,7 @@ export const CommentsModal: React.FC = () => {
           </div>
         </div>
 
-        <DialogFooter className="gap-2 pt-3 border-t border-border/60">
+        <DialogFooter className="gap-2 border-t border-border/60 pt-3">
           <Button variant="outline" size="sm" onClick={closeCommentsModal}>
             Cancel
           </Button>
@@ -217,7 +228,7 @@ export const CommentsModal: React.FC = () => {
             disabled={isSaving}
             className="font-heading font-bold"
           >
-            <Save className="w-3.5 h-3.5 mr-1.5" />
+            <Save className="mr-1.5 h-3.5 w-3.5" />
             {isSaving ? 'Saving...' : 'Save Payload Bank'}
           </Button>
         </DialogFooter>

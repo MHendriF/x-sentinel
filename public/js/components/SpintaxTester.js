@@ -45,7 +45,7 @@ export class SpintaxTester {
   renderTemplates(templates) {
     if (!this.templateListContainer) return;
     this.templateListContainer.innerHTML = '';
-    templates.forEach(tmpl => this.addTemplateRow(tmpl));
+    templates.forEach((tmpl) => this.addTemplateRow(tmpl));
   }
 
   addTemplateRow(text = '') {
@@ -62,7 +62,9 @@ export class SpintaxTester {
 
   async saveTemplates() {
     const textareas = this.templateListContainer.querySelectorAll('.template-text');
-    const templates = Array.from(textareas).map(t => t.value.trim()).filter(Boolean);
+    const templates = Array.from(textareas)
+      .map((t) => t.value.trim())
+      .filter(Boolean);
 
     try {
       const data = await api.saveTemplates(templates);
@@ -82,7 +84,7 @@ export class SpintaxTester {
       const data = await api.previewSpintax(text, 5);
       if (data.success && data.variations) {
         this.variationList.innerHTML = '';
-        data.variations.forEach(v => {
+        data.variations.forEach((v) => {
           const li = document.createElement('li');
           li.innerText = v;
           this.variationList.appendChild(li);

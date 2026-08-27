@@ -21,7 +21,7 @@ import {
   Download,
   Sparkles,
   Layers,
-  HelpCircle
+  HelpCircle,
 } from 'lucide-react';
 
 interface BulkImportModalProps {
@@ -75,16 +75,16 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClos
   // Preview lines count
   const validLinesCount = rawText
     .split('\n')
-    .map(l => l.trim())
-    .filter(l => l && !l.startsWith('#')).length;
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#')).length;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl bg-obsidian-900 border-border/80 shadow-2xl">
+      <DialogContent className="max-w-2xl border-border/80 bg-obsidian-900 shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold tracking-wider">
-              <UploadCloud className="w-4 h-4 text-cyan-400" />
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-cyan-400">
+              <UploadCloud className="h-4 w-4 text-cyan-400" />
               FLEET MANAGEMENT · BULK ONBOARDING
             </div>
             <Button
@@ -92,38 +92,40 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClos
               variant="outline"
               size="sm"
               onClick={handleExportBackup}
-              className="h-7 text-xs font-mono border-slate-700 hover:bg-slate-800 text-slate-300 gap-1.5"
+              className="h-7 gap-1.5 border-slate-700 font-mono text-xs text-slate-300 hover:bg-slate-800"
             >
-              <Download className="w-3 h-3 text-emerald-400" />
+              <Download className="h-3 w-3 text-emerald-400" />
               Export Fleet Backup (.json)
             </Button>
           </div>
-          <DialogTitle className="text-lg text-white font-heading">
+          <DialogTitle className="font-heading text-lg text-white">
             Bulk Import Multi-Node Fleet
           </DialogTitle>
-          <DialogDescription className="text-slate-400 text-xs">
-            Tempelkan daftar akun sekaligus (1 baris per akun) untuk mendaftarkan armada node dalam hitungan detik.
+          <DialogDescription className="text-xs text-slate-400">
+            Tempelkan daftar akun sekaligus (1 baris per akun) untuk mendaftarkan armada node dalam
+            hitungan detik.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           {/* Format Helper Info */}
-          <div className="p-3 rounded-md border border-cyan-500/30 bg-cyan-500/5 text-xs font-mono space-y-1.5">
-            <div className="flex items-center justify-between text-cyan-300 font-bold">
+          <div className="space-y-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/5 p-3 font-mono text-xs">
+            <div className="flex items-center justify-between font-bold text-cyan-300">
               <span className="flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="h-3.5 w-3.5" />
                 FORMAT DIDUKUNG (Pemisah Titik Dua ':' atau Pipe '|')
               </span>
               <button
                 type="button"
                 onClick={() => setRawText(sampleFormat)}
-                className="text-[10px] text-cyan-400 hover:text-cyan-200 underline cursor-pointer"
+                className="cursor-pointer text-[10px] text-cyan-400 underline hover:text-cyan-200"
               >
                 + Muat Contoh Format
               </button>
             </div>
-            <div className="text-slate-400 text-[11px] leading-relaxed">
-              <code>auth_token:ct0:proxy:label</code> atau <code>auth_token:ct0:user:pass@ip:port:label</code>
+            <div className="text-[11px] leading-relaxed text-slate-400">
+              <code>auth_token:ct0:proxy:label</code> atau{' '}
+              <code>auth_token:ct0:user:pass@ip:port:label</code>
             </div>
           </div>
 
@@ -142,17 +144,17 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClos
               placeholder={`Paste akun di sini...\nContoh:\n3a1b2c...:1a2b3c...:31.56.70.92:1338:Node Alpha\n3a1b2c...:1a2b3c...:usr:pwd@31.56.70.92:1338:Node Beta`}
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              className="text-xs font-mono bg-obsidian-950/90 border-slate-700 leading-relaxed placeholder:text-slate-600"
+              className="border-slate-700 bg-obsidian-950/90 font-mono text-xs leading-relaxed placeholder:text-slate-600"
             />
           </div>
         </div>
 
-        <DialogFooter className="flex items-center justify-between sm:justify-between border-t border-border/80 pt-3">
+        <DialogFooter className="flex items-center justify-between border-t border-border/80 pt-3 sm:justify-between">
           <Button
             type="button"
             variant="ghost"
             onClick={onClose}
-            className="text-xs font-mono text-slate-400"
+            className="font-mono text-xs text-slate-400"
           >
             Batal
           </Button>
@@ -162,9 +164,9 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClos
             variant="default"
             onClick={handleImport}
             disabled={isImporting || validLinesCount === 0}
-            className="text-xs font-mono font-bold bg-cyan-600 hover:bg-cyan-500 text-white gap-1.5"
+            className="gap-1.5 bg-cyan-600 font-mono text-xs font-bold text-white hover:bg-cyan-500"
           >
-            <UploadCloud className="w-3.5 h-3.5" />
+            <UploadCloud className="h-3.5 w-3.5" />
             {isImporting ? 'Mengimpor Armada...' : `Impor ${validLinesCount} Node Sekarang`}
           </Button>
         </DialogFooter>

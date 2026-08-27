@@ -18,8 +18,8 @@ export class TelemetryRibbon {
   }
 
   init() {
-    store.on('stats', stats => this.renderStats(stats));
-    store.on('accounts', accounts => this.renderAccountsSummary(accounts));
+    store.on('stats', (stats) => this.renderStats(stats));
+    store.on('accounts', (accounts) => this.renderAccountsSummary(accounts));
   }
 
   renderStats(stats) {
@@ -32,7 +32,7 @@ export class TelemetryRibbon {
   renderAccountsSummary(accounts) {
     if (!Array.isArray(accounts)) return;
     const total = accounts.length;
-    const active = accounts.filter(a => a.enabled !== false).length;
+    const active = accounts.filter((a) => a.enabled !== false).length;
 
     if (this.sidebarTotalAccounts) this.sidebarTotalAccounts.innerText = total;
     if (this.sidebarActiveAccounts) this.sidebarActiveAccounts.innerText = active;

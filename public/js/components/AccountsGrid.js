@@ -19,7 +19,7 @@ export class AccountsGrid {
     if (this.btnAddAccount) {
       this.btnAddAccount.addEventListener('click', () => this.modals.openAddAccountModal());
     }
-    store.on('accounts', accounts => this.render(accounts));
+    store.on('accounts', (accounts) => this.render(accounts));
     this.loadAccounts();
   }
 
@@ -51,15 +51,17 @@ export class AccountsGrid {
       return;
     }
 
-    accounts.forEach(acc => {
+    accounts.forEach((acc) => {
       const card = document.createElement('div');
       card.className = `node-item-card ${acc.enabled === false ? 'disabled' : ''}`;
-      
-      const avatarSrc = acc.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
+
+      const avatarSrc =
+        acc.avatar ||
+        'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
       const proxyBadge = acc.proxy
         ? `<span class="node-badge badge-proxy-tag" title="${acc.proxy}">TUNNEL: ${acc.proxy.replace(/http:\/\/[^@]*@/, '')}</span>`
         : `<span class="node-badge" style="background: rgba(255,255,255,0.03); color: var(--text-dim);">DIRECT IP</span>`;
-      
+
       const statusBadge = acc.isValid
         ? `<span class="node-badge badge-valid-tag">● VALID SESSION</span>`
         : `<span class="node-badge badge-unverified-tag">○ UNVERIFIED</span>`;
@@ -101,11 +103,21 @@ export class AccountsGrid {
         </div>
       `;
 
-      card.querySelector('[data-action="toggle"]').addEventListener('click', () => this.toggleAccount(acc.id));
-      card.querySelector('[data-action="verify"]').addEventListener('click', () => this.verifyAccount(acc.id));
-      card.querySelector('[data-action="edit"]').addEventListener('click', () => this.modals.openEditAccountModal(acc));
-      card.querySelector('[data-action="comments"]').addEventListener('click', () => this.modals.openCommentsModal(acc));
-      card.querySelector('[data-action="delete"]').addEventListener('click', () => this.deleteAccount(acc.id));
+      card
+        .querySelector('[data-action="toggle"]')
+        .addEventListener('click', () => this.toggleAccount(acc.id));
+      card
+        .querySelector('[data-action="verify"]')
+        .addEventListener('click', () => this.verifyAccount(acc.id));
+      card
+        .querySelector('[data-action="edit"]')
+        .addEventListener('click', () => this.modals.openEditAccountModal(acc));
+      card
+        .querySelector('[data-action="comments"]')
+        .addEventListener('click', () => this.modals.openCommentsModal(acc));
+      card
+        .querySelector('[data-action="delete"]')
+        .addEventListener('click', () => this.deleteAccount(acc.id));
 
       this.container.appendChild(card);
     });

@@ -29,7 +29,7 @@ export const App: React.FC = () => {
     setIsRunning,
     addLog,
     isBulkImportOpen,
-    closeBulkImportModal
+    closeBulkImportModal,
   } = useStore();
 
   // URL Hash Synchronizer for Browser Navigation (Back/Forward)
@@ -52,7 +52,12 @@ export const App: React.FC = () => {
         const candidate = hash.startsWith('tab-') ? hash : `tab-${hash}`;
         if (VALID_TABS.includes(candidate)) {
           setActiveTab(candidate);
-        } else if (hash === 'composer' || hash === 'post' || hash === 'create-post' || hash === 'studio') {
+        } else if (
+          hash === 'composer' ||
+          hash === 'post' ||
+          hash === 'create-post' ||
+          hash === 'studio'
+        ) {
           setActiveTab('tab-composer');
         } else if (hash === 'workbench') {
           setActiveTab('tab-batch');
@@ -108,7 +113,7 @@ export const App: React.FC = () => {
       <NavDeck />
 
       {/* Main Workspace (Right Content) */}
-      <main className="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 max-w-7xl w-full overflow-y-auto">
+      <main className="flex w-full max-w-7xl flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:p-8">
         {/* Top Telemetry Ribbon */}
         <TelemetryRibbon />
 

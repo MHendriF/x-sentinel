@@ -10,7 +10,7 @@ module.exports = {
   ROOT_DIR,
   DATA_DIR,
   USER_DATA_DIR,
-  
+
   // Default Anti-Ban & Rate Limits
   DEFAULTS: {
     minDelaySeconds: 15,
@@ -23,5 +23,6 @@ module.exports = {
   },
 
   // Desktop Chrome User Agent for maximum realism
-  USER_AGENT: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+  USER_AGENT:
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
 };

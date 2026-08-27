@@ -37,12 +37,15 @@ export class TargetWorkbench {
       this.btnStop.addEventListener('click', () => this.stopMission());
     }
 
-    store.on('accounts', accounts => this.updateAccountDropdown(accounts));
+    store.on('accounts', (accounts) => this.updateAccountDropdown(accounts));
     store.on('change', () => this.syncRunningState());
   }
 
   updateCounter() {
-    const urls = this.targetUrls.value.split('\n').map(u => u.trim()).filter(Boolean);
+    const urls = this.targetUrls.value
+      .split('\n')
+      .map((u) => u.trim())
+      .filter(Boolean);
     if (this.urlCounter) {
       this.urlCounter.innerText = `${urls.length} TARGETS`;
     }
@@ -50,18 +53,21 @@ export class TargetWorkbench {
 
   updateAccountDropdown(accounts) {
     if (!this.accountSelector || !Array.isArray(accounts)) return;
-    const activeAccounts = accounts.filter(a => a.enabled !== false);
+    const activeAccounts = accounts.filter((a) => a.enabled !== false);
 
     let html = `<option value="all">⚡ All Active Nodes (${activeAccounts.length} Nodes - Sequential Rotation)</option>`;
-    accounts.forEach(acc => {
-      const statusEmoji = acc.enabled === false ? '⏸' : (acc.isValid ? '●' : '○');
+    accounts.forEach((acc) => {
+      const statusEmoji = acc.enabled === false ? '⏸' : acc.isValid ? '●' : '○';
       html += `<option value="${acc.id}">${statusEmoji} ${acc.label} (@${acc.username || 'user'})</option>`;
     });
     this.accountSelector.innerHTML = html;
   }
 
   async startMission() {
-    const urls = this.targetUrls.value.split('\n').map(u => u.trim()).filter(Boolean);
+    const urls = this.targetUrls.value
+      .split('\n')
+      .map((u) => u.trim())
+      .filter(Boolean);
     if (urls.length === 0) {
       alert('Please specify at least one target tweet URL.');
       return;
@@ -79,11 +85,18 @@ export class TargetWorkbench {
     }
 
     try {
-      const data = await api.startBatchTask({ accountIds, urls, like, retweet, comment, commentText });
+      const data = await api.startBatchTask({
+        accountIds,
+        urls,
+        like,
+        retweet,
+        comment,
+        commentText,
+      });
       if (data.success) {
         store.update({
           isRunning: true,
-          currentTask: { total: urls.length, completed: 0 }
+          currentTask: { total: urls.length, completed: 0 },
         });
       } else {
         alert(data.message || 'Failed to start mission.');
@@ -118,7 +131,8 @@ export class TargetWorkbench {
         const total = task.total || task.targetCount || 1;
         const current = task.completed || 0;
         const pct = Math.min(100, Math.round((current / total) * 100));
-        if (this.progressLabel) this.progressLabel.innerText = `PIPELINE: ${current}/${total} ACTIONS (${task.accountsCount || 1} NODES)`;
+        if (this.progressLabel)
+          this.progressLabel.innerText = `PIPELINE: ${current}/${total} ACTIONS (${task.accountsCount || 1} NODES)`;
         if (this.progressPercent) this.progressPercent.innerText = `${pct}%`;
         if (this.progressBarFill) this.progressBarFill.style.width = `${pct}%`;
       }

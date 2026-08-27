@@ -11,7 +11,7 @@ class StateStore {
       isRunning: false,
       currentTask: null,
       settings: {},
-      activeTab: 'tab-accounts'
+      activeTab: 'tab-accounts',
     };
     this.listeners = new Map();
   }
@@ -27,7 +27,7 @@ class StateStore {
   }
 
   update(partial) {
-    Object.keys(partial).forEach(k => {
+    Object.keys(partial).forEach((k) => {
       this.state[k] = partial[k];
       this.emit(k, partial[k]);
     });
@@ -50,8 +50,12 @@ class StateStore {
 
   emit(event, data) {
     if (this.listeners.has(event)) {
-      this.listeners.get(event).forEach(cb => {
-        try { cb(data); } catch (e) { console.error(`Error in event listener for ${event}:`, e); }
+      this.listeners.get(event).forEach((cb) => {
+        try {
+          cb(data);
+        } catch (e) {
+          console.error(`Error in event listener for ${event}:`, e);
+        }
       });
     }
   }

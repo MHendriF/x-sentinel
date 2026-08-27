@@ -18,7 +18,7 @@ export class AuditLedger {
     if (this.btnRefresh) {
       this.btnRefresh.addEventListener('click', () => this.loadHistory());
     }
-    store.on('activeTab', tab => {
+    store.on('activeTab', (tab) => {
       if (tab === 'tab-history') this.loadHistory();
     });
     this.loadHistory();
@@ -41,25 +41,30 @@ export class AuditLedger {
     this.tableBody.innerHTML = '';
 
     if (!Array.isArray(items) || items.length === 0) {
-      this.tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No audit events recorded yet.</td></tr>';
+      this.tableBody.innerHTML =
+        '<tr><td colspan="6" class="text-center py-4">No audit events recorded yet.</td></tr>';
       return;
     }
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const tr = document.createElement('tr');
-      const actionClass = {
-        LIKE: 'action-like',
-        RETWEET: 'action-retweet',
-        COMMENT: 'action-comment'
-      }[item.action] || '';
+      const actionClass =
+        {
+          LIKE: 'action-like',
+          RETWEET: 'action-retweet',
+          COMMENT: 'action-comment',
+        }[item.action] || '';
 
-      const statusClass = {
-        SUCCESS: 'status-success',
-        ALREADY_DONE: 'status-already',
-        FAILED: 'status-failed'
-      }[item.status] || '';
+      const statusClass =
+        {
+          SUCCESS: 'status-success',
+          ALREADY_DONE: 'status-already',
+          FAILED: 'status-failed',
+        }[item.status] || '';
 
-      const shortUrl = item.tweetUrl ? item.tweetUrl.replace('https://x.com/', '').replace('https://twitter.com/', '') : '-';
+      const shortUrl = item.tweetUrl
+        ? item.tweetUrl.replace('https://x.com/', '').replace('https://twitter.com/', '')
+        : '-';
 
       tr.innerHTML = `
         <td>${item.timeFormatted || item.timestamp?.slice(11, 19) || '-'}</td>

@@ -87,11 +87,14 @@ export const AccountModal: React.FC = () => {
 
     // 2. Parse from Raw Cookie Header (e.g. auth_token=abcdef...; ct0=12345...)
     if (!foundAuth) {
-      const match = text.match(/auth_token=([^;]+)/i) || text.match(/auth_token[:=]\s*["']?([a-f0-9]{30,50})["']?/i);
+      const match =
+        text.match(/auth_token=([^;]+)/i) ||
+        text.match(/auth_token[:=]\s*["']?([a-f0-9]{30,50})["']?/i);
       if (match) foundAuth = match[1].trim();
     }
     if (!foundCt0) {
-      const match = text.match(/ct0=([^;]+)/i) || text.match(/ct0[:=]\s*["']?([a-f0-9]{30,200})["']?/i);
+      const match =
+        text.match(/ct0=([^;]+)/i) || text.match(/ct0[:=]\s*["']?([a-f0-9]{30,200})["']?/i);
       if (match) foundCt0 = match[1].trim();
     }
 
@@ -105,9 +108,7 @@ export const AccountModal: React.FC = () => {
       if (foundCt0) setCt0(foundCt0);
       if (!label) setLabel(`Node-${Date.now().toString().slice(-4)}`);
       toast.success(
-        foundCt0
-          ? 'Berhasil mengekstrak auth_token & ct0!'
-          : 'Berhasil mengekstrak auth_token!'
+        foundCt0 ? 'Berhasil mengekstrak auth_token & ct0!' : 'Berhasil mengekstrak auth_token!'
       );
       setShowRawPaste(false);
       setRawPasteText('');
@@ -192,19 +193,19 @@ export const AccountModal: React.FC = () => {
 
   return (
     <Dialog open={isAccountModalOpen} onOpenChange={(open) => !open && closeAccountModal()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <div className="font-mono text-[10px] font-bold text-flame tracking-wider">
+            <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
               NODE REGISTRATION DECK
             </div>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setShowGuide(!showGuide)}
-              className="h-6 text-[11px] font-mono text-flame hover:bg-flame/10 gap-1 px-2"
+              className="h-6 gap-1 px-2 font-mono text-[11px] text-flame hover:bg-flame/10"
             >
-              <HelpCircle className="w-3.5 h-3.5" />
+              <HelpCircle className="h-3.5 w-3.5" />
               {showGuide ? 'Tutup Panduan' : 'Cara Ambil Cookie'}
             </Button>
           </div>
@@ -218,9 +219,9 @@ export const AccountModal: React.FC = () => {
 
         <div className="space-y-4 py-2">
           {/* Smart Paste Header Bar */}
-          <div className="flex items-center justify-between p-2.5 rounded-md border border-amber-500/30 bg-amber-500/5">
-            <div className="flex items-center gap-2 text-xs text-slate-300 font-mono">
-              <Sparkles className="w-4 h-4 text-flame shrink-0" />
+          <div className="flex items-center justify-between rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5">
+            <div className="flex items-center gap-2 font-mono text-xs text-slate-300">
+              <Sparkles className="h-4 w-4 shrink-0 text-flame" />
               <span>Smart Paste Header Cookie / Text</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -228,9 +229,9 @@ export const AccountModal: React.FC = () => {
                 size="sm"
                 variant="default"
                 onClick={handleSmartClipboardPaste}
-                className="h-7 text-xs font-mono font-bold gap-1"
+                className="h-7 gap-1 font-mono text-xs font-bold"
               >
-                <ClipboardPaste className="w-3.5 h-3.5" />
+                <ClipboardPaste className="h-3.5 w-3.5" />
                 Paste Auto
               </Button>
             </div>
@@ -238,8 +239,8 @@ export const AccountModal: React.FC = () => {
 
           {/* Raw Paste Textarea Input (if clipboard auto-read fails or manual paste) */}
           {showRawPaste && (
-            <div className="p-3 rounded-md border border-slate-700 bg-obsidian-950 space-y-2 animate-in fade-in">
-              <div className="flex items-center justify-between text-xs font-mono text-slate-300">
+            <div className="animate-in fade-in space-y-2 rounded-md border border-slate-700 bg-obsidian-950 p-3">
+              <div className="flex items-center justify-between font-mono text-xs text-slate-300">
                 <span>Tempel String Header Cookie / JSON di sini:</span>
                 <button
                   onClick={() => setShowRawPaste(false)}
@@ -253,13 +254,13 @@ export const AccountModal: React.FC = () => {
                 placeholder="auth_token=40_karakter; ct0=160_karakter; atau paste seluruh header cookie..."
                 value={rawPasteText}
                 onChange={(e) => setRawPasteText(e.target.value)}
-                className="text-xs font-mono"
+                className="font-mono text-xs"
               />
               <Button
                 size="sm"
                 variant="secondary"
                 onClick={() => parseAndFillCookies(rawPasteText)}
-                className="w-full text-xs font-mono"
+                className="w-full font-mono text-xs"
               >
                 Ekstrak & Isi Otomatis
               </Button>
@@ -268,35 +269,65 @@ export const AccountModal: React.FC = () => {
 
           {/* Step-by-Step Guide Drawer */}
           {showGuide && (
-            <div className="p-3.5 rounded-md border border-slate-700 bg-obsidian-950 space-y-3 animate-in fade-in-50 text-xs font-mono">
-              <div className="font-bold text-white flex items-center gap-1.5">
-                <HelpCircle className="w-4 h-4 text-flame" />
+            <div className="animate-in fade-in-50 space-y-3 rounded-md border border-slate-700 bg-obsidian-950 p-3.5 font-mono text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-white">
+                <HelpCircle className="h-4 w-4 text-flame" />
                 PANDUAN MENGAMBIL COOKIE (HTTPONLY X.COM):
               </div>
-              <div className="space-y-2 text-slate-300 text-[11px] leading-relaxed">
+              <div className="space-y-2 text-[11px] leading-relaxed text-slate-300">
                 <p className="text-amber-400">
-                  ⚠️ <em>Catatan: Cookie <code>auth_token</code> memiliki proteksi <code>HttpOnly: true</code> oleh X, sehingga tidak bisa dibaca via script/bookmarklet JavaScript biasa.</em>
+                  ⚠️{' '}
+                  <em>
+                    Catatan: Cookie <code>auth_token</code> memiliki proteksi{' '}
+                    <code>HttpOnly: true</code> oleh X, sehingga tidak bisa dibaca via
+                    script/bookmarklet JavaScript biasa.
+                  </em>
                 </p>
 
-                <div className="bg-obsidian-900 p-2.5 rounded border border-slate-800 space-y-1.5">
+                <div className="space-y-1.5 rounded border border-slate-800 bg-obsidian-900 p-2.5">
                   <div className="font-bold text-white">⚡ Cara Tercepat (Copy Header Cookie):</div>
-                  <ol className="list-decimal pl-4 space-y-1 text-slate-300">
-                    <li>Buka <strong>x.com</strong> di browser (pastikan sudah login).</li>
-                    <li>Tekan <strong>F12</strong> (DevTools) &gt; pilih tab <strong>Network</strong>.</li>
-                    <li>Klik sembarang request (misal: <code>home</code>, <code>graphql</code>, atau reload halaman).</li>
-                    <li>Di tab <strong>Headers</strong> &gt; cari bagian <strong>Request Headers</strong> &gt; baris <code>cookie:</code>.</li>
-                    <li>Klik kanan baris <code>cookie:</code> &gt; pilih <strong>Copy value</strong>.</li>
-                    <li>Klik tombol <strong>Paste Auto</strong> di atas! (Sistem akan otomatis mengekstrak <code>auth_token</code> &amp; <code>ct0</code>).</li>
+                  <ol className="list-decimal space-y-1 pl-4 text-slate-300">
+                    <li>
+                      Buka <strong>x.com</strong> di browser (pastikan sudah login).
+                    </li>
+                    <li>
+                      Tekan <strong>F12</strong> (DevTools) &gt; pilih tab <strong>Network</strong>.
+                    </li>
+                    <li>
+                      Klik sembarang request (misal: <code>home</code>, <code>graphql</code>, atau
+                      reload halaman).
+                    </li>
+                    <li>
+                      Di tab <strong>Headers</strong> &gt; cari bagian{' '}
+                      <strong>Request Headers</strong> &gt; baris <code>cookie:</code>.
+                    </li>
+                    <li>
+                      Klik kanan baris <code>cookie:</code> &gt; pilih <strong>Copy value</strong>.
+                    </li>
+                    <li>
+                      Klik tombol <strong>Paste Auto</strong> di atas! (Sistem akan otomatis
+                      mengekstrak <code>auth_token</code> &amp; <code>ct0</code>).
+                    </li>
                   </ol>
                 </div>
 
-                <div className="bg-obsidian-900 p-2.5 rounded border border-slate-800 space-y-1.5">
+                <div className="space-y-1.5 rounded border border-slate-800 bg-obsidian-900 p-2.5">
                   <div className="font-bold text-white">🔍 Cara Manual (Tab Application):</div>
-                  <ol className="list-decimal pl-4 space-y-1 text-slate-300">
-                    <li>Tekan <strong>F12</strong> &gt; pilih tab <strong>Application</strong> (Storage).</li>
-                    <li>Di menu kiri: <strong>Cookies</strong> &gt; klik <code>https://x.com</code>.</li>
-                    <li>Double-click nilai pada baris <strong>auth_token</strong> &gt; Copy &gt; Paste ke field bawah.</li>
-                    <li>Lakukan hal yang sama untuk <strong>ct0</strong>.</li>
+                  <ol className="list-decimal space-y-1 pl-4 text-slate-300">
+                    <li>
+                      Tekan <strong>F12</strong> &gt; pilih tab <strong>Application</strong>{' '}
+                      (Storage).
+                    </li>
+                    <li>
+                      Di menu kiri: <strong>Cookies</strong> &gt; klik <code>https://x.com</code>.
+                    </li>
+                    <li>
+                      Double-click nilai pada baris <strong>auth_token</strong> &gt; Copy &gt; Paste
+                      ke field bawah.
+                    </li>
+                    <li>
+                      Lakukan hal yang sama untuk <strong>ct0</strong>.
+                    </li>
                   </ol>
                 </div>
               </div>
@@ -319,11 +350,11 @@ export const AccountModal: React.FC = () => {
           {/* auth_token */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-flame" />
+              <label className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-300">
+                <Key className="h-3.5 w-3.5 text-flame" />
                 COOKIE: AUTH_TOKEN <span className="text-flame">*</span>
               </label>
-              <span className="text-[10px] text-muted-foreground font-mono">40 karakter hex</span>
+              <span className="font-mono text-[10px] text-muted-foreground">40 karakter hex</span>
             </div>
             <div className="relative">
               <Input
@@ -338,7 +369,7 @@ export const AccountModal: React.FC = () => {
                 className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
                 onClick={() => setShowAuthToken(!showAuthToken)}
               >
-                {showAuthToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showAuthToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -346,11 +377,11 @@ export const AccountModal: React.FC = () => {
           {/* ct0 (CSRF Token) */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-blue-400" />
+              <label className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-300">
+                <Shield className="h-3.5 w-3.5 text-blue-400" />
                 COOKIE: CT0 (CSRF TOKEN)
               </label>
-              <span className="text-[10px] text-muted-foreground font-mono">160 karakter hex</span>
+              <span className="font-mono text-[10px] text-muted-foreground">160 karakter hex</span>
             </div>
             <div className="relative">
               <Input
@@ -365,7 +396,7 @@ export const AccountModal: React.FC = () => {
                 className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
                 onClick={() => setShowCt0(!showCt0)}
               >
-                {showCt0 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showCt0 ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -373,18 +404,18 @@ export const AccountModal: React.FC = () => {
           {/* Proxy with Test Button */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-purple-400" />
+              <label className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-300">
+                <Globe className="h-3.5 w-3.5 text-purple-400" />
                 DEDICATED PROXY TUNNEL
               </label>
-              <span className="text-[10px] text-muted-foreground font-mono">HTTP/SOCKS5</span>
+              <span className="font-mono text-[10px] text-muted-foreground">HTTP/SOCKS5</span>
             </div>
             <div className="flex items-center gap-2">
               <Input
                 placeholder="user:pass@ip:port atau ip:port:user:pass"
                 value={proxy}
                 onChange={(e) => setProxy(e.target.value)}
-                className="font-mono text-xs flex-1"
+                className="flex-1 font-mono text-xs"
               />
               <Button
                 type="button"
@@ -392,9 +423,11 @@ export const AccountModal: React.FC = () => {
                 variant="outline"
                 onClick={handleTestProxyInModal}
                 disabled={isTestingProxy || !proxy.trim()}
-                className="h-9 px-3 text-xs font-mono shrink-0 gap-1"
+                className="h-9 shrink-0 gap-1 px-3 font-mono text-xs"
               >
-                <Activity className={`w-3.5 h-3.5 ${isTestingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`} />
+                <Activity
+                  className={`h-3.5 w-3.5 ${isTestingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
+                />
                 {isTestingProxy ? 'Ping...' : 'Test'}
               </Button>
             </div>
@@ -402,7 +435,7 @@ export const AccountModal: React.FC = () => {
             {/* Proxy Test Result Badge */}
             {proxyResult && (
               <div
-                className={`p-2 rounded-md border text-xs font-mono mt-2 flex items-center justify-between ${
+                className={`mt-2 flex items-center justify-between rounded-md border p-2 font-mono text-xs ${
                   proxyResult.success
                     ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                     : 'border-red-500/30 bg-red-500/10 text-red-400'
@@ -410,9 +443,9 @@ export const AccountModal: React.FC = () => {
               >
                 <div className="flex items-center gap-2 truncate">
                   {proxyResult.success ? (
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
                   )}
                   <span className="truncate">
                     {proxyResult.success
@@ -420,13 +453,13 @@ export const AccountModal: React.FC = () => {
                       : proxyResult.message}
                   </span>
                 </div>
-                <span className="font-bold shrink-0 ml-2">{proxyResult.latency}ms</span>
+                <span className="ml-2 shrink-0 font-bold">{proxyResult.latency}ms</span>
               </div>
             )}
           </div>
         </div>
 
-        <DialogFooter className="gap-2 pt-2 border-t border-border/60">
+        <DialogFooter className="gap-2 border-t border-border/60 pt-2">
           <Button variant="outline" size="sm" onClick={closeAccountModal}>
             Cancel
           </Button>
@@ -437,7 +470,7 @@ export const AccountModal: React.FC = () => {
             disabled={isSaving}
             className="font-heading font-bold"
           >
-            <Save className="w-3.5 h-3.5 mr-1" />
+            <Save className="mr-1 h-3.5 w-3.5" />
             {isSaving ? 'Saving...' : 'Save & Register Node'}
           </Button>
         </DialogFooter>

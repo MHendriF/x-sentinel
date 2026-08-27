@@ -96,7 +96,9 @@ export const DefenseProtocol: React.FC = () => {
       });
 
       if (res.success) {
-        toast.success(`🔔 Pesan uji coba berhasil dikirim ke ${type === 'telegram' ? 'Telegram Bot' : 'Discord Webhook'}!`);
+        toast.success(
+          `🔔 Pesan uji coba berhasil dikirim ke ${type === 'telegram' ? 'Telegram Bot' : 'Discord Webhook'}!`
+        );
       } else {
         toast.error(`Gagal mengirim alert uji coba: ${res.message}`);
       }
@@ -108,19 +110,20 @@ export const DefenseProtocol: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 animate-in fade-in">
+    <div className="animate-in fade-in mx-auto max-w-2xl space-y-5">
       {/* Quick AI Link Banner */}
-      <div className="p-3.5 rounded-lg border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-obsidian-900 to-obsidian-950 flex items-center justify-between gap-3 shadow-md">
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-obsidian-900 to-obsidian-950 p-3.5 shadow-md">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-md bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 shrink-0">
-            <Bot className="w-4 h-4" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-purple-500/40 bg-purple-500/20 text-purple-400">
+            <Bot className="h-4 w-4" />
           </div>
           <div>
-            <div className="font-heading font-bold text-xs text-white">
+            <div className="font-heading text-xs font-bold text-white">
               AI Provider &amp; Model Configuration
             </div>
             <div className="text-[11px] text-slate-400">
-              Konfigurasi 9router, OpenRouter, Groq, model, dan persona kini dipusatkan di tab khusus.
+              Konfigurasi 9router, OpenRouter, Groq, model, dan persona kini dipusatkan di tab
+              khusus.
             </div>
           </div>
         </div>
@@ -130,23 +133,24 @@ export const DefenseProtocol: React.FC = () => {
           size="sm"
           variant="outline"
           onClick={() => setActiveTab('tab-ai')}
-          className="font-mono text-xs border-purple-500/40 text-purple-300 hover:bg-purple-500/10 gap-1.5 shrink-0"
+          className="shrink-0 gap-1.5 border-purple-500/40 font-mono text-xs text-purple-300 hover:bg-purple-500/10"
         >
           <span>Buka AI Studio</span>
-          <ArrowRight className="w-3 h-3 text-purple-400" />
+          <ArrowRight className="h-3 w-3 text-purple-400" />
         </Button>
       </div>
 
       {/* Main Defense Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-flame tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             EVASION &amp; DEFENSE PROTOCOL
           </div>
           <CardTitle className="text-xl">Anti-Ban &amp; Stealth Engine</CardTitle>
           <CardDescription>
-            Konfigurasikan interval penundaan acak manusia (*human-like randomized intervals*) dan batasan kuota untuk mencegah rate-limit X.
+            Konfigurasikan interval penundaan acak manusia (*human-like randomized intervals*) dan
+            batasan kuota untuk mencegah rate-limit X.
           </CardDescription>
         </CardHeader>
 
@@ -154,8 +158,8 @@ export const DefenseProtocol: React.FC = () => {
           {/* Delays Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="font-mono text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-flame" />
+              <label className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-300">
+                <Clock className="h-3.5 w-3.5 text-flame" />
                 MIN ACTION DELAY (DETIK)
               </label>
               <Input
@@ -169,8 +173,8 @@ export const DefenseProtocol: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-mono text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-flame" />
+              <label className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-300">
+                <Clock className="h-3.5 w-3.5 text-flame" />
                 MAX ACTION DELAY (DETIK)
               </label>
               <Input
@@ -215,36 +219,42 @@ export const DefenseProtocol: React.FC = () => {
           </div>
 
           {/* Toggles */}
-          <div className="space-y-2.5 pt-2 border-t border-border/60">
-            <label className="flex items-center justify-between p-3 rounded-md border border-border/80 bg-obsidian-950 cursor-pointer hover:border-slate-700">
+          <div className="space-y-2.5 border-t border-border/60 pt-2">
+            <label className="flex cursor-pointer items-center justify-between rounded-md border border-border/80 bg-obsidian-950 p-3 hover:border-slate-700">
               <div className="flex items-center gap-3">
-                <Cpu className="w-4 h-4 text-blue-400" />
+                <Cpu className="h-4 w-4 text-blue-400" />
                 <div>
                   <div className="text-xs font-semibold text-white">Mode Headless (Background)</div>
-                  <div className="text-[10px] text-muted-foreground">Jalankan browser tanpa jendela GUI untuk menghemat RAM.</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Jalankan browser tanpa jendela GUI untuk menghemat RAM.
+                  </div>
                 </div>
               </div>
               <input
                 type="checkbox"
                 checked={headless}
                 onChange={(e) => setHeadless(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-700 bg-obsidian-900 text-flame focus:ring-flame accent-amber-500"
+                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-flame accent-amber-500 focus:ring-flame"
               />
             </label>
 
-            <label className="flex items-center justify-between p-3 rounded-md border border-border/80 bg-obsidian-950 cursor-pointer hover:border-slate-700">
+            <label className="flex cursor-pointer items-center justify-between rounded-md border border-border/80 bg-obsidian-950 p-3 hover:border-slate-700">
               <div className="flex items-center gap-3">
-                <MousePointer className="w-4 h-4 text-emerald-400" />
+                <MousePointer className="h-4 w-4 text-emerald-400" />
                 <div>
-                  <div className="text-xs font-semibold text-white">Humanized Scroll Simulation</div>
-                  <div className="text-[10px] text-muted-foreground">Lakukan scrolling acak sebelum klik tombol Like/Repost untuk meniru manusia.</div>
+                  <div className="text-xs font-semibold text-white">
+                    Humanized Scroll Simulation
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Lakukan scrolling acak sebelum klik tombol Like/Repost untuk meniru manusia.
+                  </div>
                 </div>
               </div>
               <input
                 type="checkbox"
                 checked={scrollAction}
                 onChange={(e) => setScrollAction(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-700 bg-obsidian-900 text-flame focus:ring-flame accent-amber-500"
+                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-flame accent-amber-500 focus:ring-flame"
               />
             </label>
           </div>
@@ -254,36 +264,37 @@ export const DefenseProtocol: React.FC = () => {
       {/* Webhook & Instant Notifications Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-cyan-400 tracking-wider">
-            <Bell className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-cyan-400">
+            <Bell className="h-3.5 w-3.5 text-cyan-400" />
             REALTIME ALERT &amp; NOTIFICATIONS
           </div>
           <CardTitle className="text-xl">Telegram &amp; Discord Webhooks</CardTitle>
           <CardDescription>
-            Kirimkan alert real-time ke bot Telegram atau server Discord saat tweet diposting, sesi kedaluwarsa, atau tugas selesai.
+            Kirimkan alert real-time ke bot Telegram atau server Discord saat tweet diposting, sesi
+            kedaluwarsa, atau tugas selesai.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {/* Telegram Config */}
-          <div className="p-3.5 rounded-lg border border-border/80 bg-obsidian-950 space-y-3">
+          <div className="space-y-3 rounded-lg border border-border/80 bg-obsidian-950 p-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Send className="w-4 h-4 text-blue-400" />
+                <Send className="h-4 w-4 text-blue-400" />
                 <span className="text-xs font-bold text-white">Telegram Bot Notification</span>
               </div>
               <input
                 type="checkbox"
                 checked={telegramEnabled}
                 onChange={(e) => setTelegramEnabled(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-700 bg-obsidian-900 text-blue-500 focus:ring-blue-500 accent-blue-500"
+                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-blue-500 accent-blue-500 focus:ring-blue-500"
               />
             </div>
 
             {telegramEnabled && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 animate-in fade-in">
+              <div className="animate-in fade-in grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-[11px] font-mono text-slate-400">TELEGRAM BOT TOKEN</label>
+                  <label className="font-mono text-[11px] text-slate-400">TELEGRAM BOT TOKEN</label>
                   <Input
                     type="password"
                     value={telegramBotToken}
@@ -294,7 +305,7 @@ export const DefenseProtocol: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] font-mono text-slate-400">CHAT ID / USER ID</label>
+                  <label className="font-mono text-[11px] text-slate-400">CHAT ID / USER ID</label>
                   <Input
                     type="text"
                     value={telegramChatId}
@@ -304,16 +315,22 @@ export const DefenseProtocol: React.FC = () => {
                   />
                 </div>
 
-                <div className="sm:col-span-2 flex justify-end">
+                <div className="flex justify-end sm:col-span-2">
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
                     onClick={() => handleTestWebhook('telegram')}
-                    disabled={isTestingWebhook === 'telegram' || !telegramBotToken || !telegramChatId}
-                    className="text-xs font-mono border-blue-500/40 text-blue-300 hover:bg-blue-500/10 gap-1.5"
+                    disabled={
+                      isTestingWebhook === 'telegram' || !telegramBotToken || !telegramChatId
+                    }
+                    className="gap-1.5 border-blue-500/40 font-mono text-xs text-blue-300 hover:bg-blue-500/10"
                   >
-                    {isTestingWebhook === 'telegram' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    {isTestingWebhook === 'telegram' ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Send className="h-3.5 w-3.5" />
+                    )}
                     <span>Test Telegram Alert</span>
                   </Button>
                 </div>
@@ -322,24 +339,26 @@ export const DefenseProtocol: React.FC = () => {
           </div>
 
           {/* Discord Config */}
-          <div className="p-3.5 rounded-lg border border-border/80 bg-obsidian-950 space-y-3">
+          <div className="space-y-3 rounded-lg border border-border/80 bg-obsidian-950 p-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-purple-400" />
+                <Bot className="h-4 w-4 text-purple-400" />
                 <span className="text-xs font-bold text-white">Discord Channel Webhook</span>
               </div>
               <input
                 type="checkbox"
                 checked={discordEnabled}
                 onChange={(e) => setDiscordEnabled(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-700 bg-obsidian-900 text-purple-500 focus:ring-purple-500 accent-purple-500"
+                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-purple-500 accent-purple-500 focus:ring-purple-500"
               />
             </div>
 
             {discordEnabled && (
-              <div className="space-y-3 pt-2 animate-in fade-in">
+              <div className="animate-in fade-in space-y-3 pt-2">
                 <div className="space-y-1">
-                  <label className="text-[11px] font-mono text-slate-400">DISCORD WEBHOOK URL</label>
+                  <label className="font-mono text-[11px] text-slate-400">
+                    DISCORD WEBHOOK URL
+                  </label>
                   <Input
                     type="password"
                     value={discordWebhookUrl}
@@ -356,9 +375,13 @@ export const DefenseProtocol: React.FC = () => {
                     variant="outline"
                     onClick={() => handleTestWebhook('discord')}
                     disabled={isTestingWebhook === 'discord' || !discordWebhookUrl}
-                    className="text-xs font-mono border-purple-500/40 text-purple-300 hover:bg-purple-500/10 gap-1.5"
+                    className="gap-1.5 border-purple-500/40 font-mono text-xs text-purple-300 hover:bg-purple-500/10"
                   >
-                    {isTestingWebhook === 'discord' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Bot className="w-3.5 h-3.5" />}
+                    {isTestingWebhook === 'discord' ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Bot className="h-3.5 w-3.5" />
+                    )}
                     <span>Test Discord Alert</span>
                   </Button>
                 </div>
@@ -370,9 +393,9 @@ export const DefenseProtocol: React.FC = () => {
             variant="default"
             size="lg"
             onClick={handleSave}
-            className="w-full mt-4 font-heading font-bold text-sm bg-gradient-to-r from-blue-600 via-flame to-amber-500 text-obsidian-950 hover:brightness-110"
+            className="mt-4 w-full bg-gradient-to-r from-blue-600 via-flame to-amber-500 font-heading text-sm font-bold text-obsidian-950 hover:brightness-110"
           >
-            <Save className="w-4 h-4 mr-1.5" />
+            <Save className="mr-1.5 h-4 w-4" />
             SIMPAN SEMUA PENGATURAN PROTOKOL &amp; WEBHOOK
           </Button>
         </CardContent>

@@ -55,7 +55,9 @@ export const AuditLedger: React.FC = () => {
       if (type === 'all') {
         const res = await apiClient.clearAllHistory();
         if (res.success) {
-          toast.success(`🧹 Seluruh riwayat audit berhasil dibersihkan (${res.deletedCount} log dihapus).`);
+          toast.success(
+            `🧹 Seluruh riwayat audit berhasil dibersihkan (${res.deletedCount} log dihapus).`
+          );
         }
       } else if (type === 'failed') {
         const res = await apiClient.pruneHistory({ status: 'FAILED' });
@@ -66,7 +68,9 @@ export const AuditLedger: React.FC = () => {
         const days = type === '30days' ? 30 : 7;
         const res = await apiClient.pruneHistory({ olderThanDays: days });
         if (res.success) {
-          toast.success(`🧹 Berhasil menghapus ${res.deletedCount} log lebih lama dari ${days} hari.`);
+          toast.success(
+            `🧹 Berhasil menghapus ${res.deletedCount} log lebih lama dari ${days} hari.`
+          );
         }
       }
       setIsPruneModalOpen(false);
@@ -133,11 +137,16 @@ export const AuditLedger: React.FC = () => {
       `"${(h.details || h.message || '').replace(/"/g, '""')}"`,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `x_automation_audit_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute(
+      'download',
+      `x_automation_audit_${new Date().toISOString().slice(0, 10)}.csv`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -147,13 +156,17 @@ export const AuditLedger: React.FC = () => {
 
   const renderTimestamp = (item: { timestamp?: string; timeFormatted?: string }) => {
     if (!item.timestamp) {
-      return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || '-'}</span>;
+      return <span className="font-mono text-xs text-slate-400">{item.timeFormatted || '-'}</span>;
     }
 
     try {
       const d = new Date(item.timestamp);
       if (isNaN(d.getTime())) {
-        return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || item.timestamp}</span>;
+        return (
+          <span className="font-mono text-xs text-slate-400">
+            {item.timeFormatted || item.timestamp}
+          </span>
+        );
       }
 
       const day = String(d.getDate()).padStart(2, '0');
@@ -164,8 +177,8 @@ export const AuditLedger: React.FC = () => {
       const seconds = String(d.getSeconds()).padStart(2, '0');
 
       return (
-        <div className="flex flex-col leading-tight font-mono">
-          <span className="text-slate-200 font-medium text-xs whitespace-nowrap">
+        <div className="flex flex-col font-mono leading-tight">
+          <span className="whitespace-nowrap text-xs font-medium text-slate-200">
             {day}/{month}/{year}
           </span>
           <span className="text-[10px] text-slate-400">
@@ -174,20 +187,28 @@ export const AuditLedger: React.FC = () => {
         </div>
       );
     } catch {
-      return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || '-'}</span>;
+      return <span className="font-mono text-xs text-slate-400">{item.timeFormatted || '-'}</span>;
     }
   };
 
   const getActionBadge = (action: string) => {
     switch (action) {
       case 'LIKE':
-        return <Badge variant="destructive" className="bg-red-500/10 text-red-400 border-red-500/30">LIKE</Badge>;
+        return (
+          <Badge variant="destructive" className="border-red-500/30 bg-red-500/10 text-red-400">
+            LIKE
+          </Badge>
+        );
       case 'RETWEET':
         return <Badge variant="success">REPOST</Badge>;
       case 'COMMENT':
         return <Badge variant="blue">COMMENT</Badge>;
       case 'POST':
-        return <Badge variant="default" className="bg-amber-500/15 text-amber-300 border-amber-500/30">POST</Badge>;
+        return (
+          <Badge variant="default" className="border-amber-500/30 bg-amber-500/15 text-amber-300">
+            POST
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{action}</Badge>;
     }
@@ -198,7 +219,11 @@ export const AuditLedger: React.FC = () => {
       case 'SUCCESS':
         return <Badge variant="success">SUCCESS</Badge>;
       case 'ALREADY_DONE':
-        return <Badge variant="default" className="bg-amber-500/10 text-amber-400 border-amber-500/30">ALREADY DONE</Badge>;
+        return (
+          <Badge variant="default" className="border-amber-500/30 bg-amber-500/10 text-amber-400">
+            ALREADY DONE
+          </Badge>
+        );
       case 'FAILED':
         return <Badge variant="destructive">FAILED</Badge>;
       default:
@@ -208,14 +233,15 @@ export const AuditLedger: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 space-y-0">
+      <CardHeader className="flex flex-col gap-4 space-y-0 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="font-mono text-[10px] font-bold text-flame tracking-wider">
+          <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
             IMMUTABLE EVENT LOG
           </div>
           <CardTitle>Interaction Audit Ledger</CardTitle>
           <CardDescription>
-            Riwayat lengkap interaksi per node akun, status keberhasilan, dan waktu eksekusi ({totalItems} rekaman).
+            Riwayat lengkap interaksi per node akun, status keberhasilan, dan waktu eksekusi (
+            {totalItems} rekaman).
           </CardDescription>
         </div>
 
@@ -224,18 +250,28 @@ export const AuditLedger: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsPruneModalOpen(true)}
-            className="gap-1 text-xs font-mono border-rose-500/40 text-rose-300 hover:bg-rose-500/10"
+            className="gap-1 border-rose-500/40 font-mono text-xs text-rose-300 hover:bg-rose-500/10"
             title="Bersihkan log riwayat lama atau gagal"
           >
-            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+            <Trash2 className="h-3.5 w-3.5 text-rose-400" />
             Maintenance
           </Button>
-          <Button variant="outline" size="sm" onClick={() => loadHistory()} className="gap-1 text-xs">
-            <RefreshCw className="w-3.5 h-3.5" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => loadHistory()}
+            className="gap-1 text-xs"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
             Refresh
           </Button>
-          <Button variant="secondary" size="sm" onClick={handleExportCSV} className="gap-1 text-xs font-mono">
-            <Download className="w-3.5 h-3.5" />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportCSV}
+            className="gap-1 font-mono text-xs"
+          >
+            <Download className="h-3.5 w-3.5" />
             Export CSV
           </Button>
         </div>
@@ -243,17 +279,17 @@ export const AuditLedger: React.FC = () => {
 
       <CardContent className="space-y-4">
         {/* Filters Bar */}
-        <div className="flex flex-col gap-3 bg-obsidian-950 p-3 rounded-md border border-border/80">
+        <div className="flex flex-col gap-3 rounded-md border border-border/80 bg-obsidian-950 p-3">
           {/* Top Filter Row: Search & Vector */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
               <Input
                 type="text"
                 placeholder="Cari URL tweet, akun, atau pesan..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 text-xs font-mono bg-obsidian-900 border-border/80"
+                className="border-border/80 bg-obsidian-900 pl-9 font-mono text-xs"
               />
             </div>
 
@@ -264,7 +300,7 @@ export const AuditLedger: React.FC = () => {
                   size="sm"
                   variant={actionFilter === act ? 'default' : 'outline'}
                   onClick={() => setActionFilter(act)}
-                  className="h-8 text-xs font-mono px-3"
+                  className="h-8 px-3 font-mono text-xs"
                 >
                   {act}
                 </Button>
@@ -273,30 +309,30 @@ export const AuditLedger: React.FC = () => {
           </div>
 
           {/* Bottom Filter Row: Date Range Filter */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60 text-xs font-mono">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2 font-mono text-xs">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 text-slate-400 text-[11px] font-semibold">
-                <Calendar className="w-3.5 h-3.5 text-flame" />
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
+                <Calendar className="h-3.5 w-3.5 text-flame" />
                 <span>FILTER TANGGAL:</span>
               </div>
 
-              <div className="flex items-center gap-1.5 bg-obsidian-900 px-2.5 py-1 rounded border border-border/80">
+              <div className="flex items-center gap-1.5 rounded border border-border/80 bg-obsidian-900 px-2.5 py-1">
                 <span className="text-[10px] text-slate-500">Dari:</span>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer scheme-dark"
+                  className="scheme-dark cursor-pointer bg-transparent text-xs text-slate-200 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 bg-obsidian-900 px-2.5 py-1 rounded border border-border/80">
+              <div className="flex items-center gap-1.5 rounded border border-border/80 bg-obsidian-900 px-2.5 py-1">
                 <span className="text-[10px] text-slate-500">Sampai:</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer scheme-dark"
+                  className="scheme-dark cursor-pointer bg-transparent text-xs text-slate-200 focus:outline-none"
                 />
               </div>
 
@@ -308,9 +344,9 @@ export const AuditLedger: React.FC = () => {
                     setStartDate('');
                     setEndDate('');
                   }}
-                  className="h-7 px-2 text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-1"
+                  className="h-7 gap-1 px-2 text-[11px] text-red-400 hover:bg-red-500/10 hover:text-red-300"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="h-3 w-3" />
                   Reset Tanggal
                 </Button>
               )}
@@ -326,7 +362,7 @@ export const AuditLedger: React.FC = () => {
                   setStartDate(today);
                   setEndDate(today);
                 }}
-                className="h-7 px-2.5 text-[11px] font-mono bg-obsidian-900 hover:bg-obsidian-850"
+                className="h-7 bg-obsidian-900 px-2.5 font-mono text-[11px] hover:bg-obsidian-850"
               >
                 Hari Ini
               </Button>
@@ -340,7 +376,7 @@ export const AuditLedger: React.FC = () => {
                   setStartDate(past.toISOString().slice(0, 10));
                   setEndDate(now.toISOString().slice(0, 10));
                 }}
-                className="h-7 px-2.5 text-[11px] font-mono bg-obsidian-900 hover:bg-obsidian-850"
+                className="h-7 bg-obsidian-900 px-2.5 font-mono text-[11px] hover:bg-obsidian-850"
               >
                 7 Hari
               </Button>
@@ -354,7 +390,7 @@ export const AuditLedger: React.FC = () => {
                   setStartDate(past.toISOString().slice(0, 10));
                   setEndDate(now.toISOString().slice(0, 10));
                 }}
-                className="h-7 px-2.5 text-[11px] font-mono bg-obsidian-900 hover:bg-obsidian-850"
+                className="h-7 bg-obsidian-900 px-2.5 font-mono text-[11px] hover:bg-obsidian-850"
               >
                 30 Hari
               </Button>
@@ -363,61 +399,64 @@ export const AuditLedger: React.FC = () => {
         </div>
 
         {/* Ledger Table */}
-        <div className="rounded-md border border-border/80 overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-obsidian-900 border-b border-border/80 text-muted-foreground">
+        <div className="overflow-x-auto rounded-md border border-border/80">
+          <table className="w-full text-left font-mono text-xs">
+            <thead className="border-b border-border/80 bg-obsidian-900 text-muted-foreground">
               <tr>
-                <th className="py-2.5 px-3">DATE &amp; TIME</th>
-                <th className="py-2.5 px-3">NODE</th>
-                <th className="py-2.5 px-3">VECTOR</th>
-                <th className="py-2.5 px-3">TARGET TWEET</th>
-                <th className="py-2.5 px-3">STATUS</th>
-                <th className="py-2.5 px-3">DETAILS / MESSAGE</th>
+                <th className="px-3 py-2.5">DATE &amp; TIME</th>
+                <th className="px-3 py-2.5">NODE</th>
+                <th className="px-3 py-2.5">VECTOR</th>
+                <th className="px-3 py-2.5">TARGET TWEET</th>
+                <th className="px-3 py-2.5">STATUS</th>
+                <th className="px-3 py-2.5">DETAILS / MESSAGE</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40 bg-obsidian-850/50">
               {paginatedHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-slate-500 italic font-body text-xs">
+                  <td
+                    colSpan={6}
+                    className="py-8 text-center font-body text-xs italic text-slate-500"
+                  >
                     Tidak ada rekaman interaksi yang sesuai kriteria.
                   </td>
                 </tr>
               ) : (
                 paginatedHistory.map((item) => {
                   const shortUrl = item.tweetUrl
-                    ? item.tweetUrl.replace('https://x.com/', '').replace('https://twitter.com/', '')
+                    ? item.tweetUrl
+                        .replace('https://x.com/', '')
+                        .replace('https://twitter.com/', '')
                     : '-';
 
                   return (
-                    <tr key={item.id} className="hover:bg-obsidian-800/60 transition-colors">
-                      <td className="py-2.5 px-3 whitespace-nowrap">
-                        {renderTimestamp(item)}
-                      </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap font-bold text-white">
+                    <tr key={item.id} className="transition-colors hover:bg-obsidian-800/60">
+                      <td className="whitespace-nowrap px-3 py-2.5">{renderTimestamp(item)}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 font-bold text-white">
                         {item.accountName ? `@${item.accountName}` : 'NODE'}
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap">
+                      <td className="whitespace-nowrap px-3 py-2.5">
                         {getActionBadge(item.action)}
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap">
+                      <td className="whitespace-nowrap px-3 py-2.5">
                         {item.tweetUrl && item.tweetUrl !== '-' ? (
                           <a
                             href={item.tweetUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-flame hover:underline flex items-center gap-1 inline-flex max-w-[180px] truncate"
+                            className="flex inline-flex max-w-[180px] items-center gap-1 truncate text-flame hover:underline"
                           >
                             <span className="truncate">{shortUrl}</span>
-                            <ExternalLink className="w-3 h-3 shrink-0" />
+                            <ExternalLink className="h-3 w-3 shrink-0" />
                           </a>
                         ) : (
                           <span className="text-slate-500">-</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap">
+                      <td className="whitespace-nowrap px-3 py-2.5">
                         {getStatusBadge(item.status)}
                       </td>
-                      <td className="py-2.5 px-3 max-w-[280px] truncate text-slate-300">
+                      <td className="max-w-[280px] truncate px-3 py-2.5 text-slate-300">
                         {item.details || item.message || '-'}
                       </td>
                     </tr>
@@ -429,7 +468,7 @@ export const AuditLedger: React.FC = () => {
         </div>
 
         {/* Pagination Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs font-mono text-slate-400">
+        <div className="flex flex-col items-center justify-between gap-3 pt-2 font-mono text-xs text-slate-400 sm:flex-row">
           <div className="flex items-center gap-2">
             <span>
               Menampilkan{' '}
@@ -439,12 +478,12 @@ export const AuditLedger: React.FC = () => {
               dari <strong className="text-white">{totalItems}</strong> entri
             </span>
 
-            <div className="flex items-center gap-1.5 ml-3">
+            <div className="ml-3 flex items-center gap-1.5">
               <span className="text-[11px] text-slate-500">Baris:</span>
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
-                className="bg-obsidian-950 border border-border/80 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-flame"
+                className="rounded border border-border/80 bg-obsidian-950 px-2 py-1 text-xs text-white focus:border-flame focus:outline-none"
               >
                 {[10, 25, 50, 100].map((sz) => (
                   <option key={sz} value={sz}>
@@ -464,7 +503,7 @@ export const AuditLedger: React.FC = () => {
               className="h-8 w-8 p-0"
               title="Halaman Pertama"
             >
-              <ChevronsLeft className="w-4 h-4" />
+              <ChevronsLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -474,10 +513,10 @@ export const AuditLedger: React.FC = () => {
               className="h-8 w-8 p-0"
               title="Halaman Sebelumnya"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            <span className="px-3 py-1 font-mono text-xs text-slate-200 bg-obsidian-950 border border-border/80 rounded">
+            <span className="rounded border border-border/80 bg-obsidian-950 px-3 py-1 font-mono text-xs text-slate-200">
               Halaman <strong className="text-flame">{safeCurrentPage}</strong> / {totalPages}
             </span>
 
@@ -489,7 +528,7 @@ export const AuditLedger: React.FC = () => {
               className="h-8 w-8 p-0"
               title="Halaman Berikutnya"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -499,26 +538,26 @@ export const AuditLedger: React.FC = () => {
               className="h-8 w-8 p-0"
               title="Halaman Terakhir"
             >
-              <ChevronsRight className="w-4 h-4" />
+              <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
         {/* Maintenance & Prune Modal */}
         {isPruneModalOpen && (
-          <div className="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-            <div className="rounded-xl border border-rose-500/40 bg-obsidian-850 max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
-              <div className="flex items-center justify-between pb-2 border-b border-border/60">
+          <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-obsidian-950/80 p-4 backdrop-blur-sm">
+            <div className="flex w-full max-w-md flex-col gap-4 rounded-xl border border-rose-500/40 bg-obsidian-850 p-5 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
                 <div className="flex items-center gap-2 text-sm font-bold text-white">
-                  <Trash2 className="w-4 h-4 text-rose-400" />
+                  <Trash2 className="h-4 w-4 text-rose-400" />
                   <span>Audit Ledger Maintenance &amp; Pruning</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsPruneModalOpen(false)}
-                  className="p-1 text-slate-400 hover:text-white rounded"
+                  className="rounded p-1 text-slate-400 hover:text-white"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
@@ -531,11 +570,13 @@ export const AuditLedger: React.FC = () => {
                   type="button"
                   onClick={() => handlePruneLogs('30days')}
                   disabled={isPruning}
-                  className="p-3 rounded-lg border border-border/80 bg-obsidian-900 hover:bg-obsidian-800 text-left transition-colors flex items-center justify-between text-xs text-white"
+                  className="flex items-center justify-between rounded-lg border border-border/80 bg-obsidian-900 p-3 text-left text-xs text-white transition-colors hover:bg-obsidian-800"
                 >
                   <div>
                     <div className="font-semibold text-slate-200">Hapus Log &gt; 30 Hari</div>
-                    <div className="text-[10px] text-slate-500">Hapus entri riwayat yang dibuat lebih dari 1 bulan lalu</div>
+                    <div className="text-[10px] text-slate-500">
+                      Hapus entri riwayat yang dibuat lebih dari 1 bulan lalu
+                    </div>
                   </div>
                   <span className="font-mono text-[11px] text-flame">&gt; 30 Hari</span>
                 </button>
@@ -544,11 +585,13 @@ export const AuditLedger: React.FC = () => {
                   type="button"
                   onClick={() => handlePruneLogs('7days')}
                   disabled={isPruning}
-                  className="p-3 rounded-lg border border-border/80 bg-obsidian-900 hover:bg-obsidian-800 text-left transition-colors flex items-center justify-between text-xs text-white"
+                  className="flex items-center justify-between rounded-lg border border-border/80 bg-obsidian-900 p-3 text-left text-xs text-white transition-colors hover:bg-obsidian-800"
                 >
                   <div>
                     <div className="font-semibold text-slate-200">Hapus Log &gt; 7 Hari</div>
-                    <div className="text-[10px] text-slate-500">Hapus entri riwayat yang dibuat lebih dari 1 minggu lalu</div>
+                    <div className="text-[10px] text-slate-500">
+                      Hapus entri riwayat yang dibuat lebih dari 1 minggu lalu
+                    </div>
                   </div>
                   <span className="font-mono text-[11px] text-amber-400">&gt; 7 Hari</span>
                 </button>
@@ -557,34 +600,44 @@ export const AuditLedger: React.FC = () => {
                   type="button"
                   onClick={() => handlePruneLogs('failed')}
                   disabled={isPruning}
-                  className="p-3 rounded-lg border border-rose-500/30 bg-rose-950/20 hover:bg-rose-950/40 text-left transition-colors flex items-center justify-between text-xs text-rose-200"
+                  className="flex items-center justify-between rounded-lg border border-rose-500/30 bg-rose-950/20 p-3 text-left text-xs text-rose-200 transition-colors hover:bg-rose-950/40"
                 >
                   <div>
                     <div className="font-semibold text-rose-300">Hapus Log Gagal (FAILED) Saja</div>
-                    <div className="text-[10px] text-slate-400">Bersihkan semua riwayat interaksi yang gagal</div>
+                    <div className="text-[10px] text-slate-400">
+                      Bersihkan semua riwayat interaksi yang gagal
+                    </div>
                   </div>
-                  <span className="font-mono text-[11px] text-rose-400 font-bold">FAILED ONLY</span>
+                  <span className="font-mono text-[11px] font-bold text-rose-400">FAILED ONLY</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm('Apakah Anda yakin ingin MENGHAPUS SEMUA riwayat audit? Tindakan ini tidak dapat dibatalkan.')) {
+                    if (
+                      window.confirm(
+                        'Apakah Anda yakin ingin MENGHAPUS SEMUA riwayat audit? Tindakan ini tidak dapat dibatalkan.'
+                      )
+                    ) {
                       handlePruneLogs('all');
                     }
                   }}
                   disabled={isPruning}
-                  className="p-3 rounded-lg border border-rose-600/50 bg-rose-950/40 hover:bg-rose-900/60 text-left transition-colors flex items-center justify-between text-xs text-rose-300"
+                  className="flex items-center justify-between rounded-lg border border-rose-600/50 bg-rose-950/40 p-3 text-left text-xs text-rose-300 transition-colors hover:bg-rose-900/60"
                 >
                   <div>
-                    <div className="font-semibold text-rose-200">Bersihkan Seluruh Riwayat (Reset)</div>
-                    <div className="text-[10px] text-rose-400/80">Hapus 100% data log riwayat di database</div>
+                    <div className="font-semibold text-rose-200">
+                      Bersihkan Seluruh Riwayat (Reset)
+                    </div>
+                    <div className="text-[10px] text-rose-400/80">
+                      Hapus 100% data log riwayat di database
+                    </div>
                   </div>
-                  <span className="font-mono text-[11px] text-rose-300 font-bold">CLEAR ALL</span>
+                  <span className="font-mono text-[11px] font-bold text-rose-300">CLEAR ALL</span>
                 </button>
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-border/60">
+              <div className="flex justify-end border-t border-border/60 pt-2">
                 <Button
                   size="sm"
                   variant="outline"

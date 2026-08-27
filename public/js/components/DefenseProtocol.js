@@ -50,7 +50,7 @@ export class DefenseProtocol {
       accountSwitchDelaySec: parseInt(this.accountSwitchDelaySec.value, 10) || 10,
       dailyLimit: parseInt(this.dailyLimit.value, 10) || 150,
       headless: this.checkHeadless.checked,
-      scrollBeforeAction: this.checkScrollAction.checked
+      scrollBeforeAction: this.checkScrollAction.checked,
     };
 
     try {

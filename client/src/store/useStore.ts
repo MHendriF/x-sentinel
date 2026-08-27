@@ -1,10 +1,18 @@
 import { create } from 'zustand';
-import { AccountNode, Stats, Settings, HistoryItem, LogEntry, ScheduleItem, apiClient } from '../services/apiClient';
+import {
+  AccountNode,
+  Stats,
+  Settings,
+  HistoryItem,
+  LogEntry,
+  ScheduleItem,
+  apiClient,
+} from '../services/apiClient';
 
 interface AppState {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  
+
   accounts: AccountNode[];
   setAccounts: (accounts: AccountNode[]) => void;
   loadAccounts: () => Promise<void>;
@@ -80,7 +88,8 @@ const getInitialTab = (): string => {
     if (hash) {
       const candidate = hash.startsWith('tab-') ? hash : `tab-${hash}`;
       if (VALID_TABS.includes(candidate)) return candidate;
-      if (hash === 'composer' || hash === 'post' || hash === 'create-post' || hash === 'studio') return 'tab-composer';
+      if (hash === 'composer' || hash === 'post' || hash === 'create-post' || hash === 'studio')
+        return 'tab-composer';
       if (hash === 'workbench') return 'tab-batch';
       if (hash === 'payloads' || hash === 'payload') return 'tab-spintax';
       if (hash === 'logs' || hash === 'audit') return 'tab-history';

@@ -73,17 +73,18 @@ const NAV_ITEMS = [
 ];
 
 export const NavDeck: React.FC = () => {
-  const { activeTab, setActiveTab, accounts, isMobileDrawerOpen, setIsMobileDrawerOpen } = useStore();
+  const { activeTab, setActiveTab, accounts, isMobileDrawerOpen, setIsMobileDrawerOpen } =
+    useStore();
 
   const totalAccounts = accounts.length;
-  const activeAccounts = accounts.filter(a => a.enabled !== false).length;
+  const activeAccounts = accounts.filter((a) => a.enabled !== false).length;
 
   return (
     <>
       {/* Mobile Drawer Backdrop */}
       {isMobileDrawerOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm transition-opacity lg:hidden"
           onClick={() => setIsMobileDrawerOpen(false)}
         />
       )}
@@ -91,58 +92,60 @@ export const NavDeck: React.FC = () => {
       {/* Navigation Deck Aside */}
       <aside
         className={cn(
-          'fixed lg:static top-0 left-0 bottom-0 z-50 w-72 bg-obsidian-850 border-r border-border/80 p-5 flex flex-col gap-5 transition-transform duration-300 ease-in-out lg:translate-x-0 shrink-0 select-none shadow-2xl lg:shadow-none',
+          'fixed bottom-0 left-0 top-0 z-50 flex w-72 shrink-0 select-none flex-col gap-5 border-r border-border/80 bg-obsidian-850 p-5 shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:shadow-none',
           isMobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Brand Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md bg-obsidian-750 border border-slate-700/80 flex items-center justify-center font-heading font-bold text-xl text-white shadow-inner">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-700/80 bg-obsidian-750 font-heading text-xl font-bold text-white shadow-inner">
               𝕏
             </div>
             <div>
-              <div className="font-heading font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 font-heading text-base font-bold tracking-tight text-white">
                 X-SENTINEL
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-flame/20 text-flame border border-flame/30">v2.5</span>
+                <span className="rounded border border-flame/30 bg-flame/20 px-1.5 py-0.5 font-mono text-[9px] text-flame">
+                  v2.5
+                </span>
               </div>
-              <div className="font-mono text-[9px] text-muted-foreground tracking-wider uppercase">
+              <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
                 Autonomous Fleet Control
               </div>
             </div>
           </div>
           <button
-            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-obsidian-750"
+            className="rounded-md p-1.5 text-slate-400 hover:bg-obsidian-750 hover:text-white lg:hidden"
             onClick={() => setIsMobileDrawerOpen(false)}
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Telemetry Status Card */}
         <div className="rounded-md border border-border/70 bg-obsidian-800 p-3">
-          <div className="flex items-center gap-2 mb-2.5">
+          <div className="mb-2.5 flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75"></span>
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald"></span>
             </span>
-            <span className="font-mono text-[11px] font-bold text-emerald tracking-wide">
+            <span className="font-mono text-[11px] font-bold tracking-wide text-emerald">
               CORE ONLINE
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-1.5 bg-obsidian-900/90 rounded p-2 text-center border border-border/40">
+          <div className="grid grid-cols-3 gap-1.5 rounded border border-border/40 bg-obsidian-900/90 p-2 text-center">
             <div>
               <div className="font-mono text-[9px] text-muted-foreground">NODES</div>
-              <div className="font-mono font-bold text-xs text-white">{totalAccounts}</div>
+              <div className="font-mono text-xs font-bold text-white">{totalAccounts}</div>
             </div>
             <div>
               <div className="font-mono text-[9px] text-muted-foreground">ACTIVE</div>
-              <div className="font-mono font-bold text-xs text-flame">{activeAccounts}</div>
+              <div className="font-mono text-xs font-bold text-flame">{activeAccounts}</div>
             </div>
             <div>
               <div className="font-mono text-[9px] text-muted-foreground">TUNNEL</div>
-              <div className="font-mono font-bold text-xs text-blue-400">
+              <div className="font-mono text-xs font-bold text-blue-400">
                 {activeAccounts > 0 ? `${activeAccounts}x` : 'IDLE'}
               </div>
             </div>
@@ -150,29 +153,29 @@ export const NavDeck: React.FC = () => {
         </div>
 
         {/* Navigation Tabs Menu */}
-        <nav className="flex flex-col gap-1 flex-1 overflow-y-auto">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
               <React.Fragment key={item.id}>
                 {item.section && (
-                  <div className="font-mono text-[10px] tracking-wider text-slate-500 font-semibold px-2.5 pt-3 pb-1">
+                  <div className="px-2.5 pb-1 pt-3 font-mono text-[10px] font-semibold tracking-wider text-slate-500">
                     {item.section}
                   </div>
                 )}
                 <button
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-md text-xs font-medium transition-all text-left group',
+                    'group flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-xs font-medium transition-all',
                     isActive
-                      ? 'bg-obsidian-800 text-white font-semibold border-l-2 border-flame shadow-sm'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-obsidian-800/50'
+                      ? 'border-l-2 border-flame bg-obsidian-800 font-semibold text-white shadow-sm'
+                      : 'text-slate-400 hover:bg-obsidian-800/50 hover:text-slate-100'
                   )}
                 >
                   <Icon
                     className={cn(
-                      'w-4 h-4 transition-colors',
+                      'h-4 w-4 transition-colors',
                       isActive ? 'text-flame' : 'text-slate-500 group-hover:text-slate-300'
                     )}
                   />
@@ -184,9 +187,9 @@ export const NavDeck: React.FC = () => {
         </nav>
 
         {/* Deck Footer */}
-        <div className="pt-3 border-t border-border/60 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+        <div className="flex items-center justify-between border-t border-border/60 pt-3 font-mono text-[11px] text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <Radio className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+            <Radio className="h-3.5 w-3.5 animate-pulse text-blue-400" />
             <span>HTTP/2 Stealth</span>
           </div>
           <span className="text-slate-600">v2.4.0</span>

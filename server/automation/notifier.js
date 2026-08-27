@@ -11,7 +11,8 @@ class NotifierService {
    * Send alert to Telegram Bot
    */
   async sendTelegram(botToken, chatId, message) {
-    if (!botToken || !chatId) return { success: false, message: 'Bot Token & Chat ID wajib diisi.' };
+    if (!botToken || !chatId)
+      return { success: false, message: 'Bot Token & Chat ID wajib diisi.' };
 
     try {
       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
@@ -79,13 +80,8 @@ class NotifierService {
    */
   async notify(event, data = {}) {
     const settings = db.getSettings() || {};
-    const {
-      telegramEnabled,
-      telegramBotToken,
-      telegramChatId,
-      discordEnabled,
-      discordWebhookUrl,
-    } = settings;
+    const { telegramEnabled, telegramBotToken, telegramChatId, discordEnabled, discordWebhookUrl } =
+      settings;
 
     if (!telegramEnabled && !discordEnabled) return;
 
@@ -99,23 +95,29 @@ class NotifierService {
 
     switch (event) {
       case 'POST_PUBLISHED':
-        tgMessage = `🚀 <b>X-SENTINEL • Post Berhasil Diterbitkan!</b>\n\n` +
+        tgMessage =
+          `🚀 <b>X-SENTINEL • Post Berhasil Diterbitkan!</b>\n\n` +
           `👤 <b>Akun:</b> @${data.accountName || 'Node'}\n` +
           `📝 <b>Konten:</b> ${data.text || '-'}\n` +
           (data.tweetUrl ? `🔗 <b>Link:</b> ${data.tweetUrl}\n` : '') +
           `⏱️ <b>Waktu:</b> ${timeStr}`;
-        
+
         discordTitle = '🚀 New Tweet Post Published';
         discordDesc = data.text || 'Postingan berhasil diterbitkan oleh armada node.';
         discordColor = 0x10b981; // emerald green
         fields = [
           { name: 'Node Account', value: `@${data.accountName || 'Node'}`, inline: true },
-          { name: 'Status Link', value: data.tweetUrl ? `[Buka Post](${data.tweetUrl})` : '-', inline: true },
+          {
+            name: 'Status Link',
+            value: data.tweetUrl ? `[Buka Post](${data.tweetUrl})` : '-',
+            inline: true,
+          },
         ];
         break;
 
       case 'TASK_COMPLETED':
-        tgMessage = `✅ <b>X-SENTINEL • Tugas Selesai!</b>\n\n` +
+        tgMessage =
+          `✅ <b>X-SENTINEL • Tugas Selesai!</b>\n\n` +
           `🎯 <b>Tipe:</b> ${data.taskType || 'Batch Engagement'}\n` +
           `📊 <b>Target Selesai:</b> ${data.totalTargets || 0} items\n` +
           `⏱️ <b>Waktu:</b> ${timeStr}`;
@@ -130,7 +132,8 @@ class NotifierService {
         break;
 
       case 'TASK_FAILED':
-        tgMessage = `❌ <b>X-SENTINEL • Tugas Mengalami Kendala!</b>\n\n` +
+        tgMessage =
+          `❌ <b>X-SENTINEL • Tugas Mengalami Kendala!</b>\n\n` +
           `🎯 <b>Tipe:</b> ${data.taskType || 'Engagement'}\n` +
           `⚠️ <b>Error:</b> ${data.error || 'Terjadi kesalahan sistem'}\n` +
           `⏱️ <b>Waktu:</b> ${timeStr}`;
@@ -141,7 +144,8 @@ class NotifierService {
         break;
 
       case 'SESSION_EXPIRED':
-        tgMessage = `⚠️ <b>X-SENTINEL • Sesi Akun Kedaluwarsa!</b>\n\n` +
+        tgMessage =
+          `⚠️ <b>X-SENTINEL • Sesi Akun Kedaluwarsa!</b>\n\n` +
           `👤 <b>Akun:</b> @${data.accountName || data.label || 'Node'}\n` +
           `🔒 <b>Info:</b> Cookie auth_token sudah tidak valid/expired. Silakan perbarui cookie.\n` +
           `⏱️ <b>Waktu:</b> ${timeStr}`;
@@ -152,7 +156,8 @@ class NotifierService {
         break;
 
       case 'PROXY_DEAD':
-        tgMessage = `🛑 <b>X-SENTINEL • Proxy Tidak Terjangkau!</b>\n\n` +
+        tgMessage =
+          `🛑 <b>X-SENTINEL • Proxy Tidak Terjangkau!</b>\n\n` +
           `👤 <b>Akun:</b> @${data.accountName || data.label}\n` +
           `🌐 <b>Proxy:</b> ${data.proxy || '-'}\n` +
           `🛡️ <b>Tindakan:</b> Node akun di-pause otomatis demi keamanan.\n` +
@@ -164,7 +169,8 @@ class NotifierService {
         break;
 
       case 'WARMUP_DAY_COMPLETED':
-        tgMessage = `🐣 <b>X-SENTINEL • Pemanasan Akun Selesai (Hari ${data.day})!</b>\n\n` +
+        tgMessage =
+          `🐣 <b>X-SENTINEL • Pemanasan Akun Selesai (Hari ${data.day})!</b>\n\n` +
           `👤 <b>Akun:</b> @${data.accountName || 'Node'}\n` +
           `📈 <b>Aktivitas:</b> ${data.activity || 'Timeline browse & organic likes'}\n` +
           `⏱️ <b>Waktu:</b> ${timeStr}`;
@@ -182,7 +188,7 @@ class NotifierService {
 
     // Send Telegram
     if (telegramEnabled && telegramBotToken && telegramChatId) {
-      this.sendTelegram(telegramBotToken, telegramChatId, tgMessage).catch(err => {
+      this.sendTelegram(telegramBotToken, telegramChatId, tgMessage).catch((err) => {
         logger.warn(`⚠️ [Telegram Alert Error]: ${err.message}`);
       });
     }
@@ -194,7 +200,7 @@ class NotifierService {
         description: discordDesc,
         color: discordColor,
         fields,
-      }).catch(err => {
+      }).catch((err) => {
         logger.warn(`⚠️ [Discord Alert Error]: ${err.message}`);
       });
     }

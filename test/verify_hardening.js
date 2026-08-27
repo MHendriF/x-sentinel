@@ -49,10 +49,10 @@ const testUrls = [
   { url: 'https://google.com/search?q=tweet', valid: false },
   { url: 'https://x.com/home', valid: false },
   { url: 'javascript:alert(1)', valid: false },
-  { url: 'https://x.com/explore/tabs/keyword', valid: false }
+  { url: 'https://x.com/explore/tabs/keyword', valid: false },
 ];
 
-testUrls.forEach(t => {
+testUrls.forEach((t) => {
   const result = tweetUrlRegex.test(t.url);
   if (result === t.valid) {
     console.log(`✅ [${t.valid ? 'ACCEPT' : 'REJECT'}] "${t.url}"`);

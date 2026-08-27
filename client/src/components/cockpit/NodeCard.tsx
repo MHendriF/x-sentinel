@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { AccountNode, apiClient, ProxyTestResult, extractProxyHostPort } from '@/services/apiClient';
+import {
+  AccountNode,
+  apiClient,
+  ProxyTestResult,
+  extractProxyHostPort,
+} from '@/services/apiClient';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,7 +73,9 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
     try {
       const res = await apiClient.startWarmup(account.id);
       if (res.success) {
-        toast.info(`🐣 Pemanasan dimulai untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`);
+        toast.info(
+          `🐣 Pemanasan dimulai untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`
+        );
       } else {
         toast.error(res.message);
       }
@@ -106,7 +113,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
   return (
     <div
-      className={`rounded-lg border border-border/80 bg-obsidian-850 p-4 flex flex-col justify-between gap-4 transition-all duration-200 hover:border-slate-600/80 shadow-md ${
+      className={`flex flex-col justify-between gap-4 rounded-lg border border-border/80 bg-obsidian-850 p-4 shadow-md transition-all duration-200 hover:border-slate-600/80 ${
         account.enabled === false ? 'opacity-50 grayscale' : ''
       }`}
     >
@@ -115,12 +122,15 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <img
-              src={account.avatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}
+              src={
+                account.avatar ||
+                'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'
+              }
               alt={account.label}
-              className="w-10 h-10 rounded-md border border-slate-700 object-cover bg-obsidian-950"
+              className="h-10 w-10 rounded-md border border-slate-700 bg-obsidian-950 object-cover"
             />
             <div>
-              <h4 className="font-heading font-semibold text-sm text-white tracking-tight leading-snug">
+              <h4 className="font-heading text-sm font-semibold leading-snug tracking-tight text-white">
                 {account.label || 'Node'}
               </h4>
               <div className="font-mono text-xs text-flame">
@@ -132,21 +142,21 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           <Button
             size="sm"
             variant="outline"
-            className={`h-7 text-xs font-mono font-bold transition-all ${
+            className={`h-7 font-mono text-xs font-bold transition-all ${
               account.enabled !== false
-                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 shadow-sm shadow-emerald-950/40'
+                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-sm shadow-emerald-950/40 hover:bg-emerald-500/20 hover:text-emerald-300'
                 : 'border-slate-700 bg-obsidian-900 text-slate-400 hover:bg-slate-800'
             }`}
             onClick={handleToggle}
           >
             {account.enabled !== false ? (
-              <span className="flex items-center text-emerald-400 font-bold tracking-wide">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1.5" />
+              <span className="flex items-center font-bold tracking-wide text-emerald-400">
+                <span className="mr-1.5 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 ONLINE
               </span>
             ) : (
               <span className="flex items-center text-slate-400">
-                <Power className="w-3 h-3 mr-1 text-slate-400" />
+                <Power className="mr-1 h-3 w-3 text-slate-400" />
                 PAUSED
               </span>
             )}
@@ -154,31 +164,31 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
         </div>
 
         {/* Tags Row */}
-        <div className="flex flex-wrap items-center gap-1.5 mt-3.5">
+        <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
           {/* Health status badge */}
           {account.healthStatus === 'HEALTHY' ? (
             <Badge variant="success" className="gap-1 font-mono text-[10px]">
-              <CheckCircle2 className="w-3 h-3" />
+              <CheckCircle2 className="h-3 w-3" />
               SESSION HEALTHY
             </Badge>
           ) : account.healthStatus === 'EXPIRED' ? (
             <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
-              <AlertTriangle className="w-3 h-3" />
+              <AlertTriangle className="h-3 w-3" />
               SESSION EXPIRED
             </Badge>
           ) : account.healthStatus === 'PROXY_DEAD' ? (
             <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
-              <WifiOff className="w-3 h-3" />
+              <WifiOff className="h-3 w-3" />
               PROXY DEAD
             </Badge>
           ) : account.isValid ? (
             <Badge variant="success" className="gap-1 font-mono text-[10px]">
-              <CheckCircle2 className="w-3 h-3" />
+              <CheckCircle2 className="h-3 w-3" />
               VALID
             </Badge>
           ) : (
-            <Badge variant="secondary" className="gap-1 text-slate-400 font-mono text-[10px]">
-              <HelpCircle className="w-3 h-3" />
+            <Badge variant="secondary" className="gap-1 font-mono text-[10px] text-slate-400">
+              <HelpCircle className="h-3 w-3" />
               UNVERIFIED
             </Badge>
           )}
@@ -187,22 +197,26 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {account.warmupMode !== false && (
             <Badge
               variant="outline"
-              className="gap-1 border-amber-500/40 text-amber-300 font-mono text-[10px] bg-amber-500/10 cursor-pointer hover:bg-amber-500/20"
+              className="cursor-pointer gap-1 border-amber-500/40 bg-amber-500/10 font-mono text-[10px] text-amber-300 hover:bg-amber-500/20"
               onClick={handleStartWarmup}
               title="Klik untuk jalankan rutinitas pemanasan"
             >
-              <Flame className="w-3 h-3 text-amber-400" />
+              <Flame className="h-3 w-3 text-amber-400" />
               Warmup: Day {account.warmupDay || 1}/7
             </Badge>
           )}
 
           {cleanProxy ? (
-            <Badge variant="purple" className="gap-1 max-w-[170px] truncate font-mono text-[10px]" title={`Proxy: ${cleanProxy}`}>
-              <Globe className="w-3 h-3" />
+            <Badge
+              variant="purple"
+              className="max-w-[170px] gap-1 truncate font-mono text-[10px]"
+              title={`Proxy: ${cleanProxy}`}
+            >
+              <Globe className="h-3 w-3" />
               {cleanProxy}
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-slate-500 text-[10px] font-mono">
+            <Badge variant="outline" className="font-mono text-[10px] text-slate-500">
               DIRECT IP
             </Badge>
           )}
@@ -211,16 +225,16 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {proxyTest && !proxyTest.isDirect && (
             <Badge
               variant={proxyTest.success ? 'success' : 'destructive'}
-              className="gap-1 animate-in fade-in text-[10px]"
+              className="animate-in fade-in gap-1 text-[10px]"
             >
               {proxyTest.success ? (
                 <>
-                  <Wifi className="w-3 h-3" />
+                  <Wifi className="h-3 w-3" />
                   {proxyTest.latency}ms · {proxyTest.countryCode || 'OK'}
                 </>
               ) : (
                 <>
-                  <WifiOff className="w-3 h-3" />
+                  <WifiOff className="h-3 w-3" />
                   DEAD ({proxyTest.latency}ms)
                 </>
               )}
@@ -229,17 +243,17 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
           <Badge
             variant="default"
-            className="cursor-pointer gap-1 hover:bg-amber-500/20 transition-colors"
+            className="cursor-pointer gap-1 transition-colors hover:bg-amber-500/20"
             onClick={() => openCommentsModal(account)}
           >
-            <MessageSquare className="w-3 h-3" />
+            <MessageSquare className="h-3 w-3" />
             {account.commentsCount ?? 3} PAYLOADS
           </Badge>
         </div>
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center gap-1.5 pt-3 border-t border-border/60">
+      <div className="flex items-center gap-1.5 border-t border-border/60 pt-3">
         <Button
           size="sm"
           variant="secondary"
@@ -248,7 +262,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           disabled={isVerifying}
           title="Periksa kesehatan sesi login dan koneksi node"
         >
-          <HeartPulse className="w-3 h-3 mr-1 text-amber-400" />
+          <HeartPulse className="mr-1 h-3 w-3 text-amber-400" />
           {isVerifying ? 'PROBING...' : 'Health Check'}
         </Button>
 
@@ -256,33 +270,35 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           <Button
             size="sm"
             variant="outline"
-            className="text-xs px-2"
+            className="px-2 text-xs"
             onClick={handlePingProxy}
             disabled={isPingingProxy}
             title="Ping Proxy Latency & Location"
           >
-            <Activity className={`w-3.5 h-3.5 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`} />
+            <Activity
+              className={`h-3.5 w-3.5 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
+            />
           </Button>
         )}
 
         <Button
           size="sm"
           variant="outline"
-          className="text-xs px-2"
+          className="px-2 text-xs"
           onClick={() => openAccountModal(account)}
           title="Edit Node Config"
         >
-          <SettingsIcon className="w-3.5 h-3.5" />
+          <SettingsIcon className="h-3.5 w-3.5" />
         </Button>
 
         <Button
           size="sm"
           variant="destructive"
-          className="text-xs px-2"
+          className="px-2 text-xs"
           onClick={handleDelete}
           title="Remove Node"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>

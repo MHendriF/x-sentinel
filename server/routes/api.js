@@ -15,7 +15,7 @@ const scheduler = require('../automation/scheduler');
 router.get('/status', (req, res) => {
   res.json({
     success: true,
-    ...twitterBot.getStatus()
+    ...twitterBot.getStatus(),
   });
 });
 
@@ -25,11 +25,11 @@ router.get('/status', (req, res) => {
 
 // GET /api/accounts - List all accounts
 router.get('/accounts', (req, res) => {
-  const accounts = db.getAccounts().map(acc => {
+  const accounts = db.getAccounts().map((acc) => {
     const comments = db.getAccountComments(acc.id);
     return {
       ...acc,
-      commentsCount: comments.length
+      commentsCount: comments.length,
     };
   });
   res.json({ success: true, accounts });
@@ -48,7 +48,7 @@ router.post('/accounts', async (req, res) => {
     auth_token: auth_token.trim(),
     ct0: (ct0 || '').trim(),
     proxy: (proxy || '').trim(),
-    comments: Array.isArray(comments) ? comments : undefined
+    comments: Array.isArray(comments) ? comments : undefined,
   });
 
   logger.info(`👥 Akun baru ditambahkan: ${newAccount.label}`);
@@ -66,7 +66,7 @@ router.put('/accounts/:id', (req, res) => {
   const updated = db.saveAccount({
     ...existing,
     ...req.body,
-    id
+    id,
   });
 
   logger.info(`✏️ Akun diperbarui: ${updated.label}`);
@@ -93,7 +93,10 @@ router.post('/accounts/bulk-import', (req, res) => {
   if (Array.isArray(jsonAccounts) && jsonAccounts.length > 0) {
     toImport = jsonAccounts;
   } else if (typeof rawText === 'string' && rawText.trim()) {
-    const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+    const lines = rawText
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
 
     lines.forEach((line, idx) => {
       // 1. Check if JSON line
@@ -108,10 +111,10 @@ router.post('/accounts/bulk-import', (req, res) => {
       // 2. Delimiter parsing (| or :)
       let parts = [];
       if (line.includes('|')) {
-        parts = line.split('|').map(p => p.trim());
+        parts = line.split('|').map((p) => p.trim());
       } else {
         // Handle colon format: token:ct0:proxy:label or token:ct0:user:pass@ip:port:label
-        parts = line.split(':').map(p => p.trim());
+        parts = line.split(':').map((p) => p.trim());
       }
 
       if (parts.length >= 2) {
@@ -144,7 +147,7 @@ router.post('/accounts/bulk-import', (req, res) => {
           auth_token,
           ct0,
           proxy,
-          label: label || `Node ${idx + 1}`
+          label: label || `Node ${idx + 1}`,
         });
       }
     });
@@ -153,7 +156,7 @@ router.post('/accounts/bulk-import', (req, res) => {
   if (toImport.length === 0) {
     return res.status(400).json({
       success: false,
-      message: 'Tidak ada data akun yang valid untuk diimpor. Periksa format teks/JSON.'
+      message: 'Tidak ada data akun yang valid untuk diimpor. Periksa format teks/JSON.',
     });
   }
 
@@ -174,7 +177,7 @@ router.post('/accounts/bulk-import', (req, res) => {
         proxy: (item.proxy || '').trim(),
         username: (item.username || '').trim(),
         name: (item.name || '').trim(),
-        enabled: true
+        enabled: true,
       });
       addedAccounts.push(saved);
     } catch (err) {
@@ -188,7 +191,7 @@ router.post('/accounts/bulk-import', (req, res) => {
     addedCount: addedAccounts.length,
     failedCount: errors.length,
     errors,
-    message: `Berhasil mengimpor ${addedAccounts.length} akun${errors.length > 0 ? ` (${errors.length} gagal)` : ''}.`
+    message: `Berhasil mengimpor ${addedAccounts.length} akun${errors.length > 0 ? ` (${errors.length} gagal)` : ''}.`,
   });
 });
 
@@ -199,7 +202,7 @@ router.get('/accounts/export', (req, res) => {
     version: '2.5',
     timestamp: new Date().toISOString(),
     totalNodes: accounts.length,
-    fleet: accounts.map(a => ({
+    fleet: accounts.map((a) => ({
       id: a.id,
       label: a.label,
       auth_token: a.auth_token,
@@ -209,12 +212,15 @@ router.get('/accounts/export', (req, res) => {
       proxy: a.proxy,
       enabled: a.enabled,
       isValid: a.isValid,
-      stats: a.stats
-    }))
+      stats: a.stats,
+    })),
   };
 
   res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Content-Disposition', `attachment; filename="x-sentinel-fleet-backup-${Date.now()}.json"`);
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="x-sentinel-fleet-backup-${Date.now()}.json"`
+  );
   res.send(JSON.stringify(exportData, null, 2));
 });
 
@@ -277,34 +283,46 @@ router.post('/tasks/batch', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Otomasi lain sedang berjalan.' });
   }
 
-  const { accountIds = 'all', urls, like = true, retweet = true, comment = true, commentText = null } = req.body;
+  const {
+    accountIds = 'all',
+    urls,
+    like = true,
+    retweet = true,
+    comment = true,
+    commentText = null,
+  } = req.body;
 
   let urlList = [];
   if (Array.isArray(urls)) {
     urlList = urls;
   } else if (typeof urls === 'string') {
-    urlList = urls.split('\n').map(u => u.trim()).filter(Boolean);
+    urlList = urls
+      .split('\n')
+      .map((u) => u.trim())
+      .filter(Boolean);
   }
 
   // Strict URL Validation Guard
   const tweetUrlRegex = /https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+/i;
-  const validUrls = urlList.filter(u => tweetUrlRegex.test(u));
+  const validUrls = urlList.filter((u) => tweetUrlRegex.test(u));
 
   if (validUrls.length === 0) {
     return res.status(400).json({
       success: false,
-      message: 'Daftar URL tidak valid. Pastikan format URL tweet sesuai (contoh: https://x.com/username/status/1234567890).'
+      message:
+        'Daftar URL tidak valid. Pastikan format URL tweet sesuai (contoh: https://x.com/username/status/1234567890).',
     });
   }
 
   try {
     // Run in background
-    twitterBot.runMultiAccountBatchTask(accountIds, validUrls, { like, retweet, comment, commentText })
-      .catch(err => logger.error(`Unhandled batch error: ${err.message}`));
+    twitterBot
+      .runMultiAccountBatchTask(accountIds, validUrls, { like, retweet, comment, commentText })
+      .catch((err) => logger.error(`Unhandled batch error: ${err.message}`));
 
     res.json({
       success: true,
-      message: `Otomasi dimulai untuk ${validUrls.length} tweet valid${validUrls.length < urlList.length ? ` (${urlList.length - validUrls.length} URL tidak valid dilewati)` : ''}.`
+      message: `Otomasi dimulai untuk ${validUrls.length} tweet valid${validUrls.length < urlList.length ? ` (${urlList.length - validUrls.length} URL tidak valid dilewati)` : ''}.`,
     });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -317,16 +335,32 @@ router.post('/tasks/hunter', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Otomasi lain sedang berjalan.' });
   }
 
-  const { accountIds = 'all', keyword, count = 10, like = true, retweet = true, comment = true, commentText = null } = req.body;
+  const {
+    accountIds = 'all',
+    keyword,
+    count = 10,
+    like = true,
+    retweet = true,
+    comment = true,
+    commentText = null,
+  } = req.body;
 
   if (!keyword || !keyword.trim()) {
-    return res.status(400).json({ success: false, message: 'Keyword atau hashtag pencarian wajib diisi.' });
+    return res
+      .status(400)
+      .json({ success: false, message: 'Keyword atau hashtag pencarian wajib diisi.' });
   }
 
   try {
     // Run in background
-    twitterBot.runMultiAccountHunter(accountIds, keyword.trim(), parseInt(count, 10) || 10, { like, retweet, comment, commentText })
-      .catch(err => logger.error(`Unhandled hunter error: ${err.message}`));
+    twitterBot
+      .runMultiAccountHunter(accountIds, keyword.trim(), parseInt(count, 10) || 10, {
+        like,
+        retweet,
+        comment,
+        commentText,
+      })
+      .catch((err) => logger.error(`Unhandled hunter error: ${err.message}`));
 
     res.json({ success: true, message: `Auto Hunter dimulai untuk keyword "${keyword}".` });
   } catch (err) {
@@ -344,7 +378,7 @@ router.post('/tasks/post', async (req, res) => {
 
   let postList = [];
   if (Array.isArray(posts)) {
-    postList = posts.map(p => String(p).trim()).filter(Boolean);
+    postList = posts.map((p) => String(p).trim()).filter(Boolean);
   } else if (typeof posts === 'string' && posts.trim()) {
     postList = [posts.trim()];
   }
@@ -355,12 +389,13 @@ router.post('/tasks/post', async (req, res) => {
 
   try {
     // Run in background
-    twitterBot.runMultiAccountPostTask(accountIds, postList, { delaySeconds })
-      .catch(err => logger.error(`Unhandled post task error: ${err.message}`));
+    twitterBot
+      .runMultiAccountPostTask(accountIds, postList, { delaySeconds })
+      .catch((err) => logger.error(`Unhandled post task error: ${err.message}`));
 
     res.json({
       success: true,
-      message: `Tugas memposting ke X dimulai untuk ${postList.length} konten postingan.`
+      message: `Tugas memposting ke X dimulai untuk ${postList.length} konten postingan.`,
     });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -379,7 +414,14 @@ router.post('/tasks/stop', (req, res) => {
 
 // POST /api/ai/generate-post - Generate High-Engagement Tweets from Keyword
 router.post('/ai/generate-post', async (req, res) => {
-  const { keyword, style = 'viral_hook', language = 'en', count = 3, customPrompt = '', customOverrides = {} } = req.body;
+  const {
+    keyword,
+    style = 'viral_hook',
+    language = 'en',
+    count = 3,
+    customPrompt = '',
+    customOverrides = {},
+  } = req.body;
 
   if (!keyword || !keyword.trim()) {
     return res.status(400).json({ success: false, message: 'Kata kunci / topik wajib diisi.' });
@@ -393,7 +435,7 @@ router.post('/ai/generate-post', async (req, res) => {
       language,
       count: parseInt(count, 10) || 3,
       customPrompt: (customPrompt || '').trim(),
-      customOverrides
+      customOverrides,
     });
 
     const duration = Date.now() - startTime;
@@ -402,12 +444,12 @@ router.post('/ai/generate-post', async (req, res) => {
       latency: duration,
       keyword: keyword.trim(),
       style,
-      language
+      language,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: `Gagal meracik postingan: ${err.message}`
+      message: `Gagal meracik postingan: ${err.message}`,
     });
   }
 });
@@ -422,7 +464,9 @@ router.post('/proxy/test', async (req, res) => {
   logger.info(`🌐 Menguji koneksi proxy: ${proxy.replace(/http:\/\/[^@]*@/, '')}...`);
   const result = await proxyHelper.testProxy(proxy.trim());
   if (result.success) {
-    logger.success(`✅ Proxy aktif: ${result.ip} (${result.country}) - Latency: ${result.latency}ms`);
+    logger.success(
+      `✅ Proxy aktif: ${result.ip} (${result.country}) - Latency: ${result.latency}ms`
+    );
   } else {
     logger.warn(`❌ Proxy gagal: ${result.message} (${result.latency}ms)`);
   }
@@ -438,7 +482,11 @@ router.post('/accounts/:id/test-proxy', async (req, res) => {
   }
 
   if (!account.proxy) {
-    return res.json({ success: true, isDirect: true, message: 'Akun menggunakan koneksi Direct IP (tanpa proxy).' });
+    return res.json({
+      success: true,
+      isDirect: true,
+      message: 'Akun menggunakan koneksi Direct IP (tanpa proxy).',
+    });
   }
 
   logger.info(`🌐 Menguji proxy node ${account.label}...`);
@@ -486,13 +534,13 @@ router.post('/settings/generate-ai-test', async (req, res) => {
       model: aiModel || 'default',
       provider: aiProvider,
       sampleOutput: reply,
-      message: `Berhasil meracik balasan AI (${duration}ms)!`
+      message: `Berhasil meracik balasan AI (${duration}ms)!`,
     });
   } else {
     res.json({
       success: false,
       latency: duration,
-      message: 'AI gagal merespons atau timeout. Periksa kembali endpoint, model, atau API Key.'
+      message: 'AI gagal merespons atau timeout. Periksa kembali endpoint, model, atau API Key.',
     });
   }
 });
@@ -555,13 +603,15 @@ router.post('/media/upload', (req, res) => {
     const localPath = path.join(db.mediaDir, finalFilename);
 
     fs.writeFileSync(localPath, buffer);
-    logger.info(`🖼️ File media diunggah: ${finalFilename} (${(buffer.length / 1024).toFixed(1)} KB)`);
+    logger.info(
+      `🖼️ File media diunggah: ${finalFilename} (${(buffer.length / 1024).toFixed(1)} KB)`
+    );
 
     res.json({
       success: true,
       filename: finalFilename,
       localPath,
-      sizeKb: (buffer.length / 1024).toFixed(1)
+      sizeKb: (buffer.length / 1024).toFixed(1),
     });
   } catch (err) {
     logger.error(`❌ Gagal menyimpan media upload: ${err.message}`);
@@ -603,17 +653,19 @@ router.post('/accounts/:id/warmup', async (req, res) => {
     return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
   }
   if (twitterBot.isRunning) {
-    return res.status(400).json({ success: false, message: 'Sebuah proses otomasi sedang berjalan.' });
+    return res
+      .status(400)
+      .json({ success: false, message: 'Sebuah proses otomasi sedang berjalan.' });
   }
 
   // Run in background or wait
-  twitterBot.runWarmupTask(account).catch(err => {
+  twitterBot.runWarmupTask(account).catch((err) => {
     logger.error(`❌ Error pada warmup task: ${err.message}`);
   });
 
   res.json({
     success: true,
-    message: `Memulai rutinitas pemanasan untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`
+    message: `Memulai rutinitas pemanasan untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`,
   });
 });
 
@@ -668,8 +720,9 @@ router.post('/settings/test-webhook', async (req, res) => {
     } else if (type === 'discord' || (!type && discordWebhookUrl)) {
       const dcRes = await notifier.sendDiscord(discordWebhookUrl, {
         title: '🔔 X-SENTINEL Discord Webhook Test',
-        description: 'Koneksi Discord Webhook berhasil terverifikasi! Sistem siap mengirimkan alert real-time.',
-        color: 0x10b981
+        description:
+          'Koneksi Discord Webhook berhasil terverifikasi! Sistem siap mengirimkan alert real-time.',
+        color: 0x10b981,
       });
       return res.json(dcRes);
     } else {
@@ -687,9 +740,11 @@ router.post('/history/prune', (req, res) => {
   const { olderThanDays, status } = req.body;
   const result = db.pruneHistory({
     olderThanDays: Number(olderThanDays) || null,
-    status: status || null
+    status: status || null,
   });
-  logger.info(`🧹 Pembersihan riwayat: ${result.deletedCount} log dihapus (${result.remainingCount} tersisa).`);
+  logger.info(
+    `🧹 Pembersihan riwayat: ${result.deletedCount} log dihapus (${result.remainingCount} tersisa).`
+  );
   res.json({ success: true, ...result });
 });
 

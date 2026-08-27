@@ -54,7 +54,7 @@ class App {
         store.update({
           stats: data.stats || {},
           isRunning: data.isRunning || false,
-          currentTask: data.currentTask || null
+          currentTask: data.currentTask || null,
         });
       }
     } catch (err) {

@@ -11,7 +11,7 @@ console.log('✅ Test 1 Passed: 9router config resolved properly');
 
 // Test 2: Standard JSON parsing
 const standardJson = JSON.stringify({
-  choices: [{ message: { content: 'X-SENTINEL AI ONLINE' } }]
+  choices: [{ message: { content: 'X-SENTINEL AI ONLINE' } }],
 });
 const parsedStandard = aiService.safeParseResponse(standardJson);
 assert.strictEqual(parsedStandard.choices[0].message.content, 'X-SENTINEL AI ONLINE');
@@ -35,14 +35,18 @@ assert.strictEqual(parsedTrailing.choices[0].message.content, 'Online OK');
 console.log('✅ Test 4 Passed: Trailing characters after JSON handled gracefully!');
 
 // Test 5: Markdown codeblock JSON
-const markdownJson = "```json\n" + standardJson + "\n```";
+const markdownJson = '```json\n' + standardJson + '\n```';
 const parsedMarkdown = aiService.safeParseResponse(markdownJson);
 assert.strictEqual(parsedMarkdown.choices[0].message.content, 'X-SENTINEL AI ONLINE');
 console.log('✅ Test 5 Passed: Markdown codeblock JSON parsed successfully!');
 
 // Test 6: Disabled AI returns null
 (async () => {
-  const result = await aiService.generateContextualReply('Some viral tweet', {}, { aiProvider: 'none' });
+  const result = await aiService.generateContextualReply(
+    'Some viral tweet',
+    {},
+    { aiProvider: 'none' }
+  );
   assert.strictEqual(result, null);
   console.log('✅ Test 6 Passed: Disabled AI safely returns null fallback');
 

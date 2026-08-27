@@ -16,8 +16,8 @@ class AIService {
           defaultModel: 'openai/gpt-4o-mini',
           headers: {
             'HTTP-Referer': 'https://x-sentinel.local',
-            'X-Title': 'X-SENTINEL Cockpit'
-          }
+            'X-Title': 'X-SENTINEL Cockpit',
+          },
         };
       case 'openrouter':
         return {
@@ -25,38 +25,38 @@ class AIService {
           defaultModel: 'openai/gpt-4o-mini',
           headers: {
             'HTTP-Referer': 'https://x-sentinel.local',
-            'X-Title': 'X-SENTINEL Cockpit'
-          }
+            'X-Title': 'X-SENTINEL Cockpit',
+          },
         };
       case 'openai':
         return {
           baseUrl: customBaseUrl || 'https://api.openai.com/v1',
           defaultModel: 'gpt-4o-mini',
-          headers: {}
+          headers: {},
         };
       case 'groq':
         return {
           baseUrl: customBaseUrl || 'https://api.groq.com/openai/v1',
           defaultModel: 'llama-3.3-70b-versatile',
-          headers: {}
+          headers: {},
         };
       case 'gemini':
         return {
           baseUrl: customBaseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai',
           defaultModel: 'gemini-1.5-flash',
-          headers: {}
+          headers: {},
         };
       case 'ollama':
         return {
           baseUrl: customBaseUrl || 'http://localhost:11434/v1',
           defaultModel: 'llama3',
-          headers: {}
+          headers: {},
         };
       case 'custom':
         return {
           baseUrl: customBaseUrl || 'https://api.openai.com/v1',
           defaultModel: 'gpt-4o-mini',
-          headers: {}
+          headers: {},
         };
       default:
         return null;
@@ -122,10 +122,10 @@ class AIService {
                   combinedContent ||
                   lastDataObj?.choices?.[0]?.message?.content ||
                   lastDataObj?.choices?.[0]?.text ||
-                  ''
-              }
-            }
-          ]
+                  '',
+              },
+            },
+          ],
         };
       }
     }
@@ -178,10 +178,10 @@ class AIService {
         choices: [
           {
             message: {
-              content: trimmed
-            }
-          }
-        ]
+              content: trimmed,
+            },
+          },
+        ],
       };
     }
 
@@ -233,12 +233,14 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
     const userMessage = `Tweet Content:\n"${tweetText}"\n\nWrite your single natural human reply:`;
 
     try {
-      logger.info(`🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk meracik balasan...`);
+      logger.info(
+        `🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk meracik balasan...`
+      );
 
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(providerConfig.headers || {})
+        Authorization: `Bearer ${apiKey}`,
+        ...(providerConfig.headers || {}),
       };
 
       const endpoint = `${providerConfig.baseUrl}/chat/completions`;
@@ -253,13 +255,13 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
           model,
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage }
+            { role: 'user', content: userMessage },
           ],
           max_tokens: 100,
           temperature: 0.8,
-          stream: false
+          stream: false,
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -273,9 +275,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
 
       const data = this.safeParseResponse(rawText);
       const rawReply =
-        data?.choices?.[0]?.message?.content?.trim() ||
-        data?.choices?.[0]?.text?.trim() ||
-        '';
+        data?.choices?.[0]?.message?.content?.trim() || data?.choices?.[0]?.text?.trim() || '';
 
       if (!rawReply) {
         logger.warn('⚠️ AI API tidak mengembalikan konten balasan.');
@@ -322,8 +322,8 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
     try {
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(providerConfig.headers || {})
+        Authorization: `Bearer ${apiKey}`,
+        ...(providerConfig.headers || {}),
       };
 
       const endpoint = `${providerConfig.baseUrl}/chat/completions`;
@@ -336,14 +336,12 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
         headers,
         body: JSON.stringify({
           model,
-          messages: [
-            { role: 'user', content: 'Say "X-SENTINEL AI ONLINE" in 4 words.' }
-          ],
+          messages: [{ role: 'user', content: 'Say "X-SENTINEL AI ONLINE" in 4 words.' }],
           max_tokens: 30,
           temperature: 0.5,
-          stream: false
+          stream: false,
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -354,27 +352,25 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
         return {
           success: false,
           status: response.status,
-          message: `API Error (${response.status}): ${rawText.slice(0, 180)}`
+          message: `API Error (${response.status}): ${rawText.slice(0, 180)}`,
         };
       }
 
       const data = this.safeParseResponse(rawText);
       const reply =
-        data?.choices?.[0]?.message?.content?.trim() ||
-        data?.choices?.[0]?.text?.trim() ||
-        '';
+        data?.choices?.[0]?.message?.content?.trim() || data?.choices?.[0]?.text?.trim() || '';
 
       return {
         success: true,
         model,
         provider,
         sampleOutput: reply || 'Connected',
-        message: `Koneksi berhasil ke ${provider.toUpperCase()} (${model})!`
+        message: `Koneksi berhasil ke ${provider.toUpperCase()} (${model})!`,
       };
     } catch (err) {
       return {
         success: false,
-        message: err.name === 'AbortError' ? 'Koneksi Timeout (12s)' : err.message
+        message: err.name === 'AbortError' ? 'Koneksi Timeout (12s)' : err.message,
       };
     }
   }
@@ -395,7 +391,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
     language = 'en',
     count = 3,
     customPrompt = '',
-    customOverrides = {}
+    customOverrides = {},
   }) {
     const settings = { ...db.getSettings(), ...customOverrides };
     const provider = settings.aiProvider || 'none';
@@ -404,12 +400,14 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
 
     // Fallback if AI provider is disabled
     if (provider === 'none') {
-      logger.info(`ℹ️ AI Provider 'none'. Menggunakan generator template fallback untuk "${keyword}"...`);
+      logger.info(
+        `ℹ️ AI Provider 'none'. Menggunakan generator template fallback untuk "${keyword}"...`
+      );
       return {
         success: true,
         isFallback: true,
         provider: 'fallback-spintax',
-        posts: this.generateFallbackPosts(keyword, style, language, safeCount)
+        posts: this.generateFallbackPosts(keyword, style, language, safeCount),
       };
     }
 
@@ -420,7 +418,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
         success: true,
         isFallback: true,
         provider: 'fallback-spintax',
-        posts: this.generateFallbackPosts(keyword, style, language, safeCount)
+        posts: this.generateFallbackPosts(keyword, style, language, safeCount),
       };
     }
 
@@ -431,7 +429,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
         success: true,
         isFallback: true,
         provider: 'fallback-spintax',
-        posts: this.generateFallbackPosts(keyword, style, language, safeCount)
+        posts: this.generateFallbackPosts(keyword, style, language, safeCount),
       };
     }
 
@@ -441,22 +439,28 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
     let styleInstructions = '';
     switch (style) {
       case 'viral_hook':
-        styleInstructions = 'Format: Punchy, contrarian, or high-curiosity opening hook. Short & impactful (1-3 lines max, under 220 chars). Makes readers stop scrolling.';
+        styleInstructions =
+          'Format: Punchy, contrarian, or high-curiosity opening hook. Short & impactful (1-3 lines max, under 220 chars). Makes readers stop scrolling.';
         break;
       case 'alpha_insight':
-        styleInstructions = 'Format: Deep industry alpha, data/trend observation, or sharp technical analysis. Tone of a seasoned crypto/tech insider or quantitative researcher.';
+        styleInstructions =
+          'Format: Deep industry alpha, data/trend observation, or sharp technical analysis. Tone of a seasoned crypto/tech insider or quantitative researcher.';
         break;
       case 'educational_mini':
-        styleInstructions = 'Format: 2-3 clean, high-value bullet points or a concise framework. Actionable takeaway for practitioners.';
+        styleInstructions =
+          'Format: 2-3 clean, high-value bullet points or a concise framework. Actionable takeaway for practitioners.';
         break;
       case 'story_builder':
-        styleInstructions = 'Format: Authentic first-person builder/founder perspective. Casual, humble, yet compelling reflection or build-in-public update.';
+        styleInstructions =
+          'Format: Authentic first-person builder/founder perspective. Casual, humble, yet compelling reflection or build-in-public update.';
         break;
       case 'indo_community':
-        styleInstructions = 'Format: Bahasa Indonesia santai, relevan, berbobot. Menggunakan bahasa gaul tech/crypto Indonesia (misal: "ternyata", "POV", "riset", "insight", "kepo"). Jangan kaku atau baku seperti koran.';
+        styleInstructions =
+          'Format: Bahasa Indonesia santai, relevan, berbobot. Menggunakan bahasa gaul tech/crypto Indonesia (misal: "ternyata", "POV", "riset", "insight", "kepo"). Jangan kaku atau baku seperti koran.';
         break;
       default:
-        styleInstructions = 'Format: Sharp, authentic, human-grade tweet with high engagement value.';
+        styleInstructions =
+          'Format: Sharp, authentic, human-grade tweet with high engagement value.';
     }
 
     const langInstruction =
@@ -493,12 +497,14 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
     const userMessage = `Keyword / Topic: "${keyword}"\nGenerate ${safeCount} unique single-line post drafts (no newlines):`;
 
     try {
-      logger.info(`🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk generate ${safeCount} post tentang "${keyword}"...`);
+      logger.info(
+        `🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk generate ${safeCount} post tentang "${keyword}"...`
+      );
 
       const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(providerConfig.headers || {})
+        Authorization: `Bearer ${apiKey}`,
+        ...(providerConfig.headers || {}),
       };
 
       const endpoint = `${providerConfig.baseUrl}/chat/completions`;
@@ -512,14 +518,14 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
           model,
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage }
+            { role: 'user', content: userMessage },
           ],
           response_format: { type: 'json_object' },
           max_tokens: 600,
           temperature: 0.85,
-          stream: false
+          stream: false,
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -531,7 +537,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
           success: true,
           isFallback: true,
           provider: 'fallback-spintax',
-          posts: this.generateFallbackPosts(keyword, style, language, safeCount)
+          posts: this.generateFallbackPosts(keyword, style, language, safeCount),
         };
       }
 
@@ -549,7 +555,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
         if (jsonMatch) {
           const jsonResult = JSON.parse(jsonMatch[0]);
           if (Array.isArray(jsonResult.posts)) {
-            extractedPosts = jsonResult.posts.map(p => String(p).trim()).filter(Boolean);
+            extractedPosts = jsonResult.posts.map((p) => String(p).trim()).filter(Boolean);
           }
         }
       } catch (err) {}
@@ -558,13 +564,13 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
       if (extractedPosts.length === 0 && contentStr) {
         extractedPosts = contentStr
           .split(/\n\s*\n|\n(?=\d+[\.\)])/)
-          .map(s => s.replace(/^\d+[\.\)]\s*|^["'`]|["'`]$/g, '').trim())
-          .filter(s => s.length > 10);
+          .map((s) => s.replace(/^\d+[\.\)]\s*|^["'`]|["'`]$/g, '').trim())
+          .filter((s) => s.length > 10);
       }
 
       if (extractedPosts.length > 0) {
         // Clean each post: replace newlines with space, collapse whitespace, and trim
-        const cleaned = extractedPosts.slice(0, safeCount).map(p =>
+        const cleaned = extractedPosts.slice(0, safeCount).map((p) =>
           p
             .replace(/[\r\n]+/g, ' ')
             .replace(/\s+/g, ' ')
@@ -576,18 +582,20 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
           success: true,
           isFallback: false,
           provider: `${provider.toUpperCase()} (${model})`,
-          posts: cleaned
+          posts: cleaned,
         };
       }
 
       throw new Error('Gagal mengekstrak postingan dari respons AI.');
     } catch (err) {
-      logger.warn(`⚠️ AI Generation gagal (${err.message}). Beralih ke generator template fallback.`);
+      logger.warn(
+        `⚠️ AI Generation gagal (${err.message}). Beralih ke generator template fallback.`
+      );
       return {
         success: true,
         isFallback: true,
         provider: 'fallback-spintax',
-        posts: this.generateFallbackPosts(keyword, style, language, safeCount)
+        posts: this.generateFallbackPosts(keyword, style, language, safeCount),
       };
     }
   }
@@ -604,7 +612,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
       `Catatan riset seputar ${kw}: metrik on-chain & user retention terus naik konsisten, ekosistem dev makin luas, tinggal tunggu katalis makro buat trigger ekspansi. Jangan sampai FOMO pas udah breakout.`,
       `Satu hal yang paling menarik dari ${kw} adalah bagaimana dia menyelesaikan masalah efisiensi tanpa mengorbankan kecepatan. Yang udah riset mendalam pasti paham arahnya kemana. 🔥`,
       `POV: Orang-orang terlalu fokus sama noise jangka pendek, sampai lupa fundamental riil dari ${kw}. Fokus pada builders & arsitektur jangka panjang.`,
-      `Lagi breakdown arsitektur & ekosistem ${kw} hari ini. Banyak angle menarik yang belum banyak dibahas di timeline. Drop pertanyaan atau insight kalian di bawah 👇`
+      `Lagi breakdown arsitektur & ekosistem ${kw} hari ini. Banyak angle menarik yang belum banyak dibahas di timeline. Drop pertanyaan atau insight kalian di bawah 👇`,
     ];
 
     const templatesEn = [
@@ -612,7 +620,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
       `Quick breakdown on ${kw}: Scalability & execution throughput hitting new highs, ecosystem tooling maturing significantly, and asymmetric risk/reward setup forming. Are you positioned or still sidelined?`,
       `The inflection point for ${kw} is approaching faster than most realize. When liquidity rotates, infrastructure that actually works wins every single time. ⚡`,
       `Unpopular opinion: ${kw} is currently one of the most misunderstood plays in the entire space. Focus on actual retention and verifiable metrics, not timeline consensus.`,
-      `Building and exploring around ${kw} today. The UX improvements and speed compared to previous cycles are genuinely night and day. What's your take?`
+      `Building and exploring around ${kw} today. The UX improvements and speed compared to previous cycles are genuinely night and day. What's your take?`,
     ];
 
     const source = isIndo ? templatesIndo : templatesEn;
@@ -623,4 +631,3 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
 }
 
 module.exports = new AIService();
-

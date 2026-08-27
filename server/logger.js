@@ -14,7 +14,7 @@ class Logger extends EventEmitter {
       timestamp,
       level, // 'info', 'success', 'warn', 'error', 'action'
       message,
-      meta
+      meta,
     };
 
     this.logs.unshift(logEntry);
@@ -22,24 +22,35 @@ class Logger extends EventEmitter {
       this.logs.pop();
     }
 
-    const consolePrefix = {
-      info: 'ℹ️ [INFO]',
-      success: '✅ [SUCCESS]',
-      warn: '⚠️ [WARN]',
-      error: '❌ [ERROR]',
-      action: '⚡ [ACTION]'
-    }[level] || '[LOG]';
+    const consolePrefix =
+      {
+        info: 'ℹ️ [INFO]',
+        success: '✅ [SUCCESS]',
+        warn: '⚠️ [WARN]',
+        error: '❌ [ERROR]',
+        action: '⚡ [ACTION]',
+      }[level] || '[LOG]';
 
     console.log(`[${timestamp}] ${consolePrefix} ${message}`);
     this.emit('log', logEntry);
     return logEntry;
   }
 
-  info(msg, meta) { return this.log('info', msg, meta); }
-  success(msg, meta) { return this.log('success', msg, meta); }
-  warn(msg, meta) { return this.log('warn', msg, meta); }
-  error(msg, meta) { return this.log('error', msg, meta); }
-  action(msg, meta) { return this.log('action', msg, meta); }
+  info(msg, meta) {
+    return this.log('info', msg, meta);
+  }
+  success(msg, meta) {
+    return this.log('success', msg, meta);
+  }
+  warn(msg, meta) {
+    return this.log('warn', msg, meta);
+  }
+  error(msg, meta) {
+    return this.log('error', msg, meta);
+  }
+  action(msg, meta) {
+    return this.log('action', msg, meta);
+  }
 
   getRecentLogs(limit = 100) {
     return this.logs.slice(0, limit);

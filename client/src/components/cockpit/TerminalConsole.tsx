@@ -37,11 +37,11 @@ export const TerminalConsole: React.FC = () => {
   };
 
   return (
-    <Card className="flex flex-col h-[520px] bg-obsidian-950 border-slate-800">
-      <CardHeader className="py-2.5 px-4 flex flex-row items-center justify-between border-b border-slate-800 space-y-0">
+    <Card className="flex h-[520px] flex-col border-slate-800 bg-obsidian-950">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-slate-800 px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-flame" />
-          <CardTitle className="font-mono text-xs font-bold text-slate-300 tracking-wider">
+          <Terminal className="h-4 w-4 text-flame" />
+          <CardTitle className="font-mono text-xs font-bold tracking-wider text-slate-300">
             LIVE TELEMETRY STREAM
           </CardTitle>
         </div>
@@ -50,32 +50,38 @@ export const TerminalConsole: React.FC = () => {
             size="sm"
             variant="ghost"
             onClick={handleCopy}
-            className="h-6 px-2 text-[10px] font-mono text-slate-400 hover:text-white"
+            className="h-6 px-2 font-mono text-[10px] text-slate-400 hover:text-white"
           >
-            <Copy className="w-3 h-3 mr-1" />
+            <Copy className="mr-1 h-3 w-3" />
             Copy
           </Button>
           <Button
             size="sm"
             variant="ghost"
             onClick={clearLogs}
-            className="h-6 px-2 text-[10px] font-mono text-slate-400 hover:text-red-400"
+            className="h-6 px-2 font-mono text-[10px] text-slate-400 hover:text-red-400"
           >
-            <Trash2 className="w-3 h-3 mr-1" />
+            <Trash2 className="mr-1 h-3 w-3" />
             Clear
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 p-3 font-mono text-xs overflow-y-auto leading-relaxed space-y-1" ref={screenRef}>
+      <CardContent
+        className="flex-1 space-y-1 overflow-y-auto p-3 font-mono text-xs leading-relaxed"
+        ref={screenRef}
+      >
         {logs.length === 0 ? (
-          <div className="text-slate-600 italic py-6 text-center">
+          <div className="py-6 text-center italic text-slate-600">
             [SYS] Menunggu event telemetry dari Playwright engine...
           </div>
         ) : (
           logs.map((log, idx) => (
-            <div key={idx} className="flex items-start gap-2 break-all hover:bg-slate-900/40 px-1 py-0.5 rounded">
-              <span className="text-slate-600 text-[10px] shrink-0 select-none">
+            <div
+              key={idx}
+              className="flex items-start gap-2 break-all rounded px-1 py-0.5 hover:bg-slate-900/40"
+            >
+              <span className="shrink-0 select-none text-[10px] text-slate-600">
                 [{log.timestamp || 'LOG'}]
               </span>
               <span className={getLevelColor(log.level)}>{log.message}</span>

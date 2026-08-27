@@ -19,12 +19,32 @@ export class Navigation {
     this.deckBackdrop = document.getElementById('deckBackdrop');
 
     this.tabTitles = {
-      'tab-accounts': { title: 'Multi-Node & Proxy Management', subtitle: 'Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.' },
-      'tab-batch': { title: 'Target Engagement Workbench', subtitle: 'Execute multi-node sequential engagement for Like, Repost, and Custom Reply vectors.' },
-      'tab-hunter': { title: 'Feed Hunter Intelligence', subtitle: 'Autonomous keyword scanning and multi-node engagement sequence.' },
-      'tab-spintax': { title: 'Payload Bank & Spintax Generator', subtitle: 'Configure global fallback payloads and test spintax permutations.' },
-      'tab-safety': { title: 'Anti-Detection & Defense Protocol', subtitle: 'Configure rate limits, natural delay intervals, and browser emulation flags.' },
-      'tab-history': { title: 'Interaction Audit Ledger', subtitle: 'Full immutable record of all processed interactions per node.' }
+      'tab-accounts': {
+        title: 'Multi-Node & Proxy Management',
+        subtitle:
+          'Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.',
+      },
+      'tab-batch': {
+        title: 'Target Engagement Workbench',
+        subtitle:
+          'Execute multi-node sequential engagement for Like, Repost, and Custom Reply vectors.',
+      },
+      'tab-hunter': {
+        title: 'Feed Hunter Intelligence',
+        subtitle: 'Autonomous keyword scanning and multi-node engagement sequence.',
+      },
+      'tab-spintax': {
+        title: 'Payload Bank & Spintax Generator',
+        subtitle: 'Configure global fallback payloads and test spintax permutations.',
+      },
+      'tab-safety': {
+        title: 'Anti-Detection & Defense Protocol',
+        subtitle: 'Configure rate limits, natural delay intervals, and browser emulation flags.',
+      },
+      'tab-history': {
+        title: 'Interaction Audit Ledger',
+        subtitle: 'Full immutable record of all processed interactions per node.',
+      },
     };
 
     this.init();
@@ -32,7 +52,7 @@ export class Navigation {
 
   init() {
     // Tab Click Listeners
-    this.deckTabs.forEach(item => {
+    this.deckTabs.forEach((item) => {
       item.addEventListener('click', () => {
         const tabId = item.getAttribute('data-tab');
         this.switchTab(tabId);
@@ -52,8 +72,8 @@ export class Navigation {
   }
 
   switchTab(tabId) {
-    this.deckTabs.forEach(n => n.classList.remove('active'));
-    this.tabContents.forEach(t => t.classList.remove('active'));
+    this.deckTabs.forEach((n) => n.classList.remove('active'));
+    this.tabContents.forEach((t) => t.classList.remove('active'));
 
     const tabBtn = document.querySelector(`.deck-tab[data-tab="${tabId}"]`);
     if (tabBtn) tabBtn.classList.add('active');

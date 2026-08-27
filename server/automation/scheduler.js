@@ -52,16 +52,22 @@ class SchedulerService {
 
     // 1. Process Pending Post Queues
     const pendingPost = schedules.find(
-      s => s.type === 'POST_QUEUE' && s.enabled && s.status === 'PENDING' && new Date(s.scheduledAt).getTime() <= now
+      (s) =>
+        s.type === 'POST_QUEUE' &&
+        s.enabled &&
+        s.status === 'PENDING' &&
+        new Date(s.scheduledAt).getTime() <= now
     );
 
     if (pendingPost) {
       this.isProcessing = true;
-      logger.info(`⏰ [Scheduler] Menjalankan jadwal postingan: "${pendingPost.title || pendingPost.posts?.[0]?.slice(0, 30)}"...`);
-      
+      logger.info(
+        `⏰ [Scheduler] Menjalankan jadwal postingan: "${pendingPost.title || pendingPost.posts?.[0]?.slice(0, 30)}"...`
+      );
+
       db.saveSchedule({
         ...pendingPost,
-        status: 'RUNNING'
+        status: 'RUNNING',
       });
 
       try {
@@ -69,20 +75,20 @@ class SchedulerService {
           accountIds: pendingPost.accountIds || 'all',
           posts: pendingPost.posts || [],
           mediaPaths: pendingPost.mediaPaths || [],
-          delaySeconds: pendingPost.delaySeconds || 15
+          delaySeconds: pendingPost.delaySeconds || 15,
         });
 
         db.saveSchedule({
           ...pendingPost,
           status: result.success ? 'COMPLETED' : 'FAILED',
           executedAt: new Date().toISOString(),
-          lastMessage: result.message || (result.success ? 'Selesai diposting' : 'Gagal')
+          lastMessage: result.message || (result.success ? 'Selesai diposting' : 'Gagal'),
         });
 
         notifier.notify(result.success ? 'POST_PUBLISHED' : 'TASK_FAILED', {
           text: pendingPost.posts?.[0] || 'Scheduled post',
           accountName: pendingPost.accountIds === 'all' ? 'All Fleet' : 'Node',
-          error: result.message
+          error: result.message,
         });
       } catch (err) {
         logger.error(`❌ [Scheduler Error]: ${err.message}`);
@@ -90,7 +96,7 @@ class SchedulerService {
           ...pendingPost,
           status: 'FAILED',
           executedAt: new Date().toISOString(),
-          lastMessage: err.message
+          lastMessage: err.message,
         });
       } finally {
         this.isProcessing = false;
@@ -99,7 +105,7 @@ class SchedulerService {
     }
 
     // 2. Process Recurring Feed Hunter
-    const dueHunter = schedules.find(s => {
+    const dueHunter = schedules.find((s) => {
       if (s.type !== 'RECURRING_HUNTER' || !s.enabled) return false;
       if (!s.lastRunAt) return true;
       const elapsedMs = now - new Date(s.lastRunAt).getTime();
@@ -108,11 +114,13 @@ class SchedulerService {
 
     if (dueHunter) {
       this.isProcessing = true;
-      logger.info(`📡 [Scheduler] Menjalankan Recurring Feed Hunter (${dueHunter.keywords?.join(', ')})...`);
+      logger.info(
+        `📡 [Scheduler] Menjalankan Recurring Feed Hunter (${dueHunter.keywords?.join(', ')})...`
+      );
 
       db.saveSchedule({
         ...dueHunter,
-        lastRunAt: new Date().toISOString()
+        lastRunAt: new Date().toISOString(),
       });
 
       try {
@@ -120,13 +128,13 @@ class SchedulerService {
           keywords: dueHunter.keywords || [],
           vectors: dueHunter.vectors || ['LIKE', 'RETWEET', 'COMMENT'],
           maxTweets: dueHunter.maxTweets || 3,
-          delaySeconds: dueHunter.delaySeconds || 15
+          delaySeconds: dueHunter.delaySeconds || 15,
         });
 
         notifier.notify(result.success ? 'TASK_COMPLETED' : 'TASK_FAILED', {
           taskType: 'Recurring Feed Hunter',
           totalTargets: dueHunter.maxTweets || 3,
-          error: result.message
+          error: result.message,
         });
       } catch (err) {
         logger.error(`❌ [Scheduler Hunter Error]: ${err.message}`);

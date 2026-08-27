@@ -147,7 +147,7 @@ export const apiClient = {
     const res = await fetch('/api/accounts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -156,7 +156,7 @@ export const apiClient = {
     const res = await fetch(`/api/accounts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -177,7 +177,9 @@ export const apiClient = {
   },
 
   // Comments JSON per Account
-  async getAccountComments(id: string): Promise<{ success: boolean; comments: string[]; file: string }> {
+  async getAccountComments(
+    id: string
+  ): Promise<{ success: boolean; comments: string[]; file: string }> {
     const res = await fetch(`/api/accounts/${id}/comments`);
     return res.json();
   },
@@ -186,7 +188,7 @@ export const apiClient = {
     const res = await fetch(`/api/accounts/${id}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comments })
+      body: JSON.stringify({ comments }),
     });
     return res.json();
   },
@@ -203,7 +205,7 @@ export const apiClient = {
     const res = await fetch('/api/tasks/batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -219,7 +221,7 @@ export const apiClient = {
     const res = await fetch('/api/tasks/hunter', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -233,7 +235,7 @@ export const apiClient = {
     const res = await fetch('/api/tasks/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -259,7 +261,7 @@ export const apiClient = {
     const res = await fetch('/api/ai/generate-post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -279,16 +281,19 @@ export const apiClient = {
     const res = await fetch('/api/templates', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ templates })
+      body: JSON.stringify({ templates }),
     });
     return res.json();
   },
 
-  async previewSpintax(text: string, count = 5): Promise<{ success: boolean; variations: string[] }> {
+  async previewSpintax(
+    text: string,
+    count = 5
+  ): Promise<{ success: boolean; variations: string[] }> {
     const res = await fetch('/api/spintax/preview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, count })
+      body: JSON.stringify({ text, count }),
     });
     return res.json();
   },
@@ -303,7 +308,7 @@ export const apiClient = {
     const res = await fetch('/api/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -312,7 +317,7 @@ export const apiClient = {
     const res = await fetch('/api/accounts/bulk-import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
@@ -327,7 +332,7 @@ export const apiClient = {
     const res = await fetch('/api/settings/test-ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
+      body: JSON.stringify(settings),
     });
     return res.json();
   },
@@ -349,19 +354,24 @@ export const apiClient = {
     const res = await fetch('/api/settings/generate-ai-test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
 
   // Audit History
-  async getHistory(limit = 100): Promise<{ success: boolean; history: HistoryItem[]; stats: Stats }> {
+  async getHistory(
+    limit = 100
+  ): Promise<{ success: boolean; history: HistoryItem[]; stats: Stats }> {
     const res = await fetch(`/api/history?limit=${limit}`);
     return res.json();
   },
 
   // Media / Image Upload
-  async uploadMedia(imageBase64: string, filename?: string): Promise<{
+  async uploadMedia(
+    imageBase64: string,
+    filename?: string
+  ): Promise<{
     success: boolean;
     filename?: string;
     localPath?: string;
@@ -410,7 +420,9 @@ export const apiClient = {
     return res.json();
   },
 
-  async createSchedule(data: Partial<ScheduleItem>): Promise<{ success: boolean; schedule: ScheduleItem; message?: string }> {
+  async createSchedule(
+    data: Partial<ScheduleItem>
+  ): Promise<{ success: boolean; schedule: ScheduleItem; message?: string }> {
     const res = await fetch('/api/schedules', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -424,7 +436,10 @@ export const apiClient = {
     return res.json();
   },
 
-  async toggleSchedule(id: string, enabled?: boolean): Promise<{ success: boolean; schedule: ScheduleItem }> {
+  async toggleSchedule(
+    id: string,
+    enabled?: boolean
+  ): Promise<{ success: boolean; schedule: ScheduleItem }> {
     const res = await fetch(`/api/schedules/${id}/toggle`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -480,7 +495,7 @@ export const apiClient = {
       }
     };
     return eventSource;
-  }
+  },
 };
 
 /**

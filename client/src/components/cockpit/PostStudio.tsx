@@ -70,15 +70,25 @@ const STYLE_OPTIONS = [
 
 const PRESET_KEYWORDS = [
   { label: '🌐 Solana Ecosystem', kw: 'Solana DeFi throughput & ecosystem velocity' },
-  { label: '🤖 AI Autonomous Agents', kw: 'AI autonomous multi-agent systems and onchain execution' },
-  { label: '⚡ Ethereum L2 / Rollups', kw: 'Layer 2 scaling, Arbitrum, Base, and rollup economics' },
+  {
+    label: '🤖 AI Autonomous Agents',
+    kw: 'AI autonomous multi-agent systems and onchain execution',
+  },
+  {
+    label: '⚡ Ethereum L2 / Rollups',
+    kw: 'Layer 2 scaling, Arbitrum, Base, and rollup economics',
+  },
   { label: '🚀 Memecoin Meta', kw: 'Memecoin narrative, liquidity rotation & risk management' },
-  { label: '💻 Web Dev Velocity', kw: 'Modern web architecture, React 19, TypeScript, and developer velocity' },
+  {
+    label: '💻 Web Dev Velocity',
+    kw: 'Modern web architecture, React 19, TypeScript, and developer velocity',
+  },
   { label: '🇮🇩 Komunitas Web3 Indo', kw: 'Perkembangan Web3 dan developer crypto di Indonesia' },
 ];
 
 export const PostStudio: React.FC = () => {
-  const { accounts, settings, loadSettings, schedules, loadSchedules, setActiveTab, isRunning } = useStore();
+  const { accounts, settings, loadSettings, schedules, loadSchedules, setActiveTab, isRunning } =
+    useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Ensure settings & schedules are loaded when PostStudio mounts
@@ -102,7 +112,9 @@ export const PostStudio: React.FC = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   // Media Attachment State
-  const [attachedMedia, setAttachedMedia] = useState<{ filename: string; localPath: string; previewUrl: string; sizeKb?: string }[]>([]);
+  const [attachedMedia, setAttachedMedia] = useState<
+    { filename: string; localPath: string; previewUrl: string; sizeKb?: string }[]
+  >([]);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   // Scheduling State
@@ -121,8 +133,9 @@ export const PostStudio: React.FC = () => {
   const [switchDelaySec, setSwitchDelaySec] = useState(15);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const activeAccounts = accounts.filter(a => a.enabled !== false);
-  const selectedAccount = accounts.find(a => a.id === singleAccountId) || activeAccounts[0] || accounts[0];
+  const activeAccounts = accounts.filter((a) => a.enabled !== false);
+  const selectedAccount =
+    accounts.find((a) => a.id === singleAccountId) || activeAccounts[0] || accounts[0];
 
   const charCount = activeDraftText.length;
   const charLimit = 280;
@@ -167,14 +180,14 @@ export const PostStudio: React.FC = () => {
 
         const res = await apiClient.uploadMedia(imageBase64, file.name);
         if (res.success && res.localPath) {
-          setAttachedMedia(prev => [
+          setAttachedMedia((prev) => [
             ...prev,
             {
               filename: res.filename || file.name,
               localPath: res.localPath!,
               previewUrl: imageBase64,
               sizeKb: res.sizeKb,
-            }
+            },
           ]);
           toast.success(`Gambar ${file.name} (${res.sizeKb} KB) siap dilampirkan.`);
         } else {
@@ -190,7 +203,7 @@ export const PostStudio: React.FC = () => {
   };
 
   const handleRemoveMedia = (index: number) => {
-    setAttachedMedia(prev => prev.filter((_, i) => i !== index));
+    setAttachedMedia((prev) => prev.filter((_, i) => i !== index));
     toast.info('Lampiran gambar dihapus.');
   };
 
@@ -215,14 +228,22 @@ export const PostStudio: React.FC = () => {
 
       if (res.success && res.posts && res.posts.length > 0) {
         const singleLinePosts = res.posts.map((p) =>
-          p.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim()
+          p
+            .replace(/[\r\n]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
         );
         setGeneratedDrafts(singleLinePosts);
         setActiveProviderUsed(res.provider || 'AI Engine');
         setActiveDraftText(singleLinePosts[0]);
-        toast.success(`Berhasil membuat ${singleLinePosts.length} variasi draf postingan (single line)!`, {
-          description: res.isFallback ? 'Dibuat dengan Fallback Template (AI API offline)' : `Inference via ${res.provider}`,
-        });
+        toast.success(
+          `Berhasil membuat ${singleLinePosts.length} variasi draf postingan (single line)!`,
+          {
+            description: res.isFallback
+              ? 'Dibuat dengan Fallback Template (AI API offline)'
+              : `Inference via ${res.provider}`,
+          }
+        );
       } else {
         toast.error(res.message || 'Gagal membuat postingan dengan AI.');
       }
@@ -273,7 +294,8 @@ export const PostStudio: React.FC = () => {
 
     setIsCreatingSchedule(true);
     try {
-      const accountIds = selectedAccountMode === 'all' ? 'all' : [singleAccountId || activeAccounts[0].id];
+      const accountIds =
+        selectedAccountMode === 'all' ? 'all' : [singleAccountId || activeAccounts[0].id];
       let postsToPublish: string[] = [activeDraftText];
       if (selectedAccountMode === 'all' && generatedDrafts.length > 1) {
         postsToPublish = generatedDrafts;
@@ -285,13 +307,15 @@ export const PostStudio: React.FC = () => {
         scheduledAt: scheduledDateObj.toISOString(),
         accountIds,
         posts: postsToPublish,
-        mediaPaths: attachedMedia.map(m => m.localPath),
+        mediaPaths: attachedMedia.map((m) => m.localPath),
         delaySeconds: switchDelaySec,
         enabled: true,
       });
 
       if (res.success) {
-        toast.success(`📅 Berhasil menjadwalkan postingan pada ${scheduledDateObj.toLocaleString('id-ID')}!`);
+        toast.success(
+          `📅 Berhasil menjadwalkan postingan pada ${scheduledDateObj.toLocaleString('id-ID')}!`
+        );
         setIsScheduleModalOpen(false);
         setScheduleTitle('');
         await loadSchedules();
@@ -335,19 +359,24 @@ export const PostStudio: React.FC = () => {
     }
 
     if (isOverLimit) {
-      toast.error(`Karakter melebihi batas Twitter (${charCount}/${charLimit}). Silakan ringkas teks.`);
+      toast.error(
+        `Karakter melebihi batas Twitter (${charCount}/${charLimit}). Silakan ringkas teks.`
+      );
       return;
     }
 
     if (activeAccounts.length === 0) {
-      toast.error('Tidak ada akun node yang aktif. Silakan tambahkan atau aktifkan akun di menu Multi-Node.');
+      toast.error(
+        'Tidak ada akun node yang aktif. Silakan tambahkan atau aktifkan akun di menu Multi-Node.'
+      );
       return;
     }
 
     setIsPublishing(true);
     try {
-      const accountIds = selectedAccountMode === 'all' ? 'all' : [singleAccountId || activeAccounts[0].id];
-      
+      const accountIds =
+        selectedAccountMode === 'all' ? 'all' : [singleAccountId || activeAccounts[0].id];
+
       let postsToPublish: string[] = [activeDraftText];
       if (selectedAccountMode === 'all' && generatedDrafts.length > 1) {
         postsToPublish = generatedDrafts;
@@ -357,7 +386,7 @@ export const PostStudio: React.FC = () => {
         accountIds,
         posts: postsToPublish,
         delaySeconds: switchDelaySec,
-        mediaPaths: attachedMedia.map(m => m.localPath),
+        mediaPaths: attachedMedia.map((m) => m.localPath),
       });
 
       if (res.success) {
@@ -375,25 +404,26 @@ export const PostStudio: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+    <div className="animate-in fade-in flex flex-col gap-6 duration-300">
       {/* Header Banner */}
-      <div className="rounded-xl border border-border/80 bg-gradient-to-r from-obsidian-850 via-obsidian-800 to-obsidian-850 p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-full bg-flame/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-gradient-to-r from-obsidian-850 via-obsidian-800 to-obsidian-850 p-5 shadow-lg">
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-80 rounded-full bg-flame/5 blur-3xl" />
+        <div className="relative z-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-flame/15 border border-flame/30 flex items-center justify-center text-flame shadow-inner">
-                <Sparkles className="w-4 h-4" />
+            <div className="mb-1 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-flame/30 bg-flame/15 text-flame shadow-inner">
+                <Sparkles className="h-4 w-4" />
               </div>
-              <h1 className="font-heading font-bold text-xl text-white tracking-tight flex items-center gap-2">
+              <h1 className="flex items-center gap-2 font-heading text-xl font-bold tracking-tight text-white">
                 AI Post Studio & Fleet Publisher
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald/20 text-emerald border border-emerald/30">
+                <span className="rounded-full border border-emerald/30 bg-emerald/20 px-2 py-0.5 font-mono text-[10px] text-emerald">
                   NEW v3.0
                 </span>
               </h1>
             </div>
-            <p className="text-xs text-slate-400 max-w-2xl">
-              Racik konten postingan berkelas, anti-AI-slop & high-engagement berdasarkan kata kunci, lalu publikasikan langsung ke armada node akun X Anda.
+            <p className="max-w-2xl text-xs text-slate-400">
+              Racik konten postingan berkelas, anti-AI-slop & high-engagement berdasarkan kata
+              kunci, lalu publikasikan langsung ke armada node akun X Anda.
             </p>
           </div>
 
@@ -404,21 +434,32 @@ export const PostStudio: React.FC = () => {
               onClick={() => setActiveTab('tab-ai')}
               title="Klik untuk mengubah atau menguji konfigurasi AI"
               className={cn(
-                'rounded-lg border px-3 py-2 text-right transition-all group flex flex-col items-end',
+                'group flex flex-col items-end rounded-lg border px-3 py-2 text-right transition-all',
                 hasConfiguredAI
-                  ? 'bg-obsidian-900/90 hover:bg-obsidian-850 border-purple-500/40 hover:border-purple-400/80 text-white shadow-sm'
-                  : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-300'
+                  ? 'border-purple-500/40 bg-obsidian-900/90 text-white shadow-sm hover:border-purple-400/80 hover:bg-obsidian-850'
+                  : 'border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
               )}
             >
-              <div className="font-mono text-[9px] text-slate-400 group-hover:text-flame uppercase flex items-center gap-1">
+              <div className="flex items-center gap-1 font-mono text-[9px] uppercase text-slate-400 group-hover:text-flame">
                 <span>AI Provider Aktif</span>
-                <Sliders className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                <Sliders className="h-2.5 w-2.5 opacity-60 transition-opacity group-hover:opacity-100" />
               </div>
-              <div className="font-mono text-xs font-bold text-flame flex items-center gap-1.5 mt-0.5">
-                <Bot className={cn('w-3.5 h-3.5', hasConfiguredAI ? 'text-purple-400' : 'text-amber-400')} />
-                <span>{hasConfiguredAI ? aiProviderName : (settings?.aiProvider ? `${aiProviderName} (No Key)` : 'FALLBACK TEMPLATE')}</span>
+              <div className="mt-0.5 flex items-center gap-1.5 font-mono text-xs font-bold text-flame">
+                <Bot
+                  className={cn(
+                    'h-3.5 w-3.5',
+                    hasConfiguredAI ? 'text-purple-400' : 'text-amber-400'
+                  )}
+                />
+                <span>
+                  {hasConfiguredAI
+                    ? aiProviderName
+                    : settings?.aiProvider
+                      ? `${aiProviderName} (No Key)`
+                      : 'FALLBACK TEMPLATE'}
+                </span>
                 {hasConfiguredAI && aiModelName && (
-                  <span className="text-[10px] text-slate-400 font-normal truncate max-w-[120px]">
+                  <span className="max-w-[120px] truncate text-[10px] font-normal text-slate-400">
                     ({aiModelName})
                   </span>
                 )}
@@ -430,14 +471,14 @@ export const PostStudio: React.FC = () => {
               type="button"
               onClick={() => setActiveTab('tab-accounts')}
               title="Klik untuk mengelola Akun Node"
-              className="rounded-lg bg-obsidian-900/80 hover:bg-obsidian-850 border border-border/60 hover:border-emerald/40 px-3 py-2 text-right transition-all group flex flex-col items-end"
+              className="group flex flex-col items-end rounded-lg border border-border/60 bg-obsidian-900/80 px-3 py-2 text-right transition-all hover:border-emerald/40 hover:bg-obsidian-850"
             >
-              <div className="font-mono text-[9px] text-slate-500 group-hover:text-emerald uppercase flex items-center gap-1">
+              <div className="flex items-center gap-1 font-mono text-[9px] uppercase text-slate-500 group-hover:text-emerald">
                 <span>Active Fleet</span>
-                <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="h-2.5 w-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
               </div>
-              <div className="font-mono text-xs font-bold text-emerald flex items-center justify-end gap-1.5 mt-0.5">
-                <Layers className="w-3.5 h-3.5" />
+              <div className="mt-0.5 flex items-center justify-end gap-1.5 font-mono text-xs font-bold text-emerald">
+                <Layers className="h-3.5 w-3.5" />
                 {activeAccounts.length} Nodes
               </div>
             </button>
@@ -446,24 +487,24 @@ export const PostStudio: React.FC = () => {
       </div>
 
       {/* Main Studio Grid: 2 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left Column: Generator Controls & Topic Engine (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-5">
+        <div className="flex flex-col gap-5 lg:col-span-5">
           {/* Card: Topic & Persona Config */}
-          <div className="rounded-xl border border-border/80 bg-obsidian-850 p-5 flex flex-col gap-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-border/60">
+          <div className="flex flex-col gap-4 rounded-xl border border-border/80 bg-obsidian-850 p-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                <Zap className="w-4 h-4 text-flame" />
+                <Zap className="h-4 w-4 text-flame" />
                 <span>1. Konfigurasi Topik & AI Style</span>
               </div>
-              <span className="text-[10px] font-mono text-slate-400">Step 1</span>
+              <span className="font-mono text-[10px] text-slate-400">Step 1</span>
             </div>
 
             {/* Keyword Input */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center justify-between">
+              <label className="flex items-center justify-between text-xs font-medium text-slate-300">
                 <span>Kata Kunci / Topik Postingan:</span>
-                <span className="text-[10px] text-slate-500 font-mono">Wajib</span>
+                <span className="font-mono text-[10px] text-slate-500">Wajib</span>
               </label>
               <div className="relative">
                 <input
@@ -472,15 +513,15 @@ export const PostStudio: React.FC = () => {
                   onChange={(e) => setKeyword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
                   placeholder="Contoh: Solana Layer 2, AI Agents, React 19, Memecoin..."
-                  className="w-full rounded-lg bg-obsidian-900 border border-border/80 px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-flame focus:ring-1 focus:ring-flame transition-all"
+                  className="w-full rounded-lg border border-border/80 bg-obsidian-900 px-3.5 py-2.5 text-xs text-white transition-all placeholder:text-slate-500 focus:border-flame focus:outline-none focus:ring-1 focus:ring-flame"
                 />
               </div>
             </div>
 
             {/* Trending Quick Presets */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
-                <Lightbulb className="w-3 h-3 text-amber-400" />
+              <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                <Lightbulb className="h-3 w-3 text-amber-400" />
                 Quick Keyword Presets:
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -495,7 +536,7 @@ export const PostStudio: React.FC = () => {
                         setLanguage('id');
                       }
                     }}
-                    className="text-[10px] px-2.5 py-1 rounded-md bg-obsidian-800 hover:bg-obsidian-750 border border-border/60 hover:border-slate-600 text-slate-300 hover:text-white transition-colors"
+                    className="rounded-md border border-border/60 bg-obsidian-800 px-2.5 py-1 text-[10px] text-slate-300 transition-colors hover:border-slate-600 hover:bg-obsidian-750 hover:text-white"
                   >
                     {item.label}
                   </button>
@@ -505,7 +546,9 @@ export const PostStudio: React.FC = () => {
 
             {/* Tone / Persona Selector */}
             <div className="flex flex-col gap-2 pt-1">
-              <label className="text-xs font-medium text-slate-300">Pilih Gaya Bahasa & Persona:</label>
+              <label className="text-xs font-medium text-slate-300">
+                Pilih Gaya Bahasa & Persona:
+              </label>
               <div className="grid grid-cols-1 gap-2">
                 {STYLE_OPTIONS.map((style) => {
                   const isSelected = selectedStyle === style.id;
@@ -520,17 +563,17 @@ export const PostStudio: React.FC = () => {
                         }
                       }}
                       className={cn(
-                        'flex flex-col text-left p-2.5 rounded-lg border transition-all',
+                        'flex flex-col rounded-lg border p-2.5 text-left transition-all',
                         isSelected
                           ? cn('border-l-4 shadow-sm', style.color)
-                          : 'border-border/60 bg-obsidian-900/60 hover:bg-obsidian-800 text-slate-400 hover:text-slate-200'
+                          : 'border-border/60 bg-obsidian-900/60 text-slate-400 hover:bg-obsidian-800 hover:text-slate-200'
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-white">{style.label}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-flame" />}
+                        {isSelected && <Check className="h-3.5 w-3.5 text-flame" />}
                       </div>
-                      <span className="text-[10px] text-slate-400 mt-0.5">{style.desc}</span>
+                      <span className="mt-0.5 text-[10px] text-slate-400">{style.desc}</span>
                     </button>
                   );
                 })}
@@ -540,17 +583,19 @@ export const PostStudio: React.FC = () => {
             {/* Language & Variation Count Controls */}
             <div className="grid grid-cols-2 gap-3 pt-1">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1">
-                  <Globe className="w-3 h-3 text-slate-400" />
+                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-300">
+                  <Globe className="h-3 w-3 text-slate-400" />
                   Bahasa:
                 </label>
-                <div className="grid grid-cols-2 gap-1 bg-obsidian-900 p-1 rounded-lg border border-border/60 text-[11px]">
+                <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-obsidian-900 p-1 text-[11px]">
                   <button
                     type="button"
                     onClick={() => setLanguage('en')}
                     className={cn(
-                      'py-1 rounded font-medium transition-all text-center',
-                      language === 'en' ? 'bg-flame text-obsidian-950 font-bold' : 'text-slate-400 hover:text-white'
+                      'rounded py-1 text-center font-medium transition-all',
+                      language === 'en'
+                        ? 'bg-flame font-bold text-obsidian-950'
+                        : 'text-slate-400 hover:text-white'
                     )}
                   >
                     English
@@ -559,8 +604,10 @@ export const PostStudio: React.FC = () => {
                     type="button"
                     onClick={() => setLanguage('id')}
                     className={cn(
-                      'py-1 rounded font-medium transition-all text-center',
-                      language === 'id' ? 'bg-flame text-obsidian-950 font-bold' : 'text-slate-400 hover:text-white'
+                      'rounded py-1 text-center font-medium transition-all',
+                      language === 'id'
+                        ? 'bg-flame font-bold text-obsidian-950'
+                        : 'text-slate-400 hover:text-white'
                     )}
                   >
                     Bahasa ID
@@ -569,19 +616,21 @@ export const PostStudio: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-medium text-slate-300 flex items-center gap-1">
-                  <Hash className="w-3 h-3 text-slate-400" />
+                <label className="flex items-center gap-1 text-[11px] font-medium text-slate-300">
+                  <Hash className="h-3 w-3 text-slate-400" />
                   Variasi Draf:
                 </label>
-                <div className="grid grid-cols-3 gap-1 bg-obsidian-900 p-1 rounded-lg border border-border/60 text-[11px]">
+                <div className="grid grid-cols-3 gap-1 rounded-lg border border-border/60 bg-obsidian-900 p-1 text-[11px]">
                   {[1, 3, 5].map((cnt) => (
                     <button
                       key={cnt}
                       type="button"
                       onClick={() => setVariationCount(cnt)}
                       className={cn(
-                        'py-1 rounded font-mono font-medium transition-all text-center',
-                        variationCount === cnt ? 'bg-flame text-obsidian-950 font-bold' : 'text-slate-400 hover:text-white'
+                        'rounded py-1 text-center font-mono font-medium transition-all',
+                        variationCount === cnt
+                          ? 'bg-flame font-bold text-obsidian-950'
+                          : 'text-slate-400 hover:text-white'
                       )}
                     >
                       {cnt}x
@@ -596,20 +645,22 @@ export const PostStudio: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-[11px] text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors"
+                className="flex items-center gap-1 text-[11px] text-slate-400 transition-colors hover:text-slate-200"
               >
-                <Sliders className="w-3 h-3 text-flame" />
-                <span>{showAdvanced ? 'Sembunyikan Custom Prompt' : '+ Kustomisasi Prompt Tambahan'}</span>
+                <Sliders className="h-3 w-3 text-flame" />
+                <span>
+                  {showAdvanced ? 'Sembunyikan Custom Prompt' : '+ Kustomisasi Prompt Tambahan'}
+                </span>
               </button>
 
               {showAdvanced && (
-                <div className="mt-2 animate-in fade-in duration-200">
+                <div className="animate-in fade-in mt-2 duration-200">
                   <textarea
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
                     placeholder="Instruksi tambahan untuk AI (misal: 'Sertakan analogi tentang mobil F1' atau 'Buat nada agak sarkas')..."
                     rows={2}
-                    className="w-full rounded-lg bg-obsidian-900 border border-border/80 p-2.5 text-[11px] text-white placeholder:text-slate-500 focus:outline-none focus:border-flame"
+                    className="w-full rounded-lg border border-border/80 bg-obsidian-900 p-2.5 text-[11px] text-white placeholder:text-slate-500 focus:border-flame focus:outline-none"
                   />
                 </div>
               )}
@@ -621,20 +672,20 @@ export const PostStudio: React.FC = () => {
               onClick={handleGenerate}
               disabled={isGenerating || !keyword.trim()}
               className={cn(
-                'w-full mt-2 py-3 rounded-lg font-heading font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md',
+                'mt-2 flex w-full items-center justify-center gap-2 rounded-lg py-3 font-heading text-xs font-bold shadow-md transition-all',
                 isGenerating || !keyword.trim()
-                  ? 'bg-obsidian-800 text-slate-500 cursor-not-allowed border border-border/50'
+                  ? 'cursor-not-allowed border border-border/50 bg-obsidian-800 text-slate-500'
                   : 'bg-gradient-to-r from-flame via-amber-500 to-flame text-obsidian-950 hover:brightness-110 active:scale-[0.99]'
               )}
             >
               {isGenerating ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="h-4 w-4 animate-spin" />
                   <span>Meracik Draf Konten dengan AI...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="h-4 w-4" />
                   <span>⚡ Generate {variationCount} Draf Postingan AI</span>
                 </>
               )}
@@ -643,29 +694,33 @@ export const PostStudio: React.FC = () => {
         </div>
 
         {/* Right Column: Variations Gallery, Live Preview & Fleet Publisher (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-5">
+        <div className="flex flex-col gap-5 lg:col-span-7">
           {/* Section: Generated Draft Variations */}
-          <div className="rounded-xl border border-border/80 bg-obsidian-850 p-5 flex flex-col gap-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-border/60">
+          <div className="flex flex-col gap-4 rounded-xl border border-border/80 bg-obsidian-850 p-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                <FileText className="w-4 h-4 text-emerald" />
+                <FileText className="h-4 w-4 text-emerald" />
                 <span>2. Hasil Variasi Draf Postingan</span>
               </div>
               {activeProviderUsed && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald/10 text-emerald border border-emerald/30">
+                <span className="rounded border border-emerald/30 bg-emerald/10 px-2 py-0.5 font-mono text-[10px] text-emerald">
                   {activeProviderUsed}
                 </span>
               )}
             </div>
 
             {generatedDrafts.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border/80 bg-obsidian-900/50 p-8 text-center flex flex-col items-center justify-center gap-2.5">
-                <div className="w-10 h-10 rounded-full bg-obsidian-800 border border-slate-700 flex items-center justify-center text-slate-400">
-                  <Sparkles className="w-5 h-5 text-flame opacity-70" />
+              <div className="flex flex-col items-center justify-center gap-2.5 rounded-lg border border-dashed border-border/80 bg-obsidian-900/50 p-8 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-obsidian-800 text-slate-400">
+                  <Sparkles className="h-5 w-5 text-flame opacity-70" />
                 </div>
-                <div className="text-xs font-semibold text-slate-300">Belum Ada Draf yang Dihasilkan</div>
-                <p className="text-[11px] text-slate-500 max-w-sm">
-                  Ketik kata kunci di sebelah kiri lalu klik <strong>"Generate Draf Postingan AI"</strong> untuk menghasilkan variasi tweet berkualitas tinggi.
+                <div className="text-xs font-semibold text-slate-300">
+                  Belum Ada Draf yang Dihasilkan
+                </div>
+                <p className="max-w-sm text-[11px] text-slate-500">
+                  Ketik kata kunci di sebelah kiri lalu klik{' '}
+                  <strong>"Generate Draf Postingan AI"</strong> untuk menghasilkan variasi tweet
+                  berkualitas tinggi.
                 </p>
               </div>
             ) : (
@@ -677,25 +732,25 @@ export const PostStudio: React.FC = () => {
                     <div
                       key={idx}
                       className={cn(
-                        'rounded-lg border p-3.5 flex flex-col gap-2.5 transition-all relative group',
+                        'group relative flex flex-col gap-2.5 rounded-lg border p-3.5 transition-all',
                         isSelected
                           ? 'border-flame/70 bg-obsidian-800 shadow-md ring-1 ring-flame/30'
-                          : 'border-border/60 bg-obsidian-900/80 hover:bg-obsidian-800/80 hover:border-slate-600'
+                          : 'border-border/60 bg-obsidian-900/80 hover:border-slate-600 hover:bg-obsidian-800/80'
                       )}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono font-bold text-flame bg-flame/10 px-2 py-0.5 rounded">
+                        <span className="rounded bg-flame/10 px-2 py-0.5 font-mono text-[10px] font-bold text-flame">
                           Variasi #{idx + 1}
                         </span>
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
-                              'text-[10px] font-mono px-1.5 py-0.2 rounded',
+                              'py-0.2 rounded px-1.5 font-mono text-[10px]',
                               count <= 240
-                                ? 'text-emerald bg-emerald/10'
+                                ? 'bg-emerald/10 text-emerald'
                                 : count <= 280
-                                ? 'text-amber-300 bg-amber-500/10'
-                                : 'text-rose-400 bg-rose-500/10 font-bold'
+                                  ? 'bg-amber-500/10 text-amber-300'
+                                  : 'bg-rose-500/10 font-bold text-rose-400'
                             )}
                           >
                             {count}/280 chars
@@ -703,19 +758,19 @@ export const PostStudio: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleCopyDraft(draft, idx)}
-                            className="p-1 rounded bg-obsidian-750 hover:bg-obsidian-700 text-slate-400 hover:text-white transition-colors"
+                            className="rounded bg-obsidian-750 p-1 text-slate-400 transition-colors hover:bg-obsidian-700 hover:text-white"
                             title="Salin teks"
                           >
                             {copiedIndex === idx ? (
-                              <Check className="w-3.5 h-3.5 text-emerald" />
+                              <Check className="h-3.5 w-3.5 text-emerald" />
                             ) : (
-                              <Copy className="w-3.5 h-3.5" />
+                              <Copy className="h-3.5 w-3.5" />
                             )}
                           </button>
                         </div>
                       </div>
 
-                      <p className="text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">
+                      <p className="whitespace-pre-wrap text-xs leading-relaxed text-slate-200">
                         {draft}
                       </p>
 
@@ -727,21 +782,21 @@ export const PostStudio: React.FC = () => {
                             toast.info(`Variasi #${idx + 1} dimuat ke Editor Preview.`);
                           }}
                           className={cn(
-                            'text-[11px] font-medium px-3 py-1 rounded flex items-center gap-1.5 transition-all',
+                            'flex items-center gap-1.5 rounded px-3 py-1 text-[11px] font-medium transition-all',
                             isSelected
-                              ? 'bg-flame text-obsidian-950 font-bold'
-                              : 'bg-obsidian-750 hover:bg-obsidian-700 text-slate-300 hover:text-white border border-border/50'
+                              ? 'bg-flame font-bold text-obsidian-950'
+                              : 'border border-border/50 bg-obsidian-750 text-slate-300 hover:bg-obsidian-700 hover:text-white'
                           )}
                         >
                           {isSelected ? (
                             <>
-                              <Check className="w-3 h-3" />
+                              <Check className="h-3 w-3" />
                               <span>Sedang Dipilih</span>
                             </>
                           ) : (
                             <>
                               <span>Gunakan Draf Ini</span>
-                              <ArrowRight className="w-3 h-3" />
+                              <ArrowRight className="h-3 w-3" />
                             </>
                           )}
                         </button>
@@ -754,38 +809,42 @@ export const PostStudio: React.FC = () => {
           </div>
 
           {/* Section: Live Preview, Editor & Fleet Dispatcher */}
-          <div className="rounded-xl border border-border/80 bg-obsidian-850 p-5 flex flex-col gap-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-border/60">
+          <div className="flex flex-col gap-4 rounded-xl border border-border/80 bg-obsidian-850 p-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                <Send className="w-4 h-4 text-blue-400" />
+                <Send className="h-4 w-4 text-blue-400" />
                 <span>3. Live Tweet Editor & Fleet Dispatcher</span>
               </div>
-              <span className="text-[10px] font-mono text-slate-400">Step 3</span>
+              <span className="font-mono text-[10px] text-slate-400">Step 3</span>
             </div>
 
             {/* Live Tweet Mockup Card */}
             <div className="rounded-xl border border-slate-700/80 bg-obsidian-950 p-4 shadow-inner">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-obsidian-800 border border-slate-700 overflow-hidden shrink-0 flex items-center justify-center font-bold text-xs text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-700 bg-obsidian-800 text-xs font-bold text-white">
                   {selectedAccount?.avatar ? (
-                    <img src={selectedAccount.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    <img
+                      src={selectedAccount.avatar}
+                      alt="Avatar"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     (selectedAccount?.name || 'X')[0]?.toUpperCase() || 'X'
                   )}
                 </div>
 
-                <div className="flex-1 flex flex-col gap-2">
+                <div className="flex flex-1 flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-bold text-white">
                         {selectedAccount?.name || selectedAccount?.label || 'Node User'}
                       </span>
-                      <span className="text-[11px] text-slate-500 font-mono">
+                      <span className="font-mono text-[11px] text-slate-500">
                         @{selectedAccount?.username || 'handle'}
                       </span>
                       <span className="text-[10px] text-slate-600">· now</span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-obsidian-800 text-slate-400 border border-border/40">
+                    <span className="rounded border border-border/40 bg-obsidian-800 px-2 py-0.5 font-mono text-[10px] text-slate-400">
                       Live Preview
                     </span>
                   </div>
@@ -796,24 +855,31 @@ export const PostStudio: React.FC = () => {
                     onChange={(e) => setActiveDraftText(e.target.value)}
                     placeholder="Tulis atau edit postingan di sini sebelum dipublikasikan..."
                     rows={4}
-                    className="w-full rounded-lg bg-obsidian-900 border border-border/70 p-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-flame transition-all resize-y leading-relaxed font-sans"
+                    className="w-full resize-y rounded-lg border border-border/70 bg-obsidian-900 p-3 font-sans text-xs leading-relaxed text-white transition-all placeholder:text-slate-600 focus:border-flame focus:outline-none"
                   />
 
                   {/* Attached Media Previews */}
                   {attachedMedia.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="mt-2 grid grid-cols-2 gap-2">
                       {attachedMedia.map((media, idx) => (
-                        <div key={idx} className="relative rounded-lg overflow-hidden border border-slate-700 bg-obsidian-900 group aspect-video flex items-center justify-center">
-                          <img src={media.previewUrl} alt={media.filename} className="w-full h-full object-cover" />
+                        <div
+                          key={idx}
+                          className="group relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-slate-700 bg-obsidian-900"
+                        >
+                          <img
+                            src={media.previewUrl}
+                            alt={media.filename}
+                            className="h-full w-full object-cover"
+                          />
                           <button
                             type="button"
                             onClick={() => handleRemoveMedia(idx)}
-                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-obsidian-950/80 text-white flex items-center justify-center hover:bg-rose-600 transition-colors shadow-md"
+                            className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-obsidian-950/80 text-white shadow-md transition-colors hover:bg-rose-600"
                             title="Hapus gambar"
                           >
-                            <X className="w-3.5 h-3.5" />
+                            <X className="h-3.5 w-3.5" />
                           </button>
-                          <span className="absolute bottom-1 left-1.5 text-[9px] font-mono px-1.5 py-0.5 rounded bg-obsidian-950/70 text-slate-300">
+                          <span className="absolute bottom-1 left-1.5 rounded bg-obsidian-950/70 px-1.5 py-0.5 font-mono text-[9px] text-slate-300">
                             {media.sizeKb} KB
                           </span>
                         </div>
@@ -822,7 +888,7 @@ export const PostStudio: React.FC = () => {
                   )}
 
                   {/* Character Counter & Helper Buttons */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono pt-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-[11px]">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <input
                         type="file"
@@ -836,10 +902,14 @@ export const PostStudio: React.FC = () => {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploadingMedia || attachedMedia.length >= 4}
-                        className="px-2.5 py-1 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[10px] hover:bg-blue-500/25 transition-colors flex items-center gap-1"
+                        className="flex items-center gap-1 rounded border border-blue-500/30 bg-blue-500/15 px-2.5 py-1 text-[10px] text-blue-300 transition-colors hover:bg-blue-500/25"
                       >
-                        <ImageIcon className="w-3 h-3 text-blue-400" />
-                        <span>{isUploadingMedia ? 'Uploading...' : `+ Gambar (${attachedMedia.length}/4)`}</span>
+                        <ImageIcon className="h-3 w-3 text-blue-400" />
+                        <span>
+                          {isUploadingMedia
+                            ? 'Uploading...'
+                            : `+ Gambar (${attachedMedia.length}/4)`}
+                        </span>
                       </button>
 
                       <span className="text-slate-500">
@@ -854,11 +924,14 @@ export const PostStudio: React.FC = () => {
                           type="button"
                           onClick={() => {
                             setActiveDraftText(
-                              activeDraftText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim()
+                              activeDraftText
+                                .replace(/[\r\n]+/g, ' ')
+                                .replace(/\s+/g, ' ')
+                                .trim()
                             );
                             toast.success('Newline diubah menjadi spasi (1 baris).');
                           }}
-                          className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] hover:bg-amber-500/25 transition-colors"
+                          className="rounded border border-amber-500/30 bg-amber-500/15 px-2 py-0.5 text-[10px] text-amber-300 transition-colors hover:bg-amber-500/25"
                         >
                           ⚡ 1 Baris
                         </button>
@@ -866,12 +939,12 @@ export const PostStudio: React.FC = () => {
                     </div>
                     <span
                       className={cn(
-                        'font-bold px-2 py-0.5 rounded',
+                        'rounded px-2 py-0.5 font-bold',
                         charCount <= 240
-                          ? 'text-emerald bg-emerald/10'
+                          ? 'bg-emerald/10 text-emerald'
                           : charCount <= 280
-                          ? 'text-amber-300 bg-amber-500/10'
-                          : 'text-rose-400 bg-rose-500/20'
+                            ? 'bg-amber-500/10 text-amber-300'
+                            : 'bg-rose-500/20 text-rose-400'
                       )}
                     >
                       {charCount} / {charLimit}
@@ -883,32 +956,32 @@ export const PostStudio: React.FC = () => {
 
             {/* Target Account Selection Mode */}
             <div className="flex flex-col gap-2 pt-1">
-              <label className="text-xs font-medium text-slate-300 flex items-center justify-between">
+              <label className="flex items-center justify-between text-xs font-medium text-slate-300">
                 <span>Target Armada Akun (Fleet Target):</span>
-                <span className="text-[10px] font-mono text-emerald">
+                <span className="font-mono text-[10px] text-emerald">
                   {activeAccounts.length} Node Siap
                 </span>
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => setSelectedAccountMode('all')}
                   className={cn(
-                    'flex flex-col p-3 rounded-lg border text-left transition-all',
+                    'flex flex-col rounded-lg border p-3 text-left transition-all',
                     selectedAccountMode === 'all'
-                      ? 'border-flame bg-flame/10 text-white font-medium shadow-sm'
-                      : 'border-border/60 bg-obsidian-900/60 hover:bg-obsidian-800 text-slate-400 hover:text-white'
+                      ? 'border-flame bg-flame/10 font-medium text-white shadow-sm'
+                      : 'border-border/60 bg-obsidian-900/60 text-slate-400 hover:bg-obsidian-800 hover:text-white'
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold flex items-center gap-1.5">
-                      <Flame className="w-3.5 h-3.5 text-flame" />
+                    <span className="flex items-center gap-1.5 text-xs font-bold">
+                      <Flame className="h-3.5 w-3.5 text-flame" />
                       Semua Node Aktif ({activeAccounts.length}x)
                     </span>
-                    {selectedAccountMode === 'all' && <Check className="w-3.5 h-3.5 text-flame" />}
+                    {selectedAccountMode === 'all' && <Check className="h-3.5 w-3.5 text-flame" />}
                   </div>
-                  <span className="text-[10px] text-slate-400 mt-1">
+                  <span className="mt-1 text-[10px] text-slate-400">
                     {generatedDrafts.length > 1
                       ? 'Distribusi variasi unik untuk tiap akun'
                       : 'Broadcast draf yang sama ke semua node'}
@@ -924,20 +997,21 @@ export const PostStudio: React.FC = () => {
                     }
                   }}
                   className={cn(
-                    'flex flex-col p-3 rounded-lg border text-left transition-all',
+                    'flex flex-col rounded-lg border p-3 text-left transition-all',
                     selectedAccountMode === 'single'
-                      ? 'border-flame bg-flame/10 text-white font-medium shadow-sm'
-                      : 'border-border/60 bg-obsidian-900/60 hover:bg-obsidian-800 text-slate-400 hover:text-white'
+                      ? 'border-flame bg-flame/10 font-medium text-white shadow-sm'
+                      : 'border-border/60 bg-obsidian-900/60 text-slate-400 hover:bg-obsidian-800 hover:text-white'
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-blue-400" />
-                      1 Akun Spesifik Saja
+                    <span className="flex items-center gap-1.5 text-xs font-bold">
+                      <Layers className="h-3.5 w-3.5 text-blue-400" />1 Akun Spesifik Saja
                     </span>
-                    {selectedAccountMode === 'single' && <Check className="w-3.5 h-3.5 text-flame" />}
+                    {selectedAccountMode === 'single' && (
+                      <Check className="h-3.5 w-3.5 text-flame" />
+                    )}
                   </div>
-                  <span className="text-[10px] text-slate-400 mt-1">
+                  <span className="mt-1 text-[10px] text-slate-400">
                     Pilih salah satu node akun secara manual
                   </span>
                 </button>
@@ -945,15 +1019,16 @@ export const PostStudio: React.FC = () => {
 
               {/* Single Account Dropdown if selected */}
               {selectedAccountMode === 'single' && (
-                <div className="mt-1 animate-in fade-in duration-200">
+                <div className="animate-in fade-in mt-1 duration-200">
                   <select
                     value={singleAccountId}
                     onChange={(e) => setSingleAccountId(e.target.value)}
-                    className="w-full rounded-lg bg-obsidian-900 border border-border/80 px-3 py-2 text-xs text-white focus:outline-none focus:border-flame"
+                    className="w-full rounded-lg border border-border/80 bg-obsidian-900 px-3 py-2 text-xs text-white focus:border-flame focus:outline-none"
                   >
                     {activeAccounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
-                        {acc.label} (@{acc.username || 'unknown'}) {acc.proxy ? `[Proxy]` : `[Direct]`}
+                        {acc.label} (@{acc.username || 'unknown'}){' '}
+                        {acc.proxy ? `[Proxy]` : `[Direct]`}
                       </option>
                     ))}
                   </select>
@@ -963,12 +1038,14 @@ export const PostStudio: React.FC = () => {
 
             {/* Delay & Safety Setting */}
             {selectedAccountMode === 'all' && activeAccounts.length > 1 && (
-              <div className="flex items-center justify-between p-3 rounded-lg bg-obsidian-900/70 border border-border/60">
+              <div className="flex items-center justify-between rounded-lg border border-border/60 bg-obsidian-900/70 p-3">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald" />
+                  <ShieldCheck className="h-4 w-4 text-emerald" />
                   <div>
                     <div className="text-xs font-medium text-slate-200">Jeda Rotasi Antar Node</div>
-                    <div className="text-[10px] text-slate-500">Mencegah rate-limit dan deteksi anti-spam</div>
+                    <div className="text-[10px] text-slate-500">
+                      Mencegah rate-limit dan deteksi anti-spam
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -978,57 +1055,72 @@ export const PostStudio: React.FC = () => {
                     max={120}
                     value={switchDelaySec}
                     onChange={(e) => setSwitchDelaySec(parseInt(e.target.value, 10) || 15)}
-                    className="w-16 text-center rounded bg-obsidian-800 border border-border/80 px-2 py-1 text-xs font-mono font-bold text-flame"
+                    className="w-16 rounded border border-border/80 bg-obsidian-800 px-2 py-1 text-center font-mono text-xs font-bold text-flame"
                   />
-                  <span className="text-xs font-mono text-slate-400">detik</span>
+                  <span className="font-mono text-xs text-slate-400">detik</span>
                 </div>
               </div>
             )}
 
             {/* Warning if over limit */}
             {isOverLimit && (
-              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center gap-2 text-rose-300 text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>Panjang postingan melebihi 280 karakter. Mohon edit agar tidak gagal saat diposting.</span>
+              <div className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>
+                  Panjang postingan melebihi 280 karakter. Mohon edit agar tidak gagal saat
+                  diposting.
+                </span>
               </div>
             )}
 
             {/* Action Buttons: Publish Now & Schedule */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+            <div className="flex flex-col items-center gap-2 pt-1 sm:flex-row">
               <button
                 type="button"
                 onClick={() => setIsScheduleModalOpen(true)}
                 disabled={!activeDraftText.trim() || isOverLimit || activeAccounts.length === 0}
                 className={cn(
-                  'w-full sm:w-auto px-4 py-3.5 rounded-lg font-heading font-bold text-xs flex items-center justify-center gap-2 transition-all border',
+                  'flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-3.5 font-heading text-xs font-bold transition-all sm:w-auto',
                   !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0
-                    ? 'border-border/40 text-slate-600 bg-obsidian-900 cursor-not-allowed'
+                    ? 'cursor-not-allowed border-border/40 bg-obsidian-900 text-slate-600'
                     : 'border-purple-500/50 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:text-white'
                 )}
               >
-                <Calendar className="w-4 h-4 text-purple-400" />
+                <Calendar className="h-4 w-4 text-purple-400" />
                 <span>Jadwalkan Post</span>
               </button>
 
               <button
                 type="button"
                 onClick={handlePublish}
-                disabled={isPublishing || isRunning || !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0}
+                disabled={
+                  isPublishing ||
+                  isRunning ||
+                  !activeDraftText.trim() ||
+                  isOverLimit ||
+                  activeAccounts.length === 0
+                }
                 className={cn(
-                  'flex-1 w-full py-3.5 rounded-lg font-heading font-bold text-xs flex items-center justify-center gap-2.5 transition-all shadow-lg',
-                  isPublishing || isRunning || !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0
-                    ? 'bg-obsidian-800 text-slate-500 cursor-not-allowed border border-border/40'
+                  'flex w-full flex-1 items-center justify-center gap-2.5 rounded-lg py-3.5 font-heading text-xs font-bold shadow-lg transition-all',
+                  isPublishing ||
+                    isRunning ||
+                    !activeDraftText.trim() ||
+                    isOverLimit ||
+                    activeAccounts.length === 0
+                    ? 'cursor-not-allowed border border-border/40 bg-obsidian-800 text-slate-500'
                     : 'bg-gradient-to-r from-blue-600 via-flame to-amber-500 text-obsidian-950 hover:brightness-110 active:scale-[0.99]'
                 )}
               >
                 {isPublishing || isRunning ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-obsidian-950" />
-                    <span>{isRunning ? 'Engine Sedang Berjalan...' : 'Memulai Publikasi ke X...'}</span>
+                    <RefreshCw className="h-4 w-4 animate-spin text-obsidian-950" />
+                    <span>
+                      {isRunning ? 'Engine Sedang Berjalan...' : 'Memulai Publikasi ke X...'}
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4" />
+                    <Send className="h-4 w-4" />
                     <span>
                       {selectedAccountMode === 'all'
                         ? `🚀 Luncurkan ke ${activeAccounts.length} Node Sekarang`
@@ -1044,57 +1136,72 @@ export const PostStudio: React.FC = () => {
 
       {/* Schedule Post Modal */}
       {isScheduleModalOpen && (
-        <div className="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <div className="rounded-xl border border-slate-700 bg-obsidian-850 max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-2 border-b border-border/60">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-obsidian-950/80 p-4 backdrop-blur-sm">
+          <div className="flex w-full max-w-md flex-col gap-4 rounded-xl border border-slate-700 bg-obsidian-850 p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border/60 pb-2">
               <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <Calendar className="w-4 h-4 text-purple-400" />
+                <Calendar className="h-4 w-4 text-purple-400" />
                 <span>Jadwalkan Waktu Publikasi Postingan</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsScheduleModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white rounded"
+                className="rounded p-1 text-slate-400 hover:text-white"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="flex flex-col gap-3 text-xs">
               <div>
-                <label className="text-slate-300 font-medium mb-1 block">Label / Judul Jadwal (Opsional):</label>
+                <label className="mb-1 block font-medium text-slate-300">
+                  Label / Judul Jadwal (Opsional):
+                </label>
                 <input
                   type="text"
                   value={scheduleTitle}
                   onChange={(e) => setScheduleTitle(e.target.value)}
                   placeholder="Misal: Crypto Morning Alpha Post"
-                  className="w-full rounded bg-obsidian-900 border border-border/80 p-2 text-white focus:outline-none focus:border-purple-400"
+                  className="w-full rounded border border-border/80 bg-obsidian-900 p-2 text-white focus:border-purple-400 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-medium mb-1 block">Pilih Waktu & Tanggal Eksekusi:</label>
+                <label className="mb-1 block font-medium text-slate-300">
+                  Pilih Waktu & Tanggal Eksekusi:
+                </label>
                 <input
                   type="datetime-local"
                   value={scheduleDateTime}
                   onChange={(e) => setScheduleDateTime(e.target.value)}
-                  className="w-full rounded bg-obsidian-900 border border-border/80 p-2 text-white font-mono scheme-dark focus:outline-none focus:border-purple-400"
+                  className="scheme-dark w-full rounded border border-border/80 bg-obsidian-900 p-2 font-mono text-white focus:border-purple-400 focus:outline-none"
                 />
               </div>
 
-              <div className="p-3 rounded bg-obsidian-900/60 border border-border/40 text-[11px] text-slate-400 flex flex-col gap-1">
-                <div className="text-slate-200 font-semibold">Preview Pengiriman:</div>
-                <div>• Target: <strong>{selectedAccountMode === 'all' ? `Semua Node Aktif (${activeAccounts.length} Akun)` : `@${selectedAccount?.username || 'Node'}`}</strong></div>
-                <div>• Lampiran Media: <strong>{attachedMedia.length} file gambar</strong></div>
-                <div>• Cuplikan Teks: <em>"{activeDraftText.slice(0, 50)}..."</em></div>
+              <div className="flex flex-col gap-1 rounded border border-border/40 bg-obsidian-900/60 p-3 text-[11px] text-slate-400">
+                <div className="font-semibold text-slate-200">Preview Pengiriman:</div>
+                <div>
+                  • Target:{' '}
+                  <strong>
+                    {selectedAccountMode === 'all'
+                      ? `Semua Node Aktif (${activeAccounts.length} Akun)`
+                      : `@${selectedAccount?.username || 'Node'}`}
+                  </strong>
+                </div>
+                <div>
+                  • Lampiran Media: <strong>{attachedMedia.length} file gambar</strong>
+                </div>
+                <div>
+                  • Cuplikan Teks: <em>"{activeDraftText.slice(0, 50)}..."</em>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+            <div className="flex items-center justify-end gap-2 border-t border-border/60 pt-2">
               <button
                 type="button"
                 onClick={() => setIsScheduleModalOpen(false)}
-                className="px-3 py-1.5 rounded text-xs text-slate-400 hover:text-white"
+                className="rounded px-3 py-1.5 text-xs text-slate-400 hover:text-white"
               >
                 Batal
               </button>
@@ -1102,9 +1209,13 @@ export const PostStudio: React.FC = () => {
                 type="button"
                 onClick={handleCreateSchedule}
                 disabled={isCreatingSchedule}
-                className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-500"
               >
-                {isCreatingSchedule ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                {isCreatingSchedule ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Clock className="h-3.5 w-3.5" />
+                )}
                 <span>Simpan Jadwal Antrean</span>
               </button>
             </div>
@@ -1114,48 +1225,50 @@ export const PostStudio: React.FC = () => {
 
       {/* Section: Scheduled Post & Task Queue Deck */}
       {schedules.length > 0 && (
-        <div className="rounded-xl border border-border/80 bg-obsidian-850 p-5 flex flex-col gap-3 shadow-md">
-          <div className="flex items-center justify-between pb-2 border-b border-border/60">
+        <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-obsidian-850 p-5 shadow-md">
+          <div className="flex items-center justify-between border-b border-border/60 pb-2">
             <div className="flex items-center gap-2 text-sm font-bold text-white">
-              <Clock className="w-4 h-4 text-purple-400" />
+              <Clock className="h-4 w-4 text-purple-400" />
               <span>Antrean Jadwal Eksekusi Otomatis ({schedules.length})</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-400">Auto-Scheduler 15s</span>
+            <span className="font-mono text-[10px] text-slate-400">Auto-Scheduler 15s</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {schedules.map((sch) => (
               <div
                 key={sch.id}
                 className={cn(
-                  'rounded-lg border p-3 flex flex-col justify-between gap-2.5 transition-all',
+                  'flex flex-col justify-between gap-2.5 rounded-lg border p-3 transition-all',
                   sch.status === 'COMPLETED'
                     ? 'border-emerald/40 bg-obsidian-900/40 opacity-70'
                     : sch.status === 'FAILED'
-                    ? 'border-rose-500/40 bg-obsidian-900/40'
-                    : 'border-border/80 bg-obsidian-900'
+                      ? 'border-rose-500/40 bg-obsidian-900/40'
+                      : 'border-border/80 bg-obsidian-900'
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-white">{sch.title || 'Scheduled Task'}</span>
+                      <span className="text-xs font-bold text-white">
+                        {sch.title || 'Scheduled Task'}
+                      </span>
                       <span
                         className={cn(
-                          'text-[9px] font-mono px-1.5 py-0.2 rounded uppercase font-bold',
+                          'py-0.2 rounded px-1.5 font-mono text-[9px] font-bold uppercase',
                           sch.status === 'COMPLETED'
-                            ? 'text-emerald bg-emerald/10'
+                            ? 'bg-emerald/10 text-emerald'
                             : sch.status === 'FAILED'
-                            ? 'text-rose-400 bg-rose-500/10'
-                            : sch.status === 'RUNNING'
-                            ? 'text-amber-300 bg-amber-500/10 animate-pulse'
-                            : 'text-purple-300 bg-purple-500/10'
+                              ? 'bg-rose-500/10 text-rose-400'
+                              : sch.status === 'RUNNING'
+                                ? 'animate-pulse bg-amber-500/10 text-amber-300'
+                                : 'bg-purple-500/10 text-purple-300'
                         )}
                       >
                         {sch.status}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                    <div className="mt-1 line-clamp-1 text-[11px] text-slate-400">
                       {sch.posts?.[0] || sch.keywords?.join(', ') || '-'}
                     </div>
                   </div>
@@ -1165,29 +1278,37 @@ export const PostStudio: React.FC = () => {
                       type="button"
                       onClick={() => handleToggleSchedule(sch.id)}
                       className={cn(
-                        'p-1.5 rounded text-xs',
+                        'rounded p-1.5 text-xs',
                         sch.enabled
                           ? 'text-emerald hover:bg-emerald/10'
                           : 'text-slate-500 hover:bg-slate-800'
                       )}
                       title={sch.enabled ? 'Pause jadwal' : 'Aktifkan jadwal'}
                     >
-                      {sch.enabled ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+                      {sch.enabled ? (
+                        <Play className="h-3.5 w-3.5" />
+                      ) : (
+                        <Pause className="h-3.5 w-3.5" />
+                      )}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDeleteSchedule(sch.id)}
-                      className="p-1.5 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10"
+                      className="rounded p-1.5 text-slate-500 hover:bg-rose-500/10 hover:text-rose-400"
                       title="Hapus jadwal"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-border/40">
+                <div className="flex items-center justify-between border-t border-border/40 pt-1 font-mono text-[10px] text-slate-500">
                   <span>Waktu: {new Date(sch.scheduledAt).toLocaleString('id-ID')}</span>
-                  <span>{sch.mediaPaths && sch.mediaPaths.length > 0 ? `🖼️ ${sch.mediaPaths.length} gambar` : 'Text only'}</span>
+                  <span>
+                    {sch.mediaPaths && sch.mediaPaths.length > 0
+                      ? `🖼️ ${sch.mediaPaths.length} gambar`
+                      : 'Text only'}
+                  </span>
                 </div>
               </div>
             ))}
@@ -1202,21 +1323,21 @@ export const PostStudio: React.FC = () => {
             <span className="relative flex h-2.5 w-2.5">
               {isRunning ? (
                 <>
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-flame opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-flame" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-flame opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-flame" />
                 </>
               ) : (
                 <>
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald" />
                 </>
               )}
             </span>
-            <span className="font-mono text-xs font-bold text-slate-200 tracking-wider flex items-center gap-1.5">
-              <Terminal className="w-4 h-4 text-flame" />
+            <span className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider text-slate-200">
+              <Terminal className="h-4 w-4 text-flame" />
               LIVE TELEMETRY STREAM
             </span>
-            <span className="text-[10px] font-mono text-slate-500">
+            <span className="font-mono text-[10px] text-slate-500">
               {isRunning ? '(ENGINE ACTIVE / PUBLISHING)' : '(STANDBY / MONITORING)'}
             </span>
           </div>
@@ -1225,9 +1346,9 @@ export const PostStudio: React.FC = () => {
             <button
               type="button"
               onClick={handleStop}
-              className="px-3 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 hover:text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 rounded border border-rose-500/40 bg-rose-500/20 px-3 py-1 font-mono text-xs font-bold text-rose-300 shadow-sm transition-all hover:bg-rose-500/30 hover:text-white active:scale-95"
             >
-              <Square className="w-3 h-3 fill-rose-400" />
+              <Square className="h-3 w-3 fill-rose-400" />
               <span>Hentikan Proses (STOP)</span>
             </button>
           )}

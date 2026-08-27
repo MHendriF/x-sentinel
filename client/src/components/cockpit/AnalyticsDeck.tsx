@@ -65,12 +65,14 @@ export const AnalyticsDeck: React.FC = () => {
   }, [stats, history]);
 
   const totalRetweets = useMemo(() => {
-    if (typeof stats?.totalRetweets === 'number' && stats.totalRetweets > 0) return stats.totalRetweets;
+    if (typeof stats?.totalRetweets === 'number' && stats.totalRetweets > 0)
+      return stats.totalRetweets;
     return history.filter((h) => h.action === 'RETWEET' && h.status === 'SUCCESS').length;
   }, [stats, history]);
 
   const totalComments = useMemo(() => {
-    if (typeof stats?.totalComments === 'number' && stats.totalComments > 0) return stats.totalComments;
+    if (typeof stats?.totalComments === 'number' && stats.totalComments > 0)
+      return stats.totalComments;
     return history.filter((h) => h.action === 'COMMENT' && h.status === 'SUCCESS').length;
   }, [stats, history]);
 
@@ -83,7 +85,10 @@ export const AnalyticsDeck: React.FC = () => {
 
   // Aggregate Data for Daily Trend
   const dailyTrendData = useMemo(() => {
-    const map: Record<string, { date: string; likes: number; retweets: number; comments: number; posts: number }> = {};
+    const map: Record<
+      string,
+      { date: string; likes: number; retweets: number; comments: number; posts: number }
+    > = {};
 
     history.forEach((item) => {
       const dateStr = item.timestamp ? item.timestamp.slice(0, 10) : 'Today';
@@ -99,7 +104,13 @@ export const AnalyticsDeck: React.FC = () => {
     const result = Object.values(map);
     if (result.length === 0) {
       return [
-        { date: 'Today', likes: totalLikes, retweets: totalRetweets, comments: totalComments, posts: totalPosts },
+        {
+          date: 'Today',
+          likes: totalLikes,
+          retweets: totalRetweets,
+          comments: totalComments,
+          posts: totalPosts,
+        },
       ];
     }
     return result.slice(-14);
@@ -107,12 +118,19 @@ export const AnalyticsDeck: React.FC = () => {
 
   // Aggregate Node Workload (All nodes sorted by execution count)
   const fullNodeLeaderboard = useMemo(() => {
-    const counts: Record<string, { name: string; username: string; count: number; avatar?: string }> = {};
+    const counts: Record<
+      string,
+      { name: string; username: string; count: number; avatar?: string }
+    > = {};
 
     // 1. Initialize from registered accounts
     accounts.forEach((acc) => {
       const handle = `@${acc.username || acc.label}`;
-      const accStatsSum = (acc.stats?.likes || 0) + (acc.stats?.retweets || 0) + (acc.stats?.comments || 0) + (acc.stats?.posts || 0);
+      const accStatsSum =
+        (acc.stats?.likes || 0) +
+        (acc.stats?.retweets || 0) +
+        (acc.stats?.comments || 0) +
+        (acc.stats?.posts || 0);
       counts[acc.id] = {
         name: acc.label || acc.username || 'Node',
         username: handle,
@@ -132,7 +150,10 @@ export const AnalyticsDeck: React.FC = () => {
 
     // Merge best accurate count
     const list = Object.entries(counts).map(([key, node]) => {
-      const histCount = historyCountsByAcc[key] || (node.username ? historyCountsByAcc[node.username.replace('@', '')] : 0) || 0;
+      const histCount =
+        historyCountsByAcc[key] ||
+        (node.username ? historyCountsByAcc[node.username.replace('@', '')] : 0) ||
+        0;
       const finalCount = Math.max(node.count, histCount);
       return {
         id: key,
@@ -251,15 +272,16 @@ export const AnalyticsDeck: React.FC = () => {
     <div className="space-y-6">
       {/* Top Header */}
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3">
+        <CardHeader className="flex flex-col justify-between gap-4 pb-3 sm:flex-row sm:items-center">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-flame tracking-wider">
-              <TrendingUp className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+              <TrendingUp className="h-3.5 w-3.5" />
               TELEMETRY & GROWTH ANALYTICS
             </div>
             <CardTitle className="text-xl">Engagement Performance Intelligence</CardTitle>
             <CardDescription>
-              Visualisasi distribusi interaksi, performa cluster node, dan tren pertumbuhan engagement akun Anda.
+              Visualisasi distribusi interaksi, performa cluster node, dan tren pertumbuhan
+              engagement akun Anda.
             </CardDescription>
           </div>
           <Button
@@ -269,96 +291,113 @@ export const AnalyticsDeck: React.FC = () => {
               loadHistory();
               loadAccounts();
             }}
-            className="gap-1.5 text-xs font-mono shrink-0 self-start sm:self-auto"
+            className="shrink-0 gap-1.5 self-start font-mono text-xs sm:self-auto"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className="h-3.5 w-3.5" />
             Refresh Data
           </Button>
         </CardHeader>
       </Card>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="bg-obsidian-850">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <div>
-              <div className="font-mono text-[10px] text-muted-foreground tracking-wider">TOTAL EXECUTIONS</div>
-              <div className="font-heading font-bold text-2xl text-white mt-1">{totalActions}</div>
-              <div className="text-[10px] text-emerald-400 flex items-center gap-1 mt-1 font-mono">
-                <CheckCircle className="w-3 h-3" />
+              <div className="font-mono text-[10px] tracking-wider text-muted-foreground">
+                TOTAL EXECUTIONS
+              </div>
+              <div className="mt-1 font-heading text-2xl font-bold text-white">{totalActions}</div>
+              <div className="mt-1 flex items-center gap-1 font-mono text-[10px] text-emerald-400">
+                <CheckCircle className="h-3 w-3" />
                 {accounts.filter((a) => a.enabled !== false).length} Nodes Active
               </div>
             </div>
-            <div className="p-3 rounded-md bg-flame/10 text-flame">
-              <Activity className="w-6 h-6" />
+            <div className="rounded-md bg-flame/10 p-3 text-flame">
+              <Activity className="h-6 w-6" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-obsidian-850">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <div>
-              <div className="font-mono text-[10px] text-muted-foreground tracking-wider">SUCCESS RATE</div>
-              <div className="font-heading font-bold text-2xl text-emerald-400 mt-1">
+              <div className="font-mono text-[10px] tracking-wider text-muted-foreground">
+                SUCCESS RATE
+              </div>
+              <div className="mt-1 font-heading text-2xl font-bold text-emerald-400">
                 {history.length > 0 ? `${statusBreakdown.successRate}%` : '100%'}
               </div>
-              <div className="text-[10px] text-slate-400 mt-1 font-mono">
+              <div className="mt-1 font-mono text-[10px] text-slate-400">
                 {statusBreakdown.success} sukses / {statusBreakdown.failed} gagal
               </div>
             </div>
-            <div className="p-3 rounded-md bg-emerald-500/10 text-emerald-400">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="rounded-md bg-emerald-500/10 p-3 text-emerald-400">
+              <ShieldCheck className="h-6 w-6" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-obsidian-850">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <div>
-              <div className="font-mono text-[10px] text-muted-foreground tracking-wider">LIKES & REPOSTS</div>
-              <div className="font-heading font-bold text-2xl text-white mt-1">
+              <div className="font-mono text-[10px] tracking-wider text-muted-foreground">
+                LIKES & REPOSTS
+              </div>
+              <div className="mt-1 font-heading text-2xl font-bold text-white">
                 {totalLikes + totalRetweets}
               </div>
-              <div className="text-[10px] text-red-400 font-mono mt-1 flex items-center gap-1">
-                <Heart className="w-3 h-3 fill-red-400/20" /> {totalLikes} Likes · <Repeat className="w-3 h-3 ml-1" /> {totalRetweets} RTs
+              <div className="mt-1 flex items-center gap-1 font-mono text-[10px] text-red-400">
+                <Heart className="h-3 w-3 fill-red-400/20" /> {totalLikes} Likes ·{' '}
+                <Repeat className="ml-1 h-3 w-3" /> {totalRetweets} RTs
               </div>
             </div>
-            <div className="p-3 rounded-md bg-red-500/10 text-red-400">
-              <Heart className="w-6 h-6" />
+            <div className="rounded-md bg-red-500/10 p-3 text-red-400">
+              <Heart className="h-6 w-6" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-obsidian-850">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <div>
-              <div className="font-mono text-[10px] text-muted-foreground tracking-wider">REPLIES & POSTS</div>
-              <div className="font-heading font-bold text-2xl text-amber-400 mt-1">
+              <div className="font-mono text-[10px] tracking-wider text-muted-foreground">
+                REPLIES & POSTS
+              </div>
+              <div className="mt-1 font-heading text-2xl font-bold text-amber-400">
                 {totalComments + totalPosts}
               </div>
-              <div className="text-[10px] text-slate-400 mt-1 font-mono flex items-center gap-1">
-                <MessageSquare className="w-3 h-3 text-blue-400" /> {totalComments} Rep · <Sparkles className="w-3 h-3 text-amber-400 ml-1" /> {totalPosts} Posts
+              <div className="mt-1 flex items-center gap-1 font-mono text-[10px] text-slate-400">
+                <MessageSquare className="h-3 w-3 text-blue-400" /> {totalComments} Rep ·{' '}
+                <Sparkles className="ml-1 h-3 w-3 text-amber-400" /> {totalPosts} Posts
               </div>
             </div>
-            <div className="p-3 rounded-md bg-amber-500/10 text-amber-400">
-              <Sparkles className="w-6 h-6" />
+            <div className="rounded-md bg-amber-500/10 p-3 text-amber-400">
+              <Sparkles className="h-6 w-6" />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* Left: Engagement Activity Velocity Area Chart */}
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
-            <div className="font-mono text-[10px] font-bold text-flame tracking-wider">ACTIVITY VELOCITY</div>
+            <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
+              ACTIVITY VELOCITY
+            </div>
             <CardTitle className="text-base">Interaction Volume Over Timeline</CardTitle>
-            <CardDescription>Grafik tren volume Like, Repost, Reply, dan Postingan per interval waktu.</CardDescription>
+            <CardDescription>
+              Grafik tren volume Like, Repost, Reply, dan Postingan per interval waktu.
+            </CardDescription>
           </CardHeader>
           <CardContent className="h-80 pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dailyTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={dailyTrendData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="likeGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f87171" stopOpacity={0.4} />
@@ -392,11 +431,53 @@ export const AnalyticsDeck: React.FC = () => {
                   itemStyle={{ color: '#ffffff' }}
                   labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', fontFamily: 'Plus Jakarta Sans', paddingTop: '10px' }} />
-                <Area isAnimationActive={false} type="monotone" dataKey="likes" name="Likes" stroke="#f87171" fillOpacity={1} fill="url(#likeGrad)" strokeWidth={2} />
-                <Area isAnimationActive={false} type="monotone" dataKey="retweets" name="Reposts" stroke="#34d399" fillOpacity={1} fill="url(#rtGrad)" strokeWidth={2} />
-                <Area isAnimationActive={false} type="monotone" dataKey="comments" name="Replies" stroke="#60a5fa" fillOpacity={1} fill="url(#replyGrad)" strokeWidth={2} />
-                <Area isAnimationActive={false} type="monotone" dataKey="posts" name="New Posts" stroke="#f59e0b" fillOpacity={1} fill="url(#postGrad)" strokeWidth={2} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: '11px',
+                    fontFamily: 'Plus Jakarta Sans',
+                    paddingTop: '10px',
+                  }}
+                />
+                <Area
+                  isAnimationActive={false}
+                  type="monotone"
+                  dataKey="likes"
+                  name="Likes"
+                  stroke="#f87171"
+                  fillOpacity={1}
+                  fill="url(#likeGrad)"
+                  strokeWidth={2}
+                />
+                <Area
+                  isAnimationActive={false}
+                  type="monotone"
+                  dataKey="retweets"
+                  name="Reposts"
+                  stroke="#34d399"
+                  fillOpacity={1}
+                  fill="url(#rtGrad)"
+                  strokeWidth={2}
+                />
+                <Area
+                  isAnimationActive={false}
+                  type="monotone"
+                  dataKey="comments"
+                  name="Replies"
+                  stroke="#60a5fa"
+                  fillOpacity={1}
+                  fill="url(#replyGrad)"
+                  strokeWidth={2}
+                />
+                <Area
+                  isAnimationActive={false}
+                  type="monotone"
+                  dataKey="posts"
+                  name="New Posts"
+                  stroke="#f59e0b"
+                  fillOpacity={1}
+                  fill="url(#postGrad)"
+                  strokeWidth={2}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -404,34 +485,41 @@ export const AnalyticsDeck: React.FC = () => {
 
         {/* Right: Node Workload Share Donut Chart & Leaderboard */}
         <Card className="flex flex-col">
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
-              <div className="font-mono text-[10px] font-bold text-flame tracking-wider">CLUSTER BALANCE</div>
+              <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
+                CLUSTER BALANCE
+              </div>
               <CardTitle className="text-base">Node Workload Share</CardTitle>
               <CardDescription>
                 {fullNodeLeaderboard.length} node terdaftar ({totalNodeWorkload} total eksekusi)
               </CardDescription>
             </div>
             {fullNodeLeaderboard.length > 5 && (
-              <Badge variant="outline" className="font-mono text-[10px] border-amber-500/30 text-amber-400">
+              <Badge
+                variant="outline"
+                className="border-amber-500/30 font-mono text-[10px] text-amber-400"
+              >
                 Top 5 + Others
               </Badge>
             )}
           </CardHeader>
 
-          <CardContent className="flex-1 flex flex-col pt-1 space-y-4">
+          <CardContent className="flex flex-1 flex-col space-y-4 pt-1">
             {donutChartData.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
-                <PieIcon className="w-10 h-10 stroke-[1.5] mb-2 opacity-40 text-flame" />
-                <div className="text-xs font-mono font-medium text-slate-400">Belum Ada Eksekusi Node</div>
-                <p className="text-[11px] text-slate-500 mt-1 max-w-[200px]">
+              <div className="flex flex-1 flex-col items-center justify-center p-6 text-center text-slate-500">
+                <PieIcon className="mb-2 h-10 w-10 stroke-[1.5] text-flame opacity-40" />
+                <div className="font-mono text-xs font-medium text-slate-400">
+                  Belum Ada Eksekusi Node
+                </div>
+                <p className="mt-1 max-w-[200px] text-[11px] text-slate-500">
                   Jalankan interaksi di Target Workbench untuk melihat pembagian beban kerja.
                 </p>
               </div>
             ) : (
               <>
                 {/* Donut Chart with Centered Metric */}
-                <div className="h-44 relative flex items-center justify-center overflow-hidden">
+                <div className="relative flex h-44 items-center justify-center overflow-hidden">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -445,7 +533,12 @@ export const AnalyticsDeck: React.FC = () => {
                         dataKey="value"
                       >
                         {donutChartData.map((entry, index) => (
-                          <Cell key={`donut-cell-${index}`} fill={entry.color} stroke="#0e1117" strokeWidth={2} />
+                          <Cell
+                            key={`donut-cell-${index}`}
+                            fill={entry.color}
+                            stroke="#0e1117"
+                            strokeWidth={2}
+                          />
                         ))}
                       </Pie>
                       <Tooltip
@@ -468,11 +561,11 @@ export const AnalyticsDeck: React.FC = () => {
                   </ResponsiveContainer>
 
                   {/* Centered Donut Label */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="font-heading font-bold text-lg text-white leading-none">
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-heading text-lg font-bold leading-none text-white">
                       {totalNodeWorkload}
                     </span>
-                    <span className="font-mono text-[8px] text-muted-foreground tracking-wider mt-0.5">
+                    <span className="mt-0.5 font-mono text-[8px] tracking-wider text-muted-foreground">
                       RUNS
                     </span>
                   </div>
@@ -480,44 +573,42 @@ export const AnalyticsDeck: React.FC = () => {
 
                 {/* Node Share Scrollable Breakdown List */}
                 <div className="border-t border-border/60 pt-3">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground mb-2">
+                  <div className="mb-2 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1 font-bold">
-                      <Users className="w-3 h-3 text-flame" /> NODE LEADERBOARD
+                      <Users className="h-3 w-3 text-flame" /> NODE LEADERBOARD
                     </span>
                     <span>{fullNodeLeaderboard.length} Nodes</span>
                   </div>
 
-                  <div className="max-h-36 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  <div className="custom-scrollbar max-h-36 space-y-2 overflow-y-auto pr-1">
                     {fullNodeLeaderboard.map((node, index) => {
                       const percentage =
                         totalNodeWorkload > 0
                           ? Math.round((node.value / totalNodeWorkload) * 100)
                           : 0;
                       const color =
-                        index < 5
-                          ? NODE_PALETTE[index % NODE_PALETTE.length]
-                          : OTHERS_COLOR;
+                        index < 5 ? NODE_PALETTE[index % NODE_PALETTE.length] : OTHERS_COLOR;
 
                       return (
                         <div
                           key={node.id}
-                          className="flex items-center justify-between gap-2 p-1.5 rounded-md bg-obsidian-950/60 border border-border/40 hover:border-border transition-colors text-xs"
+                          className="flex items-center justify-between gap-2 rounded-md border border-border/40 bg-obsidian-950/60 p-1.5 text-xs transition-colors hover:border-border"
                         >
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <div className="flex min-w-0 flex-1 items-center gap-2">
                             <div
-                              className="w-2 h-2 rounded-full shrink-0"
+                              className="h-2 w-2 shrink-0 rounded-full"
                               style={{ backgroundColor: color }}
                             />
-                            <span className="font-mono font-medium text-slate-200 truncate">
+                            <span className="truncate font-mono font-medium text-slate-200">
                               {node.name}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0 font-mono text-[11px]">
-                            <span className="text-slate-300 font-semibold">{node.value} runs</span>
+                          <div className="flex shrink-0 items-center gap-2 font-mono text-[11px]">
+                            <span className="font-semibold text-slate-300">{node.value} runs</span>
                             <Badge
                               variant="secondary"
-                              className="text-[9px] px-1.5 py-0 h-4 bg-obsidian-800 text-slate-200 font-mono font-bold"
+                              className="h-4 bg-obsidian-800 px-1.5 py-0 font-mono text-[9px] font-bold text-slate-200"
                             >
                               {percentage}%
                             </Badge>
@@ -535,10 +626,10 @@ export const AnalyticsDeck: React.FC = () => {
 
       {/* Action Vector Breakdown Bar Chart & Metrics */}
       <Card>
-        <CardHeader className="pb-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <CardHeader className="flex flex-col justify-between gap-3 pb-3 md:flex-row md:items-center">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-flame tracking-wider">
-              <Layers className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+              <Layers className="h-3.5 w-3.5" />
               VECTOR BREAKDOWN & METRICS
             </div>
             <CardTitle className="text-base">Cumulative Vector Totals</CardTitle>
@@ -549,34 +640,34 @@ export const AnalyticsDeck: React.FC = () => {
 
           {/* Simplified Quick Stat Badges */}
           <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold">
-              <Heart className="w-3 h-3 fill-red-400/20" />
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400">
+              <Heart className="h-3 w-3 fill-red-400/20" />
               <span className="text-white">{totalLikes}</span>
-              <span className="text-[10px] text-slate-400 font-normal">Likes</span>
+              <span className="text-[10px] font-normal text-slate-400">Likes</span>
             </span>
 
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-              <Repeat className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
+              <Repeat className="h-3 w-3" />
               <span className="text-white">{totalRetweets}</span>
-              <span className="text-[10px] text-slate-400 font-normal">Reposts</span>
+              <span className="text-[10px] font-normal text-slate-400">Reposts</span>
             </span>
 
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold">
-              <MessageSquare className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-400">
+              <MessageSquare className="h-3 w-3" />
               <span className="text-white">{totalComments}</span>
-              <span className="text-[10px] text-slate-400 font-normal">Replies</span>
+              <span className="text-[10px] font-normal text-slate-400">Replies</span>
             </span>
 
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold">
-              <Sparkles className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-400">
+              <Sparkles className="h-3 w-3" />
               <span className="text-white">{totalPosts}</span>
-              <span className="text-[10px] text-slate-400 font-normal">Posts</span>
+              <span className="text-[10px] font-normal text-slate-400">Posts</span>
             </span>
 
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-obsidian-950 text-slate-300 border border-border/80 text-xs font-semibold">
-              <Activity className="w-3 h-3 text-slate-400" />
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-obsidian-950 px-2.5 py-1 text-xs font-semibold text-slate-300">
+              <Activity className="h-3 w-3 text-slate-400" />
               <span className="text-white">{totalActions}</span>
-              <span className="text-[10px] text-slate-500 font-normal">Total</span>
+              <span className="text-[10px] font-normal text-slate-500">Total</span>
             </span>
           </div>
         </CardHeader>
@@ -585,7 +676,7 @@ export const AnalyticsDeck: React.FC = () => {
           {/* Proportion Stack Bar */}
           {totalActions > 0 && (
             <div className="space-y-1.5">
-              <div className="h-2.5 w-full rounded-full overflow-hidden flex bg-obsidian-950 border border-border/80">
+              <div className="flex h-2.5 w-full overflow-hidden rounded-full border border-border/80 bg-obsidian-950">
                 <div
                   style={{ width: `${vectorBreakdownData[0].percentage}%` }}
                   className="bg-red-400"
@@ -611,7 +702,7 @@ export const AnalyticsDeck: React.FC = () => {
           )}
 
           {/* Bar Chart with Crisp White Top Labels & No Hover Glitch */}
-          <div className="h-56 pt-2 overflow-hidden">
+          <div className="h-56 overflow-hidden pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={vectorBreakdownData}

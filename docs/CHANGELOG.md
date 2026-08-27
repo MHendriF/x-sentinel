@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.0] - 2026-08-27
 
 ### 🌟 Added
+
 - **⏰ Cron Auto-Scheduler & Post Queue**:
   - Background ticker loop in `server/automation/scheduler.js` evaluating pending tasks every 15 seconds.
   - Interactive "📅 Jadwalkan Post" modal in AI Post Studio with custom execution date/time picker and rotation delay.
@@ -33,17 +34,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🧹 Audit Ledger Maintenance & Pruning Tools**:
   - `POST /api/history/prune` and `POST /api/history/clear-all` endpoints.
   - Maintenance modal in Audit Ledger: prune logs older than 30 days, 7 days, failed only, or clear all.
-  - Date range filtering with quick presets (*Hari Ini*, *7 Hari*, *30 Hari*) and filtered CSV export.
+  - Date range filtering with quick presets (_Hari Ini_, _7 Hari_, _30 Hari_) and filtered CSV export.
   - Indonesian standard numeric date formatting (`DD/MM/YYYY`) on primary line and time (`HH:mm:ss`) on secondary line.
 - **📚 Comprehensive Engineering & AI Agent Docs**:
   - Added `docs/ARCHITECTURE.md`, `docs/API_REFERENCE.md`, `docs/AUTOMATION_PROTOCOLS.md`, `docs/DEVELOPMENT_GUIDE.md`, and `docs/AI_AGENT_PROMPT_GUIDE.md`.
 
 ### ⚡ Changed
+
 - Upgraded **About Deck** and `README.md` to reflect all 8 modular cockpit decks, system specifications, and full directory tree.
 - Simplified Cumulative Vector Badges in Analytics Deck into compact font-mono tags (`❤️ Likes`, `🔁 Reposts`, `💬 Replies`, `✨ Posts`, `⚡ Total`).
 - Refactored `createPost` GraphQL interceptor to extract tweet status links (`https://x.com/[user]/status/[id]`) for audit history.
 
 ### 🔒 Security
+
 - Added `data/schedules.json` and `data/media/` to `.gitignore` to prevent committing operational data.
 - Enforced atomic temporary file writes (`.tmp` + `fs.renameSync`) for database operations.
 
@@ -52,8 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2026-08-27
 
 ### 🌟 Added
+
 - **✨ AI Post Studio (Ghostwriter Engine)**:
-  - Automated viral tweet generator with 5 persona presets (*Viral Hook*, *Alpha Insight*, *Mini Value-Drop*, *Founder Story*, *Indo Tech*).
+  - Automated viral tweet generator with 5 persona presets (_Viral Hook_, _Alpha Insight_, _Mini Value-Drop_, _Founder Story_, _Indo Tech_).
   - Strict single-line text formatting removing newlines for native Twitter pacing.
   - Interactive WYSIWYG Tweet Mockup with 280-character limit meter and avatar preview.
   - Fleet Dispatcher broadcasting unique draft variations across multiple active nodes.
@@ -63,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Integrated `POST` vector alongside `LIKE`, `RETWEET`, and `COMMENT` across all analytics charts.
 
 ### ⚡ Changed
+
 - Migrated frontend cockpit to React 19, TypeScript, Tailwind CSS, and Vite.
 - Implemented Zustand state management for instant cross-tab synchronization.
 
@@ -71,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - 2026-08-26
 
 ### 🌟 Added
+
 - **🤖 AI Contextual Replies Engine**:
   - Integrated OpenRouter, Groq, OpenAI GPT-4o, Google Gemini, and Ollama.
   - Automatic sentiment analysis and contextual response generation from target tweet text.
@@ -86,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2026-08-25
 
 ### 🌟 Initial Release
+
 - **Core Playwright Stealth Bot**: Chromium automation with browser fingerprint spoofing and human typing simulation.
 - **Zero-Password Authentication**: Session injection via `auth_token` and `ct0` cookies.
 - **Multi-Node Account Cluster**: Independent account nodes with dedicated proxy routing and proxy credential masking.

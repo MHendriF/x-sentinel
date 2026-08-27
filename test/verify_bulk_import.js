@@ -11,12 +11,15 @@ tok_22222222222222222222:ct0_22222222222222222222:usr:pwd@31.56.70.92:1338:Node 
 tok_33333333333333333333:ct0_33333333333333333333:Node Gamma
 `;
 
-const lines = rawTextColon.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+const lines = rawTextColon
+  .split('\n')
+  .map((l) => l.trim())
+  .filter((l) => l && !l.startsWith('#'));
 assert.strictEqual(lines.length, 3, 'Should extract 3 non-comment lines');
 
 const parsed = [];
 lines.forEach((line, idx) => {
-  const parts = line.split(':').map(p => p.trim());
+  const parts = line.split(':').map((p) => p.trim());
   if (parts.length >= 2) {
     const auth_token = parts[0];
     const ct0 = parts[1];
@@ -50,7 +53,7 @@ console.log('✅ Test 1 Passed: Colon format multiline parsing correct!');
 
 // Test 2: Pipe delimiter format
 const rawPipe = `tok_44444444444444444444|ct0_44444444444444444444|http://proxy.local:8080|Node Delta`;
-const pipeParts = rawPipe.split('|').map(p => p.trim());
+const pipeParts = rawPipe.split('|').map((p) => p.trim());
 assert.strictEqual(pipeParts[0], 'tok_44444444444444444444');
 assert.strictEqual(pipeParts[1], 'ct0_44444444444444444444');
 assert.strictEqual(pipeParts[2], 'http://proxy.local:8080');

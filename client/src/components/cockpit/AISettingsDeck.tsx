@@ -44,7 +44,8 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: 'none',
     name: '🚫 Disabled (Spintax / JSON Pool Only)',
     badge: 'OFFLINE',
-    description: 'Nonaktifkan AI. Bot hanya akan menggunakan template Spintax dan JSON comment pool.',
+    description:
+      'Nonaktifkan AI. Bot hanya akan menggunakan template Spintax dan JSON comment pool.',
     defaultBaseUrl: '',
     defaultModel: '',
     recommendedModels: [],
@@ -54,7 +55,8 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: '9router',
     name: '9router (AI Gateway & Router)',
     badge: 'RECOMMENDED · MULTI-MODEL',
-    description: 'Gateway multi-model ultra-efisien yang mendukung GPT-4o, Claude, DeepSeek, dan Llama dalam satu API.',
+    description:
+      'Gateway multi-model ultra-efisien yang mendukung GPT-4o, Claude, DeepSeek, dan Llama dalam satu API.',
     defaultBaseUrl: 'https://api.9router.com/v1',
     defaultModel: 'openai/gpt-4o-mini',
     recommendedModels: [
@@ -129,7 +131,8 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: 'custom',
     name: 'Custom OpenAI-Compatible API',
     badge: 'CUSTOM ENDPOINT',
-    description: 'Gunakan provider kustom apa pun yang mematuhi standar format OpenAI /chat/completions.',
+    description:
+      'Gunakan provider kustom apa pun yang mematuhi standar format OpenAI /chat/completions.',
     defaultBaseUrl: 'https://api.openai.com/v1',
     defaultModel: 'gpt-4o-mini',
     recommendedModels: ['gpt-4o-mini', 'default'],
@@ -141,22 +144,26 @@ const PERSONA_PRESETS = [
   {
     id: 'web3-alpha',
     name: '🌐 Web3 & Crypto Native (No Slop)',
-    prompt: 'Write a sharp, context-aware 1-sentence English reply as a crypto native on market dynamics, rails, or ecosystem shifts. Conversational, zero generic praise, max 20 words.',
+    prompt:
+      'Write a sharp, context-aware 1-sentence English reply as a crypto native on market dynamics, rails, or ecosystem shifts. Conversational, zero generic praise, max 20 words.',
   },
   {
     id: 'tech-builder',
     name: '💻 Tech Builder & Systems Dev',
-    prompt: 'Write a concise 1-sentence English observation as a software engineer on architecture tradeoffs, latency, or velocity. Direct, peer-to-peer, no fluff.',
+    prompt:
+      'Write a concise 1-sentence English observation as a software engineer on architecture tradeoffs, latency, or velocity. Direct, peer-to-peer, no fluff.',
   },
   {
     id: 'signal-contrarian',
     name: '🎯 High-Signal Curator / Second-Order',
-    prompt: 'Write a clever, high-signal 1-sentence English response highlighting the second-order implication of the tweet. Keep it casual and authentic.',
+    prompt:
+      'Write a clever, high-signal 1-sentence English response highlighting the second-order implication of the tweet. Keep it casual and authentic.',
   },
   {
     id: 'punchy-hook',
     name: '🚀 Punchy Micro-Hook (Under 15 words)',
-    prompt: 'Write a witty, short 1-sentence English punchline (under 15 words) reacting naturally to the tweet. No hashtags, no quotes, no bot phrases.',
+    prompt:
+      'Write a witty, short 1-sentence English punchline (under 15 words) reacting naturally to the tweet. No hashtags, no quotes, no bot phrases.',
   },
 ];
 
@@ -196,8 +203,7 @@ export const AISettingsDeck: React.FC = () => {
     }
   }, [settings]);
 
-  const selectedProviderInfo =
-    AI_PROVIDERS.find((p) => p.id === aiProvider) || AI_PROVIDERS[0];
+  const selectedProviderInfo = AI_PROVIDERS.find((p) => p.id === aiProvider) || AI_PROVIDERS[0];
 
   const handleSelectProvider = (providerId: string) => {
     setAiProvider(providerId);
@@ -325,16 +331,16 @@ export const AISettingsDeck: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-8 animate-in fade-in">
+    <div className="animate-in fade-in mx-auto max-w-5xl space-y-6 pb-8">
       {/* Top Banner Card */}
-      <Card className="border-purple-500/40 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-purple-950/20 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+      <Card className="relative overflow-hidden border-purple-500/40 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-purple-950/20 shadow-2xl">
+        <div className="pointer-events-none absolute right-0 top-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl"></div>
 
-        <CardContent className="p-6 relative z-10 space-y-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+        <CardContent className="relative z-10 space-y-3 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Badge variant="purple" className="gap-1.5 px-3 py-1 font-mono text-[11px] font-bold">
-                <Bot className="w-3.5 h-3.5" />
+                <Bot className="h-3.5 w-3.5" />
                 AI INTELLIGENCE SUITE
               </Badge>
               <Badge
@@ -345,37 +351,40 @@ export const AISettingsDeck: React.FC = () => {
                     : 'border-slate-700 text-slate-400'
                 }`}
               >
-                STATUS: {aiProvider !== 'none' ? `ACTIVE · ${aiProvider.toUpperCase()}` : 'DISABLED'}
+                STATUS:{' '}
+                {aiProvider !== 'none' ? `ACTIVE · ${aiProvider.toUpperCase()}` : 'DISABLED'}
               </Badge>
             </div>
 
             <Button
               onClick={handleSave}
-              className="bg-purple-600 hover:bg-purple-500 text-white font-mono text-xs font-bold gap-1.5 shadow-md shadow-purple-900/40"
+              className="gap-1.5 bg-purple-600 font-mono text-xs font-bold text-white shadow-md shadow-purple-900/40 hover:bg-purple-500"
             >
-              <Save className="w-3.5 h-3.5" />
+              <Save className="h-3.5 w-3.5" />
               Save AI Settings
             </Button>
           </div>
 
           <div>
-            <h2 className="text-2xl font-heading font-black text-white tracking-tight">
+            <h2 className="font-heading text-2xl font-black tracking-tight text-white">
               AI Provider &amp; Autonomous Replies Studio
             </h2>
-            <p className="text-slate-300 text-xs mt-1 leading-relaxed max-w-3xl">
-              Konfigurasikan model bahasa besar (LLM) untuk menghasilkan balasan tweet yang 100% kontekstual, cerdas, dan alami (No AI Slop).
-              Mendukung <strong>9router</strong>, <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>, <strong>Gemini</strong>, dan <strong>Local Ollama</strong>.
+            <p className="mt-1 max-w-3xl text-xs leading-relaxed text-slate-300">
+              Konfigurasikan model bahasa besar (LLM) untuk menghasilkan balasan tweet yang 100%
+              kontekstual, cerdas, dan alami (No AI Slop). Mendukung <strong>9router</strong>,{' '}
+              <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>,{' '}
+              <strong>Gemini</strong>, dan <strong>Local Ollama</strong>.
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Main Grid: Provider Selection & Config */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* Left Col: Provider Selection Cards */}
-        <Card className="lg:col-span-1 border-border/80">
+        <Card className="border-border/80 lg:col-span-1">
           <CardHeader className="pb-3">
-            <div className="font-mono text-[10px] font-bold text-purple-400 tracking-wider">
+            <div className="font-mono text-[10px] font-bold tracking-wider text-purple-400">
               SELECT ENGINE
             </div>
             <CardTitle className="text-base">AI Providers</CardTitle>
@@ -391,26 +400,24 @@ export const AISettingsDeck: React.FC = () => {
                 <div
                   key={provider.id}
                   onClick={() => handleSelectProvider(provider.id)}
-                  className={`p-3 rounded-lg border transition-all cursor-pointer flex flex-col gap-1.5 ${
+                  className={`flex cursor-pointer flex-col gap-1.5 rounded-lg border p-3 transition-all ${
                     isSelected
-                      ? 'border-purple-500 bg-purple-500/10 shadow-md shadow-purple-950/40 text-white'
-                      : 'border-slate-800 bg-obsidian-950/80 hover:border-slate-700 text-slate-300'
+                      ? 'border-purple-500 bg-purple-500/10 text-white shadow-md shadow-purple-950/40'
+                      : 'border-slate-800 bg-obsidian-950/80 text-slate-300 hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-heading font-bold text-xs">
-                      {provider.name}
-                    </span>
+                    <span className="font-heading text-xs font-bold">{provider.name}</span>
                     <Badge
                       variant="outline"
-                      className={`text-[9px] font-mono px-1.5 py-0 ${
+                      className={`px-1.5 py-0 font-mono text-[9px] ${
                         isSelected ? 'border-purple-400 text-purple-300' : 'text-slate-400'
                       }`}
                     >
                       {provider.badge}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">
+                  <p className="line-clamp-2 text-[11px] leading-snug text-slate-400">
                     {provider.description}
                   </p>
                 </div>
@@ -420,12 +427,12 @@ export const AISettingsDeck: React.FC = () => {
         </Card>
 
         {/* Right Col: Detailed Configuration Form */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="space-y-5 lg:col-span-2">
           {/* Card: API Credentials & Endpoints */}
           <Card className="border-border/80">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div className="font-mono text-[10px] font-bold text-purple-400 tracking-wider">
+                <div className="font-mono text-[10px] font-bold tracking-wider text-purple-400">
                   CREDENTIALS &amp; MODEL IDENTIFIER
                 </div>
                 <Badge variant="outline" className="font-mono text-[10px] text-purple-300">
@@ -437,15 +444,17 @@ export const AISettingsDeck: React.FC = () => {
 
             <CardContent className="space-y-4">
               {aiProvider === 'none' ? (
-                <div className="p-6 rounded-lg border border-dashed border-slate-800 text-center space-y-2 bg-obsidian-950/50">
-                  <div className="w-10 h-10 rounded-full bg-slate-800 mx-auto flex items-center justify-center text-slate-400">
-                    <Bot className="w-5 h-5" />
+                <div className="space-y-2 rounded-lg border border-dashed border-slate-800 bg-obsidian-950/50 p-6 text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-slate-400">
+                    <Bot className="h-5 w-5" />
                   </div>
-                  <h4 className="font-heading font-bold text-sm text-slate-300">
+                  <h4 className="font-heading text-sm font-bold text-slate-300">
                     AI Mode Dinonaktifkan
                   </h4>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    Pilih salah satu provider di sebelah kiri (misal: <strong>9router</strong>, <strong>OpenRouter</strong>, atau <strong>Groq</strong>) untuk mengaktifkan balasan cerdas otomatis.
+                  <p className="mx-auto max-w-sm text-xs text-slate-400">
+                    Pilih salah satu provider di sebelah kiri (misal: <strong>9router</strong>,{' '}
+                    <strong>OpenRouter</strong>, atau <strong>Groq</strong>) untuk mengaktifkan
+                    balasan cerdas otomatis.
                   </p>
                 </div>
               ) : (
@@ -453,16 +462,20 @@ export const AISettingsDeck: React.FC = () => {
                   {/* API Key */}
                   {selectedProviderInfo.requiresApiKey && (
                     <div className="space-y-1.5">
-                      <label className="font-mono text-xs font-bold text-slate-300 flex items-center justify-between">
+                      <label className="flex items-center justify-between font-mono text-xs font-bold text-slate-300">
                         <span>
                           API KEY ({aiProvider.toUpperCase()}) <span className="text-flame">*</span>
                         </span>
                         <button
                           type="button"
                           onClick={() => setShowApiKey(!showApiKey)}
-                          className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
+                          className="flex cursor-pointer items-center gap-1 text-[10px] text-slate-400 hover:text-white"
                         >
-                          {showApiKey ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          {showApiKey ? (
+                            <EyeOff className="h-3 w-3" />
+                          ) : (
+                            <Eye className="h-3 w-3" />
+                          )}
                           {showApiKey ? 'Sembunyikan' : 'Tampilkan'}
                         </button>
                       </label>
@@ -471,23 +484,25 @@ export const AISettingsDeck: React.FC = () => {
                         placeholder={`Paste API key ${selectedProviderInfo.name}...`}
                         value={aiApiKey}
                         onChange={(e) => setAiApiKey(e.target.value)}
-                        className="font-mono text-xs bg-obsidian-950"
+                        className="bg-obsidian-950 font-mono text-xs"
                       />
                     </div>
                   )}
 
                   {/* Base URL & Model Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <label className="font-mono text-xs font-bold text-slate-300">
                         BASE URL ENDPOINT
                       </label>
                       <Input
                         type="text"
-                        placeholder={selectedProviderInfo.defaultBaseUrl || 'https://api.openai.com/v1'}
+                        placeholder={
+                          selectedProviderInfo.defaultBaseUrl || 'https://api.openai.com/v1'
+                        }
                         value={aiBaseUrl}
                         onChange={(e) => setAiBaseUrl(e.target.value)}
-                        className="font-mono text-xs bg-obsidian-950"
+                        className="bg-obsidian-950 font-mono text-xs"
                       />
                     </div>
 
@@ -500,7 +515,7 @@ export const AISettingsDeck: React.FC = () => {
                         placeholder={selectedProviderInfo.defaultModel || 'openai/gpt-4o-mini'}
                         value={aiModel}
                         onChange={(e) => setAiModel(e.target.value)}
-                        className="font-mono text-xs bg-obsidian-950"
+                        className="bg-obsidian-950 font-mono text-xs"
                       />
                     </div>
                   </div>
@@ -508,7 +523,7 @@ export const AISettingsDeck: React.FC = () => {
                   {/* Recommended Models Chips */}
                   {selectedProviderInfo.recommendedModels.length > 0 && (
                     <div className="space-y-1.5 pt-1">
-                      <span className="text-[10px] font-mono text-slate-400 font-bold">
+                      <span className="font-mono text-[10px] font-bold text-slate-400">
                         RECOMMENDED MODELS FOR {aiProvider.toUpperCase()}:
                       </span>
                       <div className="flex flex-wrap gap-1.5">
@@ -517,10 +532,10 @@ export const AISettingsDeck: React.FC = () => {
                             key={modelName}
                             type="button"
                             onClick={() => setAiModel(modelName)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors cursor-pointer ${
+                            className={`cursor-pointer rounded border px-2 py-0.5 font-mono text-[10px] transition-colors ${
                               aiModel === modelName
-                                ? 'bg-purple-500/20 border-purple-500 text-purple-200'
-                                : 'bg-obsidian-950 border-slate-800 hover:border-slate-700 text-slate-400'
+                                ? 'border-purple-500 bg-purple-500/20 text-purple-200'
+                                : 'border-slate-800 bg-obsidian-950 text-slate-400 hover:border-slate-700'
                             }`}
                           >
                             {modelName}
@@ -531,7 +546,7 @@ export const AISettingsDeck: React.FC = () => {
                   )}
 
                   {/* Persona Prompt & Presets */}
-                  <div className="space-y-2 pt-2 border-t border-border/80">
+                  <div className="space-y-2 border-t border-border/80 pt-2">
                     <div className="flex items-center justify-between">
                       <label className="font-mono text-xs font-bold text-slate-300">
                         SYSTEM PERSONA &amp; REPLY PROMPT (NO AI SLOP)
@@ -549,7 +564,7 @@ export const AISettingsDeck: React.FC = () => {
                             setAiPrompt(preset.prompt);
                             toast.info(`Persona "${preset.name}" diterapkan!`);
                           }}
-                          className="px-2.5 py-1 rounded text-[10px] font-mono bg-obsidian-950 border border-slate-800 hover:border-purple-500/50 text-slate-300 hover:text-purple-300 transition-colors cursor-pointer"
+                          className="cursor-pointer rounded border border-slate-800 bg-obsidian-950 px-2.5 py-1 font-mono text-[10px] text-slate-300 transition-colors hover:border-purple-500/50 hover:text-purple-300"
                         >
                           {preset.name}
                         </button>
@@ -561,7 +576,7 @@ export const AISettingsDeck: React.FC = () => {
                       value={aiPrompt}
                       onChange={(e) => setAiPrompt(e.target.value)}
                       placeholder="Enter system persona prompt in English (e.g. Write a sharp, context-aware 1-sentence English reply as a crypto/tech native)..."
-                      className="font-mono text-xs bg-obsidian-950 leading-relaxed"
+                      className="bg-obsidian-950 font-mono text-xs leading-relaxed"
                     />
                   </div>
                 </>
@@ -573,19 +588,23 @@ export const AISettingsDeck: React.FC = () => {
           <Card className="border-purple-500/30 bg-obsidian-900/90 shadow-xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-amber-400 tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-amber-400">
+                  <Sparkles className="h-3.5 w-3.5" />
                   INTERACTIVE AI SANDBOX &amp; DIAGNOSTICS
                 </div>
                 {testLatency && (
-                  <Badge variant="outline" className="font-mono text-[10px] border-emerald-500/40 text-emerald-300">
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-500/40 font-mono text-[10px] text-emerald-300"
+                  >
                     ⚡ {testLatency}ms LATENCY
                   </Badge>
                 )}
               </div>
               <CardTitle className="text-base">Live Response &amp; Ping Tester</CardTitle>
               <CardDescription className="text-xs">
-                Uji konektivitas gateway dan simulasikan peracikan balasan alami pada teks tweet target secara live.
+                Uji konektivitas gateway dan simulasikan peracikan balasan alami pada teks tweet
+                target secara live.
               </CardDescription>
             </CardHeader>
 
@@ -596,7 +615,7 @@ export const AISettingsDeck: React.FC = () => {
                   <label className="font-mono text-xs font-bold text-slate-300">
                     SAMPLE TARGET TWEET CONTENT
                   </label>
-                  <span className="text-[10px] font-mono text-slate-400">
+                  <span className="font-mono text-[10px] text-slate-400">
                     {testTweetInput.length} characters
                   </span>
                 </div>
@@ -604,7 +623,7 @@ export const AISettingsDeck: React.FC = () => {
                   rows={5}
                   value={testTweetInput}
                   onChange={(e) => setTestTweetInput(e.target.value)}
-                  className="font-mono text-xs bg-obsidian-950 min-h-[120px] leading-relaxed resize-y"
+                  className="min-h-[120px] resize-y bg-obsidian-950 font-mono text-xs leading-relaxed"
                   placeholder="Paste or type sample tweet content here..."
                 />
               </div>
@@ -618,9 +637,9 @@ export const AISettingsDeck: React.FC = () => {
                     variant="outline"
                     onClick={handleTestConnection}
                     disabled={isTestingConnection || isGeneratingReply || aiProvider === 'none'}
-                    className="font-mono text-xs border-purple-500/40 text-purple-300 hover:bg-purple-500/10 gap-1.5 cursor-pointer shadow-sm"
+                    className="cursor-pointer gap-1.5 border-purple-500/40 font-mono text-xs text-purple-300 shadow-sm hover:bg-purple-500/10"
                   >
-                    <Zap className="w-3.5 h-3.5 text-purple-400" />
+                    <Zap className="h-3.5 w-3.5 text-purple-400" />
                     {isTestingConnection ? 'Pinging Gateway...' : '⚡ Test AI Connection'}
                   </Button>
 
@@ -629,15 +648,17 @@ export const AISettingsDeck: React.FC = () => {
                     type="button"
                     onClick={handleRunLiveGeneration}
                     disabled={isTestingConnection || isGeneratingReply || aiProvider === 'none'}
-                    className="font-mono text-xs font-bold bg-amber-500 hover:bg-amber-600 text-obsidian-950 gap-1.5 shadow-md shadow-amber-950/40 cursor-pointer"
+                    className="cursor-pointer gap-1.5 bg-amber-500 font-mono text-xs font-bold text-obsidian-950 shadow-md shadow-amber-950/40 hover:bg-amber-600"
                   >
-                    <Bot className="w-3.5 h-3.5" />
+                    <Bot className="h-3.5 w-3.5" />
                     {isGeneratingReply ? 'Generating Reply...' : '🤖 Test AI Reply Generation'}
                   </Button>
                 </div>
 
                 {testResult && (
-                  <span className={`text-xs font-mono font-semibold ${testResult.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span
+                    className={`font-mono text-xs font-semibold ${testResult.success ? 'text-emerald-400' : 'text-red-400'}`}
+                  >
                     {testResult.success ? '● Status: ONLINE' : '● Status: ERROR'}
                   </span>
                 )}
@@ -645,17 +666,19 @@ export const AISettingsDeck: React.FC = () => {
 
               {/* Result Preview Box */}
               {testResult && (
-                <div className={`p-3.5 rounded-lg border text-xs font-mono space-y-2 animate-in fade-in ${
-                  testResult.success
-                    ? 'border-emerald-500/30 bg-emerald-500/5 text-slate-200'
-                    : 'border-red-500/30 bg-red-500/5 text-red-300'
-                }`}>
+                <div
+                  className={`animate-in fade-in space-y-2 rounded-lg border p-3.5 font-mono text-xs ${
+                    testResult.success
+                      ? 'border-emerald-500/30 bg-emerald-500/5 text-slate-200'
+                      : 'border-red-500/30 bg-red-500/5 text-red-300'
+                  }`}
+                >
                   <div className="flex items-center justify-between text-[11px] font-bold">
                     <span className="flex items-center gap-1.5">
                       {testResult.success ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                       ) : (
-                        <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                        <AlertCircle className="h-3.5 w-3.5 text-red-400" />
                       )}
                       {testResult.testType === 'connection'
                         ? `AI PING RESULT (${testResult.model || aiModel})`
@@ -668,13 +691,13 @@ export const AISettingsDeck: React.FC = () => {
                           navigator.clipboard.writeText(testResult.sampleOutput);
                           toast.success('Disalin ke clipboard!');
                         }}
-                        className="text-slate-400 hover:text-white flex items-center gap-1 text-[10px] cursor-pointer"
+                        className="flex cursor-pointer items-center gap-1 text-[10px] text-slate-400 hover:text-white"
                       >
-                        <Copy className="w-3 h-3" /> Salin
+                        <Copy className="h-3 w-3" /> Salin
                       </button>
                     )}
                   </div>
-                  <div className="p-3 rounded bg-obsidian-950/90 border border-slate-800 text-xs leading-relaxed select-all">
+                  <div className="select-all rounded border border-slate-800 bg-obsidian-950/90 p-3 text-xs leading-relaxed">
                     {testResult.sampleOutput ? `"${testResult.sampleOutput}"` : testResult.message}
                   </div>
                 </div>

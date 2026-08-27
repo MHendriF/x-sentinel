@@ -81,7 +81,7 @@ class ProxyHelper {
             server: `${protocol}//${host}:${port}`,
             username: username.trim(),
             password: password.trim(),
-            raw: trimmed
+            raw: trimmed,
           };
         } else if (isThirdPartHost && !isNaN(Number(parts[3]))) {
           // user:pass:host:port
@@ -90,7 +90,7 @@ class ProxyHelper {
             server: `${protocol}//${host}:${port}`,
             username: username.trim(),
             password: password.trim(),
-            raw: trimmed
+            raw: trimmed,
           };
         } else {
           // Default fallback to host:port:user:pass
@@ -99,7 +99,7 @@ class ProxyHelper {
             server: `${protocol}//${host}:${port}`,
             username: username.trim(),
             password: password.trim(),
-            raw: trimmed
+            raw: trimmed,
           };
         }
       }
@@ -109,14 +109,14 @@ class ProxyHelper {
         const [host, port] = parts;
         return {
           server: `${protocol}//${host}:${port}`,
-          raw: trimmed
+          raw: trimmed,
         };
       }
 
       // Case 4: Standard single host or URL
       return {
         server: `${protocol}//${cleanStr}`,
-        raw: trimmed
+        raw: trimmed,
       };
     } catch (err) {
       console.error('Error parsing proxy string:', err.message);
@@ -132,7 +132,7 @@ class ProxyHelper {
     if (!parsed) return undefined;
 
     const proxyConfig = {
-      server: parsed.server
+      server: parsed.server,
     };
 
     if (parsed.username) proxyConfig.username = parsed.username;
@@ -156,7 +156,7 @@ class ProxyHelper {
     try {
       const apiContext = await request.newContext({
         proxy: parsed,
-        timeout: 8000
+        timeout: 8000,
       });
 
       const response = await apiContext.get('http://ip-api.com/json', { timeout: 8000 });
@@ -173,14 +173,15 @@ class ProxyHelper {
           countryCode: data.countryCode,
           city: data.city,
           isp: data.isp || data.org,
-          status: 'ALIVE'
+          status: 'ALIVE',
         };
       } else {
         const status = response.status();
         await apiContext.dispose();
         let message = `Proxy HTTP Error: ${status}`;
         if (status === 407) {
-          message = 'Proxy Auth Failed (407): Username atau Password proxy salah / IP belum di-whitelist.';
+          message =
+            'Proxy Auth Failed (407): Username atau Password proxy salah / IP belum di-whitelist.';
         } else if (status === 403) {
           message = 'Proxy Forbidden (403): Akses ke target ditolak oleh proxy provider.';
         } else if (status === 502 || status === 503) {
@@ -190,7 +191,7 @@ class ProxyHelper {
           success: false,
           latency,
           message,
-          status: 'DEAD'
+          status: 'DEAD',
         };
       }
     } catch (err) {
@@ -207,7 +208,7 @@ class ProxyHelper {
         success: false,
         latency,
         message: msg,
-        status: 'DEAD'
+        status: 'DEAD',
       };
     }
   }
