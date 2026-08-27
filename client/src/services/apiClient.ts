@@ -26,6 +26,8 @@ export interface AccountNode {
   };
 }
 
+export type Account = AccountNode;
+
 export interface Stats {
   totalLikes: number;
   totalRetweets: number;
@@ -369,19 +371,23 @@ export const apiClient = {
 
   // Media / Image Upload
   async uploadMedia(
-    imageBase64: string,
+    payloadOrBase64: string | { imageBase64: string; filename?: string },
     filename?: string
   ): Promise<{
     success: boolean;
-    filename?: string;
-    localPath?: string;
-    sizeKb?: string;
+    filename: string;
+    localPath: string;
+    sizeKb: string;
     message?: string;
   }> {
+    const payload =
+      typeof payloadOrBase64 === 'string'
+        ? { imageBase64: payloadOrBase64, filename }
+        : payloadOrBase64;
     const res = await fetch('/api/media/upload', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64, filename }),
+      body: JSON.stringify(payload),
     });
     return res.json();
   },
