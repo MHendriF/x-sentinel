@@ -24,6 +24,9 @@ import {
   UploadCloud,
   Download,
   BookOpen,
+  FolderKanban,
+  FileCode2,
+  Activity,
 } from 'lucide-react';
 
 export const AboutDeck: React.FC = () => {
@@ -41,13 +44,13 @@ export const AboutDeck: React.FC = () => {
               className="gap-1.5 bg-flame px-3 py-1 font-mono text-[11px] font-bold text-obsidian-950 shadow-md"
             >
               <Shield className="h-3.5 w-3.5" />
-              X-SENTINEL CORE v1.3
+              X-SENTINEL CORE v1.3.0
             </Badge>
             <Badge
               variant="outline"
               className="border-slate-700 bg-obsidian-900/60 font-mono text-[11px] text-slate-300"
             >
-              REACT 19 · AI POST STUDIO · MULTI-NODE FLEET · PLAYWRIGHT STEALTH · BUN ENGINE
+              MODULAR ARCHITECTURE · REACT 19 · AI POST STUDIO · MULTI-NODE FLEET · BUN ENGINE
             </Badge>
           </div>
 
@@ -56,14 +59,14 @@ export const AboutDeck: React.FC = () => {
               Autonomous Multi-Node Fleet Cockpit &amp; Growth Studio for X
             </h2>
             <p className="text-sm leading-relaxed text-slate-300">
-              <strong>X-SENTINEL</strong> adalah sistem kendali otomatisasi (*engagement &amp;
-              publishing cockpit*) terpadu tingkat enterprise untuk platform{' '}
-              <strong>X (Twitter)</strong>. Menggabungkan arsitektur rotasi multi-akun (*node
-              cluster*), isolasi tunnel proxy dedicated, pembuatan postingan cerdas berbasis AI (*AI
-              Post Studio*), balasan kontekstual otomatis (*OpenRouter, Groq, OpenAI, Gemini,
-              Ollama*), pemindaian radar kata kunci (*Feed Hunter*), onboarding armada massal (*Bulk
-              Fleet Manager*), perpustakaan spintax multi-niche, konsol telemetri live stream, serta
-              analitik visual interaktif tanpa ketergantungan database eksternal.
+              <strong>X-SENTINEL</strong> adalah platform otomatisasi (*engagement &amp; publishing
+              cockpit*) tingkat lanjut untuk platform <strong>X (Twitter)</strong>. Menggabungkan
+              arsitektur rotasi multi-akun modular, isolasi tunnel proxy dedicated, pembuatan
+              postingan cerdas berbasis AI (*AI Post Studio*), balasan kontekstual otomatis
+              (*OpenRouter, Groq, OpenAI, Gemini, Ollama*), pemindaian radar kata kunci (*Feed
+              Hunter*), onboarding armada massal (*Bulk Fleet Manager*), perpustakaan spintax
+              multi-niche, telemetri live stream, serta analitik visual interaktif tanpa
+              ketergantungan database eksternal.
             </p>
           </div>
 
@@ -74,11 +77,11 @@ export const AboutDeck: React.FC = () => {
             </div>
             <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-3 py-1.5">
               <Bot className="h-4 w-4 text-purple-400" />
-              <span>AI Contextual Engine (Groq / OpenRouter)</span>
+              <span>Multi-Provider AI Context Engine</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-3 py-1.5">
               <Terminal className="h-4 w-4 text-flame" />
-              <span>Live Telemetry Stream</span>
+              <span>Realtime SSE Telemetry Stream</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-3 py-1.5">
               <ShieldCheck className="h-4 w-4 text-emerald-400" />
@@ -111,11 +114,11 @@ export const AboutDeck: React.FC = () => {
               <ul className="list-disc space-y-1 pl-4 text-slate-400">
                 <li>
                   Otentikasi aman via cookie <code>auth_token</code> &amp; <code>ct0</code> tanpa
-                  login password.
+                  password.
                 </li>
                 <li>
-                  <strong>🩺 Fleet Health Mass-Checker</strong>: Uji validitas sesi cookie &amp;
-                  proxy seluruh armada dengan 1 klik.
+                  <strong>🩺 Fleet Health Diagnostic</strong>: Uji validitas sesi cookie &amp; proxy
+                  seluruh node armada dengan 1 klik.
                 </li>
                 <li>
                   <strong>🐣 Account Warm-up Protocol</strong>: Rutinitas pemanasan bertahap (Day
@@ -126,8 +129,8 @@ export const AboutDeck: React.FC = () => {
                   auto-pause node jika proxy mati.
                 </li>
                 <li>
-                  <strong>📥 Bulk Import &amp; Export Backup</strong>: Onboarding massal dan backup
-                  seluruh cluster ke JSON.
+                  <strong>📥 Bulk Import &amp; Export Backup</strong>: Onboarding massal teks/CSV
+                  dan ekspor armada ke file JSON.
                 </li>
               </ul>
             </CardContent>
@@ -159,12 +162,12 @@ export const AboutDeck: React.FC = () => {
                   dengan eksekusi background otomatis.
                 </li>
                 <li>
-                  <strong>WYSIWYG Tweet Mockup</strong>: Preview live avatar, handle, media preview,
-                  &amp; 280-character meter.
+                  <strong>WYSIWYG Tweet Mockup</strong>: Live preview avatar, handle, media
+                  thumbnail, &amp; live 280-char meter.
                 </li>
                 <li>
-                  <strong>📡 Live Telemetry Stream</strong>: Pantau log pengetikan Playwright secara
-                  realtime.
+                  <strong>🎯 Single-Line Formatting</strong>: Tombol instan merapikan postingan
+                  menjadi satu alur tulisan mengalir.
                 </li>
               </ul>
             </CardContent>
@@ -193,8 +196,8 @@ export const AboutDeck: React.FC = () => {
                 </li>
                 <li>Membaca teks target dan meracik balasan sesuai tone persona terpilih.</li>
                 <li>
-                  <strong>Smart Fallback</strong>: Otomatis beralih ke Spintax jika kuota habis atau
-                  timeout.
+                  <strong>Smart Fallback</strong>: Otomatis beralih ke Spintax jika kuota AI habis
+                  atau timeout.
                 </li>
               </ul>
             </CardContent>
@@ -213,14 +216,14 @@ export const AboutDeck: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-2 font-sans text-xs text-slate-300">
               <ul className="list-disc space-y-1 pl-4 text-slate-400">
-                <li>Input batch multi-line URL target dengan penundaan natural.</li>
+                <li>Input batch multi-line URL target dengan penundaan human jitter alami.</li>
                 <li>
                   Vektor modular: <strong>❤️ Like</strong>, <strong>🔁 Repost</strong>, dan{' '}
                   <strong>💬 Reply</strong>.
                 </li>
                 <li>
                   <strong>🔀 1-to-1 JSON Matrix</strong>: Tiap akun node memposting 1 balasan unik
-                  berbeda.
+                  berbeda dari payload array.
                 </li>
                 <li>Dynamic selector waiting untuk rendering DOM X modern.</li>
               </ul>
@@ -304,10 +307,12 @@ export const AboutDeck: React.FC = () => {
                   <strong>Activity Velocity (AreaChart)</strong>: Tren volume engagement harian.
                 </li>
                 <li>
-                  <strong>Cluster Share (Donut)</strong>: Distribusi beban kerja antar node akun.
+                  <strong>Cluster Share (Donut)</strong>: Distribusi proporsi beban kerja antar
+                  node.
                 </li>
                 <li>
-                  <strong>Simplified Stat Badges</strong>: Ringkasan total dan rasio sukses.
+                  <strong>Cumulative Badges</strong>: Ringkasan total metrik interaksi &amp; success
+                  rate.
                 </li>
               </ul>
             </CardContent>
@@ -321,31 +326,124 @@ export const AboutDeck: React.FC = () => {
               </div>
               <CardTitle className="text-base">8. Audit Ledger &amp; Maintenance</CardTitle>
               <CardDescription className="text-xs">
-                Log peristiwa interaksi kekal, filter tanggal, dan alat maintenance/pruning.
+                Log peristiwa interaksi kekal, filter tanggal angka Indonesia, &amp; maintenance.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 font-sans text-xs text-slate-300">
               <ul className="list-disc space-y-1 pl-4 text-slate-400">
                 <li>
-                  <strong>GraphQL Post URL Capture</strong>: Menyimpan tautan langsung ke tweet yang
-                  diterbitkan.
+                  <strong>GraphQL Post URL Capture</strong>: Menyimpan URL langsung postingan tweet.
                 </li>
                 <li>
-                  <strong>📅 Date Range Filtering</strong>: Filter log tanggal kustom &amp; preset
-                  cepat (*Hari Ini, 7 Hari, 30 Hari*).
+                  <strong>📅 Date Range &amp; Preset</strong>: Filter tanggal kustom &amp; preset
+                  cepat (*Hari Ini, 7 Hari, 30 Hari*) dalam format <code>DD/MM/YYYY</code>.
                 </li>
                 <li>
-                  <strong>🧹 Database Maintenance</strong>: Bersihkan log lama &gt; 30 hari atau log
-                  FAILED secara instan.
+                  <strong>🧹 Ledger Maintenance</strong>: Pangkas log &gt;30 hari, &gt;7 hari, atau
+                  FAILED status.
                 </li>
                 <li>
-                  <strong>Export Filtered CSV</strong>: Unduh riwayat audit terfilter dengan 1 klik.
+                  <strong>Export CSV</strong>: Unduh riwayat audit terfilter ke file spreadsheet.
                 </li>
               </ul>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Modular Architecture Breakdown Card */}
+      <Card className="border-border/80 bg-obsidian-850">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+            <FolderKanban className="h-4 w-4" />
+            MODULAR CODEBASE ARCHITECTURE
+          </div>
+          <CardTitle className="text-lg">Sub-Modules &amp; Separation of Concerns</CardTitle>
+          <CardDescription>
+            Arsitektur kode refaktor yang bersih, sangat mudah di-maintain, dan terisolasi per
+            domain tanggung jawab.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* Backend Bot Subsystem */}
+            <div className="space-y-2 rounded-lg border border-slate-800 bg-obsidian-900/60 p-3.5">
+              <div className="flex items-center gap-2 font-heading text-xs font-bold text-amber-400">
+                <Bot className="h-4 w-4" />
+                <span>Backend Core Bot (`server/automation/bot/`)</span>
+              </div>
+              <ul className="space-y-1 font-mono text-[11px] text-slate-400">
+                <li>
+                  • <code>humanCadence.js</code>: Jitter, scrolling, typing delays
+                </li>
+                <li>
+                  • <code>browserFactory.js</code>: Playwright context &amp; stealth
+                </li>
+                <li>
+                  • <code>tweetComposer.js</code>: Tweet publisher &amp; media attachments
+                </li>
+                <li>
+                  • <code>interactionEngine.js</code>: Like, Repost, Reply pipelines
+                </li>
+                <li>
+                  • <code>healthRunner.js</code>: Fleet health &amp; warmup protocols
+                </li>
+              </ul>
+            </div>
+
+            {/* Express Sub-Routers */}
+            <div className="space-y-2 rounded-lg border border-slate-800 bg-obsidian-900/60 p-3.5">
+              <div className="flex items-center gap-2 font-heading text-xs font-bold text-blue-400">
+                <FileCode2 className="h-4 w-4" />
+                <span>Express API Routers (`server/routes/`)</span>
+              </div>
+              <ul className="space-y-1 font-mono text-[11px] text-slate-400">
+                <li>
+                  • <code>accountsRouter.js</code>: Fleet CRUD &amp; bulk operations
+                </li>
+                <li>
+                  • <code>tasksRouter.js</code>: Multi-post, batch, &amp; hunter tasks
+                </li>
+                <li>
+                  • <code>aiRouter.js</code>: AI post generator &amp; connectivity
+                </li>
+                <li>
+                  • <code>schedulesRouter.js</code>: Automated post queues
+                </li>
+                <li>
+                  • <code>historyRouter.js</code>: Audit history &amp; pruning
+                </li>
+              </ul>
+            </div>
+
+            {/* Frontend Sub-Components */}
+            <div className="space-y-2 rounded-lg border border-slate-800 bg-obsidian-900/60 p-3.5">
+              <div className="flex items-center gap-2 font-heading text-xs font-bold text-emerald-400">
+                <Code2 className="h-4 w-4" />
+                <span>Frontend Surfaces (`client/src/components/`)</span>
+              </div>
+              <ul className="space-y-1 font-mono text-[11px] text-slate-400">
+                <li>
+                  • <code>postStudio/</code>: Mockup, dropzone, schedule modal
+                </li>
+                <li>
+                  • <code>analytics/</code>: Hook, velocity, share charts
+                </li>
+                <li>
+                  • <code>audit/</code>: Filters, table, pagination, maintenance
+                </li>
+                <li>
+                  • <code>ui/</code>: Reusable atomic Tailwind &amp; Radix UI components
+                </li>
+                <li>
+                  • <code>store/useStore.ts</code>: Global reactive state hydration
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Tech Stack & Architecture Specs */}
       <Card>
@@ -370,42 +468,113 @@ export const AboutDeck: React.FC = () => {
                 Frontend Cockpit
               </div>
               <div className="space-y-1 font-mono text-xs text-slate-400">
-                <div>• React 19 (Modern Concurrent)</div>
+                <div>• React 19 (Concurrent Mode)</div>
                 <div>• TypeScript &amp; Vite 6</div>
-                <div>• Tailwind CSS v3 &amp; shadcn/ui</div>
-                <div>• Recharts 4-Vector Visualization</div>
+                <div>• Tailwind CSS v3 &amp; Radix UI Primitives</div>
+                <div>• Recharts 4-Vector Activity Graphs</div>
                 <div>• Zustand Reactive State + URL Hash Sync</div>
-                <div>• Server-Sent Events (SSE) Telemetry</div>
+                <div>• Server-Sent Events (SSE) Live Stream</div>
+                <div>• Prettier Automated Formatting &amp; Linting</div>
               </div>
             </div>
 
             <div className="space-y-2 rounded-lg border border-slate-800 bg-obsidian-850 p-4">
-              <div className="flex items-center gap-2 font-heading text-sm font-bold text-white">
+              <div className="flex items-center gap-2 font-heading text-sm font-bold text-purple-400">
                 <Cpu className="h-4 w-4 text-purple-400" />
                 Automation Backend
               </div>
               <div className="space-y-1 font-mono text-xs text-slate-400">
-                <div>• Bun Runtime / Node.js 18+</div>
-                <div>• Express 5 REST API Server</div>
-                <div>• Microsoft Playwright Engine</div>
-                <div>• GraphQL CreateTweet Interceptor</div>
-                <div>• Multi-Provider AI LLM Service</div>
-                <div>• SOCKS5 &amp; HTTP Proxy Tunneling</div>
+                <div>• Bun Runtime / Node.js 18+ (High Throughput)</div>
+                <div>• Express 5 Modular REST API Routers</div>
+                <div>• Microsoft Playwright Headless Browser Engine</div>
+                <div>• GraphQL CreateTweet Network Interceptor</div>
+                <div>• Multi-Provider LLM Engine (Groq / OpenRouter)</div>
+                <div>• SOCKS5 &amp; HTTP Isolated Proxy Tunneling</div>
+                <div>• Webhook Dispatcher (Telegram &amp; Discord)</div>
               </div>
             </div>
 
             <div className="space-y-2 rounded-lg border border-slate-800 bg-obsidian-850 p-4">
-              <div className="flex items-center gap-2 font-heading text-sm font-bold text-white">
+              <div className="flex items-center gap-2 font-heading text-sm font-bold text-emerald-400">
                 <Database className="h-4 w-4 text-emerald-400" />
                 Storage &amp; Privacy
               </div>
               <div className="space-y-1 font-mono text-xs text-slate-400">
-                <div>• Zero-Dependency Local JSON DB</div>
-                <div>• Atomic Temp File Writes (.tmp)</div>
-                <div>• Isolated Payload Pool Directory</div>
-                <div>• Git-Ignored Kredensial &amp; Cookies</div>
-                <div>• 1-Click Bulk Fleet Backup/Export</div>
+                <div>• Zero-Dependency Local JSON Database</div>
+                <div>• Atomic Temp File Writes (.tmp) &amp; Swap</div>
+                <div>• Path Traversal Security Hardening</div>
+                <div>• Isolated Account Payload Directory</div>
+                <div>• Git-Ignored Credentials &amp; Session Tokens</div>
+                <div>• 1-Click Fleet JSON Backup &amp; Export</div>
                 <div>• 100% On-Premise Data Sovereignty</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Documentation Suite Catalog */}
+      <Card className="border-border/80 bg-obsidian-850">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-cyan-400">
+            <BookOpen className="h-4 w-4" />
+            ENGINEERING DOCUMENTATION CATALOG
+          </div>
+          <CardTitle className="text-lg">Official System &amp; AI Documentation Suite</CardTitle>
+          <CardDescription>
+            Dokumentasi komprehensif untuk developer, kontributor, dan AI agent di dalam folder{' '}
+            <code>docs/</code>:
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-lg border border-slate-800 bg-obsidian-900/60 p-3">
+              <div className="font-mono text-xs font-bold text-slate-200">
+                📘 docs/ARCHITECTURE.md
+              </div>
+              <div className="mt-1 text-[11px] text-slate-400">
+                Diagram topologi Mermaid, arsitektur 4-layer sistem, dan alur data automasi.
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-800 bg-obsidian-900/60 p-3">
+              <div className="font-mono text-xs font-bold text-slate-200">
+                ⚡ docs/API_REFERENCE.md
+              </div>
+              <div className="mt-1 text-[11px] text-slate-400">
+                Katalog lengkap seluruh endpoint REST API dan spesifikasi SSE stream.
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-800 bg-obsidian-900/60 p-3">
+              <div className="font-mono text-xs font-bold text-slate-200">
+                🛡️ docs/AUTOMATION_PROTOCOLS.md
+              </div>
+              <div className="mt-1 text-[11px] text-slate-400">
+                Protokol Playwright stealth evasion, human cadence, dan GraphQL interceptor.
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-800 bg-obsidian-900/60 p-3">
+              <div className="font-mono text-xs font-bold text-slate-200">
+                🛠️ docs/DEVELOPMENT_GUIDE.md
+              </div>
+              <div className="mt-1 text-[11px] text-slate-400">
+                Panduan setup environment, script commands, testing, dan struktur project tree.
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-800 bg-obsidian-900/60 p-3">
+              <div className="font-mono text-xs font-bold text-slate-200">
+                🤖 docs/AI_AGENT_PROMPT_GUIDE.md
+              </div>
+              <div className="mt-1 text-[11px] text-slate-400">
+                Aturan panduan khusus untuk AI coding agents (atomic writes, state hydration).
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-800 bg-obsidian-900/60 p-3">
+              <div className="font-mono text-xs font-bold text-slate-200">
+                📜 CHANGELOG.md &amp; CONTRIBUTING.md
+              </div>
+              <div className="mt-1 text-[11px] text-slate-400">
+                Riwayat rilis SemVer v1.0.0 s/d v1.3.0 dan panduan kontribusi etis.
               </div>
             </div>
           </div>
