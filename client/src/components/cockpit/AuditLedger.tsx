@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { RefreshCw, Download, Search, ExternalLink, Filter } from 'lucide-react';
+import {
+  RefreshCw,
+  Download,
+  Search,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 export const AuditLedger: React.FC = () => {
@@ -12,21 +21,40 @@ export const AuditLedger: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('ALL');
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
 
-  const filteredHistory = history.filter((item) => {
-    const matchesSearch =
-      !searchTerm ||
-      (item.accountName && item.accountName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (item.tweetUrl && item.tweetUrl.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (item.details && item.details.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Reset page when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, actionFilter, pageSize]);
 
-    const matchesAction = actionFilter === 'ALL' || item.action === actionFilter;
+  const filteredHistory = useMemo(() => {
+    return history.filter((item) => {
+      const matchesSearch =
+        !searchTerm ||
+        (item.accountName && item.accountName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.tweetUrl && item.tweetUrl.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.details && item.details.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    return matchesSearch && matchesAction;
-  });
+      const matchesAction = actionFilter === 'ALL' || item.action === actionFilter;
+
+      return matchesSearch && matchesAction;
+    });
+  }, [history, searchTerm, actionFilter]);
+
+  // Pagination calculations
+  const totalItems = filteredHistory.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedHistory = filteredHistory.slice(startIndex, endIndex);
 
   const handleExportCSV = () => {
     if (history.length === 0) {
@@ -93,7 +121,7 @@ export const AuditLedger: React.FC = () => {
           </div>
           <CardTitle>Interaction Audit Ledger</CardTitle>
           <CardDescription>
-            Riwayat lengkap interaksi per node akun, status keberhasilan, dan waktu eksekusi.
+            Riwayat lengkap interaksi per node akun, status keberhasilan, dan waktu eksekusi ({totalItems} rekaman).
           </CardDescription>
         </div>
 
@@ -152,14 +180,14 @@ export const AuditLedger: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40 bg-obsidian-850/50">
-              {filteredHistory.length === 0 ? (
+              {paginatedHistory.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-8 text-slate-500 italic font-body text-xs">
                     Tidak ada rekaman interaksi yang sesuai kriteria.
                   </td>
                 </tr>
               ) : (
-                filteredHistory.map((item) => {
+                paginatedHistory.map((item) => {
                   const shortUrl = item.tweetUrl
                     ? item.tweetUrl.replace('https://x.com/', '').replace('https://twitter.com/', '')
                     : '-';
@@ -176,15 +204,19 @@ export const AuditLedger: React.FC = () => {
                         {getActionBadge(item.action)}
                       </td>
                       <td className="py-2.5 px-3 whitespace-nowrap">
-                        <a
-                          href={item.tweetUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-flame hover:underline flex items-center gap-1 inline-flex max-w-[180px] truncate"
-                        >
-                          <span className="truncate">{shortUrl}</span>
-                          <ExternalLink className="w-3 h-3 shrink-0" />
-                        </a>
+                        {item.tweetUrl && item.tweetUrl !== '-' ? (
+                          <a
+                            href={item.tweetUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-flame hover:underline flex items-center gap-1 inline-flex max-w-[180px] truncate"
+                          >
+                            <span className="truncate">{shortUrl}</span>
+                            <ExternalLink className="w-3 h-3 shrink-0" />
+                          </a>
+                        ) : (
+                          <span className="text-slate-500">-</span>
+                        )}
                       </td>
                       <td className="py-2.5 px-3 whitespace-nowrap">
                         {getStatusBadge(item.status)}
@@ -198,6 +230,82 @@ export const AuditLedger: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs font-mono text-slate-400">
+          <div className="flex items-center gap-2">
+            <span>
+              Menampilkan{' '}
+              <strong className="text-white">
+                {totalItems > 0 ? startIndex + 1 : 0} - {endIndex}
+              </strong>{' '}
+              dari <strong className="text-white">{totalItems}</strong> entri
+            </span>
+
+            <div className="flex items-center gap-1.5 ml-3">
+              <span className="text-[11px] text-slate-500">Baris:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="bg-obsidian-950 border border-border/80 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-flame"
+              >
+                {[10, 25, 50, 100].map((sz) => (
+                  <option key={sz} value={sz}>
+                    {sz}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              disabled={safeCurrentPage <= 1}
+              className="h-8 w-8 p-0"
+              title="Halaman Pertama"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={safeCurrentPage <= 1}
+              className="h-8 w-8 p-0"
+              title="Halaman Sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            <span className="px-3 py-1 font-mono text-xs text-slate-200 bg-obsidian-950 border border-border/80 rounded">
+              Halaman <strong className="text-flame">{safeCurrentPage}</strong> / {totalPages}
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={safeCurrentPage >= totalPages}
+              className="h-8 w-8 p-0"
+              title="Halaman Berikutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={safeCurrentPage >= totalPages}
+              className="h-8 w-8 p-0"
+              title="Halaman Terakhir"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
