@@ -1,4 +1,4 @@
-# 🛡️ X-SENTINEL v3.0: Autonomous Multi-Node Fleet Cockpit & Growth Studio for X
+# 🛡️ X-SENTINEL v1.3: Autonomous Multi-Node Fleet Cockpit & Growth Studio for X
 
 > **X-SENTINEL** adalah sistem kendali otomatisasi (_engagement & publishing cockpit_) terpadu tingkat enterprise untuk platform **X (Twitter)** berbasis **Playwright Stealth Engine**, **Multi-Node Account Cluster**, **Dedicated Proxy Tunneling**, **AI Post Studio (Anti-AI-Slop Ghostwriter)**, **Media/Image Attachments**, **Cron Auto-Scheduler & Queue**, **Telegram & Discord Webhooks**, **Fleet Health & Account Warmup Engine**, **Feed Hunter Radar**, **Bulk Fleet Onboarding & Export**, **Curated Multi-Niche Spintax Library**, serta **Cockpit UI (React 19 + TypeScript + Tailwind CSS + shadcn/ui + Recharts)**.
 

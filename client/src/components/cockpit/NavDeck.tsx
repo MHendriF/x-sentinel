@@ -106,7 +106,7 @@ export const NavDeck: React.FC = () => {
               <div className="flex items-center gap-1.5 font-heading text-base font-bold tracking-tight text-white">
                 X-SENTINEL
                 <span className="rounded border border-flame/30 bg-flame/20 px-1.5 py-0.5 font-mono text-[9px] text-flame">
-                  v2.5
+                  v1.3
                 </span>
               </div>
               <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">

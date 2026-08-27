@@ -417,7 +417,7 @@ export const PostStudio: React.FC = () => {
               <h1 className="flex items-center gap-2 font-heading text-xl font-bold tracking-tight text-white">
                 AI Post Studio & Fleet Publisher
                 <span className="rounded-full border border-emerald/30 bg-emerald/20 px-2 py-0.5 font-mono text-[10px] text-emerald">
-                  NEW v3.0
+                  v1.3
                 </span>
               </h1>
             </div>

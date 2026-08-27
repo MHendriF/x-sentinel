@@ -41,7 +41,7 @@ export const AboutDeck: React.FC = () => {
               className="gap-1.5 bg-flame px-3 py-1 font-mono text-[11px] font-bold text-obsidian-950 shadow-md"
             >
               <Shield className="h-3.5 w-3.5" />
-              X-SENTINEL CORE v3.0
+              X-SENTINEL CORE v1.3
             </Badge>
             <Badge
               variant="outline"

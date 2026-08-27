@@ -6,7 +6,7 @@ This document serves as high-context system guidelines for **AI coding assistant
 
 ## 📌 1. Project Identity & Architecture Tenets
 
-- **Name**: X-SENTINEL v3.0
+- **Name**: X-SENTINEL v1.3
 - **Domain**: Multi-Node X (Twitter) Automation Cockpit & Publishing Studio.
 - **Runtime**: Bun (Preferred) / Node.js 18+.
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + Recharts.

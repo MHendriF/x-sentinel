@@ -1,6 +1,6 @@
 # 🏗️ X-SENTINEL Architecture & System Design
 
-This document details the high-level architecture, module interactions, and data flow of **X-SENTINEL v3.0**.
+This document details the high-level architecture, module interactions, and data flow of **X-SENTINEL v1.3**.
 
 ---
 
