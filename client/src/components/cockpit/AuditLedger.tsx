@@ -108,6 +108,11 @@ export const AuditLedger: React.FC = () => {
     toast.success(`Berhasil mengekspor ${dataToExport.length} entri audit ke file CSV.`);
   };
 
+const MONTH_NAMES_ID = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+];
+
   const renderTimestamp = (item: { timestamp?: string; timeFormatted?: string }) => {
     if (!item.timestamp) {
       return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || '-'}</span>;
@@ -119,17 +124,21 @@ export const AuditLedger: React.FC = () => {
         return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || item.timestamp}</span>;
       }
 
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
+      const month = MONTH_NAMES_ID[d.getMonth()] || String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
       const hours = String(d.getHours()).padStart(2, '0');
       const minutes = String(d.getMinutes()).padStart(2, '0');
       const seconds = String(d.getSeconds()).padStart(2, '0');
 
       return (
         <div className="flex flex-col leading-tight">
-          <span className="text-slate-200 font-medium text-xs">{year}-{month}-{day}</span>
-          <span className="text-[10px] text-slate-400 font-mono">{hours}:{minutes}:{seconds}</span>
+          <span className="text-slate-200 font-medium text-xs whitespace-nowrap">
+            {day} {month} {year}
+          </span>
+          <span className="text-[10px] text-slate-400 font-mono">
+            {hours}:{minutes}:{seconds}
+          </span>
         </div>
       );
     } catch {
