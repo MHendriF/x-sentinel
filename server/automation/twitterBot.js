@@ -886,13 +886,42 @@ class TwitterBot {
       await this.humanType(textarea, trimmedText);
       await this.sleep(1200);
 
-      // 4. Find and click Post Button
+      // 4. Set up listener to capture GraphQL CreateTweet response before clicking Post
+      let capturedTweetId = null;
+      let capturedTweetUrl = null;
+
+      const onResponse = async (response) => {
+        try {
+          const url = response.url();
+          if (url.includes('CreateTweet') || (url.includes('/graphql/') && response.request().method() === 'POST')) {
+            const json = await response.json().catch(() => null);
+            if (json) {
+              const tweetResult =
+                json?.data?.create_tweet?.tweet_results?.result ||
+                json?.data?.create_tweet_mutation?.tweet_results?.result;
+              const tweetId =
+                tweetResult?.rest_id ||
+                tweetResult?.legacy?.id_str ||
+                tweetResult?.tweet?.rest_id ||
+                json?.data?.create_tweet?.tweet_results?.result?.legacy?.id_str;
+              if (tweetId) {
+                capturedTweetId = tweetId;
+              }
+            }
+          }
+        } catch (e) {}
+      };
+
+      page.on('response', onResponse);
+
+      // Find and click Post Button
       const postBtn = await page.waitForSelector(
         '[data-testid="tweetButton"], [data-testid="tweetButtonInline"], button[aria-label*="Post"], button[aria-label*="Posting"]',
         { timeout: 8000 }
       ).catch(() => null);
 
       if (!postBtn) {
+        page.off('response', onResponse);
         logger.warn(`⚠️ [@${account.username || account.label}] Tombol Post/Tweet tidak ditemukan.`);
         return { success: false, message: 'Tombol kirim postingan tidak ditemukan' };
       }
@@ -909,25 +938,66 @@ class TwitterBot {
       } catch (e) {}
 
       await postBtn.click();
-      await this.sleep(3500);
 
-      logger.success(`🚀 [@${account.username || account.label}] Berhasil memposting tweet: "${trimmedText}"`);
+      // Wait up to 5s for GraphQL response or toast
+      for (let i = 0; i < 15; i++) {
+        if (capturedTweetId) break;
+        await this.sleep(300);
+      }
+
+      page.off('response', onResponse);
+
+      if (capturedTweetId) {
+        capturedTweetUrl = `https://x.com/${account.username || 'i'}/status/${capturedTweetId}`;
+      } else {
+        // Fallback 1: Check toast "View" or status link in DOM
+        try {
+          const toastLink = await page.$('a[href*="/status/"]');
+          if (toastLink) {
+            const href = await toastLink.getAttribute('href');
+            if (href && href.includes('/status/')) {
+              capturedTweetUrl = href.startsWith('http') ? href : `https://x.com${href}`;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Fallback 2: Check user's profile latest tweet
+      if (!capturedTweetUrl && account.username) {
+        try {
+          logger.info(`🔍 [@${account.username}] Mengambil link postingan terbaru dari timeline profil...`);
+          await page.goto(`https://x.com/${account.username}`, { waitUntil: 'domcontentloaded', timeout: 12000 }).catch(() => {});
+          await this.sleep(2000);
+          const firstTweetLink = await page.$('article[data-testid="tweet"] a[href*="/status/"]');
+          if (firstTweetLink) {
+            const href = await firstTweetLink.getAttribute('href');
+            if (href && href.includes('/status/')) {
+              capturedTweetUrl = href.startsWith('http') ? href : `https://x.com${href}`;
+            }
+          }
+        } catch (e) {}
+      }
+
+      const finalTweetUrl = capturedTweetUrl || (account.username ? `https://x.com/${account.username}` : '-');
+
+      logger.success(`🚀 [@${account.username || account.label}] Berhasil memposting tweet: "${trimmedText}" (${finalTweetUrl})`);
       db.addHistory({
         accountId: account.id,
         accountName: account.username || account.label,
-        tweetUrl: `https://x.com/${account.username || 'home'}`,
+        tweetUrl: finalTweetUrl,
+        tweetId: capturedTweetId || (finalTweetUrl.includes('/status/') ? finalTweetUrl.split('/status/')[1]?.split(/[?#]/)[0] : undefined),
         action: 'POST',
         status: 'SUCCESS',
         details: trimmedText
       });
 
-      return { success: true, status: 'SUCCESS', postText: trimmedText };
+      return { success: true, status: 'SUCCESS', postText: trimmedText, tweetUrl: finalTweetUrl };
     } catch (err) {
       logger.error(`❌ [@${account.username || account.label}] Gagal membuat postingan: ${err.message}`);
       db.addHistory({
         accountId: account.id,
         accountName: account.username || account.label,
-        tweetUrl: `https://x.com/${account.username || 'home'}`,
+        tweetUrl: account.username ? `https://x.com/${account.username}` : '-',
         action: 'POST',
         status: 'FAILED',
         message: err.message
