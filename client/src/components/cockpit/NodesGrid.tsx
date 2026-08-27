@@ -80,52 +80,53 @@ export const NodesGrid: React.FC = () => {
               size="sm"
               onClick={handleCheckFleetHealth}
               disabled={isCheckingHealth}
-              className="gap-1.5 border-rose-500/40 font-mono text-xs text-rose-300 hover:bg-rose-500/10"
-              title="Periksa kesehatan cookie auth_token & proxy seluruh node"
+              className="gap-1.5 border-rose-500/30 font-mono text-xs text-rose-300 hover:bg-rose-500/10"
+              title="Periksa kesehatan sesi & proxy seluruh armada"
             >
               {isCheckingHealth ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-400" />
               ) : (
                 <Stethoscope className="h-3.5 w-3.5 text-rose-400" />
               )}
-              {isCheckingHealth ? 'Checking Fleet...' : 'Fleet Health'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportFleet}
-              className="gap-1.5 border-emerald-500/40 font-mono text-xs text-emerald-300 hover:bg-emerald-500/10"
-              title="Unduh backup seluruh node ke file .json"
-            >
-              <Download className="h-3.5 w-3.5 text-emerald-400" />
-              Export Fleet
+              <span>{isCheckingHealth ? 'Checking...' : 'Fleet Health'}</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => openBulkImportModal()}
-              className="gap-1.5 border-cyan-500/40 font-mono text-xs text-cyan-300 hover:bg-cyan-500/10"
+              className="gap-1.5 border-cyan-500/30 font-mono text-xs text-cyan-300 hover:bg-cyan-500/10"
+              title="Import massal akun (format teks / CSV)"
             >
               <UploadCloud className="h-3.5 w-3.5 text-cyan-400" />
-              Bulk Import
+              <span>Import</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportFleet}
+              className="gap-1.5 border-emerald-500/30 font-mono text-xs text-emerald-300 hover:bg-emerald-500/10"
+              title="Unduh backup seluruh node ke file .json"
+            >
+              <Download className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Export</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => loadAccounts()}
-              className="gap-1 font-mono text-xs"
+              className="h-8 w-8 p-0"
+              title="Refresh data node"
             >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Refresh
+              <RefreshCw className="h-3.5 w-3.5 text-slate-400" />
             </Button>
             <Button
               variant="default"
               size="sm"
               onClick={() => openAccountModal(null)}
-              className="gap-1.5 font-heading text-xs font-bold"
+              className="gap-1.5 font-heading text-xs font-bold shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              Register Node
+              <span>Register Node</span>
             </Button>
           </div>
         </CardHeader>

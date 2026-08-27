@@ -169,27 +169,27 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {account.healthStatus === 'HEALTHY' ? (
             <Badge variant="success" className="gap-1 font-mono text-[10px]">
               <CheckCircle2 className="h-3 w-3" />
-              SESSION HEALTHY
+              Healthy
             </Badge>
           ) : account.healthStatus === 'EXPIRED' ? (
             <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
               <AlertTriangle className="h-3 w-3" />
-              SESSION EXPIRED
+              Expired
             </Badge>
           ) : account.healthStatus === 'PROXY_DEAD' ? (
             <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
               <WifiOff className="h-3 w-3" />
-              PROXY DEAD
+              Proxy Dead
             </Badge>
           ) : account.isValid ? (
             <Badge variant="success" className="gap-1 font-mono text-[10px]">
               <CheckCircle2 className="h-3 w-3" />
-              VALID
+              Valid
             </Badge>
           ) : (
             <Badge variant="secondary" className="gap-1 font-mono text-[10px] text-slate-400">
               <HelpCircle className="h-3 w-3" />
-              UNVERIFIED
+              Unverified
             </Badge>
           )}
 
@@ -202,14 +202,14 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
               title="Klik untuk jalankan rutinitas pemanasan"
             >
               <Flame className="h-3 w-3 text-amber-400" />
-              Warmup: Day {account.warmupDay || 1}/7
+              Day {account.warmupDay || 1}/7
             </Badge>
           )}
 
           {cleanProxy ? (
             <Badge
               variant="purple"
-              className="max-w-[170px] gap-1 truncate font-mono text-[10px]"
+              className="max-w-[150px] gap-1 truncate font-mono text-[10px]"
               title={`Proxy: ${cleanProxy}`}
             >
               <Globe className="h-3 w-3" />
@@ -217,7 +217,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
             </Badge>
           ) : (
             <Badge variant="outline" className="font-mono text-[10px] text-slate-500">
-              DIRECT IP
+              Direct
             </Badge>
           )}
 
@@ -225,7 +225,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {proxyTest && !proxyTest.isDirect && (
             <Badge
               variant={proxyTest.success ? 'success' : 'destructive'}
-              className="animate-in fade-in gap-1 text-[10px]"
+              className="animate-in fade-in gap-1 font-mono text-[10px]"
             >
               {proxyTest.success ? (
                 <>
@@ -235,7 +235,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
               ) : (
                 <>
                   <WifiOff className="h-3 w-3" />
-                  DEAD ({proxyTest.latency}ms)
+                  Dead ({proxyTest.latency}ms)
                 </>
               )}
             </Badge>
@@ -243,11 +243,12 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
           <Badge
             variant="default"
-            className="cursor-pointer gap-1 transition-colors hover:bg-amber-500/20"
+            className="cursor-pointer gap-1 font-mono text-[10px] transition-colors hover:bg-amber-500/20"
             onClick={() => openCommentsModal(account)}
+            title="Kelola komentar akun ini"
           >
             <MessageSquare className="h-3 w-3" />
-            {account.commentsCount ?? 3} PAYLOADS
+            {account.commentsCount ?? 3} Payloads
           </Badge>
         </div>
       </div>
