@@ -13,6 +13,9 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Calendar,
+  X,
+  Filter,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -20,6 +23,10 @@ export const AuditLedger: React.FC = () => {
   const { history, loadHistory } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('ALL');
+
+  // Date Range state
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +39,7 @@ export const AuditLedger: React.FC = () => {
   // Reset page when filter or search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, actionFilter, pageSize]);
+  }, [searchTerm, actionFilter, startDate, endDate, pageSize]);
 
   const filteredHistory = useMemo(() => {
     return history.filter((item) => {
@@ -44,9 +51,25 @@ export const AuditLedger: React.FC = () => {
 
       const matchesAction = actionFilter === 'ALL' || item.action === actionFilter;
 
-      return matchesSearch && matchesAction;
+      // Date Range filter
+      let matchesDate = true;
+      if (startDate || endDate) {
+        if (!item.timestamp) {
+          matchesDate = false;
+        } else {
+          const itemDateStr = item.timestamp.slice(0, 10); // 'YYYY-MM-DD'
+          if (startDate && itemDateStr < startDate) {
+            matchesDate = false;
+          }
+          if (endDate && itemDateStr > endDate) {
+            matchesDate = false;
+          }
+        }
+      }
+
+      return matchesSearch && matchesAction && matchesDate;
     });
-  }, [history, searchTerm, actionFilter]);
+  }, [history, searchTerm, actionFilter, startDate, endDate]);
 
   // Pagination calculations
   const totalItems = filteredHistory.length;
@@ -57,13 +80,14 @@ export const AuditLedger: React.FC = () => {
   const paginatedHistory = filteredHistory.slice(startIndex, endIndex);
 
   const handleExportCSV = () => {
-    if (history.length === 0) {
+    const dataToExport = filteredHistory.length > 0 ? filteredHistory : history;
+    if (dataToExport.length === 0) {
       toast.error('Tidak ada data audit untuk diekspor.');
       return;
     }
 
     const headers = ['Timestamp', 'Account', 'Action', 'Tweet URL', 'Status', 'Details'];
-    const rows = history.map((h) => [
+    const rows = dataToExport.map((h) => [
       `"${h.timestamp || ''}"`,
       `"${h.accountName || ''}"`,
       `"${h.action || ''}"`,
@@ -81,7 +105,7 @@ export const AuditLedger: React.FC = () => {
     link.click();
     document.body.removeChild(link);
 
-    toast.success('File CSV berhasil diunduh.');
+    toast.success(`Berhasil mengekspor ${dataToExport.length} entri audit ke file CSV.`);
   };
 
   const renderTimestamp = (item: { timestamp?: string; timeFormatted?: string }) => {
@@ -168,30 +192,122 @@ export const AuditLedger: React.FC = () => {
 
       <CardContent className="space-y-4">
         {/* Filters Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-obsidian-950 p-3 rounded-md border border-border/80">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-            <Input
-              type="text"
-              placeholder="Cari URL tweet, akun, atau pesan..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 text-xs font-mono"
-            />
+        <div className="flex flex-col gap-3 bg-obsidian-950 p-3 rounded-md border border-border/80">
+          {/* Top Filter Row: Search & Vector */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+              <Input
+                type="text"
+                placeholder="Cari URL tweet, akun, atau pesan..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 text-xs font-mono bg-obsidian-900 border-border/80"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              {['ALL', 'LIKE', 'RETWEET', 'COMMENT', 'POST'].map((act) => (
+                <Button
+                  key={act}
+                  size="sm"
+                  variant={actionFilter === act ? 'default' : 'outline'}
+                  onClick={() => setActionFilter(act)}
+                  className="h-8 text-xs font-mono px-3"
+                >
+                  {act}
+                </Button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            {['ALL', 'LIKE', 'RETWEET', 'COMMENT', 'POST'].map((act) => (
+          {/* Bottom Filter Row: Date Range Filter */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 text-slate-400 text-[11px] font-semibold">
+                <Calendar className="w-3.5 h-3.5 text-flame" />
+                <span>FILTER TANGGAL:</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-obsidian-900 px-2.5 py-1 rounded border border-border/80">
+                <span className="text-[10px] text-slate-500">Dari:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer scheme-dark"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-obsidian-900 px-2.5 py-1 rounded border border-border/80">
+                <span className="text-[10px] text-slate-500">Sampai:</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer scheme-dark"
+                />
+              </div>
+
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                  }}
+                  className="h-7 px-2 text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-1"
+                >
+                  <X className="w-3 h-3" />
+                  Reset Tanggal
+                </Button>
+              )}
+            </div>
+
+            {/* Quick Presets */}
+            <div className="flex items-center gap-1">
               <Button
-                key={act}
+                variant="outline"
                 size="sm"
-                variant={actionFilter === act ? 'default' : 'outline'}
-                onClick={() => setActionFilter(act)}
-                className="h-8 text-xs font-mono px-3"
+                onClick={() => {
+                  const today = new Date().toISOString().slice(0, 10);
+                  setStartDate(today);
+                  setEndDate(today);
+                }}
+                className="h-7 px-2.5 text-[11px] font-mono bg-obsidian-900 hover:bg-obsidian-850"
               >
-                {act}
+                Hari Ini
               </Button>
-            ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const past = new Date();
+                  past.setDate(now.getDate() - 7);
+                  setStartDate(past.toISOString().slice(0, 10));
+                  setEndDate(now.toISOString().slice(0, 10));
+                }}
+                className="h-7 px-2.5 text-[11px] font-mono bg-obsidian-900 hover:bg-obsidian-850"
+              >
+                7 Hari
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const past = new Date();
+                  past.setDate(now.getDate() - 30);
+                  setStartDate(past.toISOString().slice(0, 10));
+                  setEndDate(now.toISOString().slice(0, 10));
+                }}
+                className="h-7 px-2.5 text-[11px] font-mono bg-obsidian-900 hover:bg-obsidian-850"
+              >
+                30 Hari
+              </Button>
+            </div>
           </div>
         </div>
 
