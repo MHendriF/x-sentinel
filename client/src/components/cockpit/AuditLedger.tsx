@@ -64,6 +64,8 @@ export const AuditLedger: React.FC = () => {
         return <Badge variant="success">REPOST</Badge>;
       case 'COMMENT':
         return <Badge variant="blue">COMMENT</Badge>;
+      case 'POST':
+        return <Badge variant="default" className="bg-amber-500/15 text-amber-300 border-amber-500/30">POST</Badge>;
       default:
         return <Badge variant="secondary">{action}</Badge>;
     }
@@ -122,7 +124,7 @@ export const AuditLedger: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            {['ALL', 'LIKE', 'RETWEET', 'COMMENT'].map((act) => (
+            {['ALL', 'LIKE', 'RETWEET', 'COMMENT', 'POST'].map((act) => (
               <Button
                 key={act}
                 size="sm"

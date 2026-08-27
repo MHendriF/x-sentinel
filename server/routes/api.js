@@ -330,10 +330,82 @@ router.post('/tasks/hunter', async (req, res) => {
   }
 });
 
+// POST /api/tasks/post - Start Post Publishing Task
+router.post('/tasks/post', async (req, res) => {
+  if (twitterBot.isRunning) {
+    return res.status(400).json({ success: false, message: 'Otomasi lain sedang berjalan.' });
+  }
+
+  const { accountIds = 'all', posts, delaySeconds = 15 } = req.body;
+
+  let postList = [];
+  if (Array.isArray(posts)) {
+    postList = posts.map(p => String(p).trim()).filter(Boolean);
+  } else if (typeof posts === 'string' && posts.trim()) {
+    postList = [posts.trim()];
+  }
+
+  if (postList.length === 0) {
+    return res.status(400).json({ success: false, message: 'Konten postingan wajib diisi.' });
+  }
+
+  try {
+    // Run in background
+    twitterBot.runMultiAccountPostTask(accountIds, postList, { delaySeconds })
+      .catch(err => logger.error(`Unhandled post task error: ${err.message}`));
+
+    res.json({
+      success: true,
+      message: `Tugas memposting ke X dimulai untuk ${postList.length} konten postingan.`
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
 // POST /api/tasks/stop - Stop ongoing task
 router.post('/tasks/stop', (req, res) => {
   const stopped = twitterBot.stopTask();
   res.json({ success: true, stopped });
+});
+
+// ==========================================
+// AI GENERATOR ENDPOINTS
+// ==========================================
+
+// POST /api/ai/generate-post - Generate High-Engagement Tweets from Keyword
+router.post('/ai/generate-post', async (req, res) => {
+  const { keyword, style = 'viral_hook', language = 'en', count = 3, customPrompt = '', customOverrides = {} } = req.body;
+
+  if (!keyword || !keyword.trim()) {
+    return res.status(400).json({ success: false, message: 'Kata kunci / topik wajib diisi.' });
+  }
+
+  const startTime = Date.now();
+  try {
+    const result = await aiService.generatePostFromKeyword({
+      keyword: keyword.trim(),
+      style,
+      language,
+      count: parseInt(count, 10) || 3,
+      customPrompt: (customPrompt || '').trim(),
+      customOverrides
+    });
+
+    const duration = Date.now() - startTime;
+    res.json({
+      ...result,
+      latency: duration,
+      keyword: keyword.trim(),
+      style,
+      language
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: `Gagal meracik postingan: ${err.message}`
+    });
+  }
 });
 
 // POST /api/proxy/test - Live ping & GeoIP test for any proxy string

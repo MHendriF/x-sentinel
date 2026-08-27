@@ -88,9 +88,11 @@ class LocalDB {
       totalLikes: 0,
       totalRetweets: 0,
       totalComments: 0,
+      totalPosts: 0,
       todayLikes: 0,
       todayRetweets: 0,
       todayComments: 0,
+      todayPosts: 0,
       lastResetDate: new Date().toISOString().slice(0, 10)
     });
 
@@ -103,6 +105,7 @@ class LocalDB {
       this.cache.stats.todayLikes = 0;
       this.cache.stats.todayRetweets = 0;
       this.cache.stats.todayComments = 0;
+      this.cache.stats.todayPosts = 0;
       this.cache.stats.lastResetDate = today;
       this.save('stats');
     }
@@ -321,14 +324,17 @@ class LocalDB {
     if (item.status === 'SUCCESS') {
       this.checkAndResetDailyStats();
       if (item.action === 'LIKE') {
-        this.cache.stats.totalLikes++;
-        this.cache.stats.todayLikes++;
+        this.cache.stats.totalLikes = (this.cache.stats.totalLikes || 0) + 1;
+        this.cache.stats.todayLikes = (this.cache.stats.todayLikes || 0) + 1;
       } else if (item.action === 'RETWEET') {
-        this.cache.stats.totalRetweets++;
-        this.cache.stats.todayRetweets++;
+        this.cache.stats.totalRetweets = (this.cache.stats.totalRetweets || 0) + 1;
+        this.cache.stats.todayRetweets = (this.cache.stats.todayRetweets || 0) + 1;
       } else if (item.action === 'COMMENT') {
-        this.cache.stats.totalComments++;
-        this.cache.stats.todayComments++;
+        this.cache.stats.totalComments = (this.cache.stats.totalComments || 0) + 1;
+        this.cache.stats.todayComments = (this.cache.stats.todayComments || 0) + 1;
+      } else if (item.action === 'POST' || item.action === 'TWEET') {
+        this.cache.stats.totalPosts = (this.cache.stats.totalPosts || 0) + 1;
+        this.cache.stats.todayPosts = (this.cache.stats.todayPosts || 0) + 1;
       }
       this.save('stats');
 
@@ -336,10 +342,11 @@ class LocalDB {
       if (item.accountId) {
         const acc = this.getAccountById(item.accountId);
         if (acc) {
-          if (!acc.stats) acc.stats = { likes: 0, retweets: 0, comments: 0 };
+          if (!acc.stats) acc.stats = { likes: 0, retweets: 0, comments: 0, posts: 0 };
           if (item.action === 'LIKE') acc.stats.likes = (acc.stats.likes || 0) + 1;
           if (item.action === 'RETWEET') acc.stats.retweets = (acc.stats.retweets || 0) + 1;
           if (item.action === 'COMMENT') acc.stats.comments = (acc.stats.comments || 0) + 1;
+          if (item.action === 'POST' || item.action === 'TWEET') acc.stats.posts = (acc.stats.posts || 0) + 1;
           this.save('accounts');
         }
       }

@@ -1,11 +1,15 @@
 import React from 'react';
 import { useStore } from '@/store/useStore';
-import { Heart, Repeat, MessageSquare, Menu } from 'lucide-react';
+import { Heart, Repeat, MessageSquare, Sparkles, Menu } from 'lucide-react';
 
 const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
   'tab-accounts': {
     title: 'Multi-Node & Proxy Management',
     subtitle: 'Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.',
+  },
+  'tab-composer': {
+    title: 'AI Post Studio & Fleet Publisher',
+    subtitle: 'Generate high-engagement post content from keywords and broadcast across multi-node fleets.',
   },
   'tab-batch': {
     title: 'Target Engagement Workbench',
@@ -63,8 +67,8 @@ export const TelemetryRibbon: React.FC = () => {
       </div>
 
       {/* Metrics Chips */}
-      <div className="grid grid-cols-3 gap-2.5 sm:flex sm:items-center">
-        <div className="flex items-center gap-3 bg-obsidian-850 border border-border/80 rounded-md px-3.5 py-2 shadow-sm">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:flex sm:items-center">
+        <div className="flex items-center gap-3 bg-obsidian-850 border border-border/80 rounded-md px-3 py-2 shadow-sm">
           <div className="p-1.5 rounded bg-red-500/10 text-red-400">
             <Heart className="w-4 h-4 fill-red-400/20" />
           </div>
@@ -78,7 +82,7 @@ export const TelemetryRibbon: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-obsidian-850 border border-border/80 rounded-md px-3.5 py-2 shadow-sm">
+        <div className="flex items-center gap-3 bg-obsidian-850 border border-border/80 rounded-md px-3 py-2 shadow-sm">
           <div className="p-1.5 rounded bg-emerald-500/10 text-emerald-400">
             <Repeat className="w-4 h-4" />
           </div>
@@ -92,7 +96,7 @@ export const TelemetryRibbon: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-obsidian-850 border border-border/80 rounded-md px-3.5 py-2 shadow-sm">
+        <div className="flex items-center gap-3 bg-obsidian-850 border border-border/80 rounded-md px-3 py-2 shadow-sm">
           <div className="p-1.5 rounded bg-blue-500/10 text-blue-400">
             <MessageSquare className="w-4 h-4" />
           </div>
@@ -102,6 +106,20 @@ export const TelemetryRibbon: React.FC = () => {
             </div>
             <div className="font-mono text-[9px] text-muted-foreground tracking-wider mt-0.5">
               REPLIES
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 bg-obsidian-850 border border-border/80 rounded-md px-3 py-2 shadow-sm">
+          <div className="p-1.5 rounded bg-amber-500/10 text-amber-400">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="font-mono font-bold text-sm lg:text-base text-white leading-none">
+              {stats?.totalPosts ?? 0}
+            </div>
+            <div className="font-mono text-[9px] text-muted-foreground tracking-wider mt-0.5">
+              POSTS
             </div>
           </div>
         </div>

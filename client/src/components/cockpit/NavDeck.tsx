@@ -13,6 +13,7 @@ import {
   X,
   Radio,
   Bot,
+  Sparkles,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -21,6 +22,11 @@ const NAV_ITEMS = [
     label: 'Multi-Node & Proxy',
     section: 'CONTROL SURFACES',
     icon: Layers,
+  },
+  {
+    id: 'tab-composer',
+    label: 'AI Post Studio',
+    icon: Sparkles,
   },
   {
     id: 'tab-batch',

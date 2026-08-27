@@ -16,6 +16,7 @@ export interface AccountNode {
     likes: number;
     retweets: number;
     comments: number;
+    posts?: number;
   };
 }
 
@@ -23,9 +24,11 @@ export interface Stats {
   totalLikes: number;
   totalRetweets: number;
   totalComments: number;
+  totalPosts?: number;
   todayLikes?: number;
   todayRetweets?: number;
   todayComments?: number;
+  todayPosts?: number;
 }
 
 export interface Settings {
@@ -51,7 +54,7 @@ export interface HistoryItem {
   accountName?: string;
   tweetUrl: string;
   tweetId?: string;
-  action: 'LIKE' | 'RETWEET' | 'COMMENT';
+  action: 'LIKE' | 'RETWEET' | 'COMMENT' | 'POST';
   status: 'SUCCESS' | 'ALREADY_DONE' | 'FAILED';
   details?: string;
   message?: string;
@@ -182,6 +185,45 @@ export const apiClient = {
     comment: boolean;
   }) {
     const res = await fetch('/api/tasks/hunter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+
+  async startPostTask(payload: {
+    accountIds: string | string[];
+    posts: string | string[];
+    delaySeconds?: number;
+  }) {
+    const res = await fetch('/api/tasks/post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+
+  async generateAIPost(payload: {
+    keyword: string;
+    style?: string;
+    language?: string;
+    count?: number;
+    customPrompt?: string;
+    customOverrides?: any;
+  }): Promise<{
+    success: boolean;
+    isFallback?: boolean;
+    provider?: string;
+    posts?: string[];
+    latency?: number;
+    keyword?: string;
+    style?: string;
+    language?: string;
+    message?: string;
+  }> {
+    const res = await fetch('/api/ai/generate-post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

@@ -74,30 +74,36 @@ export const AnalyticsDeck: React.FC = () => {
     return history.filter((h) => h.action === 'COMMENT' && h.status === 'SUCCESS').length;
   }, [stats, history]);
 
-  const totalActions = totalLikes + totalRetweets + totalComments;
+  const totalPosts = useMemo(() => {
+    if (typeof stats?.totalPosts === 'number' && stats.totalPosts > 0) return stats.totalPosts;
+    return history.filter((h) => h.action === 'POST' && h.status === 'SUCCESS').length;
+  }, [stats, history]);
+
+  const totalActions = totalLikes + totalRetweets + totalComments + totalPosts;
 
   // Aggregate Data for Daily Trend
   const dailyTrendData = useMemo(() => {
-    const map: Record<string, { date: string; likes: number; retweets: number; comments: number }> = {};
+    const map: Record<string, { date: string; likes: number; retweets: number; comments: number; posts: number }> = {};
 
     history.forEach((item) => {
       const dateStr = item.timestamp ? item.timestamp.slice(0, 10) : 'Today';
       if (!map[dateStr]) {
-        map[dateStr] = { date: dateStr.slice(5), likes: 0, retweets: 0, comments: 0 };
+        map[dateStr] = { date: dateStr.slice(5), likes: 0, retweets: 0, comments: 0, posts: 0 };
       }
       if (item.action === 'LIKE' && item.status === 'SUCCESS') map[dateStr].likes += 1;
       if (item.action === 'RETWEET' && item.status === 'SUCCESS') map[dateStr].retweets += 1;
       if (item.action === 'COMMENT' && item.status === 'SUCCESS') map[dateStr].comments += 1;
+      if (item.action === 'POST' && item.status === 'SUCCESS') map[dateStr].posts += 1;
     });
 
     const result = Object.values(map);
     if (result.length === 0) {
       return [
-        { date: 'Today', likes: totalLikes, retweets: totalRetweets, comments: totalComments },
+        { date: 'Today', likes: totalLikes, retweets: totalRetweets, comments: totalComments, posts: totalPosts },
       ];
     }
     return result.slice(-14);
-  }, [history, totalLikes, totalRetweets, totalComments]);
+  }, [history, totalLikes, totalRetweets, totalComments, totalPosts]);
 
   // Aggregate Node Workload (All nodes sorted by execution count)
   const fullNodeLeaderboard = useMemo(() => {
@@ -106,7 +112,7 @@ export const AnalyticsDeck: React.FC = () => {
     // 1. Initialize from registered accounts
     accounts.forEach((acc) => {
       const handle = `@${acc.username || acc.label}`;
-      const accStatsSum = (acc.stats?.likes || 0) + (acc.stats?.retweets || 0) + (acc.stats?.comments || 0);
+      const accStatsSum = (acc.stats?.likes || 0) + (acc.stats?.retweets || 0) + (acc.stats?.comments || 0) + (acc.stats?.posts || 0);
       counts[acc.id] = {
         name: acc.label || acc.username || 'Node',
         username: handle,
@@ -232,8 +238,14 @@ export const AnalyticsDeck: React.FC = () => {
         fill: '#60a5fa',
         percentage: ((totalComments / safeTotal) * 100).toFixed(1),
       },
+      {
+        name: 'New Posts',
+        count: totalPosts,
+        fill: '#f59e0b',
+        percentage: ((totalPosts / safeTotal) * 100).toFixed(1),
+      },
     ];
-  }, [totalLikes, totalRetweets, totalComments, totalActions]);
+  }, [totalLikes, totalRetweets, totalComments, totalPosts, totalActions]);
 
   return (
     <div className="space-y-6">
@@ -320,14 +332,16 @@ export const AnalyticsDeck: React.FC = () => {
         <Card className="bg-obsidian-850">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="font-mono text-[10px] text-muted-foreground tracking-wider">REPLY PAYLOADS</div>
-              <div className="font-heading font-bold text-2xl text-blue-400 mt-1">
-                {totalComments}
+              <div className="font-mono text-[10px] text-muted-foreground tracking-wider">REPLIES & POSTS</div>
+              <div className="font-heading font-bold text-2xl text-amber-400 mt-1">
+                {totalComments + totalPosts}
               </div>
-              <div className="text-[10px] text-slate-400 mt-1 font-mono">Spintax Randomized</div>
+              <div className="text-[10px] text-slate-400 mt-1 font-mono flex items-center gap-1">
+                <MessageSquare className="w-3 h-3 text-blue-400" /> {totalComments} Rep · <Sparkles className="w-3 h-3 text-amber-400 ml-1" /> {totalPosts} Posts
+              </div>
             </div>
-            <div className="p-3 rounded-md bg-blue-500/10 text-blue-400">
-              <MessageSquare className="w-6 h-6" />
+            <div className="p-3 rounded-md bg-amber-500/10 text-amber-400">
+              <Sparkles className="w-6 h-6" />
             </div>
           </CardContent>
         </Card>
@@ -340,7 +354,7 @@ export const AnalyticsDeck: React.FC = () => {
           <CardHeader className="pb-2">
             <div className="font-mono text-[10px] font-bold text-flame tracking-wider">ACTIVITY VELOCITY</div>
             <CardTitle className="text-base">Interaction Volume Over Timeline</CardTitle>
-            <CardDescription>Grafik tren volume Like, Repost, dan Reply per interval waktu.</CardDescription>
+            <CardDescription>Grafik tren volume Like, Repost, Reply, dan Postingan per interval waktu.</CardDescription>
           </CardHeader>
           <CardContent className="h-80 pt-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -357,6 +371,10 @@ export const AnalyticsDeck: React.FC = () => {
                   <linearGradient id="replyGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.4} />
                     <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="postGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e2433" />
@@ -378,6 +396,7 @@ export const AnalyticsDeck: React.FC = () => {
                 <Area isAnimationActive={false} type="monotone" dataKey="likes" name="Likes" stroke="#f87171" fillOpacity={1} fill="url(#likeGrad)" strokeWidth={2} />
                 <Area isAnimationActive={false} type="monotone" dataKey="retweets" name="Reposts" stroke="#34d399" fillOpacity={1} fill="url(#rtGrad)" strokeWidth={2} />
                 <Area isAnimationActive={false} type="monotone" dataKey="comments" name="Replies" stroke="#60a5fa" fillOpacity={1} fill="url(#replyGrad)" strokeWidth={2} />
+                <Area isAnimationActive={false} type="monotone" dataKey="posts" name="New Posts" stroke="#f59e0b" fillOpacity={1} fill="url(#postGrad)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -524,7 +543,7 @@ export const AnalyticsDeck: React.FC = () => {
             </div>
             <CardTitle className="text-base">Cumulative Vector Totals</CardTitle>
             <CardDescription>
-              Perbandingan total volume interaksi per kategori vektor (Like, Repost, Reply).
+              Perbandingan total volume interaksi per kategori vektor (Like, Repost, Reply, Post).
             </CardDescription>
           </div>
 
@@ -557,8 +576,17 @@ export const AnalyticsDeck: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-obsidian-950 border border-border/80 text-white">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-white">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-bold text-white text-sm">{totalPosts}</span>
+              <span className="text-slate-200">Posts</span>
+              <span className="text-[11px] text-amber-200 font-semibold">
+                ({vectorBreakdownData[3]?.percentage || 0}%)
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-obsidian-950 border border-border/80 text-white">
+              <Activity className="w-3.5 h-3.5 text-slate-400" />
               <span className="font-bold text-white text-sm">{totalActions}</span>
               <span className="text-slate-300">Total</span>
             </div>
@@ -584,6 +612,11 @@ export const AnalyticsDeck: React.FC = () => {
                   style={{ width: `${vectorBreakdownData[2].percentage}%` }}
                   className="bg-blue-400"
                   title={`Replies: ${totalComments} (${vectorBreakdownData[2].percentage}%)`}
+                />
+                <div
+                  style={{ width: `${vectorBreakdownData[3]?.percentage || 0}%` }}
+                  className="bg-amber-400"
+                  title={`Posts: ${totalPosts} (${vectorBreakdownData[3]?.percentage || 0}%)`}
                 />
               </div>
             </div>

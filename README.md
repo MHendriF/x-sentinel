@@ -15,19 +15,25 @@
 - **📥 Bulk Fleet Import**: Daftarkan puluhan akun sekaligus via teks multi-baris (`token:ct0:proxy:label` atau JSON).
 - **📤 One-Click Fleet Export**: Cadangkan seluruh konfigurasi armada node ke file `.json` dengan 1 klik.
 
-### 2. 🤖 AI-Powered Contextual Auto-Replies Engine
+### 2. ✨ AI Post Creator & Fleet Studio (NEW)
+- **Auto-Generate High Engagement Posts**: Buat postingan X autentik dan tajam hanya dari kata kunci/topik dengan model AI pilihan Anda.
+- **5 Persona & Tone Presets**: Pilihan gaya *🔥 Viral Hook*, *💡 Alpha Insight*, *📊 Mini Value-Drop*, *🛠️ Founder Story*, dan *🇮🇩 Komunitas Indo Tech*.
+- **Interactive Live Tweet Mockup & 280-Char Meter**: Editor WYSIWYG lengkap dengan preview avatar & handle akun, plus live character limit counter.
+- **Multi-Node Fleet Dispatcher**: Publikasikan postingan ke 1 akun terpilih atau broadcast variasi draf unik ke seluruh armada akun yang aktif dengan rotasi aman.
+
+### 3. 🤖 AI-Powered Contextual Auto-Replies Engine
 - **Multi-Provider LLM Integration**: Mendukung **OpenRouter**, **Groq (Ultra-Fast Inference)**, **OpenAI (GPT-4o/mini)**, **Google Gemini**, dan **Local Ollama** (*self-hosted*).
 - **Context-Aware Sentiment & Topic Extraction**: Bot otomatis membaca isi tweet target dan meracik balasan alami, relevan, dan berbobot.
 - **Smart Graceful Fallback**: Beralih otomatis ke pool Spintax/JSON jika kuota AI habis atau koneksi timeout.
 - **Interactive AI Sandbox**: Uji koneksi dan respon AI secara langsung via tombol *⚡ Test AI Connection*.
 
-### 3. 🎯 Target Engagement Workbench & Matrix Distribution
+### 4. 🎯 Target Engagement Workbench & Matrix Distribution
 - **Batch URLs Execution**: Eksekusi serentak atau berurutan pada daftar URL tweet target.
 - **Modular Interaction Vectors**: Aktifkan **❤️ Like**, **🔁 Repost / Retweet**, dan **💬 Comment** sesuai kebutuhan.
 - **🔀 1-to-1 Unique JSON Reply Distribution**: Mendukung payload JSON `{ "topic": "...", "replies": [...] }` di mana setiap akun node memposting 1 balasan unik yang berbeda pada target tweet.
 - **Dynamic Waiting & Smart Selectors**: Deteksi rendering DOM tweet modern untuk mencegah selector timeout.
 
-### 4. 🌐 Curated Multi-Niche Spintax Library
+### 5. 🌐 Curated Multi-Niche Spintax Library
 - **5 Niche Industry Presets**:
   1. 🌐 **Web3, Crypto & DeFi Alpha** (English: TGE, Nodes, Base, Liquidity, Layer-2)
   2. 🤖 **AI & Autonomous Agents** (English: LLMs, Inference, Multi-Agent, Tooling)
@@ -36,16 +42,17 @@
   5. 🚀 **Viral Hooks & One-Liners** (Punchy Engagement)
 - **1-Click Apply**: Muat template preset langsung ke *Fallback Stack* atau ke *Storage Payload* akun tertentu.
 
-### 5. 📡 Feed Hunter Intelligence
+### 6. 📡 Feed Hunter Intelligence
 - Radar pencarian otomatis postingan terkini berdasarkan kata kunci (*keywords*) atau hashtag.
 - Menjalankan interaksi bertingkat langsung dari hasil tangkapan radar secara otomatis.
 
-### 6. 📊 Telemetry & Growth Analytics (Recharts)
-- **Activity Velocity (Area Chart)**: Tren kecepatan volume Like, Repost, dan Balasan.
+### 7. 📊 Telemetry & Growth Analytics (Recharts)
+- **Activity Velocity (Area Chart)**: Tren kecepatan volume Like, Repost, Balasan (Reply), dan Postingan Mandiri (New Posts).
+- **Cumulative Vector Breakdown**: Distribusi komparatif 4 vektor interaksi lengkap dengan persentase & stack proportion bar.
 - **Node Workload Share (Donut Chart)**: Visualisasi pembagian beban kerja antar node akun.
 - Pelacak rasio keberhasilan (*Success Rate*) dan akumulasi volume interaksi.
 
-### 7. 🔒 Anti-Ban Defense & Hardening Protocol
+### 8. 🔒 Anti-Ban Defense & Hardening Protocol
 - **Stealth Browser Scripts**: Masking `navigator.webdriver`, WebGL GPU vendor spoofing, dan WebRTC IP leak shield.
 - **Atomic File Writes**: Perlindungan data dengan penulisan file sementara (`.tmp`) + `fs.renameSync` untuk mencegah korupsi data JSON.
 - **Natural Human Cadence**: Interval jeda acak (*jitter*), emulasi pengetikan manusia, dan simulasi scrolling acak.

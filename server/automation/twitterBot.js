@@ -829,6 +829,196 @@ class TwitterBot {
     }
   }
 
+  /**
+   * Create and publish a new Tweet/Post on X
+   */
+  async createPost(page, postText, account) {
+    logger.action(`[@${account.username || account.label}] Mempersiapkan publikasi postingan baru...`);
+
+    try {
+      const trimmedText = spintax.parseSpintax(postText.trim());
+      logger.info(`📝 [@${account.username || account.label}] Isi postingan (${trimmedText.length} karakter): "${trimmedText}"`);
+
+      // 1. Navigate to compose page or home
+      await page.goto('https://x.com/compose/post', { waitUntil: 'domcontentloaded' }).catch(() => {});
+      await page.waitForTimeout(3000);
+
+      // Check if redirected to login
+      if (page.url().includes('/login') || page.url().includes('/i/flow/login')) {
+        logger.error(`❌ [@${account.username || account.label}] Sesi login kedaluwarsa.`);
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          action: 'POST',
+          status: 'FAILED',
+          message: 'Sesi login kedaluwarsa'
+        });
+        return { success: false, message: 'Sesi login kedaluwarsa' };
+      }
+
+      // 2. Find post textarea
+      let textarea = await page.$('[data-testid="tweetTextarea_0"], div[role="textbox"][data-testid="tweetTextarea_0"]');
+      if (!textarea) {
+        // Fallback: Try home timeline composer
+        logger.info(`ℹ️ Membuka timeline home untuk akses composer fallback...`);
+        await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(3500);
+
+        // Check if there is a side compose button
+        const sideComposeBtn = await page.$('[data-testid="SideNav_NewTweet_Button"], a[href="/compose/post"]');
+        if (sideComposeBtn) {
+          await sideComposeBtn.click();
+          await this.sleep(1500);
+        }
+
+        textarea = await page.waitForSelector('[data-testid="tweetTextarea_0"]', { timeout: 10000 }).catch(() => null);
+      }
+
+      if (!textarea) {
+        logger.warn(`⚠️ [@${account.username || account.label}] Kolom editor tweet tidak ditemukan.`);
+        return { success: false, message: 'Editor postingan tidak dapat diakses' };
+      }
+
+      await textarea.click();
+      await this.sleep(600);
+
+      // 3. Emulate human typing
+      await this.humanType(textarea, trimmedText);
+      await this.sleep(1200);
+
+      // 4. Find and click Post Button
+      const postBtn = await page.waitForSelector(
+        '[data-testid="tweetButton"], [data-testid="tweetButtonInline"], button[aria-label*="Post"], button[aria-label*="Posting"]',
+        { timeout: 8000 }
+      ).catch(() => null);
+
+      if (!postBtn) {
+        logger.warn(`⚠️ [@${account.username || account.label}] Tombol Post/Tweet tidak ditemukan.`);
+        return { success: false, message: 'Tombol kirim postingan tidak ditemukan' };
+      }
+
+      // Trigger input event safety check
+      try {
+        const isDisabled = await postBtn.getAttribute('disabled');
+        if (isDisabled !== null) {
+          await textarea.click();
+          await page.keyboard.press('Space');
+          await page.keyboard.press('Backspace');
+          await this.sleep(500);
+        }
+      } catch (e) {}
+
+      await postBtn.click();
+      await this.sleep(3500);
+
+      logger.success(`🚀 [@${account.username || account.label}] Berhasil memposting tweet: "${trimmedText}"`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl: `https://x.com/${account.username || 'home'}`,
+        action: 'POST',
+        status: 'SUCCESS',
+        details: trimmedText
+      });
+
+      return { success: true, status: 'SUCCESS', postText: trimmedText };
+    } catch (err) {
+      logger.error(`❌ [@${account.username || account.label}] Gagal membuat postingan: ${err.message}`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl: `https://x.com/${account.username || 'home'}`,
+        action: 'POST',
+        status: 'FAILED',
+        message: err.message
+      });
+      return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Run Multi-Account Post Publisher Task
+   * @param {string|string[]} accountIds - Target account IDs or 'all'
+   * @param {string|string[]} posts - Single post text or array of unique post texts
+   * @param {object} options - Execution options (minDelay, maxDelay, etc.)
+   */
+  async runMultiAccountPostTask(accountIds, posts, options = {}) {
+    if (this.isRunning) {
+      throw new Error('Sebuah proses otomasi sedang berjalan.');
+    }
+
+    const targetAccounts = this.resolveTaskAccounts(accountIds);
+    let postList = [];
+    if (Array.isArray(posts)) {
+      postList = posts.map(p => String(p).trim()).filter(Boolean);
+    } else if (typeof posts === 'string' && posts.trim()) {
+      postList = [posts.trim()];
+    }
+
+    if (postList.length === 0) {
+      throw new Error('Konten postingan tidak boleh kosong.');
+    }
+
+    this.isRunning = true;
+    this.abortController = new AbortController();
+    this.currentTask = {
+      type: 'MULTI_POST',
+      accountsCount: targetAccounts.length,
+      postsCount: postList.length,
+      total: targetAccounts.length,
+      completed: 0,
+      failed: 0
+    };
+
+    logger.info(`🚀 Memulai Multi-Account Post Publishing (${targetAccounts.length} Akun, ${postList.length} Draf Konten)...`);
+
+    try {
+      for (let a = 0; a < targetAccounts.length; a++) {
+        if (this.abortController.signal.aborted) break;
+        const account = targetAccounts[a];
+
+        // Pick post: unique per node if multi-post provided, or single post for all
+        const postText = postList[a % postList.length];
+
+        logger.action(`👤 [Post ${a + 1}/${targetAccounts.length}] Akun: ${account.label} (@${account.username || 'user'})`);
+
+        try {
+          const page = await this.getOrCreatePageForAccount(account);
+          const result = await this.createPost(page, postText, account);
+          if (result.success) {
+            this.currentTask.completed++;
+          } else {
+            this.currentTask.failed++;
+          }
+        } catch (err) {
+          if (err.message === 'TASK_ABORTED') throw err;
+          logger.error(`❌ Error posting pada akun ${account.label}: ${err.message}`);
+          this.currentTask.failed++;
+        }
+
+        // Delay between accounts
+        if (a < targetAccounts.length - 1) {
+          const switchDelay = options.delaySeconds || db.getSettings().accountSwitchDelaySec || 15;
+          logger.info(`⏳ Jeda rotasi antar akun ${switchDelay} detik...`);
+          await this.sleep(switchDelay * 1000);
+        }
+      }
+
+      logger.success(`🏁 Selesai mempublikasikan postingan ke ${targetAccounts.length} node akun.`);
+    } catch (err) {
+      if (err.message === 'TASK_ABORTED') {
+        logger.warn(`🛑 Tugas posting multi-akun dihentikan pengguna.`);
+      } else {
+        logger.error(`❌ Terjadi error pada runner posting: ${err.message}`);
+      }
+    } finally {
+      await this.closeBrowser();
+      this.isRunning = false;
+      this.currentTask = null;
+      this.abortController = null;
+    }
+  }
+
   stopTask() {
     if (this.isRunning && this.abortController) {
       logger.warn(`⚠️ Mengirim sinyal penghentian ke bot runner...`);

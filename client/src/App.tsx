@@ -4,6 +4,7 @@ import { apiClient } from '@/services/apiClient';
 import { NavDeck } from '@/components/cockpit/NavDeck';
 import { TelemetryRibbon } from '@/components/cockpit/TelemetryRibbon';
 import { NodesGrid } from '@/components/cockpit/NodesGrid';
+import { PostStudio } from '@/components/cockpit/PostStudio';
 import { TargetWorkbench } from '@/components/cockpit/TargetWorkbench';
 import { FeedHunter } from '@/components/cockpit/FeedHunter';
 import { AnalyticsDeck } from '@/components/cockpit/AnalyticsDeck';
@@ -36,6 +37,7 @@ export const App: React.FC = () => {
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
       const VALID_TABS = [
         'tab-accounts',
+        'tab-composer',
         'tab-batch',
         'tab-hunter',
         'tab-analytics',
@@ -49,6 +51,8 @@ export const App: React.FC = () => {
         const candidate = hash.startsWith('tab-') ? hash : `tab-${hash}`;
         if (VALID_TABS.includes(candidate)) {
           setActiveTab(candidate);
+        } else if (hash === 'composer' || hash === 'post' || hash === 'create-post' || hash === 'studio') {
+          setActiveTab('tab-composer');
         } else if (hash === 'workbench') {
           setActiveTab('tab-batch');
         } else if (hash === 'payloads' || hash === 'payload') {
@@ -109,6 +113,7 @@ export const App: React.FC = () => {
         {/* Dynamic Tab Surfaces */}
         <div className="flex-1">
           {activeTab === 'tab-accounts' && <NodesGrid />}
+          {activeTab === 'tab-composer' && <PostStudio />}
           {activeTab === 'tab-batch' && <TargetWorkbench />}
           {activeTab === 'tab-hunter' && <FeedHunter />}
           {activeTab === 'tab-analytics' && <AnalyticsDeck />}

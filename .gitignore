@@ -23,6 +23,7 @@ playwright-report/
 # Build artifacts
 dist/
 client/dist/
+*.tsbuildinfo
 
 # OS metadata
 .DS_Store
