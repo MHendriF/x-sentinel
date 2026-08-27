@@ -84,6 +84,35 @@ export const AuditLedger: React.FC = () => {
     toast.success('File CSV berhasil diunduh.');
   };
 
+  const renderTimestamp = (item: { timestamp?: string; timeFormatted?: string }) => {
+    if (!item.timestamp) {
+      return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || '-'}</span>;
+    }
+
+    try {
+      const d = new Date(item.timestamp);
+      if (isNaN(d.getTime())) {
+        return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || item.timestamp}</span>;
+      }
+
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+
+      return (
+        <div className="flex flex-col leading-tight">
+          <span className="text-slate-200 font-medium text-xs">{year}-{month}-{day}</span>
+          <span className="text-[10px] text-slate-400 font-mono">{hours}:{minutes}:{seconds}</span>
+        </div>
+      );
+    } catch {
+      return <span className="text-slate-400 font-mono text-xs">{item.timeFormatted || '-'}</span>;
+    }
+  };
+
   const getActionBadge = (action: string) => {
     switch (action) {
       case 'LIKE':
@@ -171,7 +200,7 @@ export const AuditLedger: React.FC = () => {
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-obsidian-900 border-b border-border/80 text-muted-foreground">
               <tr>
-                <th className="py-2.5 px-3">TIMESTAMP</th>
+                <th className="py-2.5 px-3">DATE &amp; TIME</th>
                 <th className="py-2.5 px-3">NODE</th>
                 <th className="py-2.5 px-3">VECTOR</th>
                 <th className="py-2.5 px-3">TARGET TWEET</th>
@@ -194,8 +223,8 @@ export const AuditLedger: React.FC = () => {
 
                   return (
                     <tr key={item.id} className="hover:bg-obsidian-800/60 transition-colors">
-                      <td className="py-2.5 px-3 whitespace-nowrap text-slate-400">
-                        {item.timeFormatted || item.timestamp?.slice(11, 19) || '-'}
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        {renderTimestamp(item)}
                       </td>
                       <td className="py-2.5 px-3 whitespace-nowrap font-bold text-white">
                         {item.accountName ? `@${item.accountName}` : 'NODE'}
