@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const db = require('../db');
 const logger = require('../logger');
 const twitterBot = require('../automation/twitterBot');
 const proxyHelper = require('../automation/proxyHelper');
 const spintax = require('../automation/spintax');
 const aiService = require('../automation/aiService');
+const notifier = require('../automation/notifier');
+const scheduler = require('../automation/scheduler');
 
 // GET /api/status - Get current bot status, active accounts & stats
 router.get('/status', (req, res) => {
@@ -520,6 +524,179 @@ router.post('/spintax/preview', (req, res) => {
     variations.push(spintax.parseSpintax(text));
   }
   res.json({ success: true, variations });
+});
+
+// ==========================================
+// MEDIA / IMAGE UPLOAD ENDPOINT
+// ==========================================
+router.post('/media/upload', (req, res) => {
+  try {
+    const { imageBase64, filename } = req.body;
+    if (!imageBase64 || typeof imageBase64 !== 'string') {
+      return res.status(400).json({ success: false, message: 'Data gambar base64 wajib diisi.' });
+    }
+
+    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer;
+    let ext = '.png';
+
+    if (matches && matches.length === 3) {
+      const mime = matches[1];
+      if (mime.includes('jpeg') || mime.includes('jpg')) ext = '.jpg';
+      else if (mime.includes('gif')) ext = '.gif';
+      else if (mime.includes('webp')) ext = '.webp';
+      buffer = Buffer.from(matches[2], 'base64');
+    } else {
+      buffer = Buffer.from(imageBase64, 'base64');
+    }
+
+    const safeName = (filename || `img_${Date.now()}`).replace(/[^a-zA-Z0-9_\-\.]/g, '');
+    const finalFilename = `${Date.now()}_${safeName.endsWith(ext) ? safeName : safeName + ext}`;
+    const localPath = path.join(db.mediaDir, finalFilename);
+
+    fs.writeFileSync(localPath, buffer);
+    logger.info(`🖼️ File media diunggah: ${finalFilename} (${(buffer.length / 1024).toFixed(1)} KB)`);
+
+    res.json({
+      success: true,
+      filename: finalFilename,
+      localPath,
+      sizeKb: (buffer.length / 1024).toFixed(1)
+    });
+  } catch (err) {
+    logger.error(`❌ Gagal menyimpan media upload: ${err.message}`);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ==========================================
+// FLEET HEALTH & SESSION CHECK ENDPOINTS
+// ==========================================
+router.post('/accounts/check-health', async (req, res) => {
+  if (twitterBot.isRunning) {
+    return res.status(400).json({ success: false, message: 'Bot sedang menjalankan tugas lain.' });
+  }
+  const result = await twitterBot.checkFleetHealth();
+  res.json(result);
+});
+
+router.post('/accounts/:id/check-health', async (req, res) => {
+  const { id } = req.params;
+  const account = db.getAccountById(id);
+  if (!account) {
+    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+  }
+  if (twitterBot.isRunning) {
+    return res.status(400).json({ success: false, message: 'Bot sedang menjalankan tugas lain.' });
+  }
+  const result = await twitterBot.checkAccountHealth(account);
+  res.json(result);
+});
+
+// ==========================================
+// ACCOUNT WARM-UP PROTOCOL ENDPOINTS
+// ==========================================
+router.post('/accounts/:id/warmup', async (req, res) => {
+  const { id } = req.params;
+  const account = db.getAccountById(id);
+  if (!account) {
+    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+  }
+  if (twitterBot.isRunning) {
+    return res.status(400).json({ success: false, message: 'Sebuah proses otomasi sedang berjalan.' });
+  }
+
+  // Run in background or wait
+  twitterBot.runWarmupTask(account).catch(err => {
+    logger.error(`❌ Error pada warmup task: ${err.message}`);
+  });
+
+  res.json({
+    success: true,
+    message: `Memulai rutinitas pemanasan untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`
+  });
+});
+
+// ==========================================
+// SCHEDULES & POST QUEUE ENDPOINTS
+// ==========================================
+router.get('/schedules', (req, res) => {
+  res.json({ success: true, schedules: db.getSchedules() });
+});
+
+router.post('/schedules', (req, res) => {
+  const schedule = db.saveSchedule(req.body);
+  logger.info(`⏰ Jadwal baru ditambahkan: "${schedule.title}" (${schedule.type})`);
+  res.json({ success: true, schedule });
+});
+
+router.delete('/schedules/:id', (req, res) => {
+  const { id } = req.params;
+  const deleted = db.deleteSchedule(id);
+  if (deleted) {
+    logger.info(`🗑️ Jadwal ${id} dihapus.`);
+    res.json({ success: true, message: 'Jadwal berhasil dihapus.' });
+  } else {
+    res.status(404).json({ success: false, message: 'Jadwal tidak ditemukan.' });
+  }
+});
+
+router.post('/schedules/:id/toggle', (req, res) => {
+  const { id } = req.params;
+  const updated = db.toggleSchedule(id, req.body?.enabled);
+  if (updated) {
+    res.json({ success: true, schedule: updated });
+  } else {
+    res.status(404).json({ success: false, message: 'Jadwal tidak ditemukan.' });
+  }
+});
+
+// ==========================================
+// WEBHOOK TEST ENDPOINT
+// ==========================================
+router.post('/settings/test-webhook', async (req, res) => {
+  const { type, telegramBotToken, telegramChatId, discordWebhookUrl } = req.body;
+
+  try {
+    if (type === 'telegram' || (!type && telegramBotToken && telegramChatId)) {
+      const tgRes = await notifier.sendTelegram(
+        telegramBotToken,
+        telegramChatId,
+        `🔔 <b>X-SENTINEL Webhook Test</b>\n\nKoneksi Telegram Bot berhasil terverifikasi! Sistem siap mengirimkan alert real-time.`
+      );
+      return res.json(tgRes);
+    } else if (type === 'discord' || (!type && discordWebhookUrl)) {
+      const dcRes = await notifier.sendDiscord(discordWebhookUrl, {
+        title: '🔔 X-SENTINEL Discord Webhook Test',
+        description: 'Koneksi Discord Webhook berhasil terverifikasi! Sistem siap mengirimkan alert real-time.',
+        color: 0x10b981
+      });
+      return res.json(dcRes);
+    } else {
+      return res.status(400).json({ success: false, message: 'Parameter webhook tidak lengkap.' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ==========================================
+// HISTORY PRUNE & MAINTENANCE ENDPOINTS
+// ==========================================
+router.post('/history/prune', (req, res) => {
+  const { olderThanDays, status } = req.body;
+  const result = db.pruneHistory({
+    olderThanDays: Number(olderThanDays) || null,
+    status: status || null
+  });
+  logger.info(`🧹 Pembersihan riwayat: ${result.deletedCount} log dihapus (${result.remainingCount} tersisa).`);
+  res.json({ success: true, ...result });
+});
+
+router.post('/history/clear-all', (req, res) => {
+  const result = db.clearHistory();
+  logger.warn(`🧹 Seluruh riwayat interaksi telah dibersihkan (${result.deletedCount} entri).`);
+  res.json({ success: true, ...result });
 });
 
 // GET /api/history - Get engagement history

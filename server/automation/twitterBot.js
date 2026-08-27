@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { chromium } = require('playwright');
 const config = require('../config');
 const db = require('../db');
@@ -6,6 +7,7 @@ const cookieManager = require('./cookieManager');
 const proxyHelper = require('./proxyHelper');
 const spintax = require('./spintax');
 const aiService = require('./aiService');
+const notifier = require('./notifier');
 
 class TwitterBot {
   constructor() {
@@ -831,8 +833,12 @@ class TwitterBot {
 
   /**
    * Create and publish a new Tweet/Post on X
+   * @param {Page} page - Playwright page instance
+   * @param {string} postText - Text to post
+   * @param {object} account - Node account
+   * @param {string[]} mediaPaths - Optional local media file paths to upload
    */
-  async createPost(page, postText, account) {
+  async createPost(page, postText, account, mediaPaths = []) {
     logger.action(`[@${account.username || account.label}] Mempersiapkan publikasi postingan baru...`);
 
     try {
@@ -852,6 +858,9 @@ class TwitterBot {
           action: 'POST',
           status: 'FAILED',
           message: 'Sesi login kedaluwarsa'
+        });
+        notifier.notify('SESSION_EXPIRED', {
+          accountName: account.username || account.label
         });
         return { success: false, message: 'Sesi login kedaluwarsa' };
       }
@@ -884,9 +893,26 @@ class TwitterBot {
 
       // 3. Emulate human typing
       await this.humanType(textarea, trimmedText);
-      await this.sleep(1200);
+      await this.sleep(1000);
 
-      // 4. Set up listener to capture GraphQL CreateTweet response before clicking Post
+      // 4. Attach Media / Images if provided
+      if (Array.isArray(mediaPaths) && mediaPaths.length > 0) {
+        try {
+          const validFiles = mediaPaths.filter(p => p && fs.existsSync(p));
+          if (validFiles.length > 0) {
+            logger.info(`🖼️ [@${account.username || account.label}] Melampirkan ${validFiles.length} file gambar ke postingan...`);
+            const fileInput = await page.$('input[data-testid="fileInput"], input[type="file"][accept*="image"]');
+            if (fileInput) {
+              await fileInput.setInputFiles(validFiles);
+              await this.sleep(3000); // wait for image thumbnail render
+            }
+          }
+        } catch (e) {
+          logger.warn(`⚠️ Gagal melampirkan file media: ${e.message}`);
+        }
+      }
+
+      // 5. Set up listener to capture GraphQL CreateTweet response before clicking Post
       let capturedTweetId = null;
       let capturedTweetUrl = null;
 
@@ -991,6 +1017,13 @@ class TwitterBot {
         details: trimmedText
       });
 
+      // Send webhook alert
+      notifier.notify('POST_PUBLISHED', {
+        accountName: account.username || account.label,
+        text: trimmedText,
+        tweetUrl: finalTweetUrl
+      });
+
       return { success: true, status: 'SUCCESS', postText: trimmedText, tweetUrl: finalTweetUrl };
     } catch (err) {
       logger.error(`❌ [@${account.username || account.label}] Gagal membuat postingan: ${err.message}`);
@@ -1008,9 +1041,6 @@ class TwitterBot {
 
   /**
    * Run Multi-Account Post Publisher Task
-   * @param {string|string[]} accountIds - Target account IDs or 'all'
-   * @param {string|string[]} posts - Single post text or array of unique post texts
-   * @param {object} options - Execution options (minDelay, maxDelay, etc.)
    */
   async runMultiAccountPostTask(accountIds, posts, options = {}) {
     if (this.isRunning) {
@@ -1040,6 +1070,8 @@ class TwitterBot {
       failed: 0
     };
 
+    const mediaPaths = options.mediaPaths || [];
+
     logger.info(`🚀 Memulai Multi-Account Post Publishing (${targetAccounts.length} Akun, ${postList.length} Draf Konten)...`);
 
     try {
@@ -1047,14 +1079,12 @@ class TwitterBot {
         if (this.abortController.signal.aborted) break;
         const account = targetAccounts[a];
 
-        // Pick post: unique per node if multi-post provided, or single post for all
         const postText = postList[a % postList.length];
-
         logger.action(`👤 [Post ${a + 1}/${targetAccounts.length}] Akun: ${account.label} (@${account.username || 'user'})`);
 
         try {
           const page = await this.getOrCreatePageForAccount(account);
-          const result = await this.createPost(page, postText, account);
+          const result = await this.createPost(page, postText, account, mediaPaths);
           if (result.success) {
             this.currentTask.completed++;
           } else {
@@ -1075,17 +1105,255 @@ class TwitterBot {
       }
 
       logger.success(`🏁 Selesai mempublikasikan postingan ke ${targetAccounts.length} node akun.`);
+      notifier.notify('TASK_COMPLETED', {
+        taskType: 'Fleet Post Publisher',
+        totalTargets: targetAccounts.length
+      });
     } catch (err) {
       if (err.message === 'TASK_ABORTED') {
         logger.warn(`🛑 Tugas posting multi-akun dihentikan pengguna.`);
       } else {
         logger.error(`❌ Terjadi error pada runner posting: ${err.message}`);
+        notifier.notify('TASK_FAILED', {
+          taskType: 'Fleet Post Publisher',
+          error: err.message
+        });
       }
     } finally {
       await this.closeBrowser();
       this.isRunning = false;
       this.currentTask = null;
       this.abortController = null;
+    }
+  }
+
+  /**
+   * Check Health & Session Validity of a Single Account
+   */
+  async checkAccountHealth(account) {
+    logger.info(`🩺 Memeriksa kesehatan node ${account.label} (@${account.username || 'user'})...`);
+
+    // 1. Check Proxy connectivity first
+    if (account.proxy) {
+      const proxyRes = await proxyHelper.testProxy(account.proxy);
+      if (!proxyRes.success) {
+        logger.warn(`❌ [Proxy Dead] Node ${account.label} proxy tidak terhubung: ${proxyRes.message}`);
+        const updated = db.saveAccount({
+          ...account,
+          enabled: false,
+          healthStatus: 'PROXY_DEAD',
+          healthMessage: `Proxy mati: ${proxyRes.message}`,
+          lastCheckedAt: new Date().toISOString()
+        });
+        notifier.notify('PROXY_DEAD', {
+          accountName: account.username || account.label,
+          proxy: account.proxy
+        });
+        return {
+          success: false,
+          healthStatus: 'PROXY_DEAD',
+          account: updated,
+          message: `Proxy tidak terjangkau (${proxyRes.message}). Akun otomatis di-pause.`
+        };
+      }
+    }
+
+    // 2. Check Session Validity
+    let context = null;
+    try {
+      context = await this.createAccountContext(account);
+      const page = await context.newPage();
+
+      await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 25000 });
+      await page.waitForTimeout(3000);
+
+      const currentUrl = page.url();
+      if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
+        logger.warn(`⚠️ [Session Expired] Cookie auth_token node ${account.label} sudah tidak valid.`);
+        const updated = db.saveAccount({
+          ...account,
+          healthStatus: 'EXPIRED',
+          healthMessage: 'Cookie auth_token sudah kedaluwarsa',
+          lastCheckedAt: new Date().toISOString()
+        });
+        notifier.notify('SESSION_EXPIRED', {
+          accountName: account.username || account.label
+        });
+        await context.close();
+        return {
+          success: false,
+          healthStatus: 'EXPIRED',
+          account: updated,
+          message: 'Sesi akun kedaluwarsa. Silakan perbarui cookie auth_token.'
+        };
+      }
+
+      // Try extract screen name from DOM profile link
+      let detectedUsername = account.username;
+      try {
+        const accountLink = await page.$('a[data-testid="AppTabBar_Profile_Link"]');
+        if (accountLink) {
+          const href = await accountLink.getAttribute('href');
+          if (href && href.length > 1) {
+            detectedUsername = href.replace('/', '').trim();
+          }
+        }
+      } catch (e) {}
+
+      const updated = db.saveAccount({
+        ...account,
+        username: detectedUsername || account.username,
+        healthStatus: 'HEALTHY',
+        healthMessage: 'Sesi aktif & terverifikasi sehat',
+        lastCheckedAt: new Date().toISOString()
+      });
+
+      logger.success(`✅ [Healthy] Node ${account.label} (@${detectedUsername || account.username}) aktif & valid.`);
+      await context.close();
+
+      return {
+        success: true,
+        healthStatus: 'HEALTHY',
+        account: updated,
+        message: 'Sesi aktif dan terverifikasi sehat!'
+      };
+    } catch (err) {
+      if (context) await context.close().catch(() => {});
+      return {
+        success: false,
+        healthStatus: 'UNKNOWN_ERROR',
+        message: `Error saat memeriksa sesi: ${err.message}`
+      };
+    }
+  }
+
+  /**
+   * Mass Check Health of All Accounts
+   */
+  async checkFleetHealth() {
+    const accounts = db.getAccounts();
+    if (accounts.length === 0) {
+      return { success: false, message: 'Tidak ada akun terdaftar untuk dicek.' };
+    }
+
+    logger.info(`🩺 Memulai pengecekan kesehatan massal untuk ${accounts.length} node armada...`);
+    const results = [];
+
+    for (const acc of accounts) {
+      try {
+        const res = await this.checkAccountHealth(acc);
+        results.push({ accountId: acc.id, label: acc.label, ...res });
+      } catch (err) {
+        results.push({ accountId: acc.id, label: acc.label, success: false, message: err.message });
+      }
+      await this.sleep(1500);
+    }
+
+    const healthyCount = results.filter(r => r.healthStatus === 'HEALTHY').length;
+    logger.success(`🏁 Pengecekan armada selesai: ${healthyCount}/${accounts.length} node dalam kondisi sehat.`);
+
+    return {
+      success: true,
+      total: accounts.length,
+      healthy: healthyCount,
+      results
+    };
+  }
+
+  /**
+   * Run Warm-up Protocol Routine for an Account
+   */
+  async runWarmupTask(account) {
+    if (this.isRunning) {
+      throw new Error('Sebuah proses otomasi sedang berjalan.');
+    }
+
+    const currentDay = Math.min(Math.max(Number(account.warmupDay) || 1, 1), 7);
+    logger.action(`🐣 [@${account.username || account.label}] Memulai rutinitas pemanasan Hari ke-${currentDay}/7...`);
+
+    let context = null;
+    try {
+      this.isRunning = true;
+      this.abortController = new AbortController();
+      this.currentTask = { type: 'WARMUP', accountId: account.id, day: currentDay };
+
+      context = await this.createAccountContext(account);
+      const page = await context.newPage();
+
+      await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForTimeout(4000);
+
+      if (page.url().includes('/login')) {
+        throw new Error('Sesi akun kedaluwarsa');
+      }
+
+      // 1. Natural Timeline Scrolling
+      const scrollCount = 2 + currentDay;
+      for (let s = 0; s < scrollCount; s++) {
+        if (this.abortController.signal.aborted) break;
+        logger.info(`📜 [@${account.username || account.label}] Scrolling timeline organik (${s + 1}/${scrollCount})...`);
+        await page.mouse.wheel(0, 300 + Math.random() * 400);
+        await this.sleep(2000 + Math.random() * 3000);
+      }
+
+      // 2. Organic Likes based on warmup day tier
+      const targetLikes = Math.min(2 + currentDay, 8);
+      let likesDone = 0;
+
+      const likeButtons = await page.$$('button[data-testid="like"]');
+      for (const btn of likeButtons) {
+        if (this.abortController.signal.aborted || likesDone >= targetLikes) break;
+        try {
+          await btn.scrollIntoViewIfNeeded();
+          await this.sleep(1000 + Math.random() * 1500);
+          await btn.click();
+          likesDone++;
+          logger.success(`❤️ [@${account.username || account.label}] Organik like tweet (${likesDone}/${targetLikes})`);
+          await this.sleep(3000 + Math.random() * 4000);
+        } catch (e) {}
+      }
+
+      // 3. Increment warmup day progress
+      const nextDay = currentDay < 7 ? currentDay + 1 : 7;
+      const updated = db.saveAccount({
+        ...account,
+        warmupDay: nextDay,
+        lastWarmupAt: new Date().toISOString()
+      });
+
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        action: 'WARMUP',
+        status: 'SUCCESS',
+        details: `Selesai pemanasan Hari ke-${currentDay}: ${likesDone} organic likes`
+      });
+
+      notifier.notify('WARMUP_DAY_COMPLETED', {
+        accountName: account.username || account.label,
+        day: currentDay,
+        activity: `${likesDone} organic likes & ${scrollCount} timeline scrolls`
+      });
+
+      await context.close();
+      this.isRunning = false;
+      this.currentTask = null;
+
+      logger.success(`🎉 [@${account.username || account.label}] Berhasil menyelesaikan pemanasan Hari ke-${currentDay}! (Lanjut ke Hari ${nextDay})`);
+      return {
+        success: true,
+        day: currentDay,
+        nextDay,
+        likesDone,
+        account: updated,
+        message: `Berhasil menyelesaikan pemanasan Hari ke-${currentDay}!`
+      };
+    } catch (err) {
+      if (context) await context.close().catch(() => {});
+      this.isRunning = false;
+      this.currentTask = null;
+      logger.error(`❌ [@${account.username || account.label}] Gagal pemanasan: ${err.message}`);
+      return { success: false, message: err.message };
     }
   }
 

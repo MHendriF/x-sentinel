@@ -16,6 +16,9 @@ import {
   Activity,
   Wifi,
   WifiOff,
+  Flame,
+  AlertTriangle,
+  HeartPulse,
 } from 'lucide-react';
 
 interface NodeCardProps {
@@ -26,6 +29,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
   const { loadAccounts, openAccountModal, openCommentsModal, openDeleteModal } = useStore();
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPingingProxy, setIsPingingProxy] = useState(false);
+  const [isWarmingUp, setIsWarmingUp] = useState(false);
   const [proxyTest, setProxyTest] = useState<ProxyTestResult | null>(null);
 
   const handleToggle = async () => {
@@ -45,17 +49,33 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
   const handleVerify = async () => {
     setIsVerifying(true);
     try {
-      const res = await apiClient.verifyAccount(account.id);
-      if (res.success && res.account) {
-        toast.success(`Node Terverifikasi: @${res.account.username} (${res.account.name})`);
+      const res = await apiClient.checkAccountHealth(account.id);
+      if (res.success) {
+        toast.success(`🩺 Node @${res.account?.username || account.label} Sehat: ${res.message}`);
       } else {
-        toast.error(`Verifikasi gagal: ${res.message}`);
+        toast.error(`Peringatan kesehatan node: ${res.message}`);
       }
       loadAccounts();
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  const handleStartWarmup = async () => {
+    setIsWarmingUp(true);
+    try {
+      const res = await apiClient.startWarmup(account.id);
+      if (res.success) {
+        toast.info(`🐣 Pemanasan dimulai untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`);
+      } else {
+        toast.error(res.message);
+      }
+    } catch (err: any) {
+      toast.error(`Gagal memulai warmup: ${err.message}`);
+    } finally {
+      setIsWarmingUp(false);
     }
   };
 
@@ -135,20 +155,49 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
         {/* Tags Row */}
         <div className="flex flex-wrap items-center gap-1.5 mt-3.5">
-          {account.isValid ? (
-            <Badge variant="success" className="gap-1">
+          {/* Health status badge */}
+          {account.healthStatus === 'HEALTHY' ? (
+            <Badge variant="success" className="gap-1 font-mono text-[10px]">
               <CheckCircle2 className="w-3 h-3" />
-              VALID SESSION
+              SESSION HEALTHY
+            </Badge>
+          ) : account.healthStatus === 'EXPIRED' ? (
+            <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
+              <AlertTriangle className="w-3 h-3" />
+              SESSION EXPIRED
+            </Badge>
+          ) : account.healthStatus === 'PROXY_DEAD' ? (
+            <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
+              <WifiOff className="w-3 h-3" />
+              PROXY DEAD
+            </Badge>
+          ) : account.isValid ? (
+            <Badge variant="success" className="gap-1 font-mono text-[10px]">
+              <CheckCircle2 className="w-3 h-3" />
+              VALID
             </Badge>
           ) : (
-            <Badge variant="secondary" className="gap-1 text-slate-400">
+            <Badge variant="secondary" className="gap-1 text-slate-400 font-mono text-[10px]">
               <HelpCircle className="w-3 h-3" />
               UNVERIFIED
             </Badge>
           )}
 
+          {/* Warmup progress badge */}
+          {account.warmupMode !== false && (
+            <Badge
+              variant="outline"
+              className="gap-1 border-amber-500/40 text-amber-300 font-mono text-[10px] bg-amber-500/10 cursor-pointer hover:bg-amber-500/20"
+              onClick={handleStartWarmup}
+              title="Klik untuk jalankan rutinitas pemanasan"
+            >
+              <Flame className="w-3 h-3 text-amber-400" />
+              Warmup: Day {account.warmupDay || 1}/7
+            </Badge>
+          )}
+
           {cleanProxy ? (
-            <Badge variant="purple" className="gap-1 max-w-[190px] truncate font-mono text-[10px]" title={`Proxy: ${cleanProxy}`}>
+            <Badge variant="purple" className="gap-1 max-w-[170px] truncate font-mono text-[10px]" title={`Proxy: ${cleanProxy}`}>
               <Globe className="w-3 h-3" />
               {cleanProxy}
             </Badge>
@@ -197,9 +246,10 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           className="flex-1 text-xs"
           onClick={handleVerify}
           disabled={isVerifying}
+          title="Periksa kesehatan sesi login dan koneksi node"
         >
-          <Zap className="w-3 h-3 mr-1 text-amber-400" />
-          {isVerifying ? 'PROBING...' : 'Verify Session'}
+          <HeartPulse className="w-3 h-3 mr-1 text-amber-400" />
+          {isVerifying ? 'PROBING...' : 'Health Check'}
         </Button>
 
         {account.proxy && (

@@ -15,6 +15,10 @@ import {
   ArrowRight,
   Shield,
   Sliders,
+  Bell,
+  Send,
+  CheckCircle2,
+  RefreshCw,
 } from 'lucide-react';
 
 export const DefenseProtocol: React.FC = () => {
@@ -26,6 +30,14 @@ export const DefenseProtocol: React.FC = () => {
   const [dailyLimit, setDailyLimit] = useState(150);
   const [headless, setHeadless] = useState(false);
   const [scrollAction, setScrollAction] = useState(true);
+
+  // Webhooks state
+  const [telegramEnabled, setTelegramEnabled] = useState(false);
+  const [telegramBotToken, setTelegramBotToken] = useState('');
+  const [telegramChatId, setTelegramChatId] = useState('');
+  const [discordEnabled, setDiscordEnabled] = useState(false);
+  const [discordWebhookUrl, setDiscordWebhookUrl] = useState('');
+  const [isTestingWebhook, setIsTestingWebhook] = useState<'telegram' | 'discord' | null>(null);
 
   useEffect(() => {
     loadSettings();
@@ -39,6 +51,11 @@ export const DefenseProtocol: React.FC = () => {
       setDailyLimit(settings.dailyLimit ?? 150);
       setHeadless(Boolean(settings.headless));
       setScrollAction(Boolean(settings.scrollBeforeAction));
+      setTelegramEnabled(Boolean(settings.telegramEnabled));
+      setTelegramBotToken(settings.telegramBotToken || '');
+      setTelegramChatId(settings.telegramChatId || '');
+      setDiscordEnabled(Boolean(settings.discordEnabled));
+      setDiscordWebhookUrl(settings.discordWebhookUrl || '');
     }
   }, [settings]);
 
@@ -50,16 +67,43 @@ export const DefenseProtocol: React.FC = () => {
       dailyLimit: Number(dailyLimit),
       headless,
       scrollBeforeAction: scrollAction,
+      telegramEnabled,
+      telegramBotToken: telegramBotToken.trim(),
+      telegramChatId: telegramChatId.trim(),
+      discordEnabled,
+      discordWebhookUrl: discordWebhookUrl.trim(),
     };
 
     try {
       const res = await apiClient.saveSettings(payload);
       if (res.success) {
         setSettings(res.settings);
-        toast.success('Pengaturan protokol anti-ban berhasil diperbarui.');
+        toast.success('Pengaturan protokol keamanan & webhook berhasil disimpan.');
       }
     } catch (err: any) {
       toast.error(`Gagal menyimpan: ${err.message}`);
+    }
+  };
+
+  const handleTestWebhook = async (type: 'telegram' | 'discord') => {
+    setIsTestingWebhook(type);
+    try {
+      const res = await apiClient.testWebhook({
+        type,
+        telegramBotToken: telegramBotToken.trim(),
+        telegramChatId: telegramChatId.trim(),
+        discordWebhookUrl: discordWebhookUrl.trim(),
+      });
+
+      if (res.success) {
+        toast.success(`🔔 Pesan uji coba berhasil dikirim ke ${type === 'telegram' ? 'Telegram Bot' : 'Discord Webhook'}!`);
+      } else {
+        toast.error(`Gagal mengirim alert uji coba: ${res.message}`);
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsTestingWebhook(null);
     }
   };
 
@@ -204,15 +248,132 @@ export const DefenseProtocol: React.FC = () => {
               />
             </label>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Webhook & Instant Notifications Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-cyan-400 tracking-wider">
+            <Bell className="w-3.5 h-3.5 text-cyan-400" />
+            REALTIME ALERT &amp; NOTIFICATIONS
+          </div>
+          <CardTitle className="text-xl">Telegram &amp; Discord Webhooks</CardTitle>
+          <CardDescription>
+            Kirimkan alert real-time ke bot Telegram atau server Discord saat tweet diposting, sesi kedaluwarsa, atau tugas selesai.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Telegram Config */}
+          <div className="p-3.5 rounded-lg border border-border/80 bg-obsidian-950 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Send className="w-4 h-4 text-blue-400" />
+                <span className="text-xs font-bold text-white">Telegram Bot Notification</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={telegramEnabled}
+                onChange={(e) => setTelegramEnabled(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-700 bg-obsidian-900 text-blue-500 focus:ring-blue-500 accent-blue-500"
+              />
+            </div>
+
+            {telegramEnabled && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 animate-in fade-in">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-mono text-slate-400">TELEGRAM BOT TOKEN</label>
+                  <Input
+                    type="password"
+                    value={telegramBotToken}
+                    onChange={(e) => setTelegramBotToken(e.target.value)}
+                    placeholder="123456789:ABCdefGhIJKlmNoPQRs"
+                    className="font-mono text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-mono text-slate-400">CHAT ID / USER ID</label>
+                  <Input
+                    type="text"
+                    value={telegramChatId}
+                    onChange={(e) => setTelegramChatId(e.target.value)}
+                    placeholder="Misal: 987654321"
+                    className="font-mono text-xs"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 flex justify-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleTestWebhook('telegram')}
+                    disabled={isTestingWebhook === 'telegram' || !telegramBotToken || !telegramChatId}
+                    className="text-xs font-mono border-blue-500/40 text-blue-300 hover:bg-blue-500/10 gap-1.5"
+                  >
+                    {isTestingWebhook === 'telegram' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    <span>Test Telegram Alert</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Discord Config */}
+          <div className="p-3.5 rounded-lg border border-border/80 bg-obsidian-950 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-purple-400" />
+                <span className="text-xs font-bold text-white">Discord Channel Webhook</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={discordEnabled}
+                onChange={(e) => setDiscordEnabled(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-700 bg-obsidian-900 text-purple-500 focus:ring-purple-500 accent-purple-500"
+              />
+            </div>
+
+            {discordEnabled && (
+              <div className="space-y-3 pt-2 animate-in fade-in">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-mono text-slate-400">DISCORD WEBHOOK URL</label>
+                  <Input
+                    type="password"
+                    value={discordWebhookUrl}
+                    onChange={(e) => setDiscordWebhookUrl(e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/12345/abcdef..."
+                    className="font-mono text-xs"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleTestWebhook('discord')}
+                    disabled={isTestingWebhook === 'discord' || !discordWebhookUrl}
+                    className="text-xs font-mono border-purple-500/40 text-purple-300 hover:bg-purple-500/10 gap-1.5"
+                  >
+                    {isTestingWebhook === 'discord' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Bot className="w-3.5 h-3.5" />}
+                    <span>Test Discord Alert</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <Button
             variant="default"
             size="lg"
             onClick={handleSave}
-            className="w-full mt-4 font-heading font-bold text-sm"
+            className="w-full mt-4 font-heading font-bold text-sm bg-gradient-to-r from-blue-600 via-flame to-amber-500 text-obsidian-950 hover:brightness-110"
           >
             <Save className="w-4 h-4 mr-1.5" />
-            SAVE DEFENSE SETTINGS
+            SIMPAN SEMUA PENGATURAN PROTOKOL &amp; WEBHOOK
           </Button>
         </CardContent>
       </Card>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AccountNode, Stats, Settings, HistoryItem, LogEntry, apiClient } from '../services/apiClient';
+import { AccountNode, Stats, Settings, HistoryItem, LogEntry, ScheduleItem, apiClient } from '../services/apiClient';
 
 interface AppState {
   activeTab: string;
@@ -16,9 +16,16 @@ interface AppState {
   currentTask: any | null;
   setIsRunning: (running: boolean, task?: any) => void;
 
+  isCheckingHealth: boolean;
+  setIsCheckingHealth: (checking: boolean) => void;
+
   settings: Settings | null;
   setSettings: (settings: Settings) => void;
   loadSettings: () => Promise<void>;
+
+  schedules: ScheduleItem[];
+  setSchedules: (schedules: ScheduleItem[]) => void;
+  loadSchedules: () => Promise<void>;
 
   history: HistoryItem[];
   setHistory: (history: HistoryItem[]) => void;
@@ -127,6 +134,9 @@ export const useStore = create<AppState>((set, get) => ({
   currentTask: null,
   setIsRunning: (isRunning, currentTask = null) => set({ isRunning, currentTask }),
 
+  isCheckingHealth: false,
+  setIsCheckingHealth: (isCheckingHealth) => set({ isCheckingHealth }),
+
   settings: null,
   setSettings: (settings) => set({ settings }),
   loadSettings: async () => {
@@ -137,6 +147,19 @@ export const useStore = create<AppState>((set, get) => ({
       }
     } catch (err) {
       console.error('Error loading settings in store:', err);
+    }
+  },
+
+  schedules: [],
+  setSchedules: (schedules) => set({ schedules }),
+  loadSchedules: async () => {
+    try {
+      const data = await apiClient.getSchedules();
+      if (data.success && data.schedules) {
+        set({ schedules: data.schedules });
+      }
+    } catch (err) {
+      console.error('Error loading schedules in store:', err);
     }
   },
 

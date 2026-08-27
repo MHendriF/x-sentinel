@@ -49,6 +49,7 @@ app.use((req, res) => {
 });
 
 const twitterBot = require('./automation/twitterBot');
+const scheduler = require('./automation/scheduler');
 
 // Start Server
 const server = app.listen(config.PORT, () => {
@@ -57,6 +58,9 @@ const server = app.listen(config.PORT, () => {
   console.log(`🛡️  X-SENTINEL: Autonomous Multi-Node Fleet Engine`);
   console.log(`🌐 Buka Dashboard di browser: http://localhost:${config.PORT}`);
   console.log(`====================================================`);
+
+  // Start background scheduler
+  scheduler.start();
 });
 
 // Graceful Shutdown & Process Lifecycle Hardening
@@ -67,6 +71,7 @@ const gracefulShutdown = async (signal) => {
   logger.warn(`🛑 Menerima sinyal ${signal}. Membersihkan proses dan mematikan engine...`);
   
   try {
+    scheduler.stop();
     // 1. Stop any ongoing task
     if (twitterBot.isRunning) {
       twitterBot.stopTask();

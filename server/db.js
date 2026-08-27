@@ -6,6 +6,7 @@ class LocalDB {
   constructor() {
     this.dataDir = config.DATA_DIR;
     this.commentsDir = path.join(this.dataDir, 'comments');
+    this.mediaDir = path.join(this.dataDir, 'media');
     this.ensureDirs();
     
     this.files = {
@@ -14,7 +15,8 @@ class LocalDB {
       auth: path.join(this.dataDir, 'auth.json'), // legacy fallback
       history: path.join(this.dataDir, 'history.json'),
       templates: path.join(this.dataDir, 'templates.json'),
-      stats: path.join(this.dataDir, 'stats.json')
+      stats: path.join(this.dataDir, 'stats.json'),
+      schedules: path.join(this.dataDir, 'schedules.json')
     };
 
     this.cache = {};
@@ -27,6 +29,9 @@ class LocalDB {
     }
     if (!fs.existsSync(this.commentsDir)) {
       fs.mkdirSync(this.commentsDir, { recursive: true });
+    }
+    if (!fs.existsSync(this.mediaDir)) {
+      fs.mkdirSync(this.mediaDir, { recursive: true });
     }
   }
 
@@ -43,7 +48,12 @@ class LocalDB {
       scrollBeforeAction: config.DEFAULTS.scrollBeforeAction,
       aiProvider: 'none',
       aiApiKey: '',
-      aiPrompt: 'Write a sharp, authentic, and context-aware 1-sentence English reply as a crypto/tech native. Be insightful, peer-to-peer, and zero generic praise.'
+      aiPrompt: 'Write a sharp, authentic, and context-aware 1-sentence English reply as a crypto/tech native. Be insightful, peer-to-peer, and zero generic praise.',
+      telegramEnabled: false,
+      telegramBotToken: '',
+      telegramChatId: '',
+      discordEnabled: false,
+      discordWebhookUrl: ''
     });
 
     // Default global templates
@@ -56,6 +66,9 @@ class LocalDB {
 
     // Multi Accounts
     this.cache.accounts = this.readFile(this.files.accounts, []);
+
+    // Schedules
+    this.cache.schedules = this.readFile(this.files.schedules, []);
 
     // If accounts is empty, check if legacy auth exists and migrate
     const legacyAuth = this.readFile(this.files.auth, null);
@@ -367,6 +380,118 @@ class LocalDB {
   getStats() {
     this.checkAndResetDailyStats();
     return this.cache.stats;
+  }
+
+  // ==========================================
+  // SCHEDULES OPERATIONS
+  // ==========================================
+  getSchedules() {
+    return this.cache.schedules || [];
+  }
+
+  getScheduleById(id) {
+    return (this.cache.schedules || []).find(s => s.id === id);
+  }
+
+  saveSchedule(data) {
+    const id = data.id || 'sch_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 3);
+    const schedules = this.cache.schedules || [];
+    const index = schedules.findIndex(s => s.id === id);
+
+    const scheduleItem = {
+      id,
+      type: data.type || 'POST_QUEUE', // 'POST_QUEUE' or 'RECURRING_HUNTER'
+      title: data.title || (data.type === 'RECURRING_HUNTER' ? 'Recurring Hunter' : 'Scheduled Post'),
+      enabled: data.enabled !== false,
+      status: data.status || 'PENDING', // 'PENDING', 'RUNNING', 'COMPLETED', 'FAILED'
+      scheduledAt: data.scheduledAt || new Date(Date.now() + 60000).toISOString(),
+      intervalMinutes: Number(data.intervalMinutes) || 60,
+      lastRunAt: data.lastRunAt || null,
+      accountIds: data.accountIds || 'all',
+      posts: Array.isArray(data.posts) ? data.posts : (data.postText ? [data.postText] : []),
+      mediaPaths: Array.isArray(data.mediaPaths) ? data.mediaPaths : [],
+      delaySeconds: Number(data.delaySeconds) || 15,
+      // Hunter specific
+      keywords: Array.isArray(data.keywords) ? data.keywords : [],
+      vectors: Array.isArray(data.vectors) ? data.vectors : ['LIKE', 'RETWEET', 'COMMENT'],
+      maxTweets: Number(data.maxTweets) || 3,
+      createdAt: data.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (index >= 0) {
+      schedules[index] = { ...schedules[index], ...scheduleItem };
+    } else {
+      schedules.unshift(scheduleItem);
+    }
+
+    this.cache.schedules = schedules;
+    this.save('schedules');
+    return scheduleItem;
+  }
+
+  deleteSchedule(id) {
+    const initialLen = (this.cache.schedules || []).length;
+    this.cache.schedules = (this.cache.schedules || []).filter(s => s.id !== id);
+    if (this.cache.schedules.length !== initialLen) {
+      this.save('schedules');
+      return true;
+    }
+    return false;
+  }
+
+  toggleSchedule(id, enabled) {
+    const item = this.getScheduleById(id);
+    if (item) {
+      item.enabled = enabled !== undefined ? enabled : !item.enabled;
+      item.updatedAt = new Date().toISOString();
+      this.save('schedules');
+      return item;
+    }
+    return null;
+  }
+
+  // ==========================================
+  // HISTORY MAINTENANCE & PRUNING
+  // ==========================================
+  pruneHistory({ olderThanDays, status, dryRun = false } = {}) {
+    let list = this.cache.history || [];
+    const now = Date.now();
+    const cutoffMs = olderThanDays ? olderThanDays * 24 * 60 * 60 * 1000 : null;
+
+    const remaining = list.filter(item => {
+      // Filter by days
+      if (cutoffMs && item.timestamp) {
+        const itemTime = new Date(item.timestamp).getTime();
+        if (!isNaN(itemTime) && (now - itemTime) > cutoffMs) {
+          // If status specified as well
+          if (!status || item.status === status) return false; // delete this
+        }
+      }
+
+      // Filter by status only
+      if (!cutoffMs && status && item.status === status) {
+        return false; // delete this
+      }
+
+      return true;
+    });
+
+    const deletedCount = list.length - remaining.length;
+
+    if (!dryRun && deletedCount > 0) {
+      this.cache.history = remaining;
+      this.save('history');
+    }
+
+    return { deletedCount, remainingCount: remaining.length };
+  }
+
+  clearHistory() {
+    const count = (this.cache.history || []).length;
+    this.cache.history = [];
+    this.save('history');
+    return { deletedCount: count };
   }
 }
 

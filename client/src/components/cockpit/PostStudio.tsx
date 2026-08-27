@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '@/store/useStore';
-import { apiClient } from '@/services/apiClient';
+import { apiClient, ScheduleItem } from '@/services/apiClient';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { TerminalConsole } from './TerminalConsole';
@@ -25,6 +25,14 @@ import {
   Terminal,
   Square,
   ChevronRight,
+  Image as ImageIcon,
+  Calendar,
+  Clock,
+  Trash2,
+  X,
+  Plus,
+  Play,
+  Pause,
 } from 'lucide-react';
 
 const STYLE_OPTIONS = [
@@ -70,12 +78,14 @@ const PRESET_KEYWORDS = [
 ];
 
 export const PostStudio: React.FC = () => {
-  const { accounts, settings, loadSettings, setActiveTab, isRunning } = useStore();
+  const { accounts, settings, loadSettings, schedules, loadSchedules, setActiveTab, isRunning } = useStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Ensure settings are loaded when PostStudio mounts
+  // Ensure settings & schedules are loaded when PostStudio mounts
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+    loadSchedules();
+  }, [loadSettings, loadSchedules]);
 
   // Generator State
   const [keyword, setKeyword] = useState('');
@@ -90,6 +100,19 @@ export const PostStudio: React.FC = () => {
   const [generatedDrafts, setGeneratedDrafts] = useState<string[]>([]);
   const [activeProviderUsed, setActiveProviderUsed] = useState<string>('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // Media Attachment State
+  const [attachedMedia, setAttachedMedia] = useState<{ filename: string; localPath: string; previewUrl: string; sizeKb?: string }[]>([]);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+
+  // Scheduling State
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleDateTime, setScheduleDateTime] = useState(() => {
+    const d = new Date(Date.now() + 30 * 60 * 1000); // 30 mins from now default
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  });
+  const [scheduleTitle, setScheduleTitle] = useState('');
+  const [isCreatingSchedule, setIsCreatingSchedule] = useState(false);
 
   // Composer & Dispatcher State
   const [activeDraftText, setActiveDraftText] = useState('');
@@ -115,6 +138,62 @@ export const PostStudio: React.FC = () => {
   const aiProviderName = (settings?.aiProvider || 'none').toUpperCase();
   const aiModelName = settings?.aiModel;
 
+  // Handle Media File Selection & Upload
+  const handleMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (attachedMedia.length + files.length > 4) {
+      toast.error('Twitter/X membatasi maksimal 4 gambar per postingan.');
+      return;
+    }
+
+    setIsUploadingMedia(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) {
+          toast.error(`File ${file.name} bukan gambar.`);
+          continue;
+        }
+
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+        });
+        reader.readAsDataURL(file);
+        const imageBase64 = await base64Promise;
+
+        const res = await apiClient.uploadMedia(imageBase64, file.name);
+        if (res.success && res.localPath) {
+          setAttachedMedia(prev => [
+            ...prev,
+            {
+              filename: res.filename || file.name,
+              localPath: res.localPath!,
+              previewUrl: imageBase64,
+              sizeKb: res.sizeKb,
+            }
+          ]);
+          toast.success(`Gambar ${file.name} (${res.sizeKb} KB) siap dilampirkan.`);
+        } else {
+          toast.error(`Gagal mengunggah ${file.name}: ${res.message}`);
+        }
+      }
+    } catch (err: any) {
+      toast.error(`Error upload gambar: ${err.message}`);
+    } finally {
+      setIsUploadingMedia(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveMedia = (index: number) => {
+    setAttachedMedia(prev => prev.filter((_, i) => i !== index));
+    toast.info('Lampiran gambar dihapus.');
+  };
+
   // Handle AI Post Generation
   const handleGenerate = async () => {
     if (!keyword.trim()) {
@@ -135,13 +214,11 @@ export const PostStudio: React.FC = () => {
       });
 
       if (res.success && res.posts && res.posts.length > 0) {
-        // Enforce single-line text format: replace newlines with single space and collapse extra spaces
         const singleLinePosts = res.posts.map((p) =>
           p.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim()
         );
         setGeneratedDrafts(singleLinePosts);
         setActiveProviderUsed(res.provider || 'AI Engine');
-        // Auto-select first draft into composer
         setActiveDraftText(singleLinePosts[0]);
         toast.success(`Berhasil membuat ${singleLinePosts.length} variasi draf postingan (single line)!`, {
           description: res.isFallback ? 'Dibuat dengan Fallback Template (AI API offline)' : `Inference via ${res.provider}`,
@@ -176,6 +253,80 @@ export const PostStudio: React.FC = () => {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  // Handle Create Schedule
+  const handleCreateSchedule = async () => {
+    if (!activeDraftText.trim()) {
+      toast.error('Konten postingan tidak boleh kosong.');
+      return;
+    }
+
+    if (!scheduleDateTime) {
+      toast.error('Silakan tentukan tanggal dan waktu jadwal posting.');
+      return;
+    }
+
+    const scheduledDateObj = new Date(scheduleDateTime);
+    if (isNaN(scheduledDateObj.getTime()) || scheduledDateObj.getTime() <= Date.now()) {
+      toast.error('Waktu jadwal harus berada di masa mendatang.');
+      return;
+    }
+
+    setIsCreatingSchedule(true);
+    try {
+      const accountIds = selectedAccountMode === 'all' ? 'all' : [singleAccountId || activeAccounts[0].id];
+      let postsToPublish: string[] = [activeDraftText];
+      if (selectedAccountMode === 'all' && generatedDrafts.length > 1) {
+        postsToPublish = generatedDrafts;
+      }
+
+      const res = await apiClient.createSchedule({
+        type: 'POST_QUEUE',
+        title: scheduleTitle.trim() || `Post: ${activeDraftText.slice(0, 30)}...`,
+        scheduledAt: scheduledDateObj.toISOString(),
+        accountIds,
+        posts: postsToPublish,
+        mediaPaths: attachedMedia.map(m => m.localPath),
+        delaySeconds: switchDelaySec,
+        enabled: true,
+      });
+
+      if (res.success) {
+        toast.success(`📅 Berhasil menjadwalkan postingan pada ${scheduledDateObj.toLocaleString('id-ID')}!`);
+        setIsScheduleModalOpen(false);
+        setScheduleTitle('');
+        await loadSchedules();
+      } else {
+        toast.error(`Gagal menjadwalkan: ${res.message}`);
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsCreatingSchedule(false);
+    }
+  };
+
+  const handleDeleteSchedule = async (id: string) => {
+    try {
+      const res = await apiClient.deleteSchedule(id);
+      if (res.success) {
+        toast.success('Jadwal berhasil dihapus.');
+        loadSchedules();
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    }
+  };
+
+  const handleToggleSchedule = async (id: string) => {
+    try {
+      await apiClient.toggleSchedule(id);
+      loadSchedules();
+      toast.success('Status jadwal diperbarui.');
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    }
+  };
+
   // Handle Dispatch / Publish to Fleet
   const handlePublish = async () => {
     if (!activeDraftText.trim()) {
@@ -197,7 +348,6 @@ export const PostStudio: React.FC = () => {
     try {
       const accountIds = selectedAccountMode === 'all' ? 'all' : [singleAccountId || activeAccounts[0].id];
       
-      // If multi-account and multiple generated drafts available, distribute unique draft to each node
       let postsToPublish: string[] = [activeDraftText];
       if (selectedAccountMode === 'all' && generatedDrafts.length > 1) {
         postsToPublish = generatedDrafts;
@@ -207,6 +357,7 @@ export const PostStudio: React.FC = () => {
         accountIds,
         posts: postsToPublish,
         delaySeconds: switchDelaySec,
+        mediaPaths: attachedMedia.map(m => m.localPath),
       });
 
       if (res.success) {
@@ -648,14 +799,54 @@ export const PostStudio: React.FC = () => {
                     className="w-full rounded-lg bg-obsidian-900 border border-border/70 p-3 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-flame transition-all resize-y leading-relaxed font-sans"
                   />
 
+                  {/* Attached Media Previews */}
+                  {attachedMedia.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {attachedMedia.map((media, idx) => (
+                        <div key={idx} className="relative rounded-lg overflow-hidden border border-slate-700 bg-obsidian-900 group aspect-video flex items-center justify-center">
+                          <img src={media.previewUrl} alt={media.filename} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMedia(idx)}
+                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-obsidian-950/80 text-white flex items-center justify-center hover:bg-rose-600 transition-colors shadow-md"
+                            title="Hapus gambar"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="absolute bottom-1 left-1.5 text-[9px] font-mono px-1.5 py-0.5 rounded bg-obsidian-950/70 text-slate-300">
+                            {media.sizeKb} KB
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Character Counter & Helper Buttons */}
-                  <div className="flex items-center justify-between text-[11px] font-mono">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono pt-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleMediaSelect}
+                        multiple
+                        accept="image/png, image/jpeg, image/gif, image/webp"
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingMedia || attachedMedia.length >= 4}
+                        className="px-2.5 py-1 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[10px] hover:bg-blue-500/25 transition-colors flex items-center gap-1"
+                      >
+                        <ImageIcon className="w-3 h-3 text-blue-400" />
+                        <span>{isUploadingMedia ? 'Uploading...' : `+ Gambar (${attachedMedia.length}/4)`}</span>
+                      </button>
+
                       <span className="text-slate-500">
                         {activeDraftText.includes('{') && activeDraftText.includes('}') ? (
-                          <span className="text-blue-400">✨ Spintax syntax</span>
+                          <span className="text-blue-400">✨ Spintax</span>
                         ) : (
-                          'Single-Line Post'
+                          'Single-Line'
                         )}
                       </span>
                       {activeDraftText.includes('\n') && (
@@ -669,7 +860,7 @@ export const PostStudio: React.FC = () => {
                           }}
                           className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] hover:bg-amber-500/25 transition-colors"
                         >
-                          ⚡ Format Jadi 1 Baris
+                          ⚡ 1 Baris
                         </button>
                       )}
                     </div>
@@ -802,37 +993,207 @@ export const PostStudio: React.FC = () => {
               </div>
             )}
 
-            {/* Launch / Publish Action Button */}
-            <button
-              type="button"
-              onClick={handlePublish}
-              disabled={isPublishing || isRunning || !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0}
-              className={cn(
-                'w-full py-3.5 rounded-lg font-heading font-bold text-xs flex items-center justify-center gap-2.5 transition-all shadow-lg',
-                isPublishing || isRunning || !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0
-                  ? 'bg-obsidian-800 text-slate-500 cursor-not-allowed border border-border/40'
-                  : 'bg-gradient-to-r from-blue-600 via-flame to-amber-500 text-obsidian-950 hover:brightness-110 active:scale-[0.99]'
-              )}
-            >
-              {isPublishing || isRunning ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-obsidian-950" />
-                  <span>{isRunning ? 'Engine Sedang Berjalan...' : 'Memulai Publikasi ke X...'}</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span>
-                    {selectedAccountMode === 'all'
-                      ? `🚀 Luncurkan ke ${activeAccounts.length} Node Armada Sekarang`
-                      : `🚀 Publikasikan dengan @${selectedAccount?.username || selectedAccount?.label}`}
-                  </span>
-                </>
-              )}
-            </button>
+            {/* Action Buttons: Publish Now & Schedule */}
+            <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setIsScheduleModalOpen(true)}
+                disabled={!activeDraftText.trim() || isOverLimit || activeAccounts.length === 0}
+                className={cn(
+                  'w-full sm:w-auto px-4 py-3.5 rounded-lg font-heading font-bold text-xs flex items-center justify-center gap-2 transition-all border',
+                  !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0
+                    ? 'border-border/40 text-slate-600 bg-obsidian-900 cursor-not-allowed'
+                    : 'border-purple-500/50 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:text-white'
+                )}
+              >
+                <Calendar className="w-4 h-4 text-purple-400" />
+                <span>Jadwalkan Post</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePublish}
+                disabled={isPublishing || isRunning || !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0}
+                className={cn(
+                  'flex-1 w-full py-3.5 rounded-lg font-heading font-bold text-xs flex items-center justify-center gap-2.5 transition-all shadow-lg',
+                  isPublishing || isRunning || !activeDraftText.trim() || isOverLimit || activeAccounts.length === 0
+                    ? 'bg-obsidian-800 text-slate-500 cursor-not-allowed border border-border/40'
+                    : 'bg-gradient-to-r from-blue-600 via-flame to-amber-500 text-obsidian-950 hover:brightness-110 active:scale-[0.99]'
+                )}
+              >
+                {isPublishing || isRunning ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-obsidian-950" />
+                    <span>{isRunning ? 'Engine Sedang Berjalan...' : 'Memulai Publikasi ke X...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>
+                      {selectedAccountMode === 'all'
+                        ? `🚀 Luncurkan ke ${activeAccounts.length} Node Sekarang`
+                        : `🚀 Publikasikan (@${selectedAccount?.username || selectedAccount?.label})`}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Schedule Post Modal */}
+      {isScheduleModalOpen && (
+        <div className="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="rounded-xl border border-slate-700 bg-obsidian-850 max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-2 border-b border-border/60">
+              <div className="flex items-center gap-2 text-sm font-bold text-white">
+                <Calendar className="w-4 h-4 text-purple-400" />
+                <span>Jadwalkan Waktu Publikasi Postingan</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsScheduleModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-white rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-medium mb-1 block">Label / Judul Jadwal (Opsional):</label>
+                <input
+                  type="text"
+                  value={scheduleTitle}
+                  onChange={(e) => setScheduleTitle(e.target.value)}
+                  placeholder="Misal: Crypto Morning Alpha Post"
+                  className="w-full rounded bg-obsidian-900 border border-border/80 p-2 text-white focus:outline-none focus:border-purple-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-medium mb-1 block">Pilih Waktu & Tanggal Eksekusi:</label>
+                <input
+                  type="datetime-local"
+                  value={scheduleDateTime}
+                  onChange={(e) => setScheduleDateTime(e.target.value)}
+                  className="w-full rounded bg-obsidian-900 border border-border/80 p-2 text-white font-mono scheme-dark focus:outline-none focus:border-purple-400"
+                />
+              </div>
+
+              <div className="p-3 rounded bg-obsidian-900/60 border border-border/40 text-[11px] text-slate-400 flex flex-col gap-1">
+                <div className="text-slate-200 font-semibold">Preview Pengiriman:</div>
+                <div>• Target: <strong>{selectedAccountMode === 'all' ? `Semua Node Aktif (${activeAccounts.length} Akun)` : `@${selectedAccount?.username || 'Node'}`}</strong></div>
+                <div>• Lampiran Media: <strong>{attachedMedia.length} file gambar</strong></div>
+                <div>• Cuplikan Teks: <em>"{activeDraftText.slice(0, 50)}..."</em></div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+              <button
+                type="button"
+                onClick={() => setIsScheduleModalOpen(false)}
+                className="px-3 py-1.5 rounded text-xs text-slate-400 hover:text-white"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateSchedule}
+                disabled={isCreatingSchedule}
+                className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5"
+              >
+                {isCreatingSchedule ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Clock className="w-3.5 h-3.5" />}
+                <span>Simpan Jadwal Antrean</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section: Scheduled Post & Task Queue Deck */}
+      {schedules.length > 0 && (
+        <div className="rounded-xl border border-border/80 bg-obsidian-850 p-5 flex flex-col gap-3 shadow-md">
+          <div className="flex items-center justify-between pb-2 border-b border-border/60">
+            <div className="flex items-center gap-2 text-sm font-bold text-white">
+              <Clock className="w-4 h-4 text-purple-400" />
+              <span>Antrean Jadwal Eksekusi Otomatis ({schedules.length})</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">Auto-Scheduler 15s</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {schedules.map((sch) => (
+              <div
+                key={sch.id}
+                className={cn(
+                  'rounded-lg border p-3 flex flex-col justify-between gap-2.5 transition-all',
+                  sch.status === 'COMPLETED'
+                    ? 'border-emerald/40 bg-obsidian-900/40 opacity-70'
+                    : sch.status === 'FAILED'
+                    ? 'border-rose-500/40 bg-obsidian-900/40'
+                    : 'border-border/80 bg-obsidian-900'
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-white">{sch.title || 'Scheduled Task'}</span>
+                      <span
+                        className={cn(
+                          'text-[9px] font-mono px-1.5 py-0.2 rounded uppercase font-bold',
+                          sch.status === 'COMPLETED'
+                            ? 'text-emerald bg-emerald/10'
+                            : sch.status === 'FAILED'
+                            ? 'text-rose-400 bg-rose-500/10'
+                            : sch.status === 'RUNNING'
+                            ? 'text-amber-300 bg-amber-500/10 animate-pulse'
+                            : 'text-purple-300 bg-purple-500/10'
+                        )}
+                      >
+                        {sch.status}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">
+                      {sch.posts?.[0] || sch.keywords?.join(', ') || '-'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSchedule(sch.id)}
+                      className={cn(
+                        'p-1.5 rounded text-xs',
+                        sch.enabled
+                          ? 'text-emerald hover:bg-emerald/10'
+                          : 'text-slate-500 hover:bg-slate-800'
+                      )}
+                      title={sch.enabled ? 'Pause jadwal' : 'Aktifkan jadwal'}
+                    >
+                      {sch.enabled ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSchedule(sch.id)}
+                      className="p-1.5 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10"
+                      title="Hapus jadwal"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-border/40">
+                  <span>Waktu: {new Date(sch.scheduledAt).toLocaleString('id-ID')}</span>
+                  <span>{sch.mediaPaths && sch.mediaPaths.length > 0 ? `🖼️ ${sch.mediaPaths.length} gambar` : 'Text only'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Section 4: Live Telemetry Stream & Execution Console */}
       <div className="flex flex-col gap-3">

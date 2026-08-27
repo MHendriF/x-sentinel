@@ -12,6 +12,8 @@ data/auth.json
 data/history.json
 data/settings.json
 data/stats.json
+data/schedules.json
+data/media/
 data/comments/
 
 # Temporary files and logs

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
+import { apiClient } from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,9 @@ import {
   Calendar,
   X,
   Filter,
+  Trash2,
+  AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +36,10 @@ export const AuditLedger: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  // Pruning & Maintenance state
+  const [isPruneModalOpen, setIsPruneModalOpen] = useState(false);
+  const [isPruning, setIsPruning] = useState(false);
+
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
@@ -40,6 +48,35 @@ export const AuditLedger: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, actionFilter, startDate, endDate, pageSize]);
+
+  const handlePruneLogs = async (type: '30days' | '7days' | 'failed' | 'all') => {
+    setIsPruning(true);
+    try {
+      if (type === 'all') {
+        const res = await apiClient.clearAllHistory();
+        if (res.success) {
+          toast.success(`🧹 Seluruh riwayat audit berhasil dibersihkan (${res.deletedCount} log dihapus).`);
+        }
+      } else if (type === 'failed') {
+        const res = await apiClient.pruneHistory({ status: 'FAILED' });
+        if (res.success) {
+          toast.success(`🧹 Berhasil menghapus ${res.deletedCount} log berstatus FAILED.`);
+        }
+      } else {
+        const days = type === '30days' ? 30 : 7;
+        const res = await apiClient.pruneHistory({ olderThanDays: days });
+        if (res.success) {
+          toast.success(`🧹 Berhasil menghapus ${res.deletedCount} log lebih lama dari ${days} hari.`);
+        }
+      }
+      setIsPruneModalOpen(false);
+      await loadHistory();
+    } catch (err: any) {
+      toast.error(`Gagal melakukan maintenance: ${err.message}`);
+    } finally {
+      setIsPruning(false);
+    }
+  };
 
   const filteredHistory = useMemo(() => {
     return history.filter((item) => {
@@ -183,6 +220,16 @@ export const AuditLedger: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPruneModalOpen(true)}
+            className="gap-1 text-xs font-mono border-rose-500/40 text-rose-300 hover:bg-rose-500/10"
+            title="Bersihkan log riwayat lama atau gagal"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+            Maintenance
+          </Button>
           <Button variant="outline" size="sm" onClick={() => loadHistory()} className="gap-1 text-xs">
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh
@@ -456,6 +503,100 @@ export const AuditLedger: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        {/* Maintenance & Prune Modal */}
+        {isPruneModalOpen && (
+          <div className="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+            <div className="rounded-xl border border-rose-500/40 bg-obsidian-850 max-w-md w-full p-5 flex flex-col gap-4 shadow-2xl">
+              <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                <div className="flex items-center gap-2 text-sm font-bold text-white">
+                  <Trash2 className="w-4 h-4 text-rose-400" />
+                  <span>Audit Ledger Maintenance &amp; Pruning</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPruneModalOpen(false)}
+                  className="p-1 text-slate-400 hover:text-white rounded"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-300">
+                Pilih opsi pembersihan data riwayat untuk menjaga performa dan ukuran database:
+              </p>
+
+              <div className="flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => handlePruneLogs('30days')}
+                  disabled={isPruning}
+                  className="p-3 rounded-lg border border-border/80 bg-obsidian-900 hover:bg-obsidian-800 text-left transition-colors flex items-center justify-between text-xs text-white"
+                >
+                  <div>
+                    <div className="font-semibold text-slate-200">Hapus Log &gt; 30 Hari</div>
+                    <div className="text-[10px] text-slate-500">Hapus entri riwayat yang dibuat lebih dari 1 bulan lalu</div>
+                  </div>
+                  <span className="font-mono text-[11px] text-flame">&gt; 30 Hari</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePruneLogs('7days')}
+                  disabled={isPruning}
+                  className="p-3 rounded-lg border border-border/80 bg-obsidian-900 hover:bg-obsidian-800 text-left transition-colors flex items-center justify-between text-xs text-white"
+                >
+                  <div>
+                    <div className="font-semibold text-slate-200">Hapus Log &gt; 7 Hari</div>
+                    <div className="text-[10px] text-slate-500">Hapus entri riwayat yang dibuat lebih dari 1 minggu lalu</div>
+                  </div>
+                  <span className="font-mono text-[11px] text-amber-400">&gt; 7 Hari</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePruneLogs('failed')}
+                  disabled={isPruning}
+                  className="p-3 rounded-lg border border-rose-500/30 bg-rose-950/20 hover:bg-rose-950/40 text-left transition-colors flex items-center justify-between text-xs text-rose-200"
+                >
+                  <div>
+                    <div className="font-semibold text-rose-300">Hapus Log Gagal (FAILED) Saja</div>
+                    <div className="text-[10px] text-slate-400">Bersihkan semua riwayat interaksi yang gagal</div>
+                  </div>
+                  <span className="font-mono text-[11px] text-rose-400 font-bold">FAILED ONLY</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm('Apakah Anda yakin ingin MENGHAPUS SEMUA riwayat audit? Tindakan ini tidak dapat dibatalkan.')) {
+                      handlePruneLogs('all');
+                    }
+                  }}
+                  disabled={isPruning}
+                  className="p-3 rounded-lg border border-rose-600/50 bg-rose-950/40 hover:bg-rose-900/60 text-left transition-colors flex items-center justify-between text-xs text-rose-300"
+                >
+                  <div>
+                    <div className="font-semibold text-rose-200">Bersihkan Seluruh Riwayat (Reset)</div>
+                    <div className="text-[10px] text-rose-400/80">Hapus 100% data log riwayat di database</div>
+                  </div>
+                  <span className="font-mono text-[11px] text-rose-300 font-bold">CLEAR ALL</span>
+                </button>
+              </div>
+
+              <div className="flex justify-end pt-2 border-t border-border/60">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsPruneModalOpen(false)}
+                  className="text-xs"
+                >
+                  Tutup
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

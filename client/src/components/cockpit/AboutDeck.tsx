@@ -96,16 +96,16 @@ export const AboutDeck: React.FC = () => {
               </div>
               <CardTitle className="text-base">1. Multi-Node Cluster</CardTitle>
               <CardDescription className="text-xs">
-                Manajemen armada puluhan akun terdesentralisasi dengan isolasi proxy.
+                Manajemen armada akun dengan isolasi proxy, health checker, &amp; warmup protocol.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
               <ul className="list-disc pl-4 space-y-1 text-slate-400">
                 <li>Otentikasi aman via cookie <code>auth_token</code> &amp; <code>ct0</code> tanpa login password.</li>
-                <li><strong>🔒 Proxy Masking</strong>: Menampilkan <code>IP:Port</code> bersih tanpa bocor kredensial.</li>
-                <li><strong>📥 Bulk Fleet Import</strong>: Daftarkan puluhan akun sekaligus via teks/JSON.</li>
-                <li><strong>📤 Export Fleet Backup</strong>: Unduh backup seluruh armada node ke file <code>.json</code>.</li>
-                <li><strong>⚡ Live Proxy Ping &amp; GeoIP</strong>: Cek latensi (ms), negara, dan ISP realtime.</li>
+                <li><strong>🩺 Fleet Health Mass-Checker</strong>: Uji validitas sesi cookie &amp; proxy seluruh armada dengan 1 klik.</li>
+                <li><strong>🐣 Account Warm-up Protocol</strong>: Rutinitas pemanasan bertahap (Day 1-7) anti-shadowban untuk akun baru.</li>
+                <li><strong>🔒 Proxy Masking &amp; Auto-Pause</strong>: Sembunyikan kredensial dan auto-pause node jika proxy mati.</li>
+                <li><strong>📥 Bulk Import &amp; Export Backup</strong>: Onboarding massal dan backup seluruh cluster ke JSON.</li>
               </ul>
             </CardContent>
           </Card>
@@ -116,39 +116,39 @@ export const AboutDeck: React.FC = () => {
               <div className="w-9 h-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-2">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <CardTitle className="text-base">2. AI Post Studio (NEW)</CardTitle>
+              <CardTitle className="text-base">2. AI Post Studio &amp; Scheduler</CardTitle>
               <CardDescription className="text-xs">
-                Generator konten viral berbasis AI &amp; publisher multi-node armada.
+                Generator konten viral AI, lampiran gambar, &amp; auto-post scheduler.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
               <ul className="list-disc pl-4 space-y-1 text-slate-400">
                 <li><strong>5 Persona Presets</strong>: Viral Hook, Alpha Insight, Mini Value-Drop, Founder Story, &amp; Indo Tech.</li>
-                <li><strong>Strict Single-Line Cadence</strong>: Output 1 baris mengalir bebas newline untuk estetika X native.</li>
-                <li><strong>WYSIWYG Tweet Mockup</strong>: Preview live avatar, handle, &amp; 280-character meter.</li>
-                <li><strong>Fleet Broadcasting</strong>: Publikasikan ke 1 akun atau sebar draf unik ke seluruh armada.</li>
+                <li><strong>🖼️ Media &amp; Image Upload</strong>: Lampirkan hingga 4 gambar (PNG/JPG/GIF/WebP) per postingan.</li>
+                <li><strong>⏰ Cron Auto-Scheduler</strong>: Jadwalkan postingan draf di masa depan dengan eksekusi background otomatis.</li>
+                <li><strong>WYSIWYG Tweet Mockup</strong>: Preview live avatar, handle, media preview, &amp; 280-character meter.</li>
                 <li><strong>📡 Live Telemetry Stream</strong>: Pantau log pengetikan Playwright secara realtime.</li>
               </ul>
             </CardContent>
           </Card>
 
-          {/* Feature 3: AI Contextual Replies */}
+          {/* Feature 3: AI Contextual Replies & Webhooks */}
           <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors border-purple-500/30">
             <CardHeader className="pb-2">
               <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-2">
                 <Bot className="w-5 h-5" />
               </div>
-              <CardTitle className="text-base">3. AI Contextual Replies</CardTitle>
+              <CardTitle className="text-base">3. AI Engine &amp; Webhooks</CardTitle>
               <CardDescription className="text-xs">
-                Membaca tweet target untuk menghasilkan balasan kontekstual dan alami.
+                Balasan tweet kontekstual &amp; alert real-time ke Telegram/Discord.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
               <ul className="list-disc pl-4 space-y-1 text-slate-400">
-                <li>Integrasi multi-provider: <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>, <strong>Gemini</strong>, &amp; <strong>Ollama</strong>.</li>
+                <li>Multi-provider: <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>, <strong>Gemini</strong>, &amp; <strong>Ollama</strong>.</li>
+                <li><strong>🔔 Telegram &amp; Discord Alerts</strong>: Notifikasi instan saat tweet terbit, tugas selesai, atau sesi expired.</li>
                 <li>Membaca teks target dan meracik balasan sesuai tone persona terpilih.</li>
                 <li><strong>Smart Fallback</strong>: Otomatis beralih ke Spintax jika kuota habis atau timeout.</li>
-                <li><strong>⚡ Live Sandbox Tester</strong>: Uji respon model langsung dari dashboard.</li>
               </ul>
             </CardContent>
           </Card>
@@ -211,6 +211,7 @@ export const AboutDeck: React.FC = () => {
                 <li>Pemindaian postingan terbaru berdasarkan kata kunci (*keywords*) atau hashtag.</li>
                 <li>Penyaringan postingan teratas dan teranyar secara dinamis.</li>
                 <li>Otomatisasi Like, Repost, dan Balasan langsung dari hasil temuan radar.</li>
+                <li><strong>Recurring Hunter</strong>: Penjadwalan berburu otomatis berkala via scheduler.</li>
               </ul>
             </CardContent>
           </Card>
@@ -236,23 +237,23 @@ export const AboutDeck: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Feature 8: Paginated Audit Ledger */}
+          {/* Feature 8: Paginated Audit Ledger & Maintenance */}
           <Card className="bg-obsidian-850 hover:border-slate-600 transition-colors">
             <CardHeader className="pb-2">
               <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-2">
                 <FileSpreadsheet className="w-5 h-5" />
               </div>
-              <CardTitle className="text-base">8. Audit Ledger &amp; Paging</CardTitle>
+              <CardTitle className="text-base">8. Audit Ledger &amp; Maintenance</CardTitle>
               <CardDescription className="text-xs">
-                Log peristiwa interaksi kekal lengkap dengan link status dan paginasi.
+                Log peristiwa interaksi kekal, filter tanggal, dan alat maintenance/pruning.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-xs text-slate-300 space-y-2 font-sans">
               <ul className="list-disc pl-4 space-y-1 text-slate-400">
                 <li><strong>GraphQL Post URL Capture</strong>: Menyimpan tautan langsung ke tweet yang diterbitkan.</li>
-                <li><strong>Paginasi Cepat</strong>: Pilihan 10, 25, 50, atau 100 baris per halaman.</li>
-                <li>Filter aksi instan (<code>ALL</code>, <code>LIKE</code>, <code>RETWEET</code>, <code>COMMENT</code>, <code>POST</code>).</li>
-                <li><strong>Export CSV</strong>: Unduh seluruh riwayat audit dengan 1 klik.</li>
+                <li><strong>📅 Date Range Filtering</strong>: Filter log tanggal kustom &amp; preset cepat (*Hari Ini, 7 Hari, 30 Hari*).</li>
+                <li><strong>🧹 Database Maintenance</strong>: Bersihkan log lama &gt; 30 hari atau log FAILED secara instan.</li>
+                <li><strong>Export Filtered CSV</strong>: Unduh riwayat audit terfilter dengan 1 klik.</li>
               </ul>
             </CardContent>
           </Card>

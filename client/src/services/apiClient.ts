@@ -12,6 +12,12 @@ export interface AccountNode {
   enabled?: boolean;
   isValid?: boolean;
   lastChecked?: string | null;
+  healthStatus?: 'HEALTHY' | 'EXPIRED' | 'PROXY_DEAD' | 'UNKNOWN_ERROR';
+  healthMessage?: string;
+  lastCheckedAt?: string;
+  warmupMode?: boolean;
+  warmupDay?: number;
+  lastWarmupAt?: string;
   stats?: {
     likes: number;
     retweets: number;
@@ -44,6 +50,32 @@ export interface Settings {
   aiModel?: string;
   aiBaseUrl?: string;
   aiPrompt?: string;
+  telegramEnabled?: boolean;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  discordEnabled?: boolean;
+  discordWebhookUrl?: string;
+}
+
+export interface ScheduleItem {
+  id: string;
+  type: 'POST_QUEUE' | 'RECURRING_HUNTER';
+  title?: string;
+  enabled: boolean;
+  status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  scheduledAt: string;
+  intervalMinutes?: number;
+  lastRunAt?: string | null;
+  accountIds?: string[] | 'all';
+  posts?: string[];
+  mediaPaths?: string[];
+  delaySeconds?: number;
+  keywords?: string[];
+  vectors?: string[];
+  maxTweets?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastMessage?: string;
 }
 
 export interface HistoryItem {
@@ -196,6 +228,7 @@ export const apiClient = {
     accountIds: string | string[];
     posts: string | string[];
     delaySeconds?: number;
+    mediaPaths?: string[];
   }) {
     const res = await fetch('/api/tasks/post', {
       method: 'POST',
@@ -324,6 +357,113 @@ export const apiClient = {
   // Audit History
   async getHistory(limit = 100): Promise<{ success: boolean; history: HistoryItem[]; stats: Stats }> {
     const res = await fetch(`/api/history?limit=${limit}`);
+    return res.json();
+  },
+
+  // Media / Image Upload
+  async uploadMedia(imageBase64: string, filename?: string): Promise<{
+    success: boolean;
+    filename?: string;
+    localPath?: string;
+    sizeKb?: string;
+    message?: string;
+  }> {
+    const res = await fetch('/api/media/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, filename }),
+    });
+    return res.json();
+  },
+
+  // Fleet Health & Session Checks
+  async checkFleetHealth(): Promise<{
+    success: boolean;
+    total?: number;
+    healthy?: number;
+    results?: any[];
+    message?: string;
+  }> {
+    const res = await fetch('/api/accounts/check-health', { method: 'POST' });
+    return res.json();
+  },
+
+  async checkAccountHealth(id: string): Promise<{
+    success: boolean;
+    healthStatus?: 'HEALTHY' | 'EXPIRED' | 'PROXY_DEAD' | 'UNKNOWN_ERROR';
+    account?: AccountNode;
+    message: string;
+  }> {
+    const res = await fetch(`/api/accounts/${id}/check-health`, { method: 'POST' });
+    return res.json();
+  },
+
+  // Account Warmup
+  async startWarmup(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`/api/accounts/${id}/warmup`, { method: 'POST' });
+    return res.json();
+  },
+
+  // Schedules & Post Queue
+  async getSchedules(): Promise<{ success: boolean; schedules: ScheduleItem[] }> {
+    const res = await fetch('/api/schedules');
+    return res.json();
+  },
+
+  async createSchedule(data: Partial<ScheduleItem>): Promise<{ success: boolean; schedule: ScheduleItem; message?: string }> {
+    const res = await fetch('/api/schedules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  async deleteSchedule(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`/api/schedules/${id}`, { method: 'DELETE' });
+    return res.json();
+  },
+
+  async toggleSchedule(id: string, enabled?: boolean): Promise<{ success: boolean; schedule: ScheduleItem }> {
+    const res = await fetch(`/api/schedules/${id}/toggle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled }),
+    });
+    return res.json();
+  },
+
+  // Webhook Test
+  async testWebhook(payload: {
+    type?: 'telegram' | 'discord';
+    telegramBotToken?: string;
+    telegramChatId?: string;
+    discordWebhookUrl?: string;
+  }): Promise<{ success: boolean; message?: string }> {
+    const res = await fetch('/api/settings/test-webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  // History Pruning & Clear
+  async pruneHistory(payload: { olderThanDays?: number; status?: string }): Promise<{
+    success: boolean;
+    deletedCount: number;
+    remainingCount: number;
+  }> {
+    const res = await fetch('/api/history/prune', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async clearAllHistory(): Promise<{ success: boolean; deletedCount: number }> {
+    const res = await fetch('/api/history/clear-all', { method: 'POST' });
     return res.json();
   },
 

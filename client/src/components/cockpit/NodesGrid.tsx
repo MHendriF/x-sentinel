@@ -1,13 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { NodeCard } from './NodeCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Plus, RefreshCw, Server, AlertCircle, UploadCloud, Download } from 'lucide-react';
+import { Plus, RefreshCw, Server, AlertCircle, UploadCloud, Download, Stethoscope, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiClient } from '@/services/apiClient';
 
 export const NodesGrid: React.FC = () => {
-  const { accounts, loadAccounts, openAccountModal, openBulkImportModal } = useStore();
+  const { accounts, loadAccounts, openAccountModal, openBulkImportModal, isCheckingHealth, setIsCheckingHealth } = useStore();
 
   useEffect(() => {
     loadAccounts();
@@ -16,6 +17,26 @@ export const NodesGrid: React.FC = () => {
   const handleExportFleet = () => {
     window.open('/api/accounts/export', '_blank');
     toast.success('Mengunduh backup seluruh armada node akun (JSON)...');
+  };
+
+  const handleCheckFleetHealth = async () => {
+    if (isCheckingHealth) return;
+    setIsCheckingHealth(true);
+    toast.info('🩺 Memulai pengujian kesehatan sesi & proxy seluruh armada node...');
+
+    try {
+      const res = await apiClient.checkFleetHealth();
+      if (res.success) {
+        toast.success(`🏁 Pengecekan armada selesai: ${res.healthy}/${res.total} node dalam kondisi sehat!`);
+      } else {
+        toast.error(`Pengecekan gagal: ${res.message}`);
+      }
+      await loadAccounts();
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsCheckingHealth(false);
+    }
   };
 
   return (
@@ -29,10 +50,25 @@ export const NodesGrid: React.FC = () => {
             </div>
             <CardTitle className="text-lg">Registered Computing Nodes ({accounts.length})</CardTitle>
             <CardDescription>
-              Setiap node mewakili sesi akun X independen dengan pool komentar dan routing proxy tersendiri.
+              Setiap node mewakili sesi akun X independen dengan pool komentar, routing proxy, dan status kesehatan sesi.
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCheckFleetHealth}
+              disabled={isCheckingHealth}
+              className="gap-1.5 text-xs font-mono border-rose-500/40 text-rose-300 hover:bg-rose-500/10"
+              title="Periksa kesehatan cookie auth_token & proxy seluruh node"
+            >
+              {isCheckingHealth ? (
+                <Loader2 className="w-3.5 h-3.5 text-rose-400 animate-spin" />
+              ) : (
+                <Stethoscope className="w-3.5 h-3.5 text-rose-400" />
+              )}
+              {isCheckingHealth ? 'Checking Fleet...' : 'Fleet Health'}
+            </Button>
             <Button
               variant="outline"
               size="sm"
