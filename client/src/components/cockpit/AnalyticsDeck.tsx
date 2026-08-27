@@ -547,49 +547,37 @@ export const AnalyticsDeck: React.FC = () => {
             </CardDescription>
           </div>
 
-          {/* Quick Stat Pills Header with Bright White Text */}
-          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/15 border border-red-500/30 text-white">
-              <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400/30" />
-              <span className="font-bold text-white text-sm">{totalLikes}</span>
-              <span className="text-slate-200">Likes</span>
-              <span className="text-[11px] text-red-200 font-semibold">
-                ({vectorBreakdownData[0].percentage}%)
-              </span>
-            </div>
+          {/* Simplified Quick Stat Badges */}
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold">
+              <Heart className="w-3 h-3 fill-red-400/20" />
+              <span className="text-white">{totalLikes}</span>
+              <span className="text-[10px] text-slate-400 font-normal">Likes</span>
+            </span>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-white">
-              <Repeat className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="font-bold text-white text-sm">{totalRetweets}</span>
-              <span className="text-slate-200">Reposts</span>
-              <span className="text-[11px] text-emerald-200 font-semibold">
-                ({vectorBreakdownData[1].percentage}%)
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+              <Repeat className="w-3 h-3" />
+              <span className="text-white">{totalRetweets}</span>
+              <span className="text-[10px] text-slate-400 font-normal">Reposts</span>
+            </span>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-white">
-              <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
-              <span className="font-bold text-white text-sm">{totalComments}</span>
-              <span className="text-slate-200">Replies</span>
-              <span className="text-[11px] text-blue-200 font-semibold">
-                ({vectorBreakdownData[2].percentage}%)
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold">
+              <MessageSquare className="w-3 h-3" />
+              <span className="text-white">{totalComments}</span>
+              <span className="text-[10px] text-slate-400 font-normal">Replies</span>
+            </span>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-white">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-bold text-white text-sm">{totalPosts}</span>
-              <span className="text-slate-200">Posts</span>
-              <span className="text-[11px] text-amber-200 font-semibold">
-                ({vectorBreakdownData[3]?.percentage || 0}%)
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold">
+              <Sparkles className="w-3 h-3" />
+              <span className="text-white">{totalPosts}</span>
+              <span className="text-[10px] text-slate-400 font-normal">Posts</span>
+            </span>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-obsidian-950 border border-border/80 text-white">
-              <Activity className="w-3.5 h-3.5 text-slate-400" />
-              <span className="font-bold text-white text-sm">{totalActions}</span>
-              <span className="text-slate-300">Total</span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-obsidian-950 text-slate-300 border border-border/80 text-xs font-semibold">
+              <Activity className="w-3 h-3 text-slate-400" />
+              <span className="text-white">{totalActions}</span>
+              <span className="text-[10px] text-slate-500 font-normal">Total</span>
+            </span>
           </div>
         </CardHeader>
 
