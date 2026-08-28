@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { NodeCard } from './NodeCard';
+import { NodesFilterBar, NodeStatusFilter } from './nodes/NodesFilterBar';
+import { NodesPagination } from './nodes/NodesPagination';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Plus,
   RefreshCw,
   Server,
-  AlertCircle,
   UploadCloud,
   Download,
   Stethoscope,
   Loader2,
+  SearchX,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/services/apiClient';
@@ -26,9 +28,18 @@ export const NodesGrid: React.FC = () => {
     setIsCheckingHealth,
   } = useStore();
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<NodeStatusFilter>('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
   useEffect(() => {
     loadAccounts();
   }, [loadAccounts]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, pageSize]);
 
   const handleExportFleet = () => {
     window.open('/api/accounts/export', '_blank');
@@ -57,8 +68,43 @@ export const NodesGrid: React.FC = () => {
     }
   };
 
+  // Search & Status Filter
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter((acc) => {
+      const matchesSearch =
+        !searchTerm.trim() ||
+        (acc.label && acc.label.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (acc.username && acc.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (acc.proxy && acc.proxy.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      let matchesStatus = true;
+      if (statusFilter === 'ONLINE') {
+        matchesStatus = acc.enabled !== false;
+      } else if (statusFilter === 'PAUSED') {
+        matchesStatus = acc.enabled === false;
+      } else if (statusFilter === 'HEALTHY') {
+        matchesStatus = acc.healthStatus === 'HEALTHY';
+      } else if (statusFilter === 'EXPIRED') {
+        matchesStatus =
+          acc.healthStatus === 'EXPIRED' ||
+          acc.healthStatus === 'PROXY_DEAD' ||
+          acc.isValid === false;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [accounts, searchTerm, statusFilter]);
+
+  // Pagination calculations
+  const totalItems = filteredAccounts.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedAccounts = filteredAccounts.slice(startIndex, endIndex);
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Top Banner / Actions */}
       <Card>
         <CardHeader className="flex flex-col items-start justify-between gap-3 pb-3 md:flex-row md:items-center">
@@ -132,6 +178,18 @@ export const NodesGrid: React.FC = () => {
         </CardHeader>
       </Card>
 
+      {/* Search & Filter Bar (Only if accounts exist) */}
+      {accounts.length > 0 && (
+        <NodesFilterBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          totalCount={accounts.length}
+          filteredCount={filteredAccounts.length}
+        />
+      )}
+
       {/* Grid of Nodes */}
       {accounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-obsidian-850/50 p-12 text-center">
@@ -150,12 +208,45 @@ export const NodesGrid: React.FC = () => {
             Daftarkan Node Pertama
           </Button>
         </div>
+      ) : paginatedAccounts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-obsidian-850/50 p-8 text-center">
+          <SearchX className="mb-2 h-8 w-8 text-slate-500" />
+          <h4 className="text-sm font-semibold text-slate-300">Tidak ada node yang cocok</h4>
+          <p className="mt-1 text-xs text-slate-500">
+            Tidak ditemukan node akun yang sesuai dengan kata kunci atau filter status yang dipilih.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSearchTerm('');
+              setStatusFilter('ALL');
+            }}
+            className="mt-3 text-xs"
+          >
+            Reset Filter
+          </Button>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {accounts.map((acc) => (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {paginatedAccounts.map((acc) => (
             <NodeCard key={acc.id} account={acc} />
           ))}
         </div>
+      )}
+
+      {/* Pagination Controls */}
+      {accounts.length > 0 && (
+        <NodesPagination
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalItems={totalItems}
+          onPageChange={setCurrentPage}
+        />
       )}
     </div>
   );

@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
-  Zap,
   Settings as SettingsIcon,
   Trash2,
   Globe,
@@ -113,27 +112,27 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between gap-4 rounded-lg border border-border/80 bg-obsidian-850 p-4 shadow-md transition-all duration-200 hover:border-slate-600/80 ${
+      className={`flex flex-col justify-between gap-2.5 rounded-lg border border-border/80 bg-obsidian-850 p-3 shadow-md transition-all duration-200 hover:border-slate-600/80 ${
         account.enabled === false ? 'opacity-50 grayscale' : ''
       }`}
     >
       {/* Top Header */}
       <div>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2.5">
             <img
               src={
                 account.avatar ||
                 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'
               }
               alt={account.label}
-              className="h-10 w-10 rounded-md border border-slate-700 bg-obsidian-950 object-cover"
+              className="h-8 w-8 shrink-0 rounded-md border border-slate-700 bg-obsidian-950 object-cover"
             />
-            <div>
-              <h4 className="font-heading text-sm font-semibold leading-snug tracking-tight text-white">
+            <div className="min-w-0">
+              <h4 className="max-w-[130px] truncate font-heading text-xs font-bold leading-tight tracking-tight text-white sm:max-w-[160px]">
                 {account.label || 'Node'}
               </h4>
-              <div className="font-mono text-xs text-flame">
+              <div className="max-w-[130px] truncate font-mono text-[10.5px] text-flame sm:max-w-[160px]">
                 @{account.username || 'unverified'}
               </div>
             </div>
@@ -142,21 +141,21 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           <Button
             size="sm"
             variant="outline"
-            className={`h-7 font-mono text-xs font-bold transition-all ${
+            className={`h-6 shrink-0 px-2 font-mono text-[10px] font-bold transition-all ${
               account.enabled !== false
-                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-sm shadow-emerald-950/40 hover:bg-emerald-500/20 hover:text-emerald-300'
+                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-sm hover:bg-emerald-500/20'
                 : 'border-slate-700 bg-obsidian-900 text-slate-400 hover:bg-slate-800'
             }`}
             onClick={handleToggle}
           >
             {account.enabled !== false ? (
-              <span className="flex items-center font-bold tracking-wide text-emerald-400">
-                <span className="mr-1.5 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+              <span className="flex items-center text-emerald-400">
+                <span className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 ONLINE
               </span>
             ) : (
               <span className="flex items-center text-slate-400">
-                <Power className="mr-1 h-3 w-3 text-slate-400" />
+                <Power className="mr-1 h-2.5 w-2.5 text-slate-400" />
                 PAUSED
               </span>
             )}
@@ -164,31 +163,34 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
         </div>
 
         {/* Tags Row */}
-        <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
+        <div className="mt-2 flex flex-wrap items-center gap-1">
           {/* Health status badge */}
           {account.healthStatus === 'HEALTHY' ? (
-            <Badge variant="success" className="gap-1 font-mono text-[10px]">
-              <CheckCircle2 className="h-3 w-3" />
+            <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
+              <CheckCircle2 className="h-2.5 w-2.5" />
               Healthy
             </Badge>
           ) : account.healthStatus === 'EXPIRED' ? (
-            <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
-              <AlertTriangle className="h-3 w-3" />
+            <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
+              <AlertTriangle className="h-2.5 w-2.5" />
               Expired
             </Badge>
           ) : account.healthStatus === 'PROXY_DEAD' ? (
-            <Badge variant="destructive" className="gap-1 font-mono text-[10px]">
-              <WifiOff className="h-3 w-3" />
+            <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
+              <WifiOff className="h-2.5 w-2.5" />
               Proxy Dead
             </Badge>
           ) : account.isValid ? (
-            <Badge variant="success" className="gap-1 font-mono text-[10px]">
-              <CheckCircle2 className="h-3 w-3" />
+            <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
+              <CheckCircle2 className="h-2.5 w-2.5" />
               Valid
             </Badge>
           ) : (
-            <Badge variant="secondary" className="gap-1 font-mono text-[10px] text-slate-400">
-              <HelpCircle className="h-3 w-3" />
+            <Badge
+              variant="secondary"
+              className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px] text-slate-400"
+            >
+              <HelpCircle className="h-2.5 w-2.5" />
               Unverified
             </Badge>
           )}
@@ -197,11 +199,11 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {account.warmupMode !== false && (
             <Badge
               variant="outline"
-              className="cursor-pointer gap-1 border-amber-500/40 bg-amber-500/10 font-mono text-[10px] text-amber-300 hover:bg-amber-500/20"
+              className="cursor-pointer gap-0.5 border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9.5px] text-amber-300 hover:bg-amber-500/20"
               onClick={handleStartWarmup}
               title="Klik untuk jalankan rutinitas pemanasan"
             >
-              <Flame className="h-3 w-3 text-amber-400" />
+              <Flame className="h-2.5 w-2.5 text-amber-400" />
               Day {account.warmupDay || 1}/7
             </Badge>
           )}
@@ -209,14 +211,17 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {cleanProxy ? (
             <Badge
               variant="purple"
-              className="max-w-[150px] gap-1 truncate font-mono text-[10px]"
+              className="max-w-[130px] gap-0.5 truncate px-1.5 py-0.5 font-mono text-[9.5px]"
               title={`Proxy: ${cleanProxy}`}
             >
-              <Globe className="h-3 w-3" />
-              {cleanProxy}
+              <Globe className="h-2.5 w-2.5 shrink-0" />
+              <span className="truncate">{cleanProxy}</span>
             </Badge>
           ) : (
-            <Badge variant="outline" className="font-mono text-[10px] text-slate-500">
+            <Badge
+              variant="outline"
+              className="px-1.5 py-0.5 font-mono text-[9.5px] text-slate-500"
+            >
               Direct
             </Badge>
           )}
@@ -225,16 +230,16 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {proxyTest && !proxyTest.isDirect && (
             <Badge
               variant={proxyTest.success ? 'success' : 'destructive'}
-              className="animate-in fade-in gap-1 font-mono text-[10px]"
+              className="animate-in fade-in gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]"
             >
               {proxyTest.success ? (
                 <>
-                  <Wifi className="h-3 w-3" />
+                  <Wifi className="h-2.5 w-2.5" />
                   {proxyTest.latency}ms · {proxyTest.countryCode || 'OK'}
                 </>
               ) : (
                 <>
-                  <WifiOff className="h-3 w-3" />
+                  <WifiOff className="h-2.5 w-2.5" />
                   Dead ({proxyTest.latency}ms)
                 </>
               )}
@@ -243,41 +248,41 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
           <Badge
             variant="default"
-            className="cursor-pointer gap-1 font-mono text-[10px] transition-colors hover:bg-amber-500/20"
+            className="cursor-pointer gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px] transition-colors hover:bg-amber-500/20"
             onClick={() => openCommentsModal(account)}
-            title="Kelola komentar akun ini"
+            title="Kelola pool komentar akun ini"
           >
-            <MessageSquare className="h-3 w-3" />
+            <MessageSquare className="h-2.5 w-2.5" />
             {account.commentsCount ?? 3} Payloads
           </Badge>
         </div>
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center gap-1.5 border-t border-border/60 pt-3">
+      <div className="flex items-center gap-1 border-t border-border/50 pt-2">
         <Button
           size="sm"
           variant="secondary"
-          className="flex-1 text-xs"
+          className="h-7 flex-1 px-2 text-[11px] font-medium"
           onClick={handleVerify}
           disabled={isVerifying}
           title="Periksa kesehatan sesi login dan koneksi node"
         >
           <HeartPulse className="mr-1 h-3 w-3 text-amber-400" />
-          {isVerifying ? 'PROBING...' : 'Health Check'}
+          <span>{isVerifying ? 'Checking...' : 'Health Check'}</span>
         </Button>
 
         {account.proxy && (
           <Button
             size="sm"
             variant="outline"
-            className="px-2 text-xs"
+            className="h-7 w-7 shrink-0 p-0 text-xs"
             onClick={handlePingProxy}
             disabled={isPingingProxy}
             title="Ping Proxy Latency & Location"
           >
             <Activity
-              className={`h-3.5 w-3.5 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
+              className={`h-3 w-3 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
             />
           </Button>
         )}
@@ -285,21 +290,21 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
         <Button
           size="sm"
           variant="outline"
-          className="px-2 text-xs"
+          className="h-7 w-7 shrink-0 p-0 text-xs text-slate-300 hover:text-white"
           onClick={() => openAccountModal(account)}
           title="Edit Node Config"
         >
-          <SettingsIcon className="h-3.5 w-3.5" />
+          <SettingsIcon className="h-3 w-3" />
         </Button>
 
         <Button
           size="sm"
           variant="destructive"
-          className="px-2 text-xs"
+          className="h-7 w-7 shrink-0 p-0 text-xs"
           onClick={handleDelete}
           title="Remove Node"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-3 w-3" />
         </Button>
       </div>
     </div>
