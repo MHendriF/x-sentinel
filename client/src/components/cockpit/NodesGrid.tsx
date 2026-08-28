@@ -68,46 +68,50 @@ export const NodesGrid: React.FC = () => {
     }
   };
 
-  // Search & Status Filter
-  const filteredAccounts = useMemo(() => {
+  // 1. Search Filter
+  const searchFilteredAccounts = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return accounts;
     return accounts.filter((acc) => {
-      const matchesSearch =
-        !searchTerm.trim() ||
-        (acc.label && acc.label.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (acc.username && acc.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (acc.proxy && acc.proxy.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      let matchesStatus = true;
-      if (statusFilter === 'ONLINE') {
-        matchesStatus = acc.enabled !== false;
-      } else if (statusFilter === 'PAUSED') {
-        matchesStatus = acc.enabled === false;
-      } else if (statusFilter === 'HEALTHY') {
-        matchesStatus = acc.healthStatus === 'HEALTHY';
-      } else if (statusFilter === 'EXPIRED') {
-        matchesStatus =
-          acc.healthStatus === 'EXPIRED' ||
-          acc.healthStatus === 'PROXY_DEAD' ||
-          acc.isValid === false;
-      }
-
-      return matchesSearch && matchesStatus;
+      return (
+        (acc.label && acc.label.toLowerCase().includes(term)) ||
+        (acc.username && acc.username.toLowerCase().includes(term)) ||
+        (acc.proxy && acc.proxy.toLowerCase().includes(term))
+      );
     });
-  }, [accounts, searchTerm, statusFilter]);
+  }, [accounts, searchTerm]);
 
-  // Status counts
+  // 2. Status counts based on current search query
   const filterCounts = useMemo(() => {
     return {
-      all: accounts.length,
-      online: accounts.filter((a) => a.enabled !== false).length,
-      paused: accounts.filter((a) => a.enabled === false).length,
-      healthy: accounts.filter((a) => a.healthStatus === 'HEALTHY').length,
-      expired: accounts.filter(
+      all: searchFilteredAccounts.length,
+      online: searchFilteredAccounts.filter((a) => a.enabled !== false).length,
+      paused: searchFilteredAccounts.filter((a) => a.enabled === false).length,
+      healthy: searchFilteredAccounts.filter((a) => a.healthStatus === 'HEALTHY').length,
+      expired: searchFilteredAccounts.filter(
         (a) =>
           a.healthStatus === 'EXPIRED' || a.healthStatus === 'PROXY_DEAD' || a.isValid === false
       ).length,
     };
-  }, [accounts]);
+  }, [searchFilteredAccounts]);
+
+  // 3. Final accounts list after status filter
+  const filteredAccounts = useMemo(() => {
+    if (statusFilter === 'ALL') return searchFilteredAccounts;
+    return searchFilteredAccounts.filter((acc) => {
+      if (statusFilter === 'ONLINE') return acc.enabled !== false;
+      if (statusFilter === 'PAUSED') return acc.enabled === false;
+      if (statusFilter === 'HEALTHY') return acc.healthStatus === 'HEALTHY';
+      if (statusFilter === 'EXPIRED') {
+        return (
+          acc.healthStatus === 'EXPIRED' ||
+          acc.healthStatus === 'PROXY_DEAD' ||
+          acc.isValid === false
+        );
+      }
+      return true;
+    });
+  }, [searchFilteredAccounts, statusFilter]);
 
   // Pagination calculations
   const totalItems = filteredAccounts.length;
