@@ -33,14 +33,24 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
       {/* Top Filter Row: Search & Vector */}
       <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
           <Input
             type="text"
             placeholder="Cari URL tweet, akun, atau pesan..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-border/80 bg-obsidian-900 pl-9 font-mono text-xs"
+            className="h-8 border-border/80 bg-obsidian-900 pl-9 pr-8 font-mono text-xs text-slate-200 placeholder:text-slate-500 focus:border-flame focus:ring-1 focus:ring-flame"
           />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 transition-colors hover:text-white"
+              title="Hapus pencarian"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">

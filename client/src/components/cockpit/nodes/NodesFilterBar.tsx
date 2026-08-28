@@ -26,19 +26,19 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
     <div className="flex flex-col gap-3 rounded-lg border border-border/80 bg-obsidian-950 p-3 sm:flex-row sm:items-center sm:justify-between">
       {/* Search Input */}
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
         <Input
           type="text"
           placeholder="Cari node akun (@username, label, proxy host)..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="h-8.5 border-border/80 bg-obsidian-900 pl-9 pr-8 font-mono text-xs text-slate-200 placeholder:text-slate-500 focus:border-flame focus:ring-1 focus:ring-flame"
+          className="h-8 border-border/80 bg-obsidian-900 pl-9 pr-8 font-mono text-xs text-slate-200 placeholder:text-slate-500 focus:border-flame focus:ring-1 focus:ring-flame"
         />
         {searchTerm && (
           <button
             type="button"
             onClick={() => setSearchTerm('')}
-            className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 transition-colors hover:text-white"
             title="Hapus pencarian"
           >
             <X className="h-3.5 w-3.5" />
