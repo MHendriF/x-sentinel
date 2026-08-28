@@ -28,4 +28,13 @@ router.use('/media', mediaRouter);
 router.use('/history', historyRouter);
 router.use('/', settingsRouter);
 
+// 404 Not Found Catch-All for API Routes
+router.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'API_ENDPOINT_NOT_FOUND',
+    message: `Endpoint API '${req.method} /api${req.url}' tidak ditemukan.`,
+  });
+});
+
 module.exports = router;

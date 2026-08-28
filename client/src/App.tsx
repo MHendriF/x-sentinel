@@ -13,11 +13,25 @@ import { DefenseProtocol } from '@/components/cockpit/DefenseProtocol';
 import { AISettingsDeck } from '@/components/cockpit/AISettingsDeck';
 import { AuditLedger } from '@/components/cockpit/AuditLedger';
 import { AboutDeck } from '@/components/cockpit/AboutDeck';
+import { NotFoundDeck } from '@/components/cockpit/NotFoundDeck';
 import { AccountModal } from '@/components/cockpit/AccountModal';
 import { CommentsModal } from '@/components/cockpit/CommentsModal';
 import { DeleteNodeDialog } from '@/components/cockpit/DeleteNodeDialog';
 import { BulkImportModal } from '@/components/cockpit/BulkImportModal';
 import { Toaster } from '@/components/ui/sonner';
+
+const VALID_TABS = [
+  'tab-accounts',
+  'tab-composer',
+  'tab-batch',
+  'tab-hunter',
+  'tab-analytics',
+  'tab-ai',
+  'tab-spintax',
+  'tab-safety',
+  'tab-history',
+  'tab-about',
+];
 
 export const App: React.FC = () => {
   const {
@@ -32,44 +46,53 @@ export const App: React.FC = () => {
     closeBulkImportModal,
   } = useStore();
 
-  // URL Hash Synchronizer for Browser Navigation (Back/Forward)
+  // URL Hash Synchronizer for Browser Navigation (Back/Forward & 404 Routing)
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-      const VALID_TABS = [
-        'tab-accounts',
-        'tab-composer',
-        'tab-batch',
-        'tab-hunter',
-        'tab-analytics',
-        'tab-ai',
-        'tab-spintax',
-        'tab-safety',
-        'tab-history',
-        'tab-about',
-      ];
-      if (hash) {
-        const candidate = hash.startsWith('tab-') ? hash : `tab-${hash}`;
-        if (VALID_TABS.includes(candidate)) {
-          setActiveTab(candidate);
-        } else if (
-          hash === 'composer' ||
-          hash === 'post' ||
-          hash === 'create-post' ||
-          hash === 'studio'
-        ) {
-          setActiveTab('tab-composer');
-        } else if (hash === 'workbench') {
-          setActiveTab('tab-batch');
-        } else if (hash === 'payloads' || hash === 'payload') {
-          setActiveTab('tab-spintax');
-        } else if (hash === 'logs' || hash === 'audit') {
-          setActiveTab('tab-history');
-        } else if (hash === 'nodes' || hash === 'proxies') {
-          setActiveTab('tab-accounts');
-        }
+      const rawHash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
+
+      if (!rawHash) {
+        setActiveTab('tab-accounts');
+        return;
+      }
+
+      const candidate = rawHash.startsWith('tab-') ? rawHash : `tab-${rawHash}`;
+
+      if (VALID_TABS.includes(candidate)) {
+        setActiveTab(candidate);
+      } else if (
+        rawHash === 'composer' ||
+        rawHash === 'post' ||
+        rawHash === 'create-post' ||
+        rawHash === 'studio'
+      ) {
+        setActiveTab('tab-composer');
+      } else if (rawHash === 'workbench' || rawHash === 'target') {
+        setActiveTab('tab-batch');
+      } else if (rawHash === 'payloads' || rawHash === 'payload' || rawHash === 'spintax') {
+        setActiveTab('tab-spintax');
+      } else if (rawHash === 'logs' || rawHash === 'audit' || rawHash === 'history') {
+        setActiveTab('tab-history');
+      } else if (rawHash === 'nodes' || rawHash === 'proxies' || rawHash === 'accounts') {
+        setActiveTab('tab-accounts');
+      } else if (rawHash === 'hunter' || rawHash === 'radar') {
+        setActiveTab('tab-hunter');
+      } else if (rawHash === 'analytics' || rawHash === 'growth') {
+        setActiveTab('tab-analytics');
+      } else if (rawHash === 'ai' || rawHash === 'models') {
+        setActiveTab('tab-ai');
+      } else if (rawHash === 'safety' || rawHash === 'defense' || rawHash === 'webhooks') {
+        setActiveTab('tab-safety');
+      } else if (rawHash === 'about' || rawHash === 'docs' || rawHash === 'specs') {
+        setActiveTab('tab-about');
+      } else {
+        // Unknown sector/path -> 404 Not Found Page
+        setActiveTab('tab-404');
       }
     };
+
+    // Run on initial page load
+    handleHashChange();
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -129,6 +152,8 @@ export const App: React.FC = () => {
           {activeTab === 'tab-safety' && <DefenseProtocol />}
           {activeTab === 'tab-history' && <AuditLedger />}
           {activeTab === 'tab-about' && <AboutDeck />}
+          {activeTab === 'tab-404' && <NotFoundDeck />}
+          {![...VALID_TABS, 'tab-404'].includes(activeTab) && <NotFoundDeck />}
         </div>
       </main>
 
