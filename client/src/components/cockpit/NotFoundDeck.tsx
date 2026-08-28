@@ -24,11 +24,17 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
 
   const handleNavigate = (tabId: string, hash: string) => {
     setActiveTab(tabId);
-    window.location.hash = hash;
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', `/${hash}`);
+    }
   };
 
   const displayPath =
-    currentPath || (typeof window !== 'undefined' ? window.location.hash : '') || '#unknown';
+    currentPath ||
+    (typeof window !== 'undefined'
+      ? `${window.location.pathname !== '/' ? window.location.pathname : ''}${window.location.hash || ''}` ||
+        window.location.pathname
+      : '#unknown');
 
   const QUICK_SECTORS = [
     {

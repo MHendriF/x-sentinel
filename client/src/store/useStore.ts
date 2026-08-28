@@ -68,56 +68,97 @@ interface AppState {
   setIsMobileDrawerOpen: (open: boolean) => void;
 }
 
-// Helper to get initial active tab from URL hash or localStorage
-const getInitialTab = (): string => {
-  if (typeof window !== 'undefined') {
-    const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-    const VALID_TABS = [
-      'tab-accounts',
-      'tab-composer',
-      'tab-batch',
-      'tab-hunter',
-      'tab-analytics',
-      'tab-ai',
-      'tab-spintax',
-      'tab-safety',
-      'tab-history',
-      'tab-about',
-    ];
+// Helper to match sector aliases
+export const matchSectorName = (name: string): string | null => {
+  const clean = name.replace(/^tab-/, '').trim().toLowerCase();
+  const SECTOR_MAP: Record<string, string> = {
+    accounts: 'tab-accounts',
+    nodes: 'tab-accounts',
+    proxies: 'tab-accounts',
+    composer: 'tab-composer',
+    post: 'tab-composer',
+    'create-post': 'tab-composer',
+    studio: 'tab-composer',
+    batch: 'tab-batch',
+    workbench: 'tab-batch',
+    target: 'tab-batch',
+    hunter: 'tab-hunter',
+    radar: 'tab-hunter',
+    feed: 'tab-hunter',
+    analytics: 'tab-analytics',
+    growth: 'tab-analytics',
+    ai: 'tab-ai',
+    models: 'tab-ai',
+    llm: 'tab-ai',
+    spintax: 'tab-spintax',
+    payloads: 'tab-spintax',
+    payload: 'tab-spintax',
+    vault: 'tab-spintax',
+    safety: 'tab-safety',
+    defense: 'tab-safety',
+    webhooks: 'tab-safety',
+    history: 'tab-history',
+    logs: 'tab-history',
+    audit: 'tab-history',
+    ledger: 'tab-history',
+    about: 'tab-about',
+    docs: 'tab-about',
+    specs: 'tab-about',
+  };
 
-    if (hash) {
-      const candidate = hash.startsWith('tab-') ? hash : `tab-${hash}`;
-      if (VALID_TABS.includes(candidate)) return candidate;
-      if (hash === 'composer' || hash === 'post' || hash === 'create-post' || hash === 'studio')
-        return 'tab-composer';
-      if (hash === 'workbench') return 'tab-batch';
-      if (hash === 'payloads' || hash === 'payload') return 'tab-spintax';
-      if (hash === 'logs' || hash === 'audit') return 'tab-history';
-      if (hash === 'nodes' || hash === 'proxies') return 'tab-accounts';
-    }
+  return SECTOR_MAP[clean] || null;
+};
 
-    try {
-      const saved = localStorage.getItem('x_sentinel_active_tab');
-      if (saved && VALID_TABS.includes(saved)) return saved;
-    } catch {
-      // ignore localStorage errors
-    }
+// Helper to get initial active tab from URL path or hash
+export const resolveTabFromUrl = (): string => {
+  if (typeof window === 'undefined') {
+    return 'tab-accounts';
   }
+
+  const pathname = window.location.pathname
+    .replace(/^\/+|\/+$/g, '')
+    .trim()
+    .toLowerCase();
+  const hash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
+
+  // If path is a non-root path (e.g. /xyz or /composer)
+  if (pathname && pathname !== 'index.html') {
+    const matchedFromPath = matchSectorName(pathname);
+    if (matchedFromPath) return matchedFromPath;
+    return 'tab-404';
+  }
+
+  // If path is root, check hash
+  if (hash) {
+    const matchedFromHash = matchSectorName(hash);
+    if (matchedFromHash) return matchedFromHash;
+    return 'tab-404';
+  }
+
   return 'tab-accounts';
 };
 
 export const useStore = create<AppState>((set, get) => ({
-  activeTab: getInitialTab(),
+  activeTab: resolveTabFromUrl(),
   setActiveTab: (activeTab) => {
     if (typeof window !== 'undefined') {
-      const slug = activeTab.replace(/^tab-/, '');
-      if (window.location.hash !== `#${slug}`) {
-        window.history.replaceState(null, '', `#${slug}`);
-      }
-      try {
-        localStorage.setItem('x_sentinel_active_tab', activeTab);
-      } catch {
-        // ignore localStorage errors
+      if (activeTab === 'tab-404') {
+        // Keep current URL path as is so user sees what failed
+      } else {
+        const slug = activeTab.replace(/^tab-/, '');
+        const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+        if (!pathname || pathname === 'index.html') {
+          if (window.location.hash !== `#${slug}`) {
+            window.history.replaceState(null, '', `#${slug}`);
+          }
+        } else {
+          window.history.pushState(null, '', `/#${slug}`);
+        }
+        try {
+          localStorage.setItem('x_sentinel_active_tab', activeTab);
+        } catch {
+          // ignore
+        }
       }
     }
     set({ activeTab, isMobileDrawerOpen: false });

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useStore } from '@/store/useStore';
+import { useStore, resolveTabFromUrl } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
 import { NavDeck } from '@/components/cockpit/NavDeck';
 import { TelemetryRibbon } from '@/components/cockpit/TelemetryRibbon';
@@ -46,56 +46,21 @@ export const App: React.FC = () => {
     closeBulkImportModal,
   } = useStore();
 
-  // URL Hash Synchronizer for Browser Navigation (Back/Forward & 404 Routing)
+  // URL Path & Hash Synchronizer for Browser Navigation (Back/Forward & 404 Routing)
   useEffect(() => {
-    const handleHashChange = () => {
-      const rawHash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
-
-      if (!rawHash) {
-        setActiveTab('tab-accounts');
-        return;
-      }
-
-      const candidate = rawHash.startsWith('tab-') ? rawHash : `tab-${rawHash}`;
-
-      if (VALID_TABS.includes(candidate)) {
-        setActiveTab(candidate);
-      } else if (
-        rawHash === 'composer' ||
-        rawHash === 'post' ||
-        rawHash === 'create-post' ||
-        rawHash === 'studio'
-      ) {
-        setActiveTab('tab-composer');
-      } else if (rawHash === 'workbench' || rawHash === 'target') {
-        setActiveTab('tab-batch');
-      } else if (rawHash === 'payloads' || rawHash === 'payload' || rawHash === 'spintax') {
-        setActiveTab('tab-spintax');
-      } else if (rawHash === 'logs' || rawHash === 'audit' || rawHash === 'history') {
-        setActiveTab('tab-history');
-      } else if (rawHash === 'nodes' || rawHash === 'proxies' || rawHash === 'accounts') {
-        setActiveTab('tab-accounts');
-      } else if (rawHash === 'hunter' || rawHash === 'radar') {
-        setActiveTab('tab-hunter');
-      } else if (rawHash === 'analytics' || rawHash === 'growth') {
-        setActiveTab('tab-analytics');
-      } else if (rawHash === 'ai' || rawHash === 'models') {
-        setActiveTab('tab-ai');
-      } else if (rawHash === 'safety' || rawHash === 'defense' || rawHash === 'webhooks') {
-        setActiveTab('tab-safety');
-      } else if (rawHash === 'about' || rawHash === 'docs' || rawHash === 'specs') {
-        setActiveTab('tab-about');
-      } else {
-        // Unknown sector/path -> 404 Not Found Page
-        setActiveTab('tab-404');
-      }
+    const handleUrlChange = () => {
+      const resolved = resolveTabFromUrl();
+      setActiveTab(resolved);
     };
 
-    // Run on initial page load
-    handleHashChange();
+    handleUrlChange();
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('popstate', handleUrlChange);
+    return () => {
+      window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('popstate', handleUrlChange);
+    };
   }, [setActiveTab]);
 
   // Initial Data Load & SSE Subscription
