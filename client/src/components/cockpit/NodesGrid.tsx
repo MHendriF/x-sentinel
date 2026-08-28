@@ -95,6 +95,20 @@ export const NodesGrid: React.FC = () => {
     });
   }, [accounts, searchTerm, statusFilter]);
 
+  // Status counts
+  const filterCounts = useMemo(() => {
+    return {
+      all: accounts.length,
+      online: accounts.filter((a) => a.enabled !== false).length,
+      paused: accounts.filter((a) => a.enabled === false).length,
+      healthy: accounts.filter((a) => a.healthStatus === 'HEALTHY').length,
+      expired: accounts.filter(
+        (a) =>
+          a.healthStatus === 'EXPIRED' || a.healthStatus === 'PROXY_DEAD' || a.isValid === false
+      ).length,
+    };
+  }, [accounts]);
+
   // Pagination calculations
   const totalItems = filteredAccounts.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -185,8 +199,7 @@ export const NodesGrid: React.FC = () => {
           setSearchTerm={setSearchTerm}
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
-          totalCount={accounts.length}
-          filteredCount={filteredAccounts.length}
+          counts={filterCounts}
         />
       )}
 
