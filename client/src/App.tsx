@@ -19,6 +19,7 @@ import { CommentsModal } from '@/components/cockpit/CommentsModal';
 import { DeleteNodeDialog } from '@/components/cockpit/DeleteNodeDialog';
 import { BulkImportModal } from '@/components/cockpit/BulkImportModal';
 import { Toaster } from '@/components/ui/sonner';
+import { WifiOff } from 'lucide-react';
 
 const VALID_TABS = [
   'tab-accounts',
@@ -33,6 +34,13 @@ const VALID_TABS = [
   'tab-about',
 ];
 
+const isTypingTarget = (target: EventTarget | null): boolean => {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+};
+
 export const App: React.FC = () => {
   const {
     activeTab,
@@ -41,7 +49,9 @@ export const App: React.FC = () => {
     loadSettings,
     setStats,
     setIsRunning,
+    setApiOnline,
     addLog,
+    apiOnline,
     isBulkImportOpen,
     closeBulkImportModal,
   } = useStore();
@@ -71,6 +81,28 @@ export const App: React.FC = () => {
     }
   }, [activeTab]);
 
+  // Keyboard shortcuts: 1-9 switch tabs, "/" focuses the node search box
+  useEffect(() => {
+    const handleShortcuts = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target) || document.querySelector('[role="dialog"]')) return;
+
+      if (e.key === '/') {
+        e.preventDefault();
+        document.getElementById('node-search')?.focus();
+        return;
+      }
+
+      const index = Number(e.key);
+      if (Number.isInteger(index) && index >= 1 && index <= VALID_TABS.length) {
+        setActiveTab(VALID_TABS[index - 1]);
+      }
+    };
+
+    window.addEventListener('keydown', handleShortcuts);
+    return () => window.removeEventListener('keydown', handleShortcuts);
+  }, [setActiveTab]);
+
   // Initial Data Load & SSE Subscription
   useEffect(() => {
     loadAccounts();
@@ -85,12 +117,14 @@ export const App: React.FC = () => {
     const syncStatus = async () => {
       try {
         const data = await apiClient.getStatus();
+        setApiOnline(true);
         if (data.success) {
           if (data.stats) setStats(data.stats);
           setIsRunning(Boolean(data.isRunning), data.currentTask || null);
         }
       } catch (err) {
-        // ignore background poll error
+        // Engine unreachable — surface a global offline banner instead of stale silence
+        setApiOnline(false);
       }
     };
 
@@ -101,7 +135,7 @@ export const App: React.FC = () => {
       eventSource.close();
       clearInterval(interval);
     };
-  }, [loadAccounts, setStats, setIsRunning, addLog]);
+  }, [loadAccounts, setStats, setIsRunning, addLog, setApiOnline]);
 
   return (
     <div className="flex min-h-screen bg-obsidian-900 text-slate-100 selection:bg-amber-500/20 selection:text-amber-300">
@@ -110,6 +144,20 @@ export const App: React.FC = () => {
 
       {/* Main Workspace (Right Content) */}
       <main className="flex w-full max-w-7xl flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:p-8">
+        {/* Engine Offline Banner */}
+        {!apiOnline && (
+          <div
+            role="alert"
+            className="mb-4 flex items-center gap-2.5 rounded-md border border-red-500/40 bg-red-950/40 px-3.5 py-2.5 text-xs text-red-200"
+          >
+            <WifiOff className="h-4 w-4 shrink-0 text-red-400" />
+            <span>
+              Tidak dapat terhubung ke engine — data yang ditampilkan adalah hasil terakhir yang
+              berhasil dimuat.
+            </span>
+          </div>
+        )}
+
         {/* Top Telemetry Ribbon */}
         <TelemetryRibbon />
 

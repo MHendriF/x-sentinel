@@ -44,6 +44,7 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
       <div className="relative flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
         <Input
+          id="node-search"
           type="text"
           placeholder="Cari node (@username, label, proxy host)..."
           value={searchTerm}
@@ -64,37 +65,40 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
         )}
       </div>
 
-      {/* Filter Status Pills */}
-      <div
-        className="flex items-center gap-1.5 overflow-x-auto pb-0.5 sm:pb-0"
-        role="group"
-        aria-label="Filter status node"
-      >
-        {FILTER_TABS.map((tab) => {
-          const isActive = statusFilter === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setStatusFilter(tab.id)}
-              aria-pressed={isActive}
-              className={`flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2.5 font-mono text-xs transition-colors duration-150 ${
-                isActive
-                  ? 'border-flame/60 bg-flame/15 font-semibold text-flame'
-                  : 'border-border/60 bg-obsidian-900/80 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span
-                className={`rounded px-1 font-mono text-[10px] leading-tight ${
-                  isActive ? 'bg-flame/30 font-bold text-flame' : 'bg-obsidian-950 text-slate-400'
+      {/* Filter Status Pills (right-edge fade hints horizontal scroll on mobile) */}
+      <div className="relative">
+        <div
+          className="flex items-center gap-1.5 overflow-x-auto pb-0.5 sm:pb-0"
+          role="group"
+          aria-label="Filter status node"
+        >
+          {FILTER_TABS.map((tab) => {
+            const isActive = statusFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setStatusFilter(tab.id)}
+                aria-pressed={isActive}
+                className={`flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2.5 font-mono text-xs transition-colors duration-150 ${
+                  isActive
+                    ? 'border-flame/60 bg-flame/15 font-semibold text-flame'
+                    : 'border-border/60 bg-obsidian-900/80 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                 }`}
               >
-                {tab.count}
-              </span>
-            </button>
-          );
-        })}
+                <span>{tab.label}</span>
+                <span
+                  className={`rounded px-1 font-mono text-[10px] leading-tight ${
+                    isActive ? 'bg-flame/30 font-bold text-flame' : 'bg-obsidian-950 text-slate-400'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-8 bg-gradient-to-l from-obsidian-950 to-transparent sm:block" />
       </div>
     </div>
   );

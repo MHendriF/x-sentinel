@@ -5,6 +5,7 @@ import { NodesFilterBar, NodeStatusFilter } from './nodes/NodesFilterBar';
 import { NodesPagination } from './nodes/NodesPagination';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Plus,
   RefreshCw,
@@ -14,16 +15,38 @@ import {
   Stethoscope,
   Loader2,
   SearchX,
+  KeyRound,
+  Bot,
+  Send,
+  CheckCircle2,
+  Circle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/services/apiClient';
+
+const PAGE_SIZE_STORAGE_KEY = 'x_sentinel_page_size';
+
+const loadStoredPageSize = (): number => {
+  try {
+    const stored = Number(localStorage.getItem(PAGE_SIZE_STORAGE_KEY));
+    if ([12, 24, 48].includes(stored)) return stored;
+  } catch {
+    // localStorage unavailable — fall back to default
+  }
+  return 12;
+};
 
 export const NodesGrid: React.FC = () => {
   const {
     accounts,
     loadAccounts,
+    loadSettings,
+    settings,
+    stats,
+    accountsHydrated,
     openAccountModal,
     openBulkImportModal,
+    setActiveTab,
     isCheckingHealth,
     setIsCheckingHealth,
   } = useStore();
@@ -31,15 +54,24 @@ export const NodesGrid: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<NodeStatusFilter>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(loadStoredPageSize);
 
   useEffect(() => {
     loadAccounts();
-  }, [loadAccounts]);
+    loadSettings();
+  }, [loadAccounts, loadSettings]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter, pageSize]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(PAGE_SIZE_STORAGE_KEY, String(pageSize));
+    } catch {
+      // ignore persistence failure
+    }
+  }, [pageSize]);
 
   const handleExportFleet = () => {
     window.open('/api/accounts/export', '_blank');
@@ -127,9 +159,7 @@ export const NodesGrid: React.FC = () => {
             <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
               CLUSTER TOPOLOGY
             </div>
-            <CardTitle className="text-lg">
-              Registered Computing Nodes ({accounts.length})
-            </CardTitle>
+            <CardTitle className="text-lg">Node Terdaftar ({accounts.length})</CardTitle>
             <CardDescription>
               Setiap node mewakili sesi akun X independen dengan pool komentar, routing proxy, dan
               status kesehatan sesi.
@@ -149,7 +179,7 @@ export const NodesGrid: React.FC = () => {
               ) : (
                 <Stethoscope className="h-3.5 w-3.5 text-rose-400" />
               )}
-              <span>{isCheckingHealth ? 'Checking...' : 'Fleet Health'}</span>
+              <span>{isCheckingHealth ? 'Memeriksa...' : 'Fleet Health'}</span>
             </Button>
             <Button
               variant="outline"
@@ -176,7 +206,8 @@ export const NodesGrid: React.FC = () => {
               size="sm"
               onClick={() => loadAccounts()}
               className="h-8 w-8 p-0"
-              title="Refresh data node"
+              title="Muat ulang data node"
+              aria-label="Muat ulang data node"
             >
               <RefreshCw className="h-3.5 w-3.5 text-slate-400" />
             </Button>
@@ -187,7 +218,7 @@ export const NodesGrid: React.FC = () => {
               className="gap-1.5 font-heading text-xs font-bold shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              <span>Register Node</span>
+              <span>Daftarkan Node</span>
             </Button>
           </div>
         </CardHeader>
@@ -205,22 +236,100 @@ export const NodesGrid: React.FC = () => {
       )}
 
       {/* Grid of Nodes */}
-      {accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-obsidian-850/50 p-12 text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-obsidian-750 text-slate-400">
+      {/* Skeleton while the fleet data hydrates (prevents a fake empty-state flash) */}
+      {!accountsHydrated ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-border/60 bg-obsidian-850 p-3">
+              <div className="flex items-center gap-2.5">
+                <Skeleton className="h-9 w-9 rounded-full" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-2.5 w-1/2" />
+                </div>
+              </div>
+              <div className="mt-3 flex gap-1.5">
+                <Skeleton className="h-5 w-14" />
+                <Skeleton className="h-5 w-16" />
+              </div>
+              <Skeleton className="mt-3 h-7 w-full" />
+            </div>
+          ))}
+        </div>
+      ) : accounts.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-border/80 bg-obsidian-850/50 p-8 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-obsidian-750 text-slate-400">
             <Server className="h-6 w-6" />
           </div>
-          <h3 className="font-heading text-base font-semibold text-white">
-            Belum Ada Node Terdaftar
-          </h3>
-          <p className="mb-4 mt-1 max-w-sm text-xs text-muted-foreground">
-            Daftarkan cookie <code className="text-flame">auth_token</code> dan{' '}
-            <code className="text-flame">ct0</code> dari akun X Anda untuk menginisialisasi cluster.
+          <h3 className="font-heading text-base font-semibold text-white">Armada Masih Kosong</h3>
+          <p className="mx-auto mb-5 mt-1 max-w-md text-xs text-muted-foreground">
+            Tiga langkah untuk memulai — kerjakan berurutan, progres akan tercentang otomatis.
           </p>
-          <Button onClick={() => openAccountModal(null)} size="sm">
-            <Plus className="mr-1 h-4 w-4" />
-            Daftarkan Node Pertama
-          </Button>
+
+          {/* First-Run Onboarding Checklist */}
+          <div className="mx-auto max-w-md space-y-2 text-left">
+            {[
+              {
+                done: accounts.length > 0,
+                icon: KeyRound,
+                label: 'Daftarkan node akun pertama Anda',
+                action: () => openAccountModal(null),
+                actionLabel: 'Daftarkan',
+              },
+              {
+                done: Boolean(settings?.aiProvider && settings.aiProvider !== 'none'),
+                icon: Bot,
+                label: 'Hubungkan AI provider untuk balasan otomatis',
+                action: () => setActiveTab('tab-ai'),
+                actionLabel: 'Buka Pengaturan AI',
+              },
+              {
+                done: Number(stats?.totalPosts ?? 0) > 0,
+                icon: Send,
+                label: 'Publikasikan postingan pertama via AI Post Studio',
+                action: () => setActiveTab('tab-composer'),
+                actionLabel: 'Buka Post Studio',
+              },
+            ].map((step, i) => {
+              const StepIcon = step.icon;
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center justify-between gap-3 rounded-md border p-3 ${
+                    step.done
+                      ? 'border-emerald-500/30 bg-emerald-950/20'
+                      : 'border-border/70 bg-obsidian-900'
+                  }`}
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    {step.done ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                    ) : (
+                      <Circle className="h-4 w-4 shrink-0 text-slate-600" />
+                    )}
+                    <StepIcon
+                      className={`h-3.5 w-3.5 shrink-0 ${step.done ? 'text-emerald-400/70' : 'text-flame'}`}
+                    />
+                    <span
+                      className={`truncate text-xs ${step.done ? 'text-slate-500 line-through' : 'text-slate-200'}`}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                  {!step.done && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 shrink-0 px-2.5 font-mono text-[11px]"
+                      onClick={step.action}
+                    >
+                      {step.actionLabel}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : paginatedAccounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-obsidian-850/50 p-8 text-center">

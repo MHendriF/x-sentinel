@@ -75,7 +75,7 @@ export const FeedHunter: React.FC = () => {
               className="h-9 w-full rounded-md border border-border/80 bg-obsidian-950 px-3 py-1 font-mono text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-flame"
             >
               <option value="all">
-                ⚡ All Active Nodes ({activeAccounts.length} Nodes - Sequential Rotation)
+                ⚡ Semua Node Aktif ({activeAccounts.length} Node - Rotasi Berurutan)
               </option>
               {accounts.map((acc) => (
                 <option key={acc.id} value={acc.id}>

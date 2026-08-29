@@ -1,13 +1,42 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { HistoryItem } from '@/services/apiClient';
+
+export type AuditSortKey = 'timestamp' | 'accountName' | 'action' | 'status';
+export type AuditSortDir = 'asc' | 'desc';
 
 interface AuditTableProps {
   items: HistoryItem[];
+  sortKey: AuditSortKey;
+  sortDir: AuditSortDir;
+  onSort: (key: AuditSortKey) => void;
 }
 
-export const AuditTable: React.FC<AuditTableProps> = ({ items }) => {
+/** Compact relative timestamp for fast scanning ("2 jam lalu") */
+export const timeAgo = (ts?: string): string => {
+  if (!ts) return '';
+  const t = new Date(ts).getTime();
+  if (isNaN(t)) return '';
+  const diffMs = Date.now() - t;
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return 'baru saja';
+  if (minutes < 60) return `${minutes} mnt lalu`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} jam lalu`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} hari lalu`;
+  return new Date(t).toLocaleDateString('id-ID');
+};
+
+const SORTABLE_COLUMNS: Array<{ key: AuditSortKey; label: string }> = [
+  { key: 'timestamp', label: 'Date & Time' },
+  { key: 'accountName', label: 'Account Node' },
+  { key: 'action', label: 'Vector' },
+  { key: 'status', label: 'Status' },
+];
+
+export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir, onSort }) => {
   const getActionBadge = (action: string) => {
     switch (action) {
       case 'LIKE':
@@ -63,17 +92,45 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items }) => {
     return { date: dateStr, time: timeStr };
   };
 
+  const SortHeader: React.FC<{ column: AuditSortKey; label: string }> = ({ column, label }) => {
+    const isSorted = sortKey === column;
+    const Arrow = !isSorted ? ChevronsUpDown : sortDir === 'asc' ? ChevronUp : ChevronDown;
+    return (
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        aria-sort={isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
+        className={`flex items-center gap-1 uppercase transition-colors hover:text-slate-200 ${
+          isSorted ? 'text-flame' : ''
+        }`}
+      >
+        {label}
+        <Arrow className="h-3 w-3" />
+      </button>
+    );
+  };
+
+  const sortableMap = Object.fromEntries(SORTABLE_COLUMNS.map((c) => [c.key, c.label]));
+
   return (
     <div className="overflow-x-auto rounded-md border border-border/80">
       <table className="w-full text-left text-xs">
         <thead className="border-b border-border/80 bg-obsidian-950/80 font-mono text-[10px] uppercase text-muted-foreground">
           <tr>
-            <th className="px-4 py-3">DATE &amp; TIME</th>
-            <th className="px-4 py-3">ACCOUNT NODE</th>
-            <th className="px-4 py-3">VECTOR</th>
-            <th className="px-4 py-3">TARGET TWEET / POST</th>
-            <th className="px-4 py-3">STATUS</th>
-            <th className="px-4 py-3">DETAILS / MESSAGE</th>
+            <th className="px-4 py-3">
+              <SortHeader column="timestamp" label={sortableMap.timestamp} />
+            </th>
+            <th className="px-4 py-3">
+              <SortHeader column="accountName" label={sortableMap.accountName} />
+            </th>
+            <th className="px-4 py-3">
+              <SortHeader column="action" label={sortableMap.action} />
+            </th>
+            <th className="px-4 py-3">Target Tweet / Post</th>
+            <th className="px-4 py-3">
+              <SortHeader column="status" label={sortableMap.status} />
+            </th>
+            <th className="px-4 py-3">Details / Message</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40 font-mono">
@@ -91,7 +148,10 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items }) => {
                   <td className="whitespace-nowrap px-4 py-3 text-slate-300">
                     <div className="flex flex-col">
                       <span className="font-semibold text-slate-200">{date}</span>
-                      <span className="text-[10px] text-slate-400">{time}</span>
+                      <span className="text-[10px] text-slate-400">
+                        {time}
+                        {timeAgo(item.timestamp) && ` · ${timeAgo(item.timestamp)}`}
+                      </span>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 font-semibold text-white">

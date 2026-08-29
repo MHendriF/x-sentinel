@@ -1,6 +1,13 @@
 import React from 'react';
 import { useStore } from '@/store/useStore';
-import { Heart, Repeat, MessageSquare, Sparkles, Menu } from 'lucide-react';
+import { Heart, Repeat, MessageSquare, Sparkles, Menu, Loader2 } from 'lucide-react';
+
+const TASK_LABELS: Record<string, string> = {
+  MULTI_POST: 'PUBLIKASI POST ARMADA',
+  MULTI_BATCH: 'BATCH ENGAGEMENT',
+  MULTI_HUNTER: 'FEED HUNTER',
+  WARMUP: 'WARMUP PROTOKOL',
+};
 
 const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
   'tab-accounts': {
@@ -51,14 +58,22 @@ const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
 };
 
 export const TelemetryRibbon: React.FC = () => {
-  const { activeTab, stats, setIsMobileDrawerOpen } = useStore();
+  const { activeTab, stats, setIsMobileDrawerOpen, isRunning, currentTask, setActiveTab } =
+    useStore();
   const meta = TAB_TITLES[activeTab] ?? {
     title: 'X-SENTINEL Cockpit',
     subtitle: 'Autonomous Fleet Control',
   };
 
+  const taskLabel = TASK_LABELS[currentTask?.type] ?? 'TUGAS OTOMASI';
+  const progressTotal = Number(currentTask?.total ?? currentTask?.targetCount ?? 0);
+  const progressDone = Number(currentTask?.completed ?? 0);
+  const progressFailed = Number(currentTask?.failed ?? 0);
+  const progressPercent =
+    progressTotal > 0 ? Math.min(100, Math.round((progressDone / progressTotal) * 100)) : 0;
+
   return (
-    <header className="mb-6 flex flex-col justify-between gap-4 border-b border-border/80 pb-6 lg:flex-row lg:items-center">
+    <header className="mb-6 flex flex-col flex-wrap justify-between gap-4 border-b border-border/80 pb-6 lg:flex-row lg:items-center">
       {/* Title & Mobile Toggle */}
       <div className="flex items-center gap-3">
         <button
@@ -138,6 +153,47 @@ export const TelemetryRibbon: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Running Task Progress Strip (visible from every tab, click opens the log stream) */}
+      {isRunning && (
+        <button
+          type="button"
+          onClick={() => setActiveTab('tab-batch')}
+          title="Klik untuk membuka Live Telemetry Stream"
+          className="w-full rounded-md border border-flame/40 bg-flame/5 px-3.5 py-2.5 text-left transition-colors hover:bg-flame/10"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <span
+              className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wide text-flame"
+              aria-live="polite"
+            >
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              {taskLabel} BERJALAN
+            </span>
+            {progressTotal > 0 && (
+              <span className="font-mono text-[11px] text-slate-300">
+                {progressDone}/{progressTotal} selesai
+                {progressFailed > 0 ? ` · ${progressFailed} gagal` : ''}
+              </span>
+            )}
+          </div>
+          <div
+            className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-obsidian-800"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressPercent}
+            aria-label={`Progres ${taskLabel}`}
+          >
+            <div
+              className={`h-full rounded-full bg-gradient-to-r from-flame to-flame-light transition-all duration-500 ${
+                progressTotal === 0 ? 'w-1/3 animate-pulse' : ''
+              }`}
+              style={progressTotal > 0 ? { width: `${Math.max(progressPercent, 4)}%` } : undefined}
+            />
+          </div>
+        </button>
+      )}
     </header>
   );
 };

@@ -73,11 +73,25 @@ const NAV_ITEMS = [
 ];
 
 export const NavDeck: React.FC = () => {
-  const { activeTab, setActiveTab, accounts, isMobileDrawerOpen, setIsMobileDrawerOpen } =
-    useStore();
+  const {
+    activeTab,
+    setActiveTab,
+    accounts,
+    isRunning,
+    apiOnline,
+    isMobileDrawerOpen,
+    setIsMobileDrawerOpen,
+  } = useStore();
 
   const totalAccounts = accounts.length;
   const activeAccounts = accounts.filter((a) => a.enabled !== false).length;
+
+  // Core status reflects reality: engine reachable + task activity
+  const coreStatus = !apiOnline
+    ? { label: 'CORE OFFLINE', color: 'text-red-400', dot: 'bg-red-500' }
+    : isRunning
+      ? { label: 'TASK BERJALAN', color: 'text-flame', dot: 'bg-flame' }
+      : { label: 'CORE ONLINE', color: 'text-emerald', dot: 'bg-emerald' };
 
   return (
     <>
@@ -127,11 +141,18 @@ export const NavDeck: React.FC = () => {
         <div className="rounded-md border border-border/70 bg-obsidian-800 p-3">
           <div className="mb-2.5 flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75"></span>
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald"></span>
+              <span
+                className={`absolute inline-flex h-full w-full ${apiOnline ? 'animate-ping opacity-75' : ''} rounded-full ${coreStatus.dot}`}
+              ></span>
+              <span
+                className={`relative inline-flex h-2.5 w-2.5 rounded-full ${coreStatus.dot}`}
+              ></span>
             </span>
-            <span className="font-mono text-[11px] font-bold tracking-wide text-emerald">
-              CORE ONLINE
+            <span
+              className={`font-mono text-[11px] font-bold tracking-wide ${coreStatus.color}`}
+              aria-live="polite"
+            >
+              {coreStatus.label}
             </span>
           </div>
 

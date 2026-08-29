@@ -392,10 +392,10 @@ export const DefenseProtocol: React.FC = () => {
             variant="default"
             size="lg"
             onClick={handleSave}
-            className="mt-4 w-full bg-gradient-to-r from-blue-600 via-flame to-amber-500 font-heading text-sm font-bold text-obsidian-950 hover:brightness-110"
+            className="mt-4 w-full font-heading text-sm font-bold"
           >
             <Save className="mr-1.5 h-4 w-4" />
-            SIMPAN SEMUA PENGATURAN PROTOKOL &amp; WEBHOOK
+            Simpan Semua Pengaturan Protokol &amp; Webhook
           </Button>
         </CardContent>
       </Card>

@@ -168,17 +168,17 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {account.healthStatus === 'HEALTHY' ? (
             <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
               <CheckCircle2 className="h-2.5 w-2.5" />
-              Healthy
+              Sehat
             </Badge>
           ) : account.healthStatus === 'EXPIRED' ? (
             <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
               <AlertTriangle className="h-2.5 w-2.5" />
-              Expired
+              Kadaluarsa
             </Badge>
           ) : account.healthStatus === 'PROXY_DEAD' ? (
             <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
               <WifiOff className="h-2.5 w-2.5" />
-              Proxy Dead
+              Proxy Mati
             </Badge>
           ) : account.isValid ? (
             <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
@@ -191,7 +191,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
               className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px] text-slate-400"
             >
               <HelpCircle className="h-2.5 w-2.5" />
-              Unverified
+              Belum Verifikasi
             </Badge>
           )}
 
@@ -204,7 +204,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
               title="Klik untuk jalankan rutinitas pemanasan"
             >
               <Flame className="h-2.5 w-2.5 text-amber-400" />
-              Day {account.warmupDay || 1}/7
+              Hari {account.warmupDay || 1}/7
             </Badge>
           )}
 
@@ -253,7 +253,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
             title="Kelola pool komentar akun ini"
           >
             <MessageSquare className="h-2.5 w-2.5" />
-            {account.commentsCount ?? 3} Payloads
+            {account.commentsCount ?? 3} Payload
           </Badge>
         </div>
       </div>
@@ -269,7 +269,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           title="Periksa kesehatan sesi login dan koneksi node"
         >
           <HeartPulse className="mr-1 h-3 w-3 text-amber-400" />
-          <span>{isVerifying ? 'Checking...' : 'Health Check'}</span>
+          <span>{isVerifying ? 'Memeriksa...' : 'Cek Kesehatan'}</span>
         </Button>
 
         {account.proxy && (

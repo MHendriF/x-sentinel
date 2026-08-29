@@ -356,20 +356,14 @@ export const AISettingsDeck: React.FC = () => {
               </Badge>
             </div>
 
-            <Button
-              onClick={handleSave}
-              className="gap-1.5 bg-purple-600 font-mono text-xs font-bold text-white shadow-md shadow-purple-900/40 hover:bg-purple-500"
-            >
+            <Button onClick={handleSave} className="gap-1.5 font-mono text-xs font-bold">
               <Save className="h-3.5 w-3.5" />
-              Save AI Settings
+              Simpan Pengaturan AI
             </Button>
           </div>
 
           <div>
-            <h2 className="font-heading text-2xl font-black tracking-tight text-white">
-              AI Provider &amp; Autonomous Replies Studio
-            </h2>
-            <p className="mt-1 max-w-3xl text-xs leading-relaxed text-slate-300">
+            <p className="max-w-3xl text-xs leading-relaxed text-slate-300">
               Konfigurasikan model bahasa besar (LLM) untuk menghasilkan balasan tweet yang 100%
               kontekstual, cerdas, dan alami (No AI Slop). Mendukung <strong>9router</strong>,{' '}
               <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>,{' '}

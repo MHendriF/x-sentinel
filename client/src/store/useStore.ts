@@ -24,6 +24,14 @@ interface AppState {
   currentTask: any | null;
   setIsRunning: (running: boolean, task?: any) => void;
 
+  /** False when the /api/status poller cannot reach the engine */
+  apiOnline: boolean;
+  setApiOnline: (online: boolean) => void;
+
+  /** True once the first data fetch has completed (drives skeletons) */
+  accountsHydrated: boolean;
+  historyHydrated: boolean;
+
   isCheckingHealth: boolean;
   setIsCheckingHealth: (checking: boolean) => void;
 
@@ -170,10 +178,11 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const data = await apiClient.getAccounts();
       if (data.success && data.accounts) {
-        set({ accounts: data.accounts });
+        set({ accounts: data.accounts, accountsHydrated: true });
       }
     } catch (err) {
       console.error('Error loading accounts in store:', err);
+      set({ accountsHydrated: true });
     }
   },
 
@@ -183,6 +192,12 @@ export const useStore = create<AppState>((set, get) => ({
   isRunning: false,
   currentTask: null,
   setIsRunning: (isRunning, currentTask = null) => set({ isRunning, currentTask }),
+
+  apiOnline: true,
+  setApiOnline: (apiOnline) => set({ apiOnline }),
+
+  accountsHydrated: false,
+  historyHydrated: false,
 
   isCheckingHealth: false,
   setIsCheckingHealth: (isCheckingHealth) => set({ isCheckingHealth }),
@@ -224,6 +239,8 @@ export const useStore = create<AppState>((set, get) => ({
       }
     } catch (err) {
       console.error('Error loading history in store:', err);
+    } finally {
+      set({ historyHydrated: true });
     }
   },
 

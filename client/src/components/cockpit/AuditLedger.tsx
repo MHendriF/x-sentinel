@@ -3,19 +3,23 @@ import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
 import { Card, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { RefreshCw, Download, Trash2 } from 'lucide-react';
 import { AuditFilters } from './audit/AuditFilters';
 import { AuditTable } from './audit/AuditTable';
+import type { AuditSortKey, AuditSortDir } from './audit/AuditTable';
 import { AuditPagination } from './audit/AuditPagination';
 import { MaintenanceModal } from './audit/MaintenanceModal';
 
 export const AuditLedger: React.FC = () => {
-  const { history, loadHistory } = useStore();
+  const { history, historyHydrated, loadHistory } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('ALL');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [sortKey, setSortKey] = useState<AuditSortKey>('timestamp');
+  const [sortDir, setSortDir] = useState<AuditSortDir>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isPruneModalOpen, setIsPruneModalOpen] = useState(false);
@@ -110,12 +114,36 @@ export const AuditLedger: React.FC = () => {
     });
   }, [history, searchTerm, actionFilter, startDate, endDate]);
 
-  const totalItems = filteredHistory.length;
+  const handleSort = (key: AuditSortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'timestamp' ? 'desc' : 'asc');
+    }
+    setCurrentPage(1);
+  };
+
+  const sortedHistory = useMemo(() => {
+    const dir = sortDir === 'asc' ? 1 : -1;
+    return [...filteredHistory].sort((a, b) => {
+      if (sortKey === 'timestamp') {
+        const ta = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const tb = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return (ta - tb) * dir;
+      }
+      const va = String(a[sortKey] ?? '').toLowerCase();
+      const vb = String(b[sortKey] ?? '').toLowerCase();
+      return va.localeCompare(vb) * dir;
+    });
+  }, [filteredHistory, sortKey, sortDir]);
+
+  const totalItems = sortedHistory.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const startIndex = (safeCurrentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const paginatedHistory = filteredHistory.slice(startIndex, endIndex);
+  const paginatedHistory = sortedHistory.slice(startIndex, endIndex);
 
   const handleExportCSV = () => {
     const dataToExport = filteredHistory.length > 0 ? filteredHistory : history;
@@ -211,8 +239,21 @@ export const AuditLedger: React.FC = () => {
           onClearDate={handleClearDateFilter}
         />
 
-        {/* Ledger Table */}
-        <AuditTable items={paginatedHistory} />
+        {/* Ledger Table (skeleton while hydrating) */}
+        {!historyHydrated ? (
+          <div className="space-y-2 rounded-md border border-border/80 p-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-full" />
+            ))}
+          </div>
+        ) : (
+          <AuditTable
+            items={paginatedHistory}
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onSort={handleSort}
+          />
+        )}
 
         {/* Pagination */}
         <AuditPagination
