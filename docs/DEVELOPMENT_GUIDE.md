@@ -149,3 +149,5 @@ node test/smoke_api.js
    - The server binds to `127.0.0.1` and rejects requests with foreign `Origin`/`Host` headers (`server/security.js`). Do not reintroduce permissive CORS or `0.0.0.0` binding — the API has no authentication.
 7. **Atomic Storage**:
    - Corrupt JSON files are quarantined (`.corrupt.<timestamp>`), never silently overwritten. Atomic writes (`.tmp` + `fsync` + rename) must never fall back to direct writes.
+8. **New Cockpit Tabs**:
+   - Register the tab in `App.tsx` (`VALID_TABS`), `NavDeck.tsx`, and **always add a `TAB_TITLES` entry in `TelemetryRibbon.tsx`** so the page header stays in sync. Validate request bodies with zod (`server/utils/http.js`) and mask secrets in GET responses (`server/security.js`).

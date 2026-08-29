@@ -12,16 +12,17 @@
 
 ## ⚡ Ringkasan Fitur Utama
 
-| Modul                       | Deskripsi Utama                                                                                                                  |
-| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| **✨ AI Post Studio**       | Generator postingan viral anti-AI-slop, upload gambar (PNG/JPG/GIF/WebP), format 1-baris mengalir, dan live tweet mockup.        |
-| **⏰ Cron Scheduler**       | Penjadwalan postingan dan radar pencarian dengan eksekusi background otomatis (loop 15 detik).                                   |
-| **🛡️ Multi-Node Cluster**   | Manajemen banyak akun tanpa password (via `auth_token`), isolasi proxy per node, health diagnostic, dan rutinitas warmup 7 hari. |
-| **🤖 Contextual AI Engine** | Balasan tweet cerdas multi-provider (_OpenRouter, Groq, OpenAI, Gemini, Ollama_) + Webhook alerts ke Telegram & Discord.         |
-| **🎯 Target Workbench**     | Batch engagement (**Like**, **Repost**, **Comment**) dengan distribusi 1-to-1 balasan unik per akun.                             |
-| **📡 Feed Hunter Radar**    | Pencarian otomatis tweet trending berdasarkan kata kunci atau hashtag secara berkala.                                            |
-| **📊 Analytics & Audit**    | Grafik Recharts 4-vektor, ringkasan leaderboard armada, filter tanggal angka (`DD/MM/YYYY`), dan ekspor CSV.                     |
-| **🔒 Stealth Defense**      | Masking Playwright browser, WebRTC leak shield, penundaan human cadence (_jitter typing/scroll_), dan atomic database writes.    |
+| Modul                       | Deskripsi Utama                                                                                                                                   |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **✨ AI Post Studio**       | Generator postingan viral anti-AI-slop, upload gambar (PNG/JPG/GIF/WebP), format 1-baris mengalir, dan live tweet mockup.                         |
+| **⏰ Cron Scheduler**       | Penjadwalan postingan dan radar pencarian dengan eksekusi background otomatis (loop 15 detik).                                                    |
+| **🛡️ Multi-Node Cluster**   | Manajemen banyak akun tanpa password (via `auth_token`), isolasi proxy per node, health diagnostic, dan rutinitas warmup 7 hari.                  |
+| **🤖 Contextual AI Engine** | Balasan tweet cerdas multi-provider (_OpenRouter, Groq, OpenAI, Gemini, Ollama_) + Webhook alerts ke Telegram & Discord.                          |
+| **🎯 Target Workbench**     | Batch engagement (**Like**, **Repost**, **Comment**) dengan distribusi 1-to-1 balasan unik per akun.                                              |
+| **📡 Feed Hunter Radar**    | Pencarian otomatis tweet trending berdasarkan kata kunci atau hashtag secara berkala.                                                             |
+| **📊 Analytics & Audit**    | Grafik Recharts 4-vektor, ringkasan leaderboard armada, filter tanggal angka (`DD/MM/YYYY`), dan ekspor CSV.                                      |
+| **🛰️ Live Fleet Telemetry** | Progress bar task global di semua tab, status engine nyata (`OFFLINE` / `BUSY` / `ONLINE`), skeleton loading, dan shortcut keyboard (`1-9`, `/`). |
+| **🔒 Stealth Defense**      | Masking Playwright browser, WebRTC leak shield, penundaan human cadence (_jitter typing/scroll_), dan atomic database writes.                     |
 
 ---
 

@@ -57,6 +57,8 @@ bun run dev
 2. Make your modifications following our code standards.
 3. Test and build locally:
    ```bash
+   bun run lint
+   bun run smoke
    bun run --cwd client build
    ```
 4. Commit your changes using **Conventional Commits** format.

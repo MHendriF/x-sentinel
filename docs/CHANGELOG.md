@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.3] - 2026-08-30
+
+### 🌟 Added (UI/UX)
+
+- **Global running-task progress strip**: while a task executes, a flame progress strip is visible in the Telemetry Ribbon on every tab — task label (Fleet Publisher / Batch / Hunter / Warmup), `completed/total` with failed count, an indeterminate fallback for unbounded tasks, and `role="progressbar"` semantics. Clicking it jumps straight to the Live Telemetry Stream.
+- **Truthful core status**: the sidebar CORE indicator is no longer a static green pulse — it now shows red **CORE OFFLINE** when the engine is unreachable, amber **TASK BERJALAN** while a task runs, and green **CORE ONLINE** when idle (`aria-live`).
+- **Engine-offline banner**: when the `/api/status` poller cannot reach the engine, a global banner warns that displayed data is the last successfully loaded snapshot instead of failing silently.
+- **Skeleton loaders**: new `Skeleton` component plus `accountsHydrated` / `historyHydrated` store flags — NodesGrid and AuditLedger shimmer while data loads, eliminating the misleading fake "empty fleet" flash.
+- **First-run onboarding checklist**: the empty fleet state now shows a 3-step checklist (register node → connect AI provider → publish first post) with auto-checked progress driven by real state and jump actions.
+- **Audit table sorting & relative time**: Date/Account/Vector/Status columns are sortable (`aria-sort`, direction toggle), and each row shows a relative timestamp ("2 jam lalu") beside `DD/MM/YYYY HH:mm:ss`.
+- **Keyboard shortcuts**: `1`–`9` switch cockpit tabs, `/` focuses the node search box (suppressed while typing or when a dialog is open).
+- Node grid page size persisted to localStorage; `prefers-reduced-motion` suppresses non-essential animations; filter pills get a right-edge scroll affordance on narrow viewports.
+
+### ⚡ Changed (UI)
+
+- Removed the duplicated page title in the AI Settings banner (the ribbon header is the single title), aligned the remaining purple/tri-gradient save buttons to the primary flame CTA rule, and completed the Indonesian label sweep (node badges "Sehat/Kadaluarsa/Proxy Mati", "Cek Kesehatan", "Hari X/7", deck titles, dropdown options).
+
+---
+
 ## [1.3.2] - 2026-08-30
 
 ### 🐛 Fixed (UI)

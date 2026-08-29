@@ -6,13 +6,14 @@ This document serves as high-context system guidelines for **AI coding assistant
 
 ## 📌 1. Project Identity & Architecture Tenets
 
-- **Name**: X-SENTINEL v1.3
+- **Name**: X-SENTINEL v1.3.3
 - **Domain**: Multi-Node X (Twitter) Automation Cockpit & Publishing Studio.
 - **Runtime**: Bun (Preferred) / Node.js 18+.
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS + shadcn/ui + Recharts.
-- **Backend**: Express 5 on Node.js / Bun.
+- **Backend**: Express 5 on Node.js / Bun (zod-validated routes, centralized error handler).
 - **Automation**: Playwright Chromium (Stealth Mode).
 - **Database**: Zero external DB. Atomic JSON Engine (`server/db.js`).
+- **Security model**: loopback-only server, Origin/Host guard, secret masking (`server/security.js`).
 
 ---
 
@@ -46,6 +47,27 @@ This document serves as high-context system guidelines for **AI coding assistant
   ```
   to verify that TypeScript types and Vite build compile with **0 errors**.
 
+### F. Tab Registry Sync (TelemetryRibbon)
+
+- **Rule**: When adding or renaming a cockpit tab, always add a matching entry to `TAB_TITLES` in `client/src/components/cockpit/TelemetryRibbon.tsx` (Indonesian title + subtitle).
+- **Reason**: Missing entries desync the page header from the active tab (historically it silently fell back to the Multi-Node title — a shipped bug).
+
+### G. Secret Masking & Local API Security
+
+- **Rule**: GET responses must never contain raw `auth_token`, `ct0`, proxy credentials, AI API keys, or webhook tokens — mask them via helpers in `server/security.js`. Masked values echoed back on write endpoints are restored from storage automatically.
+- **Rule**: Never reintroduce wildcard CORS or non-loopback binding (`config.HOST` defaults to `127.0.0.1`; the Origin/Host guard in `server/security.js` rejects foreign browser requests).
+
+### H. Route Validation & Error Handling
+
+- **Rule**: All mutating routers validate `req.body` with a zod schema via `validateBody(schema)` from `server/utils/http.js`. Handlers may throw `httpError(status, message, code)` — Express 5 forwards everything to the centralized error handler in `server/index.js`. Do not add per-route try/catch boilerplate.
+
+### I. UI Conventions
+
+- **Colors**: primary/execution CTAs use the flame/amber tokens (`variant="default"` or `"execute"`); blue is reserved for informational Reply-vector accents; red for destructive.
+- **Language**: operational UI labels are Indonesian; English is kept for technical terms (Feed Hunter, Spintax, Fleet, Webhook).
+- **Data hydration**: datasets rendered from the store need a `*Hydrated` flag; render `Skeleton` placeholders until the first fetch completes so empty states never flash falsely.
+- **Version**: never hardcode version strings in components — import `__APP_VERSION__` (injected from `package.json` by `client/vite.config.ts`).
+
 ---
 
 ## 🔍 3. Common Code Patterns
@@ -53,9 +75,12 @@ This document serves as high-context system guidelines for **AI coding assistant
 ### Adding a New Cockpit Tab:
 
 1. Create `client/src/components/cockpit/NewDeck.tsx`.
-2. Add tab identifier to `NavDeck.tsx` and `App.tsx`.
-3. Add hash route mapping in `useStore.ts` `getInitialTab` and `VALID_TABS`.
-4. Add state and fetcher in `useStore.ts` and `apiClient.ts`.
+2. Add a nav item to `NAV_ITEMS` in `NavDeck.tsx`.
+3. Add the tab to `VALID_TABS` in `App.tsx` **and** its render branch.
+4. Add a `TAB_TITLES` entry in `TelemetryRibbon.tsx` (Indonesian title + subtitle) — required, see rule F.
+5. Optionally add a URL slug alias in `matchSectorName` in `useStore.ts`.
+6. Add state and fetcher in `useStore.ts` and `apiClient.ts`; if the deck renders a fetched dataset, add a hydration flag and render `Skeleton` placeholders during first load.
+7. Add backend endpoints behind a zod schema (`server/utils/http.js`) and mask any secrets in GET responses (`server/security.js`).
 
 ### Triggering Realtime Log Messages:
 
@@ -89,3 +114,4 @@ notifier.notify('POST_PUBLISHED', {
 
 - Commit with concise, conventional commit prefixes: `feat:`, `fix:`, `refactor:`, `docs:`.
 - Ensure all temporary directories (`data/media/`, `data/schedules.json`, `dist/`) remain in `.gitignore`.
+- Never commit `tsc -b` build artifacts (`client/vite.config.js`, `client/vite.config.d.ts`, `*.tsbuildinfo`) — they are gitignored; regenerate locally via the build.

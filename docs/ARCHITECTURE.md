@@ -18,10 +18,12 @@ graph TD
 
     subgraph Backend ["Backend Engine (Bun / Express 5)"]
         Server[Express Server + SSE Stream]
-        Router[REST API Routes]
+        Sec[Local Security Guard<br/>Origin/Host Check + Secret Masking]
+        Router[REST API Routes<br/>zod-validated]
         DB[Atomic LocalDB Engine]
         Scheduler[Cron Scheduler Service]
         Notifier[Telegram & Discord Notifier]
+        Server --> Sec
         Server --> Router
         Router --> DB
         Router --> Scheduler
@@ -77,14 +79,18 @@ graph TD
 ### 1. Presentation Layer (`client/`)
 
 - **Framework**: React 19 with TypeScript, bundled by Vite.
-- **State Management**: Single centralized store in `client/src/store/useStore.ts` (Zustand).
-- **Styling**: Vanilla Tailwind CSS + dark mode obsidian design system + shadcn/ui primitives.
-- **Visual Telemetry**: Recharts dynamic visualizations (`AreaChart`, `PieChart`) in `AnalyticsDeck.tsx`.
+- **State Management**: Single centralized store in `client/src/store/useStore.ts` (Zustand), including connectivity (`apiOnline`) and dataset hydration flags.
+- **Styling**: Vanilla Tailwind CSS + dark mode obsidian design system + shadcn/ui primitives. Self-hosted fonts via `@fontsource` (no CDN dependency).
+- **UI Conventions**: flame/amber tokens for primary CTAs, Indonesian operational labels, skeleton loaders while datasets hydrate, and `__APP_VERSION__` injected from `package.json` by Vite.
+- **Global Telemetry**: running-task progress strip + engine-offline banner in the ribbon; sidebar CORE status reflects real engine/task state; keyboard shortcuts (`1-9` tabs, `/` search).
+- **Visual Telemetry**: Recharts dynamic visualizations (`AreaChart`, `PieChart`) in `AnalyticsDeck.tsx` (hourly bucketing for short ranges, left-to-right time axis).
 - **Live Stream Terminal**: EventSource SSE stream connected to `/api/logs/stream` in `TerminalConsole.tsx`.
 
 ### 2. Application & Controller Layer (`server/`)
 
-- **Web Server**: Express 5 on Bun/Node.js runtime.
+- **Web Server**: Express 5 on Bun/Node.js runtime, bound to loopback (`127.0.0.1`).
+- **Local Security Guard** (`server/security.js`): rejects requests with foreign `Origin`/`Host` headers (anti drive-by exfiltration & DNS rebinding) and provides the secret-masking helpers used by every read endpoint.
+- **Validation & Errors**: request bodies validated with zod schemas (`server/utils/http.js`); a centralized error handler in `server/index.js` maps `HttpError` to JSON responses.
 - **Real-Time Streaming**: Server-Sent Events (SSE) broadcasting real-time logs from `server/logger.js`.
 - **API Routing**: `server/routes/api.js` exposes structured endpoints for accounts, tasks, AI post generator, proxy testing, scheduling, webhooks, and history pruning.
 - **Process Hardening**: Graceful shutdown handles `SIGINT`/`SIGTERM`, safely closing Chromium browser contexts and background timers.
@@ -106,7 +112,8 @@ graph TD
 
 ### 4. Storage & Persistence Layer (`server/db.js`)
 
-- **Atomic JSON Storage**: Uses in-memory caching combined with atomic file writes (writing to `.tmp` before `fs.renameSync`) to eliminate data corruption risks during sudden power loss or process termination.
+- **Atomic JSON Storage**: Uses in-memory caching combined with atomic file writes (writing to `.tmp`, `fsync`, then `fs.renameSync`, with transient-lock retries) to eliminate data corruption risks during sudden power loss or process termination. Direct non-atomic writes are never used as a fallback.
+- **Corruption Quarantine**: If a JSON file fails to parse, it is renamed to `.corrupt.<timestamp>` instead of being silently overwritten — user data is preserved for manual recovery.
 - **Zero External Database Dependency**: All data is self-contained in local `.json` files inside the `data/` folder (git-ignored for security).
 
 ---
