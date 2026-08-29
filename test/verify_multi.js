@@ -1,6 +1,5 @@
 const proxyHelper = require('../server/automation/proxyHelper');
 const db = require('../server/db');
-const twitterBot = require('../server/automation/twitterBot');
 
 console.log('=== 🧪 VERIFYING MULTI-ACCOUNT & PROXY MODULES ===');
 

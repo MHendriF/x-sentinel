@@ -1,6 +1,5 @@
 const db = require('../server/db');
 const path = require('path');
-const fs = require('fs');
 
 console.log('=== 🛡️ X-SENTINEL HARDENING VERIFICATION TEST ===\n');
 

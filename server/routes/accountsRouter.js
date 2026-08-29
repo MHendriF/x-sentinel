@@ -1,28 +1,44 @@
 const express = require('express');
-const router = express.Router();
+const { z } = require('zod');
 const db = require('../db');
 const logger = require('../logger');
 const twitterBot = require('../automation/twitterBot');
+const proxyHelper = require('../automation/proxyHelper');
+const { redactAccount, resolveSecret, resolveProxyString } = require('../security');
+const { validateBody, httpError } = require('../utils/http');
 
-// GET /api/accounts - List all accounts
+const router = express.Router();
+
+const accountCreateSchema = z.object({
+  label: z.string().max(100).optional(),
+  auth_token: z.string().min(4, 'auth_token terlalu pendek'),
+  ct0: z.string().max(500).optional(),
+  proxy: z.string().max(500).optional(),
+  comments: z.array(z.string()).max(500).optional(),
+});
+
+const accountUpdateSchema = accountCreateSchema.partial();
+
+const bulkImportSchema = z.object({
+  rawText: z.string().min(1, 'Format input tidak boleh kosong.'),
+});
+
+const commentsSchema = z.object({
+  comments: z.array(z.string()).max(500),
+});
+
+// GET /api/accounts - List all accounts (session cookies & proxy creds masked)
 router.get('/', (req, res) => {
   const accounts = db.getAccounts().map((acc) => {
     const comments = db.getAccountComments(acc.id);
-    return {
-      ...acc,
-      commentsCount: comments.length,
-    };
+    return redactAccount({ ...acc, commentsCount: comments.length });
   });
   res.json({ success: true, accounts });
 });
 
 // POST /api/accounts - Add new account
-router.post('/', async (req, res) => {
+router.post('/', validateBody(accountCreateSchema), (req, res) => {
   const { label, auth_token, ct0, proxy, comments } = req.body;
-
-  if (!auth_token || !auth_token.trim()) {
-    return res.status(400).json({ success: false, message: 'Cookie auth_token wajib diisi.' });
-  }
 
   const newAccount = db.saveAccount({
     label: label || 'Akun X',
@@ -33,80 +49,75 @@ router.post('/', async (req, res) => {
   });
 
   logger.info(`👥 Akun baru ditambahkan: ${newAccount.label}`);
-  res.json({ success: true, account: newAccount });
+  res.json({ success: true, account: redactAccount(newAccount) });
 });
 
-// GET /api/accounts/export - Download full fleet backup JSON
+// GET /api/accounts/export - Download full fleet backup JSON (raw cookies, backup only)
 router.get('/export', (req, res) => {
-  try {
-    const backupData = db.exportAccounts();
-    const filename = `x_sentinel_fleet_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.send(JSON.stringify(backupData, null, 2));
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+  const backupData = db.exportAccounts();
+  const filename = `x_sentinel_fleet_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(JSON.stringify(backupData, null, 2));
 });
 
 // POST /api/accounts/bulk-import - Bulk import accounts
-router.post('/bulk-import', (req, res) => {
-  const { rawText } = req.body;
-  if (!rawText || !rawText.trim()) {
-    return res.status(400).json({ success: false, message: 'Format input tidak boleh kosong.' });
-  }
-
-  try {
-    const addedAccounts = db.bulkImportAccounts(rawText);
-    logger.success(`📥 Berhasil mengimpor ${addedAccounts.length} akun ke dalam armada.`);
-    res.json({
-      success: true,
-      importedCount: addedAccounts.length,
-      accounts: db.getAccounts(),
-    });
-  } catch (err) {
-    logger.error(`❌ Gagal import massal akun: ${err.message}`);
-    res.status(400).json({ success: false, message: err.message });
-  }
+router.post('/bulk-import', validateBody(bulkImportSchema), (req, res) => {
+  const addedAccounts = db.bulkImportAccounts(req.body.rawText);
+  logger.success(`📥 Berhasil mengimpor ${addedAccounts.length} akun ke dalam armada.`);
+  res.json({
+    success: true,
+    addedCount: addedAccounts.length,
+    importedCount: addedAccounts.length,
+    total: db.getAccounts().length,
+    accounts: db.getAccounts().map(redactAccount),
+  });
 });
 
 // POST /api/accounts/check-health - Mass check fleet health
 router.post('/check-health', async (req, res) => {
-  try {
-    const result = await twitterBot.checkFleetHealth();
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  const result = await twitterBot.checkFleetHealth();
+  if (Array.isArray(result.results)) {
+    result.results = result.results.map((r) =>
+      r && r.account ? { ...r, account: redactAccount(r.account) } : r
+    );
   }
+  res.json(result);
 });
 
-// GET /api/accounts/:id - Get account by ID
+// GET /api/accounts/:id - Get account by ID (masked)
 router.get('/:id', (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
   }
   const comments = db.getAccountComments(id);
-  res.json({ success: true, account: { ...account, comments } });
+  res.json({ success: true, account: redactAccount({ ...account, comments }) });
 });
 
-// PUT /api/accounts/:id - Update account
-router.put('/:id', (req, res) => {
+// PUT /api/accounts/:id - Update account (masked values are restored from storage)
+router.put('/:id', validateBody(accountUpdateSchema), (req, res) => {
   const { id } = req.params;
   const existing = db.getAccountById(id);
   if (!existing) {
-    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
   }
 
-  const updated = db.saveAccount({
-    ...existing,
-    ...req.body,
-    id,
-  });
+  const patch = { ...existing, ...req.body, id };
+  if (req.body.auth_token !== undefined) {
+    patch.auth_token = resolveSecret(req.body.auth_token, existing.auth_token);
+  }
+  if (req.body.ct0 !== undefined) {
+    patch.ct0 = resolveSecret(req.body.ct0, existing.ct0);
+  }
+  if (req.body.proxy !== undefined) {
+    patch.proxy = resolveProxyString(existing.proxy, req.body.proxy);
+  }
 
+  const updated = db.saveAccount(patch);
   logger.info(`✏️ Akun diperbarui: ${updated.label}`);
-  res.json({ success: true, account: updated });
+  res.json({ success: true, account: redactAccount(updated) });
 });
 
 // DELETE /api/accounts/:id - Delete account
@@ -117,7 +128,7 @@ router.delete('/:id', (req, res) => {
     logger.info(`🗑️ Akun dihapus: ID ${id}`);
     res.json({ success: true });
   } else {
-    res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
   }
 });
 
@@ -126,7 +137,7 @@ router.post('/:id/toggle', (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
   }
 
   const updated = db.saveAccount({
@@ -137,7 +148,7 @@ router.post('/:id/toggle', (req, res) => {
   logger.info(
     `🔘 Status akun @${updated.username || updated.label} diubah: ${updated.enabled ? 'Aktif' : 'Nonaktif'}`
   );
-  res.json({ success: true, account: updated });
+  res.json({ success: true, account: redactAccount(updated) });
 });
 
 // POST /api/accounts/:id/verify - Verify single account credentials
@@ -145,15 +156,14 @@ router.post('/:id/verify', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
   }
 
-  try {
-    const result = await twitterBot.verifyAccount(account);
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  const result = await twitterBot.verifyAccount(account);
+  if (result && result.account) {
+    result.account = redactAccount(result.account);
   }
+  res.json(result);
 });
 
 // POST /api/accounts/:id/check-health - Check health of single node
@@ -161,15 +171,14 @@ router.post('/:id/check-health', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
   }
 
-  try {
-    const result = await twitterBot.checkAccountHealth(account);
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  const result = await twitterBot.checkAccountHealth(account);
+  if (result && result.account) {
+    result.account = redactAccount(result.account);
   }
+  res.json(result);
 });
 
 // POST /api/accounts/:id/warmup - Run warmup task
@@ -177,13 +186,11 @@ router.post('/:id/warmup', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    return res.status(404).json({ success: false, message: 'Akun tidak ditemukan.' });
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
   }
 
   if (twitterBot.isRunning) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Sebuah proses otomasi sedang berjalan.' });
+    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
   }
 
   twitterBot.runWarmupTask(account).catch((err) => {
@@ -196,6 +203,21 @@ router.post('/:id/warmup', async (req, res) => {
   });
 });
 
+// POST /api/accounts/:id/test-proxy - Live latency & GeoIP test for this node's proxy
+router.post('/:id/test-proxy', async (req, res) => {
+  const { id } = req.params;
+  const account = db.getAccountById(id);
+  if (!account) {
+    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+  }
+  if (!account.proxy || !String(account.proxy).trim()) {
+    throw httpError(400, 'Akun ini belum memiliki proxy yang dikonfigurasi.', 'NO_PROXY');
+  }
+
+  const result = await proxyHelper.testProxy(String(account.proxy).trim());
+  res.json(result);
+});
+
 // GET /api/accounts/:id/comments - Get account comments
 router.get('/:id/comments', (req, res) => {
   const { id } = req.params;
@@ -204,14 +226,9 @@ router.get('/:id/comments', (req, res) => {
 });
 
 // POST /api/accounts/:id/comments - Save account comments
-router.post('/:id/comments', (req, res) => {
+router.post('/:id/comments', validateBody(commentsSchema), (req, res) => {
   const { id } = req.params;
   const { comments } = req.body;
-  if (!Array.isArray(comments)) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Format komentar harus berupa array string.' });
-  }
 
   db.saveAccountComments(id, comments);
   logger.info(`💾 Komentar untuk akun ID ${id} diperbarui (${comments.length} item).`);

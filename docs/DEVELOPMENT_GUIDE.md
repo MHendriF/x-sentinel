@@ -113,14 +113,23 @@ Always verify TypeScript compilation and bundle packaging before committing:
 bun run --cwd client build
 ```
 
-### Automation Test Scripts
+### Verification & Smoke Tests
 
-Run automated test scripts located in the `test/` folder:
+Run the automated verification scripts located in the `test/` folder:
 
 ```bash
-# Run unit & endpoint tests
-bun test
+# Module verification suite (spintax, cookie manager, db, hardening, import, etc.)
+node test/verify.js
+
+# Bulk fleet import & export verification (uses an isolated temp data dir)
+node test/verify_bulk_import.js
+
+# Boots the real API server against a throwaway data dir and asserts the
+# local origin/host guard, secret masking, and every previously-broken endpoint
+node test/smoke_api.js
 ```
+
+> Note: the package.json `test` script runs `node test/verify.js` (there is no Bun test runner configured).
 
 ---
 
@@ -134,3 +143,9 @@ bun test
    - In UI tables, display numeric date format (`DD/MM/YYYY`) on the primary line and time (`HH:mm:ss`) on the secondary line.
 4. **Error Handling**:
    - Never crash the background scheduler or browser loop. Wrap automation actions in try/catch blocks, record `FAILED` status to `history.json`, and dispatch webhook alerts via `notifier.notify(...)`.
+5. **Secret Masking**:
+   - GET responses must never contain raw `auth_token`, `ct0`, proxy credentials, AI API keys, or webhook tokens. Mask secrets in read endpoints and restore masked values from storage on write endpoints (see `server/security.js`).
+6. **Local API Security**:
+   - The server binds to `127.0.0.1` and rejects requests with foreign `Origin`/`Host` headers (`server/security.js`). Do not reintroduce permissive CORS or `0.0.0.0` binding — the API has no authentication.
+7. **Atomic Storage**:
+   - Corrupt JSON files are quarantined (`.corrupt.<timestamp>`), never silently overwritten. Atomic writes (`.tmp` + `fsync` + rename) must never fall back to direct writes.

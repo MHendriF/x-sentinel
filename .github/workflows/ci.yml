@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Lint, Build & Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install root dependencies
+        run: bun install
+
+      - name: Install client dependencies
+        run: bun install --cwd client
+
+      - name: Lint server code
+        run: bun run lint
+
+      - name: Check formatting
+        run: bun run format:check
+
+      - name: Build client (TypeScript + Vite)
+        run: bun run --cwd client build
+
+      - name: Run verification tests
+        run: bun run test
+
+      - name: Run API smoke tests
+        run: bun run smoke

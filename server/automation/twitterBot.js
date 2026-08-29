@@ -1,7 +1,6 @@
 const db = require('../db');
 const logger = require('../logger');
 const notifier = require('./notifier');
-const spintax = require('./spintax');
 
 const {
   sleep,

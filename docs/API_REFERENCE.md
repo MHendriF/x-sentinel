@@ -4,6 +4,12 @@ Base URL: `http://localhost:3000/api`
 
 All JSON requests should include the header `Content-Type: application/json`.
 
+## 🔒 Security Model (v1.3.1+)
+
+- The server binds to `127.0.0.1` only and rejects any request whose `Origin` or `Host` header is not the local dashboard (anti drive-by exfiltration & DNS rebinding). There is no CORS wildcard.
+- **Secret masking**: GET responses never contain raw `auth_token`, `ct0`, proxy credentials, AI API keys, or webhook tokens — they are returned as `••••xxxx`. Echoing a masked value back on POST/PUT is safe: the server restores the stored original. Send a fresh raw value to replace a secret.
+- **Endpoint exceptions**: `GET /api/accounts/export` (fleet backup download) intentionally contains raw session cookies — it is a full backup file.
+
 ---
 
 ## 📑 Table of Contents
@@ -66,7 +72,7 @@ data: {"id":"1724749200000","timestamp":"16:07:53","level":"success","message":"
 
 ### `GET /api/accounts`
 
-Lists all registered node accounts.
+Lists all registered node accounts. `auth_token` / `ct0` / `proxy` credentials are **masked** (`••••`).
 
 ### `POST /api/accounts`
 
@@ -97,7 +103,7 @@ Toggles account status between enabled (`ONLINE`) and paused (`PAUSED`).
 
 ### `POST /api/accounts/bulk-import`
 
-Imports multiple accounts via multi-line text or JSON array.
+Imports multiple accounts via multi-line text or JSON array. Duplicate `auth_token` values are skipped.
 
 **Request Body:**
 
@@ -106,6 +112,20 @@ Imports multiple accounts via multi-line text or JSON array.
   "rawText": "token1:ct0_1:proxy1:Node 1\ntoken2:ct0_2:proxy2:Node 2"
 }
 ```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "addedCount": 2,
+  "importedCount": 2,
+  "total": 7,
+  "accounts": ["...masked account list..."]
+}
+```
+
+Supported per-line formats: `auth_token:ct0:proxy:Label`, `auth_token:ct0:Label`, `auth_token:ct0:proxy`, `auth_token|ct0|proxy|Label`, `#` comment lines, or a JSON array of `{ auth_token, ct0, proxy, label }` objects.
 
 ### `GET /api/accounts/export`
 
@@ -142,6 +162,26 @@ Runs a mass validation check on all registered accounts (checks proxy alive + pr
 ### `POST /api/accounts/:id/check-health`
 
 Checks health and session validity of a specific node.
+
+### `POST /api/accounts/:id/test-proxy`
+
+Runs a live latency & GeoIP test against this node's configured proxy.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "latency": 240,
+  "ip": "31.56.70.92",
+  "country": "Iran",
+  "city": "Tehran",
+  "isp": "TIC",
+  "status": "ALIVE"
+}
+```
+
+A dead proxy returns `200` with `success: false`, `status: "DEAD"` and a human-readable `message`; a node without a configured proxy returns `400`.
 
 ---
 
@@ -325,7 +365,7 @@ Saves updated defense protocol and webhook settings.
 
 ### `POST /api/settings/test-webhook`
 
-Sends a test notification to Telegram or Discord.
+Sends a test notification to Telegram or Discord. Masked token values (`••••…`) are automatically restored from stored settings.
 
 **Request Body:**
 
@@ -336,6 +376,49 @@ Sends a test notification to Telegram or Discord.
   "telegramChatId": "987654321"
 }
 ```
+
+### `POST /api/settings/test-ai`
+
+Quick provider connectivity & credential check. If `aiApiKey` is masked, the stored key is used.
+
+**Request Body:**
+
+```json
+{
+  "aiProvider": "groq",
+  "aiApiKey": "gsk_...",
+  "aiModel": "llama-3.3-70b-versatile"
+}
+```
+
+### `POST /api/settings/generate-ai-test`
+
+Renders one live contextual AI reply for a sample tweet using the given provider overrides.
+
+**Request Body:**
+
+```json
+{
+  "tweetText": "Just shipped a new feature...",
+  "aiProvider": "groq",
+  "aiApiKey": "gsk_...",
+  "aiPrompt": "Be concise"
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Balasan AI berhasil dirender.",
+  "sampleOutput": "Solid progress — the interesting part is ..."
+}
+```
+
+### `GET /api/templates` / `POST /api/templates`
+
+Read / save the global spintax template bank (also aliased as `GET/POST /api/comments`). POST body: `{ "templates": ["{Keren|Mantap} banget!", "..."] }`.
 
 ---
 

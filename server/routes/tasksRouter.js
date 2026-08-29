@@ -1,28 +1,57 @@
 const express = require('express');
-const router = express.Router();
+const { z } = require('zod');
 const logger = require('../logger');
 const twitterBot = require('../automation/twitterBot');
+const { validateBody, httpError } = require('../utils/http');
+
+const router = express.Router();
+
+const accountIdsSchema = z.union([z.string(), z.array(z.string())]).optional();
+
+const postTaskSchema = z.object({
+  accountIds: accountIdsSchema,
+  posts: z.union([z.string().min(1), z.array(z.string()).min(1)], {
+    message: 'Konten postingan tidak boleh kosong.',
+  }),
+  delaySeconds: z.number().min(0).max(3600).optional(),
+  mediaPaths: z.array(z.string()).max(4).optional(),
+});
+
+const batchTaskSchema = z.object({
+  accountIds: accountIdsSchema,
+  urls: z.array(z.string()).min(1, 'Daftar URL tweet target tidak boleh kosong.'),
+  like: z.boolean().optional(),
+  retweet: z.boolean().optional(),
+  comment: z.boolean().optional(),
+  commentText: z.string().optional(),
+  minDelay: z.number().min(0).max(3600).optional(),
+  maxDelay: z.number().min(0).max(7200).optional(),
+});
+
+const hunterTaskSchema = z.object({
+  accountIds: accountIdsSchema,
+  keyword: z.string().min(1, 'Kata kunci pencarian tidak boleh kosong.').max(200),
+  count: z.number().int().min(1).max(50).optional(),
+  like: z.boolean().optional(),
+  retweet: z.boolean().optional(),
+  comment: z.boolean().optional(),
+  commentText: z.string().optional(),
+  minDelay: z.number().min(0).max(3600).optional(),
+  maxDelay: z.number().min(0).max(7200).optional(),
+});
 
 // POST /api/tasks/post - Broadcast / publish new tweets
-router.post('/post', async (req, res) => {
+router.post('/post', validateBody(postTaskSchema), (req, res) => {
   const { accountIds, posts, delaySeconds, mediaPaths } = req.body;
 
-  if (!posts || (Array.isArray(posts) && posts.length === 0)) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Konten postingan tidak boleh kosong.' });
-  }
-
   if (twitterBot.isRunning) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Sebuah proses otomasi sedang berjalan.' });
+    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
   }
 
   twitterBot
     .runMultiAccountPostTask(accountIds, posts, {
-      delaySeconds: delaySeconds ? Number(delaySeconds) : undefined,
-      mediaPaths: Array.isArray(mediaPaths) ? mediaPaths : [],
+      delaySeconds,
+      mediaPaths: mediaPaths || [],
     })
     .catch((err) => {
       logger.error(`❌ Background post task error: ${err.message}`);
@@ -35,7 +64,7 @@ router.post('/post', async (req, res) => {
 });
 
 // POST /api/tasks/batch - Run batch engagement
-router.post('/batch', async (req, res) => {
+router.post('/batch', validateBody(batchTaskSchema), (req, res) => {
   const {
     accountIds,
     urls,
@@ -47,16 +76,8 @@ router.post('/batch', async (req, res) => {
     maxDelay,
   } = req.body;
 
-  if (!urls || !Array.isArray(urls) || urls.length === 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Daftar URL tweet target tidak boleh kosong.' });
-  }
-
   if (twitterBot.isRunning) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Sebuah proses otomasi sedang berjalan.' });
+    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
   }
 
   twitterBot
@@ -65,8 +86,8 @@ router.post('/batch', async (req, res) => {
       retweet: Boolean(retweet),
       comment: Boolean(comment),
       commentText: commentText || null,
-      minDelay: minDelay ? Number(minDelay) : undefined,
-      maxDelay: maxDelay ? Number(maxDelay) : undefined,
+      minDelay,
+      maxDelay,
     })
     .catch((err) => {
       logger.error(`❌ Background task error: ${err.message}`);
@@ -79,7 +100,7 @@ router.post('/batch', async (req, res) => {
 });
 
 // POST /api/tasks/hunter - Run Feed Hunter
-router.post('/hunter', async (req, res) => {
+router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
   const {
     accountIds,
     keyword,
@@ -92,26 +113,18 @@ router.post('/hunter', async (req, res) => {
     maxDelay,
   } = req.body;
 
-  if (!keyword || !keyword.trim()) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Kata kunci pencarian tidak boleh kosong.' });
-  }
-
   if (twitterBot.isRunning) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'Sebuah proses otomasi sedang berjalan.' });
+    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
   }
 
   twitterBot
-    .runMultiAccountHunter(accountIds, keyword.trim(), Number(count), {
+    .runMultiAccountHunter(accountIds, keyword.trim(), count, {
       like: Boolean(like),
       retweet: Boolean(retweet),
       comment: Boolean(comment),
       commentText: commentText || null,
-      minDelay: minDelay ? Number(minDelay) : undefined,
-      maxDelay: maxDelay ? Number(maxDelay) : undefined,
+      minDelay,
+      maxDelay,
     })
     .catch((err) => {
       logger.error(`❌ Background hunter error: ${err.message}`);

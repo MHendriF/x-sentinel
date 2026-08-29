@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const config = require('./config');
 
 class LocalDB {
@@ -75,7 +76,7 @@ class LocalDB {
     const legacyAuth = this.readFile(this.files.auth, null);
     if (this.cache.accounts.length === 0 && legacyAuth && legacyAuth.auth_token) {
       const initialAcc = {
-        id: 'acc_' + Date.now().toString(36),
+        id: 'acc_' + crypto.randomUUID(),
         label: legacyAuth.name || 'Akun Utama',
         auth_token: legacyAuth.auth_token,
         ct0: legacyAuth.ct0 || '',
@@ -129,29 +130,77 @@ class LocalDB {
     try {
       if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(raw);
+        try {
+          return JSON.parse(raw);
+        } catch (parseErr) {
+          // Quarantine the corrupt file so user data is never silently lost
+          const quarantinePath = `${filePath}.corrupt.${Date.now()}`;
+          try {
+            fs.renameSync(filePath, quarantinePath);
+          } catch (renameErr) {
+            console.error(`Failed to quarantine corrupt file ${filePath}:`, renameErr.message);
+          }
+          console.error(
+            `⚠️ Corrupted JSON detected at ${filePath}. File preserved at ${quarantinePath}. Continuing with default value.`
+          );
+        }
       }
     } catch (e) {
       console.error(`Error reading ${filePath}:`, e.message);
     }
-    this.writeFile(filePath, defaultValue);
+    try {
+      this.writeFile(filePath, defaultValue);
+    } catch (writeErr) {
+      console.error(`Failed to write default value for ${filePath}:`, writeErr.message);
+    }
     return defaultValue;
   }
 
-  writeFile(filePath, data) {
+  sleepSync(ms) {
     try {
-      const tempPath = `${filePath}.tmp.${process.pid}.${Date.now()}`;
-      fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
-      fs.renameSync(tempPath, filePath);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
     } catch (e) {
-      console.error(`Error writing ${filePath}:`, e.message);
-      // Fallback direct write
+      // Atomics.wait unavailable (e.g. main thread restrictions); skip backoff
+    }
+  }
+
+  /**
+   * Atomic write: .tmp file + fsync + rename. Never falls back to a direct
+   * non-atomic write; retries transient OS locks (Windows EBUSY/EPERM) then throws.
+   */
+  writeFile(filePath, data) {
+    const json = JSON.stringify(data, null, 2);
+    const maxAttempts = 3;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const tempPath = `${filePath}.tmp.${process.pid}.${Date.now()}`;
       try {
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-      } catch (err) {
-        console.error(`Direct fallback write failed for ${filePath}:`, err.message);
+        const fd = fs.openSync(tempPath, 'w');
+        try {
+          fs.writeFileSync(fd, json, 'utf8');
+          fs.fsyncSync(fd);
+        } finally {
+          fs.closeSync(fd);
+        }
+        fs.renameSync(tempPath, filePath);
+        return;
+      } catch (e) {
+        lastError = e;
+        console.error(
+          `Atomic write attempt ${attempt}/${maxAttempts} failed for ${filePath}: ${e.message}`
+        );
+        try {
+          if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        } catch (cleanupErr) {
+          // ignore cleanup failure
+        }
+        if (attempt < maxAttempts) this.sleepSync(50 * attempt);
       }
     }
+    throw new Error(
+      `Atomic write failed after ${maxAttempts} attempts for ${filePath}: ${lastError ? lastError.message : 'unknown error'}`
+    );
   }
 
   save(key) {
@@ -184,12 +233,11 @@ class LocalDB {
   }
 
   saveAccount(accountData) {
-    const id =
-      accountData.id || 'acc_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+    const id = accountData.id || 'acc_' + crypto.randomUUID();
     const existingIndex = (this.cache.accounts || []).findIndex((acc) => acc.id === id);
 
     const defaultComments = this.getTemplates();
-    const sanitizedId = String(id).replace(/[^a-zA-Z0-9_\-]/g, '');
+    const sanitizedId = String(id).replace(/[^a-zA-Z0-9_-]/g, '');
 
     const updatedAccount = {
       id,
@@ -229,7 +277,7 @@ class LocalDB {
   deleteAccount(id) {
     const index = (this.cache.accounts || []).findIndex((acc) => acc.id === id);
     if (index >= 0) {
-      const removed = this.cache.accounts.splice(index, 1)[0];
+      this.cache.accounts.splice(index, 1);
       this.save('accounts');
 
       // Optionally delete comment file safely
@@ -255,9 +303,131 @@ class LocalDB {
     return null;
   }
 
+  // ==========================================
+  // FLEET EXPORT & BULK IMPORT
+  // ==========================================
+
+  /**
+   * Full fleet backup including per-account comments.
+   * NOTE: contains raw session cookies — only exposed via the authenticated
+   * same-origin export endpoint, never in regular GET responses.
+   */
+  exportAccounts() {
+    const accounts = (this.cache.accounts || []).map((acc) => ({
+      ...acc,
+      comments: this.getAccountComments(acc.id),
+    }));
+    return {
+      app: 'x-sentinel',
+      version: config.VERSION,
+      exportedAt: new Date().toISOString(),
+      accounts,
+    };
+  }
+
+  /**
+   * Bulk import accounts from multi-line text (colon/pipe delimited) or a
+   * JSON array. Skips duplicates (by auth_token) instead of failing.
+   */
+  bulkImportAccounts(rawText) {
+    if (!rawText || typeof rawText !== 'string' || !rawText.trim()) {
+      throw new Error('Data import tidak boleh kosong.');
+    }
+
+    const parsedList = this.parseBulkImportText(rawText);
+    if (parsedList.length === 0) {
+      throw new Error('Tidak ada akun valid yang bisa diparse dari data yang diberikan.');
+    }
+
+    const existingTokens = new Set((this.cache.accounts || []).map((a) => a.auth_token));
+    const imported = [];
+
+    for (const item of parsedList) {
+      if (!item.auth_token || existingTokens.has(item.auth_token)) continue;
+      existingTokens.add(item.auth_token);
+      const saved = this.saveAccount({
+        label: item.label,
+        auth_token: item.auth_token,
+        ct0: item.ct0,
+        proxy: item.proxy,
+      });
+      imported.push(saved);
+    }
+
+    return imported;
+  }
+
+  /**
+   * Parse bulk import text. Supported per-line formats:
+   *   auth_token:ct0:proxy:Label   (colon; proxy may contain colons, label is last segment)
+   *   auth_token:ct0:proxy         (colon, no label)
+   *   auth_token:ct0:Label         (colon, no proxy — heuristic: segment without '.'/'@' is a label)
+   *   auth_token|ct0|proxy|Label   (pipe delimited)
+   * Comment lines (# prefix) and blank lines are ignored. JSON array/object input is also accepted.
+   */
+  parseBulkImportText(rawText) {
+    const trimmed = rawText.trim();
+
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+      const parsed = JSON.parse(trimmed);
+      const list = Array.isArray(parsed) ? parsed : [parsed];
+      return list
+        .filter((item) => item && (item.auth_token || item.token))
+        .map((item, idx) => ({
+          auth_token: String(item.auth_token || item.token || '').trim(),
+          ct0: String(item.ct0 || '').trim(),
+          proxy: String(item.proxy || '').trim(),
+          label: String(item.label || item.name || `Node ${idx + 1}`).trim(),
+        }));
+    }
+
+    const results = [];
+    const lines = trimmed
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'));
+
+    lines.forEach((line) => {
+      const delimiter = line.includes('|') ? '|' : ':';
+      const parts = line.split(delimiter).map((p) => p.trim());
+      if (parts.length < 2) return;
+
+      const auth_token = parts[0];
+      const ct0 = parts[1];
+      const remaining = parts.slice(2);
+      let proxy = '';
+      let label = `Node ${results.length + 1}`;
+
+      if (remaining.length === 1) {
+        const segment = remaining[0];
+        if (segment.includes('.') || segment.includes('@')) {
+          proxy = segment;
+        } else {
+          label = segment;
+        }
+      } else if (remaining.length >= 2) {
+        label = remaining[remaining.length - 1];
+        proxy = remaining.slice(0, -1).join(':');
+      }
+
+      results.push({ auth_token, ct0, proxy, label });
+    });
+
+    return results;
+  }
+
+  // Global fallback comments (backed by the global spintax templates)
+  getComments() {
+    return this.getTemplates();
+  }
+
+  saveComments(comments) {
+    return this.saveTemplates(comments);
+  }
+
   // Account Comments JSON File Management with Path Traversal Hardening
   getAccountCommentsFilePath(accountId) {
-    const sanitizedId = String(accountId).replace(/[^a-zA-Z0-9_\-]/g, '');
+    const sanitizedId = String(accountId).replace(/[^a-zA-Z0-9_-]/g, '');
     const fileName = `comments_${sanitizedId}.json`;
     const resolvedPath = path.resolve(this.commentsDir, fileName);
     // Security check: ensure path is inside commentsDir
@@ -329,7 +499,7 @@ class LocalDB {
 
   addHistory(entry) {
     const item = {
-      id: Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+      id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       timeFormatted: new Date().toLocaleTimeString('id-ID'),
       ...entry,
@@ -404,8 +574,7 @@ class LocalDB {
   }
 
   saveSchedule(data) {
-    const id =
-      data.id || 'sch_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 3);
+    const id = data.id || 'sch_' + crypto.randomUUID();
     const schedules = this.cache.schedules || [];
     const index = schedules.findIndex((s) => s.id === id);
 

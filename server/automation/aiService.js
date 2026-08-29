@@ -194,7 +194,7 @@ class AIService {
    * @param {object} account - The account executing the action
    * @param {object} customOverrides - Optional custom prompt/model
    */
-  async generateContextualReply(tweetText, account = {}, customOverrides = {}) {
+  async generateContextualReply(tweetText, _account = {}, customOverrides = {}) {
     const settings = { ...db.getSettings(), ...customOverrides };
     const provider = settings.aiProvider || 'none';
 
@@ -563,8 +563,8 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
       // Fallback line extraction if JSON failed
       if (extractedPosts.length === 0 && contentStr) {
         extractedPosts = contentStr
-          .split(/\n\s*\n|\n(?=\d+[\.\)])/)
-          .map((s) => s.replace(/^\d+[\.\)]\s*|^["'`]|["'`]$/g, '').trim())
+          .split(/\n\s*\n|\n(?=\d+[.)])/)
+          .map((s) => s.replace(/^\d+[.)]\s*|^["'`]|["'`]$/g, '').trim())
           .filter((s) => s.length > 10);
       }
 

@@ -3,7 +3,6 @@
  * Manages auth_token and ct0 cookies for browser automation sessions
  */
 
-const db = require('../db');
 const logger = require('../logger');
 
 class CookieManager {

@@ -1,19 +1,22 @@
 const express = require('express');
 const path = require('path');
-const cors = require('cors');
+const fs = require('fs');
 const config = require('./config');
 const logger = require('./logger');
+const { originGuard } = require('./security');
 const apiRoutes = require('./routes/api');
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Local-only guard: reject cross-origin browser requests (drive-by secret
+// exfiltration) and DNS-rebinding Host headers before any handler runs.
+app.use(originGuard);
+
+// Large limit required for base64 media uploads (up to 4 images per request)
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Serve static frontend dashboard (React 19 build or public fallback)
-const fs = require('fs');
 const clientDist = path.join(config.ROOT_DIR, 'client', 'dist');
 const staticDir = fs.existsSync(clientDist) ? clientDist : path.join(config.ROOT_DIR, 'public');
 
@@ -50,15 +53,30 @@ app.use((req, res) => {
   res.sendFile(path.join(staticDir, 'index.html'));
 });
 
+// Centralized error handler: every thrown/rejected error in route handlers
+// lands here. Express 5 auto-forwards async errors.
+app.use((err, req, res, _next) => {
+  const status = err.status || err.statusCode || 500;
+  if (status >= 500) {
+    logger.error(`💥 ${req.method} ${req.originalUrl} → ${err.message}`);
+    if (err.stack) console.error(err.stack);
+  }
+  res.status(status).json({
+    success: false,
+    error: err.code || (status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_ERROR'),
+    message: status >= 500 ? 'Terjadi kesalahan internal server.' : err.message,
+  });
+});
+
 const twitterBot = require('./automation/twitterBot');
 const scheduler = require('./automation/scheduler');
 
-// Start Server
-const server = app.listen(config.PORT, () => {
-  logger.success(`🚀 X-SENTINEL Cockpit Engine berjalan di http://localhost:${config.PORT}`);
+// Start Server (loopback bind — see config.HOST)
+const server = app.listen(config.PORT, config.HOST, () => {
+  logger.success(`🚀 X-SENTINEL Cockpit Engine berjalan di http://${config.HOST}:${config.PORT}`);
   console.log(`====================================================`);
   console.log(`🛡️  X-SENTINEL: Autonomous Multi-Node Fleet Engine`);
-  console.log(`🌐 Buka Dashboard di browser: http://localhost:${config.PORT}`);
+  console.log(`🌐 Buka Dashboard di browser: http://${config.HOST}:${config.PORT}`);
   console.log(`====================================================`);
 
   // Start background scheduler

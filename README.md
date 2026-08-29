@@ -60,6 +60,12 @@ bun run dev
 # Jalankan Test Suite Verifikasi
 node test/verify.js
 
+# Jalankan API Smoke Test (boot server + assert security guard & masking)
+bun run smoke
+
+# Lint Server Code (ESLint)
+bun run lint
+
 # Format & Lint Seluruh Kode (Prettier)
 bun run format
 ```
@@ -157,4 +163,5 @@ x-sentinel/
 ## 🔒 Keamanan & Lisensi
 
 - **100% On-Premise Data Sovereignty**: Seluruh data akun, token sesi, dan riwayat interaksi disimpan secara lokal di folder `data/` pada komputer Anda tanpa pernah dikirim ke server pihak ketiga.
+- **Local-Only Cockpit (v1.3.1+)**: Server bind ke `127.0.0.1`, menolak request lintas-origin (anti drive-by exfiltration & DNS rebinding), dan menyamarkan seluruh secret (`auth_token`, `ct0`, kredensial proxy, API key, webhook token) di setiap response GET — lihat [API Reference](docs/API_REFERENCE.md#-security-model-v131).
 - **Lisensi**: Didistribusikan di bawah **[MIT License](LICENSE)**.

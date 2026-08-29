@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const twitterBot = require('../automation/twitterBot');
+const { redactAccount } = require('../security');
 
 // Sub-routers
 const accountsRouter = require('./accountsRouter');
@@ -13,9 +14,11 @@ const settingsRouter = require('./settingsRouter');
 
 // GET /api/status - Get current bot status, active accounts & stats
 router.get('/status', (req, res) => {
+  const status = twitterBot.getStatus();
   res.json({
     success: true,
-    ...twitterBot.getStatus(),
+    ...status,
+    accounts: (status.accounts || []).map(redactAccount),
   });
 });
 
