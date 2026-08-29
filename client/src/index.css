@@ -45,6 +45,17 @@
   }
 }
 
+@layer components {
+  /* Visible custom checkbox (native unchecked box is invisible on the dark theme) */
+  .checkbox-flame {
+    @apply h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-slate-600 bg-obsidian-900 transition-colors;
+  }
+  .checkbox-flame:checked {
+    @apply border-flame bg-flame bg-[length:11px_11px] bg-center bg-no-repeat;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2306080b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3 8.5l3 3 7-7'/%3E%3C/svg%3E");
+  }
+}
+
 /* Custom Scrollbar for Terminal and Tables */
 ::-webkit-scrollbar {
   width: 6px;

@@ -82,16 +82,18 @@ export const NodesGrid: React.FC = () => {
   }, [accounts, searchTerm]);
 
   // 2. Status counts based on current search query
+  const isExpired = (a: (typeof accounts)[number]) =>
+    a.healthStatus === 'EXPIRED' || a.healthStatus === 'PROXY_DEAD' || a.isValid === false;
+  const isUnchecked = (a: (typeof accounts)[number]) => !a.healthStatus && a.isValid !== false;
+
   const filterCounts = useMemo(() => {
     return {
       all: searchFilteredAccounts.length,
       online: searchFilteredAccounts.filter((a) => a.enabled !== false).length,
       paused: searchFilteredAccounts.filter((a) => a.enabled === false).length,
       healthy: searchFilteredAccounts.filter((a) => a.healthStatus === 'HEALTHY').length,
-      expired: searchFilteredAccounts.filter(
-        (a) =>
-          a.healthStatus === 'EXPIRED' || a.healthStatus === 'PROXY_DEAD' || a.isValid === false
-      ).length,
+      expired: searchFilteredAccounts.filter(isExpired).length,
+      unchecked: searchFilteredAccounts.filter(isUnchecked).length,
     };
   }, [searchFilteredAccounts]);
 
@@ -102,13 +104,8 @@ export const NodesGrid: React.FC = () => {
       if (statusFilter === 'ONLINE') return acc.enabled !== false;
       if (statusFilter === 'PAUSED') return acc.enabled === false;
       if (statusFilter === 'HEALTHY') return acc.healthStatus === 'HEALTHY';
-      if (statusFilter === 'EXPIRED') {
-        return (
-          acc.healthStatus === 'EXPIRED' ||
-          acc.healthStatus === 'PROXY_DEAD' ||
-          acc.isValid === false
-        );
-      }
+      if (statusFilter === 'EXPIRED') return isExpired(acc);
+      if (statusFilter === 'UNCHECKED') return isUnchecked(acc);
       return true;
     });
   }, [searchFilteredAccounts, statusFilter]);

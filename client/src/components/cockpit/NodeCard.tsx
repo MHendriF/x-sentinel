@@ -280,6 +280,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
             onClick={handlePingProxy}
             disabled={isPingingProxy}
             title="Ping Proxy Latency & Location"
+            aria-label="Uji latensi & lokasi proxy node ini"
           >
             <Activity
               className={`h-3 w-3 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
@@ -293,6 +294,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           className="h-7 w-7 shrink-0 p-0 text-xs text-slate-300 hover:text-white"
           onClick={() => openAccountModal(account)}
           title="Edit Node Config"
+          aria-label="Edit konfigurasi node ini"
         >
           <SettingsIcon className="h-3 w-3" />
         </Button>
@@ -303,6 +305,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           className="h-7 w-7 shrink-0 p-0 text-xs"
           onClick={handleDelete}
           title="Remove Node"
+          aria-label="Hapus node ini"
         >
           <Trash2 className="h-3 w-3" />
         </Button>

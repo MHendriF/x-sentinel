@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.2] - 2026-08-30
+
+### 🐛 Fixed (UI)
+
+- **Page header desync**: the AI Provider Settings tab showed the Multi-Node page title because `TAB_TITLES` in `TelemetryRibbon` had no `tab-ai` entry and silently fell back to the accounts title. All tabs (including 404) now have explicit titles, and unknown tabs fall back to a neutral cockpit title.
+- **Inconsistent version display**: `v1.3` badge vs `v2.4.0` footer were hardcoded in `NavDeck` and `PostStudio`. The version is now injected from `package.json` via a Vite `__APP_VERSION__` define — single source of truth.
+- **Analytics velocity chart**: time now flows left→right (previously newest-on-left), activity spanning ≤2 days is bucketed per hour so single-day bursts no longer collapse into an unreadable sliver, and an honest empty state replaces the blank axes when no activity exists.
+
+### ⚡ Changed (UI)
+
+- **Consistent page layout**: removed duplicated deck-level page titles (`Feed Hunter`, `Audit Ledger`, `Defense Protocol`, `Post Studio` banner) that repeated the top ribbon header; wide decks no longer float in a narrow centered column (`FeedHunter`, `DefenseProtocol`, `AISettingsDeck` now use the full-width grid like the other decks).
+- **Primary action color rule**: the blue `execute` button variant is now flame/amber like every other primary CTA; blue remains reserved for informational Reply-vector accents.
+- **Node status filter taxonomy**: filter pills now read `Semua · Aktif · Nonaktif · Sehat · Kadaluarsa · Belum Dicek`, separating the enablement dimension (Aktif/Nonaktif) from health-check results and exposing an explicit "not checked yet" state instead of a contradictory `Online 17 / Healthy 0`.
+- **Operational labels unified to Indonesian** (page titles/subtitles, filter pills, chart titles, primary CTA); English kept for technical terms.
+
+### ♿ Accessibility
+
+- Navigation items expose `aria-current="page"`; filter pills expose `aria-pressed`; engagement vector cards are keyboard-operable switches (`role="switch"`, `aria-checked`, Enter/Space).
+- Icon-only node actions (proxy ping, edit, delete) have `aria-label`s; mobile drawer buttons labeled.
+- Page heading receives keyboard focus on tab change for screen-reader/keyboard users.
+- Contrast bumps for low-emphasis text (`slate-500/600` → `slate-400/500`) and a visible custom checkbox style replacing the near-invisible native dark checkbox.
+- Fonts are now self-hosted via `@fontsource` (bundled by Vite) instead of Google Fonts CDN — no external requests, fully offline cockpit.
+
+---
+
 ## [1.3.1] - 2026-08-30
 
 ### 🔒 Security

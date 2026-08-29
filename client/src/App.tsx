@@ -63,6 +63,14 @@ export const App: React.FC = () => {
     };
   }, [setActiveTab]);
 
+  // Move keyboard/screen-reader focus to the page heading on tab change
+  useEffect(() => {
+    const heading = document.getElementById('page-heading');
+    if (heading) {
+      heading.focus({ preventScroll: true });
+    }
+  }, [activeTab]);
+
   // Initial Data Load & SSE Subscription
   useEffect(() => {
     loadAccounts();

@@ -331,7 +331,7 @@ export const AISettingsDeck: React.FC = () => {
   };
 
   return (
-    <div className="animate-in fade-in mx-auto max-w-5xl space-y-6 pb-8">
+    <div className="animate-in fade-in space-y-6 pb-8">
       {/* Top Banner Card */}
       <Card className="relative overflow-hidden border-purple-500/40 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-purple-950/20 shadow-2xl">
         <div className="pointer-events-none absolute right-0 top-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl"></div>

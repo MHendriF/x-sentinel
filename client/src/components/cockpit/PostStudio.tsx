@@ -370,21 +370,15 @@ export const PostStudio: React.FC = () => {
       <div className="relative overflow-hidden rounded-xl border border-border/80 bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-950 p-5 shadow-lg">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 text-flame">
+            <div className="flex items-start gap-2">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 text-flame">
                 <Sparkles className="h-4 w-4" />
               </div>
-              <h1 className="flex items-center gap-2 font-heading text-xl font-bold tracking-tight text-white">
-                AI Post Studio & Fleet Publisher
-                <span className="rounded-full border border-emerald/30 bg-emerald/20 px-2 py-0.5 font-mono text-[10px] text-emerald">
-                  v1.3
-                </span>
-              </h1>
+              <p className="max-w-2xl text-xs text-slate-400">
+                Racik konten postingan berkelas, anti-AI-slop & high-engagement berdasarkan kata
+                kunci, lalu publikasikan langsung ke armada node akun X Anda.
+              </p>
             </div>
-            <p className="max-w-2xl text-xs text-slate-400">
-              Racik konten postingan berkelas, anti-AI-slop & high-engagement berdasarkan kata
-              kunci, lalu publikasikan langsung ke armada node akun X Anda.
-            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -768,7 +762,7 @@ export const PostStudio: React.FC = () => {
                     className={cn(
                       'rounded px-3 py-1 font-mono text-[11px] font-semibold transition-all',
                       targetMode === 'single'
-                        ? 'bg-blue-600 text-white shadow-sm'
+                        ? 'bg-flame text-obsidian-950 shadow-sm'
                         : 'text-slate-400 hover:text-white'
                     )}
                   >

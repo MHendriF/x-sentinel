@@ -110,7 +110,7 @@ export const DefenseProtocol: React.FC = () => {
   };
 
   return (
-    <div className="animate-in fade-in mx-auto max-w-2xl space-y-5">
+    <div className="animate-in fade-in space-y-5">
       {/* Quick AI Link Banner */}
       <div className="flex items-center justify-between gap-3 rounded-lg border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-obsidian-900 to-obsidian-950 p-3.5 shadow-md">
         <div className="flex items-center gap-2.5">
@@ -147,7 +147,6 @@ export const DefenseProtocol: React.FC = () => {
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             EVASION &amp; DEFENSE PROTOCOL
           </div>
-          <CardTitle className="text-xl">Anti-Ban &amp; Stealth Engine</CardTitle>
           <CardDescription>
             Konfigurasikan interval penundaan acak manusia (*human-like randomized intervals*) dan
             batasan kuota untuk mencegah rate-limit X.
@@ -234,7 +233,7 @@ export const DefenseProtocol: React.FC = () => {
                 type="checkbox"
                 checked={headless}
                 onChange={(e) => setHeadless(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-flame accent-amber-500 focus:ring-flame"
+                className="checkbox-flame"
               />
             </label>
 
@@ -254,7 +253,7 @@ export const DefenseProtocol: React.FC = () => {
                 type="checkbox"
                 checked={scrollAction}
                 onChange={(e) => setScrollAction(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-flame accent-amber-500 focus:ring-flame"
+                className="checkbox-flame"
               />
             </label>
           </div>
@@ -287,7 +286,7 @@ export const DefenseProtocol: React.FC = () => {
                 type="checkbox"
                 checked={telegramEnabled}
                 onChange={(e) => setTelegramEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-blue-500 accent-blue-500 focus:ring-blue-500"
+                className="checkbox-flame"
               />
             </div>
 
@@ -349,7 +348,7 @@ export const DefenseProtocol: React.FC = () => {
                 type="checkbox"
                 checked={discordEnabled}
                 onChange={(e) => setDiscordEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-700 bg-obsidian-900 text-purple-500 accent-purple-500 focus:ring-purple-500"
+                className="checkbox-flame"
               />
             </div>
 

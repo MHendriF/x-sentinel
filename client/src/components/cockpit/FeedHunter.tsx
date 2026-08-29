@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Radar, Heart, Repeat, MessageSquare, Flame } from 'lucide-react';
 
@@ -52,14 +52,13 @@ export const FeedHunter: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5">
+    <div className="space-y-5">
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
             <Radar className="h-3.5 w-3.5 animate-spin" />
             SURVEILLANCE RADAR
           </div>
-          <CardTitle className="text-xl">Feed Hunter Intelligence</CardTitle>
           <CardDescription>
             Pindai feed X/Twitter secara otomatis berdasarkan topik, hashtag, atau tren terkini,
             lalu jalankan interaksi multi-akun seketika.
@@ -121,9 +120,19 @@ export const FeedHunter: React.FC = () => {
             <label className="font-mono text-xs font-bold text-slate-300">
               ACTIVE ENGAGEMENT VECTORS
             </label>
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid max-w-2xl grid-cols-3 gap-2.5">
               <div
                 onClick={() => setLike(!like)}
+                role="switch"
+                aria-checked={like}
+                aria-label="Vektor Like"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setLike(!like);
+                  }
+                }}
                 className={`flex cursor-pointer flex-col items-center justify-center rounded-md border p-3 text-center transition-all ${
                   like
                     ? 'border-red-500/60 bg-red-500/10 text-white'
@@ -136,6 +145,16 @@ export const FeedHunter: React.FC = () => {
 
               <div
                 onClick={() => setRetweet(!retweet)}
+                role="switch"
+                aria-checked={retweet}
+                aria-label="Vektor Repost"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setRetweet(!retweet);
+                  }
+                }}
                 className={`flex cursor-pointer flex-col items-center justify-center rounded-md border p-3 text-center transition-all ${
                   retweet
                     ? 'border-emerald-500/60 bg-emerald-500/10 text-white'
@@ -148,6 +167,16 @@ export const FeedHunter: React.FC = () => {
 
               <div
                 onClick={() => setComment(!comment)}
+                role="switch"
+                aria-checked={comment}
+                aria-label="Vektor Reply"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setComment(!comment);
+                  }
+                }}
                 className={`flex cursor-pointer flex-col items-center justify-center rounded-md border p-3 text-center transition-all ${
                   comment
                     ? 'border-blue-500/60 bg-blue-500/10 text-white'
@@ -164,10 +193,10 @@ export const FeedHunter: React.FC = () => {
             variant="default"
             size="lg"
             onClick={handleStart}
-            className="mt-4 w-full font-heading text-sm font-bold"
+            className="mt-4 w-full max-w-2xl font-heading text-sm font-bold"
           >
             <Flame className="mr-1.5 h-4 w-4" />
-            DEPLOY FEED HUNTER INTELLIGENCE
+            Deploy Feed Hunter
           </Button>
         </CardContent>
       </Card>

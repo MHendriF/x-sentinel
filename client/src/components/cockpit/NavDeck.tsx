@@ -106,7 +106,7 @@ export const NavDeck: React.FC = () => {
               <div className="flex items-center gap-1.5 font-heading text-base font-bold tracking-tight text-white">
                 X-SENTINEL
                 <span className="rounded border border-flame/30 bg-flame/20 px-1.5 py-0.5 font-mono text-[9px] text-flame">
-                  v1.3
+                  v{__APP_VERSION__}
                 </span>
               </div>
               <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
@@ -117,6 +117,7 @@ export const NavDeck: React.FC = () => {
           <button
             className="rounded-md p-1.5 text-slate-400 hover:bg-obsidian-750 hover:text-white lg:hidden"
             onClick={() => setIsMobileDrawerOpen(false)}
+            aria-label="Tutup menu navigasi"
           >
             <X className="h-5 w-5" />
           </button>
@@ -160,12 +161,13 @@ export const NavDeck: React.FC = () => {
             return (
               <React.Fragment key={item.id}>
                 {item.section && (
-                  <div className="px-2.5 pb-1 pt-3 font-mono text-[10px] font-semibold tracking-wider text-slate-500">
+                  <div className="px-2.5 pb-1 pt-3 font-mono text-[10px] font-semibold tracking-wider text-slate-400">
                     {item.section}
                   </div>
                 )}
                 <button
                   onClick={() => setActiveTab(item.id)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={cn(
                     'group flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-xs font-medium transition-all',
                     isActive
@@ -192,7 +194,7 @@ export const NavDeck: React.FC = () => {
             <Radio className="h-3.5 w-3.5 animate-pulse text-blue-400" />
             <span>HTTP/2 Stealth</span>
           </div>
-          <span className="text-slate-600">v2.4.0</span>
+          <span className="text-slate-500">v{__APP_VERSION__}</span>
         </div>
       </aside>
     </>

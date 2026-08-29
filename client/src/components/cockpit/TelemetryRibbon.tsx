@@ -4,51 +4,58 @@ import { Heart, Repeat, MessageSquare, Sparkles, Menu } from 'lucide-react';
 
 const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
   'tab-accounts': {
-    title: 'Multi-Node & Proxy Management',
-    subtitle:
-      'Configure authenticated X accounts, dedicated proxy tunnels, and JSON payload pools.',
+    title: 'Manajemen Multi-Node & Proxy',
+    subtitle: 'Kelola akun X terautentikasi, tunnel proxy khusus, dan pool payload JSON.',
   },
   'tab-composer': {
     title: 'AI Post Studio & Fleet Publisher',
     subtitle:
-      'Generate high-engagement post content from keywords and broadcast across multi-node fleets.',
+      'Hasilkan konten postingan ber-engagement tinggi dari kata kunci, lalu siarkan ke armada multi-node.',
   },
   'tab-batch': {
     title: 'Target Engagement Workbench',
-    subtitle:
-      'Execute multi-node sequential engagement for Like, Repost, and Custom Reply vectors.',
+    subtitle: 'Eksekusi engagement berurutan multi-node untuk vektor Like, Repost, dan Reply.',
   },
   'tab-hunter': {
     title: 'Feed Hunter Intelligence',
-    subtitle: 'Autonomous keyword scanning and multi-node engagement sequence.',
+    subtitle: 'Pemindaian kata kunci & hashtag otonom dengan eksekusi engagement multi-node.',
   },
   'tab-analytics': {
     title: 'Analytics & Growth Intelligence',
-    subtitle:
-      'Interactive telemetry trends, node cluster distribution, and execution velocity metrics.',
+    subtitle: 'Tren telemetri interaktif, distribusi cluster node, dan metrik velocity eksekusi.',
+  },
+  'tab-ai': {
+    title: 'Pengaturan AI Provider',
+    subtitle: 'Konfigurasi provider LLM, model, kredensial, dan persona balasan otonom.',
   },
   'tab-spintax': {
     title: 'Payload Bank & Spintax Generator',
-    subtitle: 'Configure global fallback payloads and test spintax permutations.',
+    subtitle: 'Kelola payload fallback global dan uji permutasi spintax.',
   },
   'tab-safety': {
-    title: 'Anti-Detection & Defense Protocol',
-    subtitle: 'Configure rate limits, natural delay intervals, and browser emulation flags.',
+    title: 'Protokol Anti-Deteksi & Defense',
+    subtitle: 'Atur rate limit, interval delay natural, dan flag emulasi browser.',
   },
   'tab-history': {
-    title: 'Interaction Audit Ledger',
-    subtitle: 'Full immutable record of all processed interactions per node.',
+    title: 'Audit Ledger Interaksi',
+    subtitle: 'Rekaman permanen seluruh interaksi per node beserta status dan waktunya.',
   },
   'tab-about': {
-    title: 'About & System Specifications',
-    subtitle:
-      'Architecture overview, technical specifications, and core capabilities of X-SENTINEL.',
+    title: 'Tentang & Spesifikasi Sistem',
+    subtitle: 'Ikhtisar arsitektur, spesifikasi teknis, dan kapabilitas inti X-SENTINEL.',
+  },
+  'tab-404': {
+    title: 'Halaman Tidak Ditemukan',
+    subtitle: 'Path yang Anda buka tidak dikenali oleh cockpit.',
   },
 };
 
 export const TelemetryRibbon: React.FC = () => {
   const { activeTab, stats, setIsMobileDrawerOpen } = useStore();
-  const meta = TAB_TITLES[activeTab] || TAB_TITLES['tab-accounts'];
+  const meta = TAB_TITLES[activeTab] ?? {
+    title: 'X-SENTINEL Cockpit',
+    subtitle: 'Autonomous Fleet Control',
+  };
 
   return (
     <header className="mb-6 flex flex-col justify-between gap-4 border-b border-border/80 pb-6 lg:flex-row lg:items-center">
@@ -57,12 +64,16 @@ export const TelemetryRibbon: React.FC = () => {
         <button
           className="rounded-md border border-border/80 bg-obsidian-850 p-2 text-slate-300 hover:text-white lg:hidden"
           onClick={() => setIsMobileDrawerOpen(true)}
-          aria-label="Open Navigation"
+          aria-label="Buka menu navigasi"
         >
           <Menu className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="font-heading text-xl font-bold tracking-tight text-white lg:text-2xl">
+          <h1
+            id="page-heading"
+            tabIndex={-1}
+            className="font-heading text-xl font-bold tracking-tight text-white outline-none lg:text-2xl"
+          >
             {meta.title}
           </h1>
           <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">{meta.subtitle}</p>

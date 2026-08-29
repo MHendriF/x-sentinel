@@ -31,3 +31,9 @@ client/dist/
 .DS_Store
 Thumbs.db
 
+
+# tsc -b composite emit artifacts
+client/vite.config.js
+client/vite.config.d.ts
+client/tsconfig.node.tsbuildinfo
+client/*.tsbuildinfo

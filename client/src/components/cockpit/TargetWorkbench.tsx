@@ -161,6 +161,16 @@ export const TargetWorkbench: React.FC = () => {
                 {/* Like Vector */}
                 <div
                   onClick={() => setLike(!like)}
+                  role="switch"
+                  aria-checked={like}
+                  aria-label="Vektor Like Post"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setLike(!like);
+                    }
+                  }}
                   className={`flex cursor-pointer flex-col items-center justify-center rounded-md border p-3 text-center transition-all ${
                     like
                       ? 'border-red-500/60 bg-red-500/10 text-white'
@@ -175,6 +185,16 @@ export const TargetWorkbench: React.FC = () => {
                 {/* Retweet Vector */}
                 <div
                   onClick={() => setRetweet(!retweet)}
+                  role="switch"
+                  aria-checked={retweet}
+                  aria-label="Vektor Repost / RT"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setRetweet(!retweet);
+                    }
+                  }}
                   className={`flex cursor-pointer flex-col items-center justify-center rounded-md border p-3 text-center transition-all ${
                     retweet
                       ? 'border-emerald-500/60 bg-emerald-500/10 text-white'
@@ -189,6 +209,16 @@ export const TargetWorkbench: React.FC = () => {
                 {/* Comment Vector */}
                 <div
                   onClick={() => setComment(!comment)}
+                  role="switch"
+                  aria-checked={comment}
+                  aria-label="Vektor Reply Payload"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setComment(!comment);
+                    }
+                  }}
                   className={`flex cursor-pointer flex-col items-center justify-center rounded-md border p-3 text-center transition-all ${
                     comment
                       ? 'border-blue-500/60 bg-blue-500/10 text-white'

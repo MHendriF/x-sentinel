@@ -11,7 +11,7 @@ const buttonVariants = cva(
         default:
           'bg-flame text-obsidian-950 shadow-md hover:bg-flame-light border border-amber-400 font-heading',
         execute:
-          'bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-md hover:from-blue-500 hover:to-blue-600 border-t border-blue-400 font-heading tracking-wide',
+          'bg-gradient-to-b from-flame to-amber-600 text-obsidian-950 shadow-md hover:from-flame-light hover:to-flame border-t border-amber-300 font-heading tracking-wide',
         destructive: 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20',
         outline:
           'border border-border/80 bg-transparent text-slate-300 hover:bg-obsidian-800 hover:text-white',

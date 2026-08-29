@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { RefreshCw, Download, Trash2 } from 'lucide-react';
@@ -158,7 +158,6 @@ export const AuditLedger: React.FC = () => {
           <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
             IMMUTABLE EVENT LOG
           </div>
-          <CardTitle>Interaction Audit Ledger</CardTitle>
           <CardDescription>
             Riwayat lengkap interaksi per node akun, status keberhasilan, dan waktu eksekusi (
             {totalItems} rekaman).

@@ -32,7 +32,7 @@ export const NodeShareChart: React.FC<NodeShareChartProps> = ({
             <PieIcon className="h-3.5 w-3.5" />
             WORKLOAD PROPORTION
           </div>
-          <CardTitle className="text-lg">Node Workload Share</CardTitle>
+          <CardTitle className="text-lg">Distribusi Beban Kerja Node</CardTitle>
           <CardDescription>
             Distribusi proporsi eksekusi interaksi antar node akun di dalam cluster.
           </CardDescription>
@@ -81,7 +81,7 @@ export const NodeShareChart: React.FC<NodeShareChartProps> = ({
             <Users className="h-3.5 w-3.5" />
             FLEET LEADERBOARD
           </div>
-          <CardTitle className="text-lg">Node Execution Output</CardTitle>
+          <CardTitle className="text-lg">Output Eksekusi Node</CardTitle>
           <CardDescription>
             Peringkat akumulasi aksi interaksi per node akun terdaftar.
           </CardDescription>

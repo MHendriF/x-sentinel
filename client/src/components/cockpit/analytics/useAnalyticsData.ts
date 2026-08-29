@@ -82,27 +82,15 @@ export function useAnalyticsData(
   }, [history]);
 
   const dailyTrendData = useMemo(() => {
-    const map: Record<
-      string,
-      { date: string; likes: number; retweets: number; comments: number; posts: number }
-    > = {};
+    const empty = { likes: 0, retweets: 0, comments: 0, posts: 0 };
+    const successItems = history.filter((h) => h.status === 'SUCCESS' && h.timestamp);
 
-    history.forEach((item) => {
-      const dateStr = item.timestamp ? item.timestamp.slice(0, 10) : 'Today';
-      if (!map[dateStr]) {
-        map[dateStr] = { date: dateStr.slice(5), likes: 0, retweets: 0, comments: 0, posts: 0 };
-      }
-      if (item.action === 'LIKE' && item.status === 'SUCCESS') map[dateStr].likes += 1;
-      if (item.action === 'RETWEET' && item.status === 'SUCCESS') map[dateStr].retweets += 1;
-      if (item.action === 'COMMENT' && item.status === 'SUCCESS') map[dateStr].comments += 1;
-      if (item.action === 'POST' && item.status === 'SUCCESS') map[dateStr].posts += 1;
-    });
-
-    const result = Object.values(map);
-    if (result.length === 0) {
+    if (successItems.length === 0) {
+      if (totalActions === 0) return [];
       return [
         {
-          date: 'Today',
+          date: 'Hari ini',
+          ...empty,
           likes: totalLikes,
           retweets: totalRetweets,
           comments: totalComments,
@@ -110,8 +98,51 @@ export function useAnalyticsData(
         },
       ];
     }
-    return result.slice(-14);
-  }, [history, totalLikes, totalRetweets, totalComments, totalPosts]);
+
+    const bump = (
+      map: Record<
+        string,
+        { date: string; likes: number; retweets: number; comments: number; posts: number }
+      >,
+      key: string,
+      action: string
+    ) => {
+      if (!map[key]) map[key] = { date: key, ...empty };
+      if (action === 'LIKE') map[key].likes += 1;
+      if (action === 'RETWEET') map[key].retweets += 1;
+      if (action === 'COMMENT') map[key].comments += 1;
+      if (action === 'POST') map[key].posts += 1;
+    };
+
+    const distinctDays = new Set(successItems.map((i) => i.timestamp.slice(0, 10)));
+
+    // Short bursts (activity within ~2 days) are bucketed per hour so the
+    // chart keeps a readable shape instead of collapsing into one sliver.
+    if (distinctDays.size <= 2) {
+      const hourly: Record<
+        string,
+        { date: string; likes: number; retweets: number; comments: number; posts: number }
+      > = {};
+      successItems.forEach((item) => {
+        const hour = new Date(item.timestamp).getHours();
+        const key = `${item.timestamp.slice(5, 10)} ${String(hour).padStart(2, '0')}:00`;
+        bump(hourly, key, item.action);
+      });
+      return Object.values(hourly).sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    const daily: Record<
+      string,
+      { date: string; likes: number; retweets: number; comments: number; posts: number }
+    > = {};
+    successItems.forEach((item) => {
+      bump(daily, item.timestamp.slice(0, 10), item.action);
+    });
+    return Object.values(daily)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-14)
+      .map((d) => ({ ...d, date: d.date.slice(5) }));
+  }, [history, totalLikes, totalRetweets, totalComments, totalPosts, totalActions]);
 
   const fullNodeLeaderboard = useMemo(() => {
     const counts: Record<
