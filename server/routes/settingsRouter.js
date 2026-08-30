@@ -6,7 +6,12 @@ const proxyHelper = require('../automation/proxyHelper');
 const spintax = require('../automation/spintax');
 const notifier = require('../automation/notifier');
 const aiService = require('../automation/aiService');
-const { redactSettings, resolveSecret, restoreMaskedSettings } = require('../security');
+const {
+  redactSettings,
+  resolveSecret,
+  restoreMaskedSettings,
+  maskProxyString,
+} = require('../security');
 const { validateBody, httpError } = require('../utils/http');
 
 const router = express.Router();
@@ -55,7 +60,14 @@ const aiGenerationTestSchema = z.object({
 });
 
 const proxyTestSchema = z.object({
-  proxy: z.string().min(1, 'Format proxy tidak boleh kosong.').max(500),
+  proxy: z
+    .string()
+    .min(1, 'Format proxy tidak boleh kosong.')
+    .max(500)
+    .refine((val) => proxyHelper.isValidProxyFormat(val.trim()), {
+      message:
+        'Format proxy tidak valid. Gunakan: user:pass@ip:port, ip:port:user:pass, atau ip:port (HTTP/SOCKS5).',
+    }),
 });
 
 const spintaxPreviewSchema = z.object({
@@ -143,7 +155,7 @@ router.post(
 router.post('/proxy/test', validateBody(proxyTestSchema), async (req, res) => {
   const { proxy } = req.body;
 
-  logger.info(`🔍 Menguji koneksi & latensi proxy: ${proxyHelper.maskProxy(proxy)}`);
+  logger.info(`🔍 Menguji koneksi & latensi proxy: ${maskProxyString(proxy)}`);
   const result = await proxyHelper.testProxy(proxy);
 
   if (result.success) {

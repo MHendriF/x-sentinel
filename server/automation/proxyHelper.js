@@ -125,6 +125,26 @@ class ProxyHelper {
   }
 
   /**
+   * Structural validation only (no network I/O). Accepts the same shapes as
+   * parseProxy but REQUIRES an explicit port: user:pass@host:port,
+   * host:port:user:pass, user:pass:host:port, host:port — optionally with an
+   * http/https/socks4/socks5 scheme prefix. Masked display values (••••@…)
+   * are handled by the caller (security layer), not here.
+   */
+  isValidProxyFormat(proxyString) {
+    const parsed = this.parseProxy(proxyString);
+    if (!parsed || !parsed.server) return false;
+
+    const match = String(parsed.server).match(/^[a-z][a-z0-9+.-]*:\/\/([^:]+):(\d+)$/i);
+    if (!match) return false;
+
+    const [, host, portStr] = match;
+    if (!host || !host.trim() || /\s/.test(host)) return false;
+    const port = Number(portStr);
+    return Number.isInteger(port) && port >= 1 && port <= 65535;
+  }
+
+  /**
    * Format for Playwright launch option
    */
   getPlaywrightLaunchProxy(proxyString) {

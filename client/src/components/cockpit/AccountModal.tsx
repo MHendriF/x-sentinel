@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { apiClient, ProxyTestResult } from '@/services/apiClient';
+import { isValidProxyFormat, PROXY_FORMAT_HINT } from '@/lib/proxy';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,11 +43,23 @@ export const AccountModal: React.FC = () => {
   // Proxy test in modal
   const [isTestingProxy, setIsTestingProxy] = useState(false);
   const [proxyResult, setProxyResult] = useState<ProxyTestResult | null>(null);
+  const [proxyError, setProxyError] = useState<string | null>(null);
 
   // Guide drawer
   const [showGuide, setShowGuide] = useState(false);
   const [rawPasteText, setRawPasteText] = useState('');
   const [showRawPaste, setShowRawPaste] = useState(false);
+
+  // A typed value that differs from the masked prefill will REPLACE the stored
+  // secret on save — surface it so the masked display can't hide the change.
+  const authTokenChanged =
+    !!editingAccount && authToken.trim().length > 0 && authToken !== editingAccount.auth_token;
+  const ct0Changed = !!editingAccount && ct0.trim().length > 0 && ct0 !== editingAccount.ct0;
+  const proxyChanged =
+    !!editingAccount &&
+    proxy.trim().length > 0 &&
+    !proxy.includes('••••') &&
+    proxy !== editingAccount.proxy;
 
   useEffect(() => {
     if (editingAccount) {
@@ -61,6 +74,7 @@ export const AccountModal: React.FC = () => {
       setProxy('');
     }
     setProxyResult(null);
+    setProxyError(null);
     setShowGuide(false);
     setShowRawPaste(false);
     setRawPasteText('');
@@ -137,10 +151,22 @@ export const AccountModal: React.FC = () => {
       toast.error('Masukkan string proxy terlebih dahulu.');
       return;
     }
+    // Masked values are resolved server-side; raw values must be well-formed.
+    if (!proxy.includes('••••') && !isValidProxyFormat(proxy)) {
+      setProxyError(PROXY_FORMAT_HINT);
+      toast.error(`Format proxy tunnel tidak valid. ${PROXY_FORMAT_HINT}`);
+      return;
+    }
+    setProxyError(null);
 
     setIsTestingProxy(true);
     try {
-      const res = await apiClient.testProxy(proxy.trim());
+      // Masked field = stored proxy. Test the real credentials server-side —
+      // the masked string itself can never succeed (credentials are hidden).
+      const res =
+        editingAccount && proxy.includes('••••')
+          ? await apiClient.testAccountProxy(editingAccount.id)
+          : await apiClient.testProxy(proxy.trim());
       setProxyResult(res);
       if (res.success) {
         toast.success(`Proxy Valid: ${res.ip} (${res.country}) · ${res.latency}ms`);
@@ -159,6 +185,12 @@ export const AccountModal: React.FC = () => {
       toast.error('auth_token cookie wajib diisi.');
       return;
     }
+    if (proxy.trim() && !proxy.includes('••••') && !isValidProxyFormat(proxy)) {
+      setProxyError(PROXY_FORMAT_HINT);
+      toast.error(`Format proxy tunnel tidak valid. ${PROXY_FORMAT_HINT}`);
+      return;
+    }
+    setProxyError(null);
 
     setIsSaving(true);
     try {
@@ -372,6 +404,17 @@ export const AccountModal: React.FC = () => {
                 {showAuthToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            {editingAccount && (
+              <p className="font-mono text-[10px] text-slate-500">
+                Tersimpan (disamarkan): {editingAccount.auth_token} — biarkan apa adanya untuk
+                mempertahankan, atau tempel cookie baru untuk mengganti.
+              </p>
+            )}
+            {authTokenChanged && (
+              <p className="font-mono text-[10px] font-bold text-amber-400">
+                ● Nilai baru terdeteksi — cookie auth_token akan DIGANTI saat disimpan.
+              </p>
+            )}
           </div>
 
           {/* ct0 (CSRF Token) */}
@@ -399,6 +442,17 @@ export const AccountModal: React.FC = () => {
                 {showCt0 ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            {editingAccount && editingAccount.ct0 && (
+              <p className="font-mono text-[10px] text-slate-500">
+                Tersimpan (disamarkan): {editingAccount.ct0} — biarkan apa adanya untuk
+                mempertahankan, atau tempel ct0 baru untuk mengganti.
+              </p>
+            )}
+            {ct0Changed && (
+              <p className="font-mono text-[10px] font-bold text-amber-400">
+                ● Nilai baru terdeteksi — cookie ct0 akan DIGANTI saat disimpan.
+              </p>
+            )}
           </div>
 
           {/* Proxy with Test Button */}
@@ -431,6 +485,19 @@ export const AccountModal: React.FC = () => {
                 {isTestingProxy ? 'Ping...' : 'Test'}
               </Button>
             </div>
+            {editingAccount && editingAccount.proxy && (
+              <p className="font-mono text-[10px] text-slate-500">
+                Tersimpan (disamarkan): {editingAccount.proxy} — biarkan apa adanya untuk
+                mempertahankan, atau masukkan proxy baru untuk mengganti. Test memakai kredensial
+                tersimpan.
+              </p>
+            )}
+            {proxyChanged && (
+              <p className="font-mono text-[10px] font-bold text-amber-400">
+                ● Nilai baru terdeteksi — proxy tunnel akan DIGANTI saat disimpan.
+              </p>
+            )}
+            {proxyError && <p className="font-mono text-[10px] text-red-400">✕ {proxyError}</p>}
 
             {/* Proxy Test Result Badge */}
             {proxyResult && (

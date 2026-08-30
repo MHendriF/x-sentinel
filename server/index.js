@@ -16,6 +16,13 @@ app.use(originGuard);
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
+// API responses must never be cached — the dashboard always reads fresh state,
+// otherwise a stale cached GET (accounts/export) can mask a just-saved edit.
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Serve static frontend dashboard (React 19 build or public fallback)
 const clientDist = path.join(config.ROOT_DIR, 'client', 'dist');
 const staticDir = fs.existsSync(clientDist) ? clientDist : path.join(config.ROOT_DIR, 'public');

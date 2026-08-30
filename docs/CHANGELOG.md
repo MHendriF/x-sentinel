@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.4] - 2026-08-30
+
+### 🐛 Fixed
+
+- **`POST /api/proxy/test` returned HTTP 500 on every call**: the route logged through `proxyHelper.maskProxy()`, a method that never existed. It now uses `maskProxyString()` from `server/security.js` — the proxy tester works again (this was the "Test" button failure in the node modal).
+- **Node modal proxy test with a masked value**: the prefilled proxy field shows `••••@host:port`, and testing that string can never succeed because credentials are hidden. While editing an existing node, the Test button now calls `POST /api/accounts/:id/test-proxy` so the ping runs against the **stored** credentials.
+- **"auth_token/ct0 tidak tersimpan" perception**: newly typed cookies **were** persisted correctly (regression-tested), but the edit modal showed only masked values with no explanation. Each secret field (auth_token, ct0, proxy) now shows a caption with the stored masked value and explicit instructions — leave as-is to keep, paste a new value to replace. When a freshly typed value differs from the stored mask, an amber "akan DIGANTI saat disimpan" indicator appears so the change is visible before saving.
+- **API responses were cacheable**: `GET /api/*` (including `/api/accounts/export`) sent no `Cache-Control` header, so a browser heuristically serving a cached GET could mask a just-saved edit. All API responses now send `Cache-Control: no-store`.
+- Fixed the ct0 reveal (eye) toggle in the node modal flipping the auth_token visibility state instead of its own.
+- Added smoke regression `4b`: a PUT with newly typed raw `auth_token`/`ct0` must replace the stored values in `accounts.json`.
+
+### 🌟 Added
+
+- **Proxy tunnel format validation**: proxy fields are now structurally validated (explicit `host:port` required) on `POST /api/accounts`, `PUT /api/accounts/:id`, and `POST /api/proxy/test` — garbage like `dsdsd2323` is rejected with a 400 explaining the accepted formats (`user:pass@ip:port`, `ip:port:user:pass`, `ip:port`, optional `http(s)/socks4/socks5://` scheme). Masked round-trips (`••••@host:port`) stay accepted. The node modal mirrors the same rules client-side (`client/src/lib/proxy.ts`) with an inline error before any network call.
+- Added smoke regression `5b` covering the proxy validation matrix.
+
+---
+
 ## [1.3.3] - 2026-08-30
 
 ### 🌟 Added (UI/UX)

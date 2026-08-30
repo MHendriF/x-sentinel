@@ -108,6 +108,29 @@ async function main() {
   assert.strictEqual(exported.accounts[0].label, 'Smoke Node (edited)');
   console.log('✅ 4. Masked value round-trip preserves stored secrets');
 
+  // 4b. NEW raw secrets must replace stored ones on PUT (regression: edit-node save)
+  const rawPut = await fetch(`${BASE}/api/accounts/${accountId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...sameOrigin.headers },
+    body: JSON.stringify({
+      auth_token: 'b1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b02',
+      ct0: 'newct0value123456',
+    }),
+  });
+  assert.strictEqual(rawPut.status, 200, 'Raw secret PUT should be accepted');
+  const reExported = await (await fetch(`${BASE}/api/accounts/export`, sameOrigin)).json();
+  assert.strictEqual(
+    reExported.accounts[0].auth_token,
+    'b1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b02',
+    'A newly typed auth_token must replace the stored one'
+  );
+  assert.strictEqual(
+    reExported.accounts[0].ct0,
+    'newct0value123456',
+    'A newly typed ct0 must replace the stored one'
+  );
+  console.log('✅ 4b. Newly typed auth_token/ct0 are persisted on edit');
+
   // 5. Zod validation rejects malformed bodies with a helpful 400
   const bad = await fetch(`${BASE}/api/accounts`, {
     ...post({ auth_token: 'x' }, sameOrigin.headers),
@@ -115,6 +138,32 @@ async function main() {
   assert.strictEqual(bad.status, 400);
   assert.strictEqual((await bad.json()).error, 'VALIDATION_ERROR');
   console.log('✅ 5. Invalid bodies get 400 VALIDATION_ERROR');
+
+  // 5b. Proxy tunnel format validation: garbage proxies are rejected with a
+  // helpful message; masked round-trips and valid shapes still pass.
+  const badProxy = await fetch(`${BASE}/api/accounts`, {
+    ...post(
+      { auth_token: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b03', proxy: 'dsdsd2323' },
+      sameOrigin.headers
+    ),
+  });
+  assert.strictEqual(badProxy.status, 400, 'Proxy without host:port must be rejected');
+  const badProxyJson = await badProxy.json();
+  assert.ok(
+    /Format proxy tunnel tidak valid/i.test(badProxyJson.message),
+    'Rejection message must explain the expected proxy format'
+  );
+  const badProxyTest = await fetch(`${BASE}/api/proxy/test`, {
+    ...post({ proxy: 'not a proxy' }, sameOrigin.headers),
+  });
+  assert.strictEqual(badProxyTest.status, 400, '/api/proxy/test must reject malformed proxies');
+  const maskedProxyPut = await fetch(`${BASE}/api/accounts/${accountId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...sameOrigin.headers },
+    body: JSON.stringify({ proxy: '••••@31.56.70.92:1338' }),
+  });
+  assert.strictEqual(maskedProxyPut.status, 200, 'Masked proxy round-trip must stay accepted');
+  console.log('✅ 5b. Proxy tunnel format is validated (garbage rejected, masked kept)');
 
   // 6. Bulk import (previously a 500 — db.bulkImportAccounts was missing)
   const bulk = await fetch(`${BASE}/api/accounts/bulk-import`, {

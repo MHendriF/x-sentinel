@@ -4,16 +4,34 @@ const db = require('../db');
 const logger = require('../logger');
 const twitterBot = require('../automation/twitterBot');
 const proxyHelper = require('../automation/proxyHelper');
-const { redactAccount, resolveSecret, resolveProxyString } = require('../security');
+const { redactAccount, resolveSecret, resolveProxyString, isMaskedValue } = require('../security');
 const { validateBody, httpError } = require('../utils/http');
 
 const router = express.Router();
+
+// Proxy tunnel must be structurally valid (explicit host:port). Empty clears
+// the field; a masked display value (`••••@host:port`) is resolved later by
+// resolveProxyString, so it passes validation as-is.
+const proxySchema = z
+  .string()
+  .max(500)
+  .refine(
+    (val) => {
+      const trimmed = val.trim();
+      if (!trimmed || isMaskedValue(trimmed)) return true;
+      return proxyHelper.isValidProxyFormat(trimmed);
+    },
+    {
+      message:
+        'Format proxy tunnel tidak valid. Gunakan: user:pass@ip:port, ip:port:user:pass, atau ip:port (HTTP/SOCKS5).',
+    }
+  );
 
 const accountCreateSchema = z.object({
   label: z.string().max(100).optional(),
   auth_token: z.string().min(4, 'auth_token terlalu pendek'),
   ct0: z.string().max(500).optional(),
-  proxy: z.string().max(500).optional(),
+  proxy: proxySchema.optional(),
   comments: z.array(z.string()).max(500).optional(),
 });
 
