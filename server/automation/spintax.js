@@ -6,11 +6,12 @@
 function parseSpintax(text) {
   if (!text || typeof text !== 'string') return '';
 
-  const regex = /\{([^{}]+)\}/g;
-
+  const testRegex = /\{([^{}]+)\}/;
   let current = text;
-  while (regex.test(current)) {
-    current = current.replace(regex, (match, contents) => {
+  let maxIterations = 50;
+
+  while (testRegex.test(current) && maxIterations-- > 0) {
+    current = current.replace(/\{([^{}]+)\}/g, (_match, contents) => {
       const choices = contents.split('|');
       const randomIndex = Math.floor(Math.random() * choices.length);
       return choices[randomIndex];

@@ -1,10 +1,19 @@
 const express = require('express');
+const path = require('path');
 const { z } = require('zod');
+const config = require('../config');
 const db = require('../db');
 const logger = require('../logger');
 const { validateBody, httpError } = require('../utils/http');
 
 const router = express.Router();
+
+const safeMediaPathSchema = z.string().refine((p) => {
+  if (!p || typeof p !== 'string') return false;
+  const resolvedPath = path.resolve(p);
+  const mediaDir = path.resolve(config.DATA_DIR, 'media');
+  return resolvedPath.startsWith(mediaDir);
+}, 'Path file media harus berada di dalam direktori data/media yang diizinkan.');
 
 const scheduleSchema = z.object({
   type: z.enum(['POST_QUEUE', 'RECURRING_HUNTER']).optional(),
@@ -15,7 +24,7 @@ const scheduleSchema = z.object({
     .optional(),
   accountIds: z.union([z.string(), z.array(z.string())]).optional(),
   posts: z.array(z.string()).optional(),
-  mediaPaths: z.array(z.string()).optional(),
+  mediaPaths: z.array(safeMediaPathSchema).max(4).optional(),
   delaySeconds: z.number().min(0).max(3600).optional(),
   keywords: z.array(z.string()).optional(),
   vectors: z.array(z.string()).optional(),

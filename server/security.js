@@ -33,6 +33,35 @@ function originGuard(req, res, next) {
     });
   }
 
+  const secFetchSite = req.headers['sec-fetch-site'];
+  if (secFetchSite === 'cross-site') {
+    return res.status(403).json({
+      success: false,
+      error: 'FORBIDDEN_CROSS_SITE',
+      message: 'Permintaan lintas situs (cross-site) diblokir oleh sistem keamanan.',
+    });
+  }
+
+  const referer = req.headers.referer;
+  if (referer) {
+    try {
+      const refererOrigin = new URL(referer).origin;
+      if (!allowedOrigins.has(refererOrigin)) {
+        return res.status(403).json({
+          success: false,
+          error: 'FORBIDDEN_REFERER',
+          message: 'Permintaan dari referer luar tidak diizinkan pada server lokal ini.',
+        });
+      }
+    } catch {
+      return res.status(403).json({
+        success: false,
+        error: 'INVALID_REFERER',
+        message: 'Format Referer header tidak valid.',
+      });
+    }
+  }
+
   const host = req.headers.host;
   if (host && !ALLOWED_HOST_RE.test(host)) {
     return res.status(403).json({

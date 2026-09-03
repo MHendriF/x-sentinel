@@ -1,10 +1,21 @@
 const express = require('express');
+const path = require('path');
 const { z } = require('zod');
+const config = require('../config');
 const logger = require('../logger');
 const twitterBot = require('../automation/twitterBot');
 const { validateBody, httpError } = require('../utils/http');
 
 const router = express.Router();
+
+const TWEET_URL_RE = /^https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/\d+/i;
+
+const safeMediaPathSchema = z.string().refine((p) => {
+  if (!p || typeof p !== 'string') return false;
+  const resolvedPath = path.resolve(p);
+  const mediaDir = path.resolve(config.DATA_DIR, 'media');
+  return resolvedPath.startsWith(mediaDir);
+}, 'Path file media harus berada di dalam direktori data/media yang diizinkan.');
 
 const accountIdsSchema = z.union([z.string(), z.array(z.string())]).optional();
 
@@ -14,12 +25,21 @@ const postTaskSchema = z.object({
     message: 'Konten postingan tidak boleh kosong.',
   }),
   delaySeconds: z.number().min(0).max(3600).optional(),
-  mediaPaths: z.array(z.string()).max(4).optional(),
+  mediaPaths: z.array(safeMediaPathSchema).max(4).optional(),
 });
 
 const batchTaskSchema = z.object({
   accountIds: accountIdsSchema,
-  urls: z.array(z.string()).min(1, 'Daftar URL tweet target tidak boleh kosong.'),
+  urls: z
+    .array(
+      z
+        .string()
+        .refine(
+          (url) => TWEET_URL_RE.test(url.trim()),
+          'Setiap URL harus merupakan tautan tweet status resmi X/Twitter (misal: https://x.com/user/status/123456).'
+        )
+    )
+    .min(1, 'Daftar URL tweet target tidak boleh kosong.'),
   like: z.boolean().optional(),
   retweet: z.boolean().optional(),
   comment: z.boolean().optional(),

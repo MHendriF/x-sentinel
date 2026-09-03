@@ -300,7 +300,18 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
    * Test AI Connection & Credentials
    */
   async testConnection(settingsOverride = {}) {
-    const settings = { ...db.getSettings(), ...settingsOverride };
+    const stored = db.getSettings() || {};
+    const settings = { ...stored, ...settingsOverride };
+
+    // Security hardening: If custom aiBaseUrl differs from stored and no explicit apiKey is given, do not forward stored key
+    if (
+      settingsOverride.aiBaseUrl &&
+      stored.aiBaseUrl !== settingsOverride.aiBaseUrl &&
+      !settingsOverride.aiApiKey
+    ) {
+      settings.aiApiKey = '';
+    }
+
     const provider = settings.aiProvider || 'none';
 
     if (provider === 'none') {

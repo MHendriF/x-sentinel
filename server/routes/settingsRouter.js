@@ -11,10 +11,41 @@ const {
   resolveSecret,
   restoreMaskedSettings,
   maskProxyString,
+  isMaskedValue,
 } = require('../security');
 const { validateBody, httpError } = require('../utils/http');
 
 const router = express.Router();
+
+const discordWebhookSchema = z
+  .string()
+  .max(500)
+  .refine((val) => {
+    const trimmed = val.trim();
+    if (!trimmed || isMaskedValue(trimmed)) return true;
+    try {
+      const u = new URL(trimmed);
+      if (u.protocol !== 'https:') return false;
+      const host = u.hostname.toLowerCase();
+      const isDiscordHost =
+        host === 'discord.com' ||
+        host === 'discordapp.com' ||
+        host.endsWith('.discord.com') ||
+        host.endsWith('.discordapp.com');
+      return isDiscordHost && u.pathname.startsWith('/api/webhooks/');
+    } catch {
+      return false;
+    }
+  }, 'URL Discord Webhook tidak valid. Harus berupa URL HTTPS resmi (misal: https://discord.com/api/webhooks/...).');
+
+const telegramBotTokenSchema = z
+  .string()
+  .max(200)
+  .refine((val) => {
+    const trimmed = val.trim();
+    if (!trimmed || isMaskedValue(trimmed)) return true;
+    return /^[0-9]+:[a-zA-Z0-9_-]+$/.test(trimmed);
+  }, 'Format Telegram Bot Token tidak valid. Gunakan format standar: 123456:ABC-DEF...');
 
 const settingsSchema = z.object({
   minDelaySeconds: z.number().int().min(0).max(3600).optional(),
@@ -30,17 +61,17 @@ const settingsSchema = z.object({
   aiBaseUrl: z.string().max(500).optional(),
   aiPrompt: z.string().max(8000).optional(),
   telegramEnabled: z.boolean().optional(),
-  telegramBotToken: z.string().max(200).optional(),
+  telegramBotToken: telegramBotTokenSchema.optional(),
   telegramChatId: z.string().max(100).optional(),
   discordEnabled: z.boolean().optional(),
-  discordWebhookUrl: z.string().max(500).optional(),
+  discordWebhookUrl: discordWebhookSchema.optional(),
 });
 
 const webhookTestSchema = z.object({
   type: z.enum(['telegram', 'discord']).optional(),
-  telegramBotToken: z.string().max(200).optional(),
+  telegramBotToken: telegramBotTokenSchema.optional(),
   telegramChatId: z.string().max(100).optional(),
-  discordWebhookUrl: z.string().max(500).optional(),
+  discordWebhookUrl: discordWebhookSchema.optional(),
 });
 
 const aiConnectionTestSchema = z.object({
@@ -89,6 +120,10 @@ function buildAiOverrides(body) {
   const overrides = { ...body };
   if (overrides.aiApiKey && overrides.aiApiKey.includes('••')) {
     delete overrides.aiApiKey;
+  }
+  const stored = db.getSettings() || {};
+  if (overrides.aiBaseUrl && stored.aiBaseUrl !== overrides.aiBaseUrl && !overrides.aiApiKey) {
+    overrides.aiApiKey = '';
   }
   return overrides;
 }

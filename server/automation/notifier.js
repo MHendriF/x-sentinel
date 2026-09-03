@@ -14,8 +14,13 @@ class NotifierService {
     if (!botToken || !chatId)
       return { success: false, message: 'Bot Token & Chat ID wajib diisi.' };
 
+    const cleanToken = String(botToken).trim();
+    if (!/^[0-9]+:[a-zA-Z0-9_-]+$/.test(cleanToken)) {
+      return { success: false, message: 'Format Bot Token tidak valid.' };
+    }
+
     try {
-      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      const url = `https://api.telegram.org/bot${encodeURIComponent(cleanToken)}/sendMessage`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,8 +48,27 @@ class NotifierService {
   async sendDiscord(webhookUrl, { title, description, color = 0xf59e0b, fields = [] }) {
     if (!webhookUrl) return { success: false, message: 'Discord Webhook URL wajib diisi.' };
 
+    const trimmedUrl = String(webhookUrl).trim();
     try {
-      const response = await fetch(webhookUrl, {
+      const u = new URL(trimmedUrl);
+      if (u.protocol !== 'https:') {
+        return { success: false, message: 'Discord Webhook harus menggunakan protokol HTTPS.' };
+      }
+      const host = u.hostname.toLowerCase();
+      const isDiscord =
+        host === 'discord.com' ||
+        host === 'discordapp.com' ||
+        host.endsWith('.discord.com') ||
+        host.endsWith('.discordapp.com');
+      if (!isDiscord || !u.pathname.startsWith('/api/webhooks/')) {
+        return { success: false, message: 'Domain atau endpoint Discord Webhook tidak valid.' };
+      }
+    } catch {
+      return { success: false, message: 'Format URL Discord Webhook tidak valid.' };
+    }
+
+    try {
+      const response = await fetch(trimmedUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,6 +97,56 @@ class NotifierService {
     } catch (err) {
       return { success: false, message: err.message };
     }
+  }
+
+  /**
+   * Test webhook connectivity
+   */
+  async testWebhook({ type, telegramBotToken, telegramChatId, discordWebhookUrl } = {}) {
+    if (type === 'telegram') {
+      return this.sendTelegram(
+        telegramBotToken,
+        telegramChatId,
+        '🛡️ <b>X-SENTINEL</b>: Uji koneksi notifikasi Telegram berhasil! Sistem berjalan normal.'
+      );
+    }
+
+    if (type === 'discord') {
+      return this.sendDiscord(discordWebhookUrl, {
+        title: '🛡️ X-SENTINEL Webhook Test',
+        description: 'Uji koneksi notifikasi Discord berhasil! Sistem pemantauan aktif.',
+        color: 0x10b981,
+        fields: [
+          { name: 'Status', value: 'ONLINE', inline: true },
+          { name: 'Platform', value: 'Discord Webhook', inline: true },
+        ],
+      });
+    }
+
+    const results = {};
+    if (telegramBotToken && telegramChatId) {
+      results.telegram = await this.sendTelegram(
+        telegramBotToken,
+        telegramChatId,
+        '🛡️ <b>X-SENTINEL</b>: Uji koneksi notifikasi Telegram berhasil!'
+      );
+    }
+    if (discordWebhookUrl) {
+      results.discord = await this.sendDiscord(discordWebhookUrl, {
+        title: '🛡️ X-SENTINEL Webhook Test',
+        description: 'Uji koneksi notifikasi Discord berhasil!',
+      });
+    }
+
+    if (Object.keys(results).length === 0) {
+      return {
+        success: false,
+        message: 'Tentukan tipe webhook atau lengkapi kredensial webhook terlebih dahulu.',
+      };
+    }
+
+    const allOk = Object.values(results).every((r) => r.success);
+    return { success: allOk, results };
   }
 
   /**

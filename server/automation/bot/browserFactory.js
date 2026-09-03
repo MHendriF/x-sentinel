@@ -95,7 +95,6 @@ async function launchAccountBrowser(account, options = {}) {
       '--window-size=1280,850',
       '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
       '--enforce-webrtc-ip-permission-check',
-      '--ignore-certificate-errors',
     ],
   };
 

@@ -8,6 +8,15 @@ const apiRoutes = require('./routes/api');
 
 const app = express();
 
+// HTTP Security Headers Hardening
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // Local-only guard: reject cross-origin browser requests (drive-by secret
 // exfiltration) and DNS-rebinding Host headers before any handler runs.
 app.use(originGuard);

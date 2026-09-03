@@ -527,6 +527,45 @@ class TwitterBot {
     }
   }
 
+  /**
+   * Wrapper for scheduler post task execution
+   */
+  async startPostTask({ accountIds, posts, mediaPaths, delaySeconds } = {}) {
+    try {
+      await this.runMultiAccountPostTask(accountIds, posts, {
+        mediaPaths: mediaPaths || [],
+        delaySeconds: delaySeconds || 15,
+      });
+      return { success: true, message: 'Jadwal postingan berhasil dipublikasikan.' };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Wrapper for scheduler hunter task execution
+   */
+  async startHunterTask({
+    keywords = [],
+    vectors = ['LIKE', 'RETWEET', 'COMMENT'],
+    maxTweets = 3,
+    delaySeconds = 15,
+  } = {}) {
+    try {
+      const keyword = Array.isArray(keywords) && keywords.length > 0 ? keywords[0] : 'crypto';
+      await this.runMultiAccountHunter('all', keyword, maxTweets, {
+        like: vectors.includes('LIKE'),
+        retweet: vectors.includes('RETWEET'),
+        comment: vectors.includes('COMMENT'),
+        minDelay: delaySeconds,
+        maxDelay: delaySeconds * 2,
+      });
+      return { success: true, message: `Jadwal Hunter untuk "${keyword}" selesai diproses.` };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  }
+
   stopTask() {
     if (this.isRunning && this.abortController) {
       logger.warn(`⚠️ Mengirim sinyal penghentian ke bot runner...`);
