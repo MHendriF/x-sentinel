@@ -13,6 +13,7 @@ class SchedulerService {
     this.interval = null;
     this.isProcessing = false;
     this.intervalMs = 15000; // Check every 15 seconds
+    this.lastPruneCheck = 0;
   }
 
   /**
@@ -41,14 +42,25 @@ class SchedulerService {
    * Core tick evaluation
    */
   async tick() {
+    const now = Date.now();
+
+    // Periodic daily media cleanup (every 24h)
+    if (now - this.lastPruneCheck > 24 * 60 * 60 * 1000) {
+      this.lastPruneCheck = now;
+      try {
+        const { pruneOldMedia } = require('../routes/mediaRouter');
+        if (typeof pruneOldMedia === 'function') {
+          pruneOldMedia(7);
+        }
+      } catch {}
+    }
+
     if (this.isProcessing || twitterBot.isRunning) {
       return; // Skip tick if bot is busy
     }
 
     const schedules = db.getSchedules();
     if (!schedules || schedules.length === 0) return;
-
-    const now = Date.now();
 
     // 1. Process Pending Post Queues
     const pendingPost = schedules.find(

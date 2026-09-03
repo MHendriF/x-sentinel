@@ -69,4 +69,52 @@ router.post('/upload', (req, res) => {
   });
 });
 
+/**
+ * Prune media files older than maxAgeDays (default 7 days)
+ */
+function pruneOldMedia(maxAgeDays = 7) {
+  const mediaDir = path.join(config.DATA_DIR, 'media');
+  if (!fs.existsSync(mediaDir)) {
+    return { deletedCount: 0, remainingFiles: 0 };
+  }
+
+  const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+  let deletedCount = 0;
+  let totalFiles = 0;
+
+  try {
+    const files = fs.readdirSync(mediaDir);
+    totalFiles = files.length;
+    for (const file of files) {
+      const fullPath = path.join(mediaDir, file);
+      try {
+        const stats = fs.statSync(fullPath);
+        if (stats.isFile() && stats.mtimeMs < cutoff) {
+          fs.unlinkSync(fullPath);
+          deletedCount++;
+        }
+      } catch {}
+    }
+  } catch (err) {
+    logger.error(`Error pruning media files: ${err.message}`);
+  }
+
+  return { deletedCount, remainingFiles: totalFiles - deletedCount };
+}
+
+// POST /api/media/prune - Prune old media files
+router.post('/prune', (req, res) => {
+  const days = Math.max(1, Math.min(365, parseInt(req.body?.maxAgeDays, 10) || 7));
+  const result = pruneOldMedia(days);
+  logger.info(
+    `🧹 Pembersihan media disk: ${result.deletedCount} file lama dihapus (> ${days} hari).`
+  );
+  res.json({
+    success: true,
+    ...result,
+    maxAgeDays: days,
+  });
+});
+
 module.exports = router;
+module.exports.pruneOldMedia = pruneOldMedia;

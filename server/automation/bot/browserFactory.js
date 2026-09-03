@@ -130,18 +130,27 @@ async function launchAccountBrowser(account, options = {}) {
 }
 
 /**
- * Safely teardown browser resources
+ * Safely teardown browser resources with timeout watchdog to prevent hanging zombie processes
  */
 async function closeBrowserResources(browser, context, page) {
+  const closeWithTimeout = (promise, ms = 4000) =>
+    Promise.race([promise.catch(() => {}), new Promise((resolve) => setTimeout(resolve, ms))]);
+
   try {
-    if (page) {
-      await page.close().catch(() => {});
+    if (page && !page.isClosed()) {
+      await closeWithTimeout(page.close());
     }
     if (context) {
-      await context.close().catch(() => {});
+      await closeWithTimeout(context.close());
     }
     if (browser) {
-      await browser.close().catch(() => {});
+      const proc = typeof browser.process === 'function' ? browser.process() : null;
+      await closeWithTimeout(browser.close());
+      if (proc && !proc.killed) {
+        try {
+          proc.kill('SIGKILL');
+        } catch {}
+      }
     }
   } catch (e) {
     // ignore teardown errors

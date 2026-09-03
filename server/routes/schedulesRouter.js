@@ -8,12 +8,16 @@ const { validateBody, httpError } = require('../utils/http');
 
 const router = express.Router();
 
+const ALLOWED_MEDIA_EXT_RE = /\.(png|jpe?g|gif|webp)$/i;
+
 const safeMediaPathSchema = z.string().refine((p) => {
   if (!p || typeof p !== 'string') return false;
   const resolvedPath = path.resolve(p);
   const mediaDir = path.resolve(config.DATA_DIR, 'media');
-  return resolvedPath.startsWith(mediaDir);
-}, 'Path file media harus berada di dalam direktori data/media yang diizinkan.');
+  const relative = path.relative(mediaDir, resolvedPath);
+  const isInside = Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
+  return isInside && ALLOWED_MEDIA_EXT_RE.test(resolvedPath);
+}, 'Path file media harus berada di dalam direktori data/media dan berekstensi gambar valid (PNG, JPG, GIF, WebP).');
 
 const scheduleSchema = z.object({
   type: z.enum(['POST_QUEUE', 'RECURRING_HUNTER']).optional(),

@@ -14,6 +14,10 @@ app.use((_req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; frame-ancestors 'none';"
+  );
   next();
 });
 
@@ -21,9 +25,13 @@ app.use((_req, res, next) => {
 // exfiltration) and DNS-rebinding Host headers before any handler runs.
 app.use(originGuard);
 
-// Large limit required for base64 media uploads (up to 4 images per request)
-app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+// 25MB limit scoped strictly to base64 media uploads
+app.use('/api/media/upload', express.json({ limit: '25mb' }));
+app.use('/api/media/upload', express.urlencoded({ extended: true, limit: '25mb' }));
+
+// Global strict body limit (1MB) for all other endpoints to prevent DoS/memory exhaustion
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // API responses must never be cached — the dashboard always reads fresh state,
 // otherwise a stale cached GET (accounts/export) can mask a just-saved edit.
