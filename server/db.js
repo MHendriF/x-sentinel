@@ -38,6 +38,13 @@ class LocalDB {
 
   loadAll() {
     // Default Settings
+    const defaultNineRouterModels = [
+      'openai/gpt-4o-mini',
+      'deepseek/deepseek-chat',
+      'anthropic/claude-3.5-sonnet',
+      'meta-llama/llama-3.3-70b-instruct',
+    ];
+
     this.cache.settings = this.readFile(this.files.settings, {
       minDelaySeconds: config.DEFAULTS.minDelaySeconds,
       maxDelaySeconds: config.DEFAULTS.maxDelaySeconds,
@@ -56,7 +63,12 @@ class LocalDB {
       telegramChatId: '',
       discordEnabled: false,
       discordWebhookUrl: '',
+      nineRouterModels: defaultNineRouterModels,
     });
+
+    if (!Array.isArray(this.cache.settings.nineRouterModels)) {
+      this.cache.settings.nineRouterModels = defaultNineRouterModels;
+    }
 
     // Default global templates
     const defaultTemplates = [
@@ -211,6 +223,17 @@ class LocalDB {
 
   // Settings
   getSettings() {
+    if (!this.cache.settings) {
+      this.cache.settings = {};
+    }
+    if (!Array.isArray(this.cache.settings.nineRouterModels)) {
+      this.cache.settings.nineRouterModels = [
+        'openai/gpt-4o-mini',
+        'deepseek/deepseek-chat',
+        'anthropic/claude-3.5-sonnet',
+        'meta-llama/llama-3.3-70b-instruct',
+      ];
+    }
     return this.cache.settings;
   }
   saveSettings(newSettings) {

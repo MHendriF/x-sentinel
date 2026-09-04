@@ -214,6 +214,31 @@ async function main() {
   assert.strictEqual(db.getSettings().aiPrompt, 'updated prompt', 'Non-secret fields still update');
   console.log('✅ 8. GET/POST /api/settings masks secrets and preserves stored keys');
 
+  // 8b. 9router multi-model registry persistence
+  await fetch(`${BASE}/api/settings`, {
+    ...post(
+      {
+        aiProvider: '9router',
+        aiModel: 'deepseek/deepseek-r1',
+        nineRouterModels: [
+          'openai/gpt-4o-mini',
+          'deepseek/deepseek-r1',
+          'custom-9router-model',
+          'openai/gpt-4o-mini',
+        ],
+      },
+      sameOrigin.headers
+    ),
+  });
+  const nineRouterSettings = (await (await fetch(`${BASE}/api/settings`, sameOrigin)).json()).settings;
+  assert.strictEqual(nineRouterSettings.aiModel, 'deepseek/deepseek-r1');
+  assert.deepStrictEqual(nineRouterSettings.nineRouterModels, [
+    'openai/gpt-4o-mini',
+    'deepseek/deepseek-r1',
+    'custom-9router-model',
+  ]);
+  console.log('✅ 8b. 9router multi-model registry is persisted and deduplicated');
+
   // 9. AI generate-post route is wired to the existing service method
   const aiRes = await fetch(`${BASE}/api/ai/generate-post`, {
     ...post({ keyword: 'smoke test topic', count: 1 }, sameOrigin.headers),

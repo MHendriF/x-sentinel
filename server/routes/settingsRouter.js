@@ -59,6 +59,7 @@ const settingsSchema = z.object({
   aiApiKey: z.string().max(500).optional(),
   aiModel: z.string().max(200).optional(),
   aiBaseUrl: z.string().max(500).optional(),
+  nineRouterModels: z.array(z.string().trim().min(1).max(200)).max(100).optional(),
   aiPrompt: z.string().max(8000).optional(),
   telegramEnabled: z.boolean().optional(),
   telegramBotToken: telegramBotTokenSchema.optional(),
@@ -137,7 +138,13 @@ router.get('/settings', (req, res) => {
 // POST /api/settings - Save settings (masked values are restored from storage)
 router.post('/settings', validateBody(settingsSchema), (req, res) => {
   const current = db.getSettings();
-  const updated = db.saveSettings(restoreMaskedSettings(req.body, current));
+  const payload = { ...req.body };
+  if (Array.isArray(payload.nineRouterModels)) {
+    payload.nineRouterModels = Array.from(
+      new Set(payload.nineRouterModels.map((m) => String(m).trim()).filter(Boolean))
+    );
+  }
+  const updated = db.saveSettings(restoreMaskedSettings(payload, current));
 
   logger.info(`⚙️ System settings updated.`);
   res.json({ success: true, settings: redactSettings(updated) });

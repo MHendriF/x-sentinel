@@ -51,6 +51,7 @@ export interface Settings {
   aiApiKey?: string;
   aiModel?: string;
   aiBaseUrl?: string;
+  nineRouterModels?: string[];
   aiPrompt?: string;
   telegramEnabled?: boolean;
   telegramBotToken?: string;

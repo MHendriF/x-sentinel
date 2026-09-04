@@ -26,6 +26,11 @@ import {
   HelpCircle,
   ChevronRight,
   Radio,
+  Layers,
+  Plus,
+  Trash2,
+  Check,
+  RotateCcw,
 } from 'lucide-react';
 
 interface AIProviderInfo {
@@ -177,6 +182,15 @@ export const AISettingsDeck: React.FC = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
 
+  // 9router Multi-Model Registry State
+  const [nineRouterModels, setNineRouterModels] = useState<string[]>([
+    'openai/gpt-4o-mini',
+    'deepseek/deepseek-chat',
+    'anthropic/claude-3.5-sonnet',
+    'meta-llama/llama-3.3-70b-instruct',
+  ]);
+  const [newModelInput, setNewModelInput] = useState('');
+
   // Live Sandbox state
   const [testTweetInput, setTestTweetInput] = useState(
     'Base chain TVL hits new all time high as agentic workflows and automated trading nodes dominate transaction volume on decentralized rails.'
@@ -200,6 +214,23 @@ export const AISettingsDeck: React.FC = () => {
         settings.aiPrompt ||
           'Write a sharp, authentic, and context-aware 1-sentence English reply as a crypto/tech native. Be insightful, peer-to-peer, and zero generic praise.'
       );
+
+      const defaultModels = [
+        'openai/gpt-4o-mini',
+        'deepseek/deepseek-chat',
+        'anthropic/claude-3.5-sonnet',
+        'meta-llama/llama-3.3-70b-instruct',
+      ];
+      const initialModels =
+        Array.isArray(settings.nineRouterModels) && settings.nineRouterModels.length > 0
+          ? settings.nineRouterModels
+          : defaultModels;
+
+      if (settings.aiModel && !initialModels.includes(settings.aiModel)) {
+        setNineRouterModels([settings.aiModel, ...initialModels]);
+      } else {
+        setNineRouterModels(initialModels);
+      }
     }
   }, [settings]);
 
@@ -209,7 +240,11 @@ export const AISettingsDeck: React.FC = () => {
     setAiProvider(providerId);
     const info = AI_PROVIDERS.find((p) => p.id === providerId);
     if (info && info.id !== 'none') {
-      if (!aiModel || aiModel === 'gpt-4o-mini') {
+      if (providerId === '9router') {
+        if (!aiModel || aiModel === 'gpt-4o-mini') {
+          setAiModel(nineRouterModels[0] || info.defaultModel);
+        }
+      } else if (!aiModel || aiModel === 'gpt-4o-mini') {
         setAiModel(info.defaultModel);
       }
       if (!aiBaseUrl || aiBaseUrl.includes('api.openai.com')) {
@@ -218,13 +253,79 @@ export const AISettingsDeck: React.FC = () => {
     }
   };
 
+  // 9router Multi-Model Handlers
+  const handleSelectActiveModel = (modelName: string) => {
+    setAiModel(modelName);
+    toast.info(`Active 9router model set to: ${modelName}`);
+  };
+
+  const handleAddCustomModel = () => {
+    const trimmed = newModelInput.trim();
+    if (!trimmed) {
+      toast.error('Please enter a model identifier (e.g. deepseek/deepseek-r1).');
+      return;
+    }
+    if (nineRouterModels.includes(trimmed)) {
+      setAiModel(trimmed);
+      toast.info(`"${trimmed}" is already saved. Set as active!`);
+      setNewModelInput('');
+      return;
+    }
+
+    const updated = [trimmed, ...nineRouterModels];
+    setNineRouterModels(updated);
+    setAiModel(trimmed);
+    setNewModelInput('');
+    toast.success(`Model "${trimmed}" added to registry and set as active!`);
+  };
+
+  const handleDeleteModel = (modelToDelete: string) => {
+    if (nineRouterModels.length <= 1) {
+      toast.error('You must keep at least one model in your 9router registry.');
+      return;
+    }
+    const updated = nineRouterModels.filter((m) => m !== modelToDelete);
+    setNineRouterModels(updated);
+    if (aiModel === modelToDelete) {
+      setAiModel(updated[0]);
+      toast.warning(`Deleted active model. Switched active to "${updated[0]}".`);
+    } else {
+      toast.success(`Removed "${modelToDelete}" from 9router registry.`);
+    }
+  };
+
+  const handleResetDefaultModels = () => {
+    const defaults = [
+      'openai/gpt-4o-mini',
+      'deepseek/deepseek-chat',
+      'anthropic/claude-3.5-sonnet',
+      'meta-llama/llama-3.3-70b-instruct',
+    ];
+    setNineRouterModels(defaults);
+    if (!defaults.includes(aiModel)) {
+      setAiModel(defaults[0]);
+    }
+    toast.info('9router models reset to recommended defaults.');
+  };
+
   const handleSave = async () => {
+    let finalNineRouterModels = [...nineRouterModels];
+    if (
+      aiProvider === '9router' &&
+      aiModel.trim() &&
+      !finalNineRouterModels.includes(aiModel.trim())
+    ) {
+      finalNineRouterModels = [aiModel.trim(), ...finalNineRouterModels];
+      setNineRouterModels(finalNineRouterModels);
+    }
+
     const payload: Partial<Settings> = {
       aiProvider,
       aiApiKey: aiApiKey.trim(),
       aiModel: aiModel.trim(),
       aiBaseUrl: aiBaseUrl.trim(),
       aiPrompt: aiPrompt.trim(),
+      nineRouterModels: finalNineRouterModels,
     };
 
     try {
@@ -483,60 +584,310 @@ export const AISettingsDeck: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Base URL & Model Grid */}
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <label className="font-mono text-xs font-bold text-slate-300">
-                        BASE URL ENDPOINT
-                      </label>
-                      <Input
-                        type="text"
-                        placeholder={
-                          selectedProviderInfo.defaultBaseUrl || 'https://api.openai.com/v1'
-                        }
-                        value={aiBaseUrl}
-                        onChange={(e) => setAiBaseUrl(e.target.value)}
-                        className="bg-obsidian-950 font-mono text-xs"
-                      />
-                    </div>
+                  {/* Provider Engine Endpoints & Model Configuration */}
+                  {aiProvider === '9router' ? (
+                    <div className="space-y-4">
+                      {/* Base URL Endpoint */}
+                      <div className="space-y-1.5">
+                        <label className="font-mono text-xs font-bold text-slate-300">
+                          BASE URL ENDPOINT (GATEWAY)
+                        </label>
+                        <Input
+                          type="text"
+                          placeholder={
+                            selectedProviderInfo.defaultBaseUrl || 'https://api.9router.com/v1'
+                          }
+                          value={aiBaseUrl}
+                          onChange={(e) => setAiBaseUrl(e.target.value)}
+                          className="bg-obsidian-950 font-mono text-xs"
+                        />
+                      </div>
 
-                    <div className="space-y-1.5">
-                      <label className="font-mono text-xs font-bold text-slate-300">
-                        MODEL IDENTIFIER
-                      </label>
-                      <Input
-                        type="text"
-                        placeholder={selectedProviderInfo.defaultModel || 'openai/gpt-4o-mini'}
-                        value={aiModel}
-                        onChange={(e) => setAiModel(e.target.value)}
-                        className="bg-obsidian-950 font-mono text-xs"
-                      />
-                    </div>
-                  </div>
+                      {/* 9router Multi-Model Registry Deck */}
+                      <div className="space-y-4 rounded-xl border border-purple-500/30 bg-obsidian-950/70 p-4 shadow-inner">
+                        {/* Header */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20 pb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300">
+                              <Layers className="h-4 w-4" />
+                            </div>
+                            <div>
+                              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-purple-200">
+                                9router Multi-Model Registry
+                              </h4>
+                              <p className="text-[11px] text-slate-400">
+                                Store multiple model identifiers and manually select which one is active.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleResetDefaultModels}
+                              className="h-7 cursor-pointer gap-1 border-slate-800 bg-obsidian-900 px-2.5 font-mono text-[10px] text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                              title="Reset registry to recommended default models"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              Reset Defaults
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* Recommended Models Chips */}
-                  {selectedProviderInfo.recommendedModels.length > 0 && (
-                    <div className="space-y-1.5 pt-1">
-                      <span className="font-mono text-[10px] font-bold text-slate-400">
-                        RECOMMENDED MODELS FOR {aiProvider.toUpperCase()}:
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {selectedProviderInfo.recommendedModels.map((modelName) => (
-                          <button
-                            key={modelName}
-                            type="button"
-                            onClick={() => setAiModel(modelName)}
-                            className={`cursor-pointer rounded border px-2 py-0.5 font-mono text-[10px] transition-colors ${
-                              aiModel === modelName
-                                ? 'border-purple-500 bg-purple-500/20 text-purple-200'
-                                : 'border-slate-800 bg-obsidian-950 text-slate-400 hover:border-slate-700'
-                            }`}
-                          >
-                            {modelName}
-                          </button>
-                        ))}
+                        {/* Active Model Spotlight */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 via-obsidian-900 to-obsidian-950 p-3 shadow-md">
+                          <div className="flex items-center gap-3">
+                            <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/20 opacity-75"></span>
+                              <Radio className="h-4 w-4" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                                  ACTIVE MODEL (DISPATCHED)
+                                </span>
+                                <Badge
+                                  variant="outline"
+                                  className="border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0 font-mono text-[9px] text-emerald-300"
+                                >
+                                  ONLINE
+                                </Badge>
+                              </div>
+                              <div className="font-mono text-xs font-bold text-slate-100">
+                                {aiModel || 'No model selected'}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right font-mono text-[10px] text-slate-400">
+                            {nineRouterModels.length} models stored in registry
+                          </div>
+                        </div>
+
+                        {/* Stored Models Grid */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="font-mono text-xs font-bold text-slate-300">
+                              SAVED MODELS ({nineRouterModels.length}) · CLICK TO SET ACTIVE
+                            </label>
+                            <span className="text-[10px] text-slate-500">Manual selector</span>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            {nineRouterModels.map((modelName) => {
+                              const isActive = aiModel === modelName;
+                              return (
+                                <div
+                                  key={modelName}
+                                  className={`group flex items-center justify-between gap-2 rounded-lg border p-2.5 transition-all ${
+                                    isActive
+                                      ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100 shadow-sm shadow-emerald-950/50'
+                                      : 'border-slate-800/80 bg-obsidian-900/60 text-slate-300 hover:border-purple-500/40 hover:bg-obsidian-900'
+                                  }`}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSelectActiveModel(modelName)}
+                                    className="flex flex-1 cursor-pointer items-center gap-2.5 text-left"
+                                  >
+                                    <div
+                                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                                        isActive
+                                          ? 'border-emerald-400 bg-emerald-500 text-obsidian-950'
+                                          : 'border-slate-700 bg-obsidian-950 text-transparent group-hover:border-purple-400'
+                                      }`}
+                                    >
+                                      <Check className="h-3 w-3 stroke-[3]" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="truncate font-mono text-xs font-medium">
+                                        {modelName}
+                                      </div>
+                                      <div className="font-mono text-[9px]">
+                                        {isActive ? (
+                                          <span className="font-bold text-emerald-400">● ACTIVE</span>
+                                        ) : (
+                                          <span className="text-slate-500 group-hover:text-slate-400">
+                                            Click to activate
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteModel(modelName);
+                                    }}
+                                    className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-slate-500 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                                    title={`Delete "${modelName}" from registry`}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Add Custom Model Input */}
+                        <div className="space-y-1.5 border-t border-purple-500/20 pt-3">
+                          <label className="font-mono text-xs font-bold text-slate-300">
+                            ADD NEW MODEL TO REGISTRY
+                          </label>
+                          <div className="flex gap-2">
+                            <Input
+                              type="text"
+                              placeholder="e.g. deepseek/deepseek-r1 or google/gemini-2.0-flash..."
+                              value={newModelInput}
+                              onChange={(e) => setNewModelInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddCustomModel();
+                                }
+                              }}
+                              className="bg-obsidian-950 font-mono text-xs"
+                            />
+                            <Button
+                              type="button"
+                              onClick={handleAddCustomModel}
+                              className="shrink-0 cursor-pointer gap-1.5 bg-purple-600 font-mono text-xs font-bold text-white hover:bg-purple-700"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              Add Model
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Quick Presets */}
+                        <div className="space-y-1.5 pt-1">
+                          <span className="font-mono text-[10px] font-bold tracking-wider text-slate-400">
+                            QUICK PRESETS · 1-CLICK ADD &amp; ACTIVATE:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[
+                              'openai/gpt-4o-mini',
+                              'openai/gpt-4o',
+                              'deepseek/deepseek-chat',
+                              'deepseek/deepseek-r1',
+                              'anthropic/claude-3.5-sonnet',
+                              'anthropic/claude-3.5-haiku',
+                              'meta-llama/llama-3.3-70b-instruct',
+                              'google/gemini-2.0-flash',
+                              'qwen/qwen-2.5-72b-instruct',
+                            ].map((preset) => {
+                              const isStored = nineRouterModels.includes(preset);
+                              const isActive = aiModel === preset;
+                              return (
+                                <button
+                                  key={preset}
+                                  type="button"
+                                  onClick={() => {
+                                    if (!isStored) {
+                                      setNineRouterModels((prev) => [...prev, preset]);
+                                    }
+                                    setAiModel(preset);
+                                    toast.success(`Active model switched to ${preset}`);
+                                  }}
+                                  className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 font-mono text-[10px] transition-colors ${
+                                    isActive
+                                      ? 'border-emerald-500 bg-emerald-500/20 font-bold text-emerald-200'
+                                      : isStored
+                                      ? 'border-purple-500/50 bg-purple-500/10 text-purple-200 hover:border-purple-400'
+                                      : 'border-slate-800 bg-obsidian-950 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                  }`}
+                                >
+                                  {isActive && <Check className="h-2.5 w-2.5 stroke-[3]" />}
+                                  {preset}
+                                  {!isStored && (
+                                    <span className="text-[9px] text-purple-400">+add</span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Direct Model Override */}
+                        <div className="space-y-1 border-t border-purple-500/10 pt-2.5">
+                          <div className="flex items-center justify-between">
+                            <label className="font-mono text-[11px] font-bold text-slate-400">
+                              DIRECT ACTIVE IDENTIFIER OVERRIDE
+                            </label>
+                            <span className="text-[10px] text-slate-500">Manual input field</span>
+                          </div>
+                          <Input
+                            type="text"
+                            placeholder="Model identifier string..."
+                            value={aiModel}
+                            onChange={(e) => setAiModel(e.target.value)}
+                            className="bg-obsidian-950 font-mono text-xs text-slate-300"
+                          />
+                        </div>
                       </div>
                     </div>
+                  ) : (
+                    <>
+                      {/* Base URL & Model Grid */}
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-xs font-bold text-slate-300">
+                            BASE URL ENDPOINT
+                          </label>
+                          <Input
+                            type="text"
+                            placeholder={
+                              selectedProviderInfo.defaultBaseUrl || 'https://api.openai.com/v1'
+                            }
+                            value={aiBaseUrl}
+                            onChange={(e) => setAiBaseUrl(e.target.value)}
+                            className="bg-obsidian-950 font-mono text-xs"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-xs font-bold text-slate-300">
+                            MODEL IDENTIFIER
+                          </label>
+                          <Input
+                            type="text"
+                            placeholder={selectedProviderInfo.defaultModel || 'openai/gpt-4o-mini'}
+                            value={aiModel}
+                            onChange={(e) => setAiModel(e.target.value)}
+                            className="bg-obsidian-950 font-mono text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Recommended Models Chips */}
+                      {selectedProviderInfo.recommendedModels.length > 0 && (
+                        <div className="space-y-1.5 pt-1">
+                          <span className="font-mono text-[10px] font-bold text-slate-400">
+                            RECOMMENDED MODELS FOR {aiProvider.toUpperCase()}:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedProviderInfo.recommendedModels.map((modelName) => (
+                              <button
+                                key={modelName}
+                                type="button"
+                                onClick={() => setAiModel(modelName)}
+                                className={`cursor-pointer rounded border px-2 py-0.5 font-mono text-[10px] transition-colors ${
+                                  aiModel === modelName
+                                    ? 'border-purple-500 bg-purple-500/20 text-purple-200'
+                                    : 'border-slate-800 bg-obsidian-950 text-slate-400 hover:border-slate-700'
+                                }`}
+                              >
+                                {modelName}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {/* Persona Prompt & Presets */}
