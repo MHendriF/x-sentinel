@@ -3,57 +3,57 @@ import { useStore } from '@/store/useStore';
 import { Heart, Repeat, MessageSquare, Sparkles, Menu, Loader2 } from 'lucide-react';
 
 const TASK_LABELS: Record<string, string> = {
-  MULTI_POST: 'PUBLIKASI POST ARMADA',
+  MULTI_POST: 'FLEET POST DISPATCH',
   MULTI_BATCH: 'BATCH ENGAGEMENT',
   MULTI_HUNTER: 'FEED HUNTER',
-  WARMUP: 'WARMUP PROTOKOL',
+  WARMUP: 'WARMUP PROTOCOL',
 };
 
 const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
   'tab-accounts': {
-    title: 'Manajemen Multi-Node & Proxy',
-    subtitle: 'Kelola akun X terautentikasi, tunnel proxy khusus, dan pool payload JSON.',
+    title: 'Multi-Node & Proxy Management',
+    subtitle: 'Manage authenticated X accounts, dedicated proxy tunnels, and payload pools.',
   },
   'tab-composer': {
     title: 'AI Post Studio & Fleet Publisher',
     subtitle:
-      'Hasilkan konten postingan ber-engagement tinggi dari kata kunci, lalu siarkan ke armada multi-node.',
+      'Generate high-engagement post content from focus topics and broadcast across the multi-node fleet.',
   },
   'tab-batch': {
     title: 'Target Engagement Workbench',
-    subtitle: 'Eksekusi engagement berurutan multi-node untuk vektor Like, Repost, dan Reply.',
+    subtitle: 'Execute multi-node sequential engagement across Like, Repost, and Reply vectors.',
   },
   'tab-hunter': {
     title: 'Feed Hunter Intelligence',
-    subtitle: 'Pemindaian kata kunci & hashtag otonom dengan eksekusi engagement multi-node.',
+    subtitle: 'Autonomous keyword & hashtag radar sweep with coordinated multi-node engagement.',
   },
   'tab-analytics': {
     title: 'Analytics & Growth Intelligence',
-    subtitle: 'Tren telemetri interaktif, distribusi cluster node, dan metrik velocity eksekusi.',
+    subtitle: 'Interactive telemetry trends, node cluster distribution, and execution velocity metrics.',
   },
   'tab-ai': {
-    title: 'Pengaturan AI Provider',
-    subtitle: 'Konfigurasi provider LLM, model, kredensial, dan persona balasan otonom.',
+    title: 'AI Provider Settings',
+    subtitle: 'Configure LLM providers, models, credentials, and autonomous reply personas.',
   },
   'tab-spintax': {
     title: 'Payload Bank & Spintax Generator',
-    subtitle: 'Kelola payload fallback global dan uji permutasi spintax.',
+    subtitle: 'Manage global fallback payloads, anti-slop prompt pipelines, and test spintax variations.',
   },
   'tab-safety': {
-    title: 'Protokol Anti-Deteksi & Defense',
-    subtitle: 'Atur rate limit, interval delay natural, dan flag emulasi browser.',
+    title: 'Anti-Detection & Defense Protocol',
+    subtitle: 'Tune rate limits, natural delay intervals, and browser fingerprint emulation.',
   },
   'tab-history': {
-    title: 'Audit Ledger Interaksi',
-    subtitle: 'Rekaman permanen seluruh interaksi per node beserta status dan waktunya.',
+    title: 'Audit Ledger & History',
+    subtitle: 'Permanent execution records across all nodes with timestamps and diagnostic traces.',
   },
   'tab-about': {
-    title: 'Tentang & Spesifikasi Sistem',
-    subtitle: 'Ikhtisar arsitektur, spesifikasi teknis, dan kapabilitas inti X-SENTINEL.',
+    title: 'About & System Specifications',
+    subtitle: 'Architectural overview, technical specifications, and core capabilities of X-SENTINEL.',
   },
   'tab-404': {
-    title: 'Halaman Tidak Ditemukan',
-    subtitle: 'Path yang Anda buka tidak dikenali oleh cockpit.',
+    title: 'Page Not Found',
+    subtitle: 'The requested path is unrecognized by the cockpit router.',
   },
 };
 
@@ -65,7 +65,7 @@ export const TelemetryRibbon: React.FC = () => {
     subtitle: 'Autonomous Fleet Control',
   };
 
-  const taskLabel = TASK_LABELS[currentTask?.type] ?? 'TUGAS OTOMASI';
+  const taskLabel = TASK_LABELS[currentTask?.type] ?? 'AUTOMATION TASK';
   const progressTotal = Number(currentTask?.total ?? currentTask?.targetCount ?? 0);
   const progressDone = Number(currentTask?.completed ?? 0);
   const progressFailed = Number(currentTask?.failed ?? 0);
@@ -79,7 +79,7 @@ export const TelemetryRibbon: React.FC = () => {
         <button
           className="rounded-md border border-border/80 bg-obsidian-850 p-2 text-slate-300 hover:text-white lg:hidden"
           onClick={() => setIsMobileDrawerOpen(true)}
-          aria-label="Buka menu navigasi"
+          aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -159,7 +159,7 @@ export const TelemetryRibbon: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('tab-batch')}
-          title="Klik untuk membuka Live Telemetry Stream"
+          title="Click to open Live Telemetry Stream"
           className="w-full rounded-md border border-flame/40 bg-flame/5 px-3.5 py-2.5 text-left transition-colors hover:bg-flame/10"
         >
           <div className="flex items-center justify-between gap-3">
@@ -168,12 +168,12 @@ export const TelemetryRibbon: React.FC = () => {
               aria-live="polite"
             >
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              {taskLabel} BERJALAN
+              {taskLabel} IN PROGRESS
             </span>
             {progressTotal > 0 && (
               <span className="font-mono text-[11px] text-slate-300">
-                {progressDone}/{progressTotal} selesai
-                {progressFailed > 0 ? ` · ${progressFailed} gagal` : ''}
+                {progressDone}/{progressTotal} completed
+                {progressFailed > 0 ? ` · ${progressFailed} failed` : ''}
               </span>
             )}
           </div>
@@ -183,7 +183,7 @@ export const TelemetryRibbon: React.FC = () => {
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progressPercent}
-            aria-label={`Progres ${taskLabel}`}
+            aria-label={`${taskLabel} progress`}
           >
             <div
               className={`h-full rounded-full bg-gradient-to-r from-flame to-flame-light transition-all duration-500 ${

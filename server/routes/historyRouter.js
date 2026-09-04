@@ -25,7 +25,7 @@ router.post('/prune', validateBody(pruneSchema), (req, res) => {
   const { olderThanDays, status, dryRun } = req.body;
   const result = db.pruneHistory({ olderThanDays, status, dryRun });
   logger.info(
-    `🧹 Audit Ledger dipangkas: ${result.deletedCount} entri dihapus${dryRun ? ' (dry-run)' : ''}.`
+    `🧹 Audit Ledger pruned: ${result.deletedCount} entries removed${dryRun ? ' (dry-run)' : ''}.`
   );
   res.json({ success: true, ...result });
 });
@@ -33,7 +33,7 @@ router.post('/prune', validateBody(pruneSchema), (req, res) => {
 // POST /api/history/clear-all - Clear 100% of history
 router.post('/clear-all', (req, res) => {
   const { deletedCount } = db.clearHistory();
-  logger.warn(`🧹 Seluruh riwayat Audit Ledger berhasil di-reset (${deletedCount} entri dihapus).`);
+  logger.warn(`🧹 Entire Audit Ledger history reset (${deletedCount} entries removed).`);
   res.json({ success: true, deletedCount });
 });
 

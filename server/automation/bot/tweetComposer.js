@@ -9,11 +9,11 @@ const { sleep, humanType } = require('./humanCadence');
  */
 async function createPost(page, text, account, mediaPaths = []) {
   if (!text || !text.trim()) {
-    throw new Error('Teks tweet tidak boleh kosong.');
+    throw new Error('Tweet text cannot be empty.');
   }
 
   const trimmedText = text.trim();
-  logger.action(`[@${account.username || account.label}] Membuka Twitter Composer...`);
+  logger.action(`[@${account.username || account.label}] Launching Twitter composer...`);
 
   let capturedTweetUrl = null;
   let capturedTweetId = null;
@@ -29,7 +29,7 @@ async function createPost(page, text, account, mediaPaths = []) {
           capturedTweetId = tweetId;
           const userHandle = account.username || 'i';
           capturedTweetUrl = `https://x.com/${userHandle}/status/${tweetId}`;
-          logger.info(`🎯 [GraphQL Interceptor] Berhasil menangkap Tweet ID: ${tweetId}`);
+          logger.info(`🎯 [GraphQL Interceptor] Captured Tweet ID: ${tweetId}`);
         }
       }
     } catch (e) {
@@ -48,7 +48,7 @@ async function createPost(page, text, account, mediaPaths = []) {
 
     // Verify session
     if (page.url().includes('/login') || page.url().includes('/i/flow/login')) {
-      throw new Error('Sesi login kedaluwarsa saat membuka composer.');
+      throw new Error('Login session expired while opening composer.');
     }
 
     // 1. Handle Media / Image Attachments if present
@@ -56,7 +56,7 @@ async function createPost(page, text, account, mediaPaths = []) {
       const validMediaFiles = mediaPaths.filter((p) => p && fs.existsSync(p));
       if (validMediaFiles.length > 0) {
         logger.info(
-          `🖼️ [@${account.username || account.label}] Melampirkan ${validMediaFiles.length} file gambar ke postingan...`
+          `🖼️ [@${account.username || account.label}] Attaching ${validMediaFiles.length} media file(s) to post...`
         );
         try {
           const fileInput = await page
@@ -69,17 +69,17 @@ async function createPost(page, text, account, mediaPaths = []) {
           if (fileInput) {
             await fileInput.setInputFiles(validMediaFiles);
             logger.success(
-              `✅ [@${account.username || account.label}] ${validMediaFiles.length} media berhasil diunggah.`
+              `✅ [@${account.username || account.label}] ${validMediaFiles.length} media attachment(s) uploaded.`
             );
             await sleep(3500); // Wait for thumbnail upload rendering
           } else {
             logger.warn(
-              `⚠️ [@${account.username || account.label}] Selector file input tidak ditemukan, melanjutkan teks saja.`
+              `⚠️ [@${account.username || account.label}] File input selector not found, proceeding with text only.`
             );
           }
         } catch (mediaErr) {
           logger.warn(
-            `⚠️ [@${account.username || account.label}] Gagal melampirkan media: ${mediaErr.message}`
+            `⚠️ [@${account.username || account.label}] Failed to attach media: ${mediaErr.message}`
           );
         }
       }
@@ -101,14 +101,14 @@ async function createPost(page, text, account, mediaPaths = []) {
     }
 
     if (!textarea) {
-      throw new Error('Kolom editor postingan tweet tidak ditemukan.');
+      throw new Error('Tweet editor input area not found.');
     }
 
     await textarea.click();
     await sleep(500);
 
     // Type post text with natural human jitter
-    logger.info(`✍️ [@${account.username || account.label}] Mengetik postingan...`);
+    logger.info(`✍️ [@${account.username || account.label}] Typing post content...`);
     await humanType(textarea, trimmedText);
     await sleep(1000);
 
@@ -121,16 +121,16 @@ async function createPost(page, text, account, mediaPaths = []) {
       .catch(() => null);
 
     if (!tweetButton) {
-      throw new Error('Tombol Post / Tweet tidak ditemukan.');
+      throw new Error('Post / Tweet button not found.');
     }
 
     const isDisabled = await tweetButton.getAttribute('aria-disabled');
     if (isDisabled === 'true') {
-      throw new Error('Tombol Post dinonaktifkan (kemungkinan melebihi batas 280 karakter).');
+      throw new Error('Post button is disabled (character count may exceed 280 limits).');
     }
 
     await tweetButton.click();
-    logger.info(`⏳ [@${account.username || account.label}] Mengirim postingan ke server X...`);
+    logger.info(`⏳ [@${account.username || account.label}] Dispatching post to X network...`);
     await sleep(4000);
 
     // Fallback URL discovery if GraphQL did not trigger
@@ -149,7 +149,7 @@ async function createPost(page, text, account, mediaPaths = []) {
       capturedTweetUrl || (account.username ? `https://x.com/${account.username}` : '-');
 
     logger.success(
-      `🚀 [@${account.username || account.label}] Berhasil memposting tweet: "${trimmedText}" (${finalTweetUrl})`
+      `🚀 [@${account.username || account.label}] Tweet published successfully: "${trimmedText}" (${finalTweetUrl})`
     );
 
     db.addHistory({
@@ -175,7 +175,7 @@ async function createPost(page, text, account, mediaPaths = []) {
     return { success: true, status: 'SUCCESS', postText: trimmedText, tweetUrl: finalTweetUrl };
   } catch (err) {
     logger.error(
-      `❌ [@${account.username || account.label}] Gagal membuat postingan: ${err.message}`
+      `❌ [@${account.username || account.label}] Failed to publish post: ${err.message}`
     );
     db.addHistory({
       accountId: account.id,

@@ -31,14 +31,13 @@ export const AboutHeroBanner: React.FC = () => {
             Autonomous Multi-Node Fleet Cockpit &amp; Growth Studio for X
           </h2>
           <p className="text-sm leading-relaxed text-slate-300">
-            <strong>X-SENTINEL</strong> adalah platform otomatisasi (*engagement &amp; publishing
-            cockpit*) tingkat enterprise untuk platform <strong>X (Twitter)</strong>. Menggabungkan
-            arsitektur rotasi multi-akun modular, isolasi tunnel proxy dedicated, pembuatan
-            postingan cerdas berbasis AI (*AI Post Studio*), balasan kontekstual otomatis
-            (*OpenRouter, Groq, OpenAI, Gemini, Ollama*), pemindaian radar kata kunci (*Feed
-            Hunter*), onboarding armada massal (*Bulk Fleet Manager*), perpustakaan spintax
-            multi-niche, telemetri live stream, serta analitik visual interaktif tanpa
-            ketergantungan database eksternal.
+            <strong>X-SENTINEL</strong> is an enterprise-grade autonomous engagement and publishing
+            cockpit for the <strong>X (Twitter)</strong> platform. It unites a modular multi-account
+            rotation architecture, dedicated proxy tunnel isolation, AI-powered generation
+            (*AI Post Studio*), contextual auto-replies (*OpenRouter, Groq, OpenAI, Gemini, Ollama*),
+            keyword radar surveillance (*Feed Hunter*), bulk fleet onboarding (*Bulk Fleet Manager*),
+            a multi-niche spintax library, live telemetry SSE streams, and interactive visual
+            analytics with zero external database dependencies.
           </p>
         </div>
 

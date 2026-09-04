@@ -49,14 +49,14 @@ export const ScheduledQueueDeck: React.FC<ScheduledQueueDeckProps> = ({
       <div className="flex items-center justify-between border-b border-border/60 pb-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-white">
           <Calendar className="h-4 w-4 text-amber-400" />
-          <span>Antrean Jadwal Eksekusi Otomatis ({schedules.length})</span>
+          <span>Automated Execution Queue ({schedules.length})</span>
         </div>
         <span className="font-mono text-[10px] text-slate-400">Background Cron Active</span>
       </div>
 
       <div className="space-y-2">
         {schedules.map((item) => {
-          const dateStr = new Date(item.scheduledAt).toLocaleString('id-ID', {
+          const dateStr = new Date(item.scheduledAt).toLocaleString('en-US', {
             dateStyle: 'medium',
             timeStyle: 'short',
           });
@@ -71,11 +71,11 @@ export const ScheduledQueueDeck: React.FC<ScheduledQueueDeckProps> = ({
                   {getStatusBadge(item.status, item.enabled)}
                 </div>
                 <div className="font-mono text-[11px] text-slate-400">
-                  <span>Waktu: </span>
+                  <span>Scheduled: </span>
                   <strong className="text-slate-200">{dateStr}</strong>
                   {item.posts && item.posts.length > 0 && (
                     <span className="ml-2 text-slate-500">
-                      · {item.posts.length} Draf ({item.mediaPaths?.length || 0} Media)
+                      · {item.posts.length} Drafts ({item.mediaPaths?.length || 0} Media)
                     </span>
                   )}
                 </div>
@@ -86,7 +86,7 @@ export const ScheduledQueueDeck: React.FC<ScheduledQueueDeckProps> = ({
                   type="button"
                   onClick={() => onToggleSchedule(item.id)}
                   className="rounded border border-border/60 bg-obsidian-800 p-1.5 text-slate-300 transition-colors hover:bg-obsidian-750 hover:text-white"
-                  title={item.enabled ? 'Pause Jadwal' : 'Aktifkan Jadwal'}
+                  title={item.enabled ? 'Pause Schedule' : 'Enable Schedule'}
                 >
                   {item.enabled ? (
                     <Pause className="h-3.5 w-3.5" />
@@ -98,7 +98,7 @@ export const ScheduledQueueDeck: React.FC<ScheduledQueueDeckProps> = ({
                   type="button"
                   onClick={() => onDeleteSchedule(item.id)}
                   className="rounded border border-rose-500/30 bg-rose-950/30 p-1.5 text-rose-400 transition-colors hover:bg-rose-900/50 hover:text-rose-200"
-                  title="Hapus Jadwal"
+                  title="Delete Schedule"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

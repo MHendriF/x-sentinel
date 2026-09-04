@@ -9,7 +9,7 @@ const { sleep, humanType, humanScroll, extractTweetId } = require('./humanCadenc
  */
 async function likeTweet(page, tweetUrl, account) {
   const tweetId = extractTweetId(tweetUrl);
-  logger.action(`[@${account.username || account.label}] Mencoba Like: ${tweetUrl}`);
+  logger.action(`[@${account.username || account.label}] Dispatching Like: ${tweetUrl}`);
 
   try {
     // 1. Check if already liked
@@ -17,7 +17,7 @@ async function likeTweet(page, tweetUrl, account) {
       '[data-testid="unlike"], article [data-testid="unlike"], button[aria-label*="Liked"], button[aria-label*="Batal Suka"]'
     );
     if (unlikeBtn) {
-      logger.info(`ℹ️ [@${account.username || account.label}] Postingan sudah di-Like sebelumnya.`);
+      logger.info(`ℹ️ [@${account.username || account.label}] Post already liked previously.`);
       db.addHistory({
         accountId: account.id,
         accountName: account.username || account.label,
@@ -25,7 +25,7 @@ async function likeTweet(page, tweetUrl, account) {
         tweetId,
         action: 'LIKE',
         status: 'ALREADY_DONE',
-        message: 'Sudah di-like',
+        message: 'Already liked',
       });
       return { success: true, status: 'ALREADY_DONE' };
     }
@@ -42,9 +42,9 @@ async function likeTweet(page, tweetUrl, account) {
 
     if (!likeBtn) {
       logger.warn(
-        `⚠️ [@${account.username || account.label}] Tombol Like tidak ditemukan pada halaman.`
+        `⚠️ [@${account.username || account.label}] Like button not found on target page.`
       );
-      return { success: false, message: 'Tombol Like tidak ditemukan' };
+      return { success: false, message: 'Like button not found' };
     }
 
     await likeBtn.scrollIntoViewIfNeeded().catch(() => {});
@@ -55,7 +55,7 @@ async function likeTweet(page, tweetUrl, account) {
     // 3. Verify like state
     const isLiked = await page.$('[data-testid="unlike"], article [data-testid="unlike"]');
     if (isLiked) {
-      logger.success(`❤️ [@${account.username || account.label}] Berhasil Like: ${tweetUrl}`);
+      logger.success(`❤️ [@${account.username || account.label}] Successfully Liked: ${tweetUrl}`);
       db.addHistory({
         accountId: account.id,
         accountName: account.username || account.label,
@@ -66,10 +66,10 @@ async function likeTweet(page, tweetUrl, account) {
       });
       return { success: true, status: 'SUCCESS' };
     } else {
-      return { success: false, message: 'Verifikasi Like gagal' };
+      return { success: false, message: 'Like verification failed' };
     }
   } catch (err) {
-    logger.error(`❌ [@${account.username || account.label}] Gagal Like: ${err.message}`);
+    logger.error(`❌ [@${account.username || account.label}] Like failed: ${err.message}`);
     db.addHistory({
       accountId: account.id,
       accountName: account.username || account.label,
@@ -88,7 +88,7 @@ async function likeTweet(page, tweetUrl, account) {
  */
 async function retweetTweet(page, tweetUrl, account) {
   const tweetId = extractTweetId(tweetUrl);
-  logger.action(`[@${account.username || account.label}] Mencoba Retweet: ${tweetUrl}`);
+  logger.action(`[@${account.username || account.label}] Dispatching Retweet: ${tweetUrl}`);
 
   try {
     const unretweetBtn = await page.$(
@@ -96,7 +96,7 @@ async function retweetTweet(page, tweetUrl, account) {
     );
     if (unretweetBtn) {
       logger.info(
-        `ℹ️ [@${account.username || account.label}] Postingan sudah di-Retweet sebelumnya.`
+        `ℹ️ [@${account.username || account.label}] Post already reposted previously.`
       );
       db.addHistory({
         accountId: account.id,
@@ -105,7 +105,7 @@ async function retweetTweet(page, tweetUrl, account) {
         tweetId,
         action: 'RETWEET',
         status: 'ALREADY_DONE',
-        message: 'Sudah di-retweet',
+        message: 'Already reposted',
       });
       return { success: true, status: 'ALREADY_DONE' };
     }
@@ -123,9 +123,9 @@ async function retweetTweet(page, tweetUrl, account) {
 
     if (!retweetBtn) {
       logger.warn(
-        `⚠️ [@${account.username || account.label}] Tombol Retweet tidak ditemukan pada halaman.`
+        `⚠️ [@${account.username || account.label}] Retweet button not found on target page.`
       );
-      return { success: false, message: 'Tombol Retweet tidak ditemukan' };
+      return { success: false, message: 'Retweet button not found' };
     }
 
     await retweetBtn.scrollIntoViewIfNeeded().catch(() => {});
@@ -141,7 +141,7 @@ async function retweetTweet(page, tweetUrl, account) {
       .catch(() => null);
 
     if (!confirmBtn) {
-      return { success: false, message: 'Tombol konfirmasi Retweet tidak muncul' };
+      return { success: false, message: 'Retweet confirmation modal did not appear' };
     }
 
     await confirmBtn.click();
@@ -151,7 +151,7 @@ async function retweetTweet(page, tweetUrl, account) {
       '[data-testid="unretweet"], article [data-testid="unretweet"]'
     );
     if (isRetweeted) {
-      logger.success(`🔁 [@${account.username || account.label}] Berhasil Retweet: ${tweetUrl}`);
+      logger.success(`🔁 [@${account.username || account.label}] Successfully Retweeted: ${tweetUrl}`);
       db.addHistory({
         accountId: account.id,
         accountName: account.username || account.label,
@@ -162,10 +162,10 @@ async function retweetTweet(page, tweetUrl, account) {
       });
       return { success: true, status: 'SUCCESS' };
     } else {
-      return { success: false, message: 'Verifikasi Retweet gagal' };
+      return { success: false, message: 'Retweet verification failed' };
     }
   } catch (err) {
-    logger.error(`❌ [@${account.username || account.label}] Gagal Retweet: ${err.message}`);
+    logger.error(`❌ [@${account.username || account.label}] Retweet failed: ${err.message}`);
     db.addHistory({
       accountId: account.id,
       accountName: account.username || account.label,
@@ -184,7 +184,7 @@ async function retweetTweet(page, tweetUrl, account) {
  */
 async function commentTweet(page, tweetUrl, account, customReplyText = null) {
   const tweetId = extractTweetId(tweetUrl);
-  logger.action(`[@${account.username || account.label}] Mencoba Comment: ${tweetUrl}`);
+  logger.action(`[@${account.username || account.label}] Dispatching Reply: ${tweetUrl}`);
 
   try {
     let replyText = '';
@@ -214,7 +214,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       }
     }
 
-    logger.info(`💬 [@${account.username || account.label}] Komentar: "${replyText}"`);
+    logger.info(`💬 [@${account.username || account.label}] Reply payload: "${replyText}"`);
 
     let textarea = await page.$(
       '[data-testid="tweetTextarea_0"], article [data-testid="tweetTextarea_0"]'
@@ -231,8 +231,8 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
     }
 
     if (!textarea) {
-      logger.warn(`⚠️ [@${account.username || account.label}] Kolom komentar tidak ditemukan.`);
-      return { success: false, message: 'Kolom komentar tidak dapat diakses' };
+      logger.warn(`⚠️ [@${account.username || account.label}] Reply input field not found.`);
+      return { success: false, message: 'Reply input field not accessible' };
     }
 
     await textarea.click();
@@ -247,14 +247,14 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       })
       .catch(() => null);
     if (!replyBtn) {
-      return { success: false, message: 'Tombol kirim balasan tidak ditemukan' };
+      return { success: false, message: 'Reply submit button not found' };
     }
 
     await replyBtn.click();
     await sleep(2000);
 
     logger.success(
-      `💬 [@${account.username || account.label}] Berhasil kirim komentar: "${replyText}"`
+      `💬 [@${account.username || account.label}] Reply dispatched successfully: "${replyText}"`
     );
     db.addHistory({
       accountId: account.id,
@@ -267,7 +267,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
     });
     return { success: true, status: 'SUCCESS', replyText };
   } catch (err) {
-    logger.error(`❌ [@${account.username || account.label}] Gagal komentar: ${err.message}`);
+    logger.error(`❌ [@${account.username || account.label}] Reply failed: ${err.message}`);
     db.addHistory({
       accountId: account.id,
       accountName: account.username || account.label,
@@ -287,7 +287,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
 async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
   const { like = true, retweet = true, comment = true, commentText = null } = options;
 
-  logger.info(`🌐 [@${account.username || account.label}] Membuka: ${tweetUrl}`);
+  logger.info(`🌐 [@${account.username || account.label}] Navigating to: ${tweetUrl}`);
   await page.goto(tweetUrl, { waitUntil: 'domcontentloaded' });
 
   await page
@@ -300,7 +300,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (page.url().includes('/login') || page.url().includes('/i/flow/login')) {
     logger.error(
-      `❌ [@${account.username || account.label}] Sesi login kedaluwarsa / dialihkan ke halaman login.`
+      `❌ [@${account.username || account.label}] Login session expired / redirected to login page.`
     );
     db.addHistory({
       accountId: account.id,
@@ -308,9 +308,9 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       tweetUrl,
       action: 'SESSION',
       status: 'FAILED',
-      message: 'Sesi login kedaluwarsa',
+      message: 'Login session expired',
     });
-    return { success: false, message: 'Sesi login kedaluwarsa' };
+    return { success: false, message: 'Login session expired' };
   }
 
   if (db.getSettings().scrollBeforeAction) {

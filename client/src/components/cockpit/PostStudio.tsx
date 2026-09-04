@@ -39,8 +39,8 @@ const PRESET_KEYWORDS = [
     kw: 'Building Micro-SaaS in public, shipping velocity and product market fit',
   },
   {
-    label: '🇮🇩 Komunitas Web3 Indo',
-    kw: 'Ekosistem crypto Indonesia, komunitas airdrop, dan tren pasar',
+    label: '🌐 Global Crypto Trends',
+    kw: 'Crypto ecosystem dynamics, community engagement, and market momentum',
   },
 ];
 
@@ -48,31 +48,31 @@ const STYLE_OPTIONS = [
   {
     id: 'viral_hook',
     label: '🔥 Viral Hook / Hot Take',
-    desc: 'Kalimat pembuka yang memancing rasa penasaran, berani, dan punchy.',
+    desc: 'Curiosity-inducing opening statement, daring, punchy, high-retention.',
     color: 'border-amber-500 bg-amber-500/10 text-amber-300',
   },
   {
     id: 'alpha_insight',
     label: '💡 Alpha Insight / Analyst',
-    desc: 'Analisis tajam berbasis data, logis, dan kaya wawasan industri.',
+    desc: 'Sharp data-driven analysis, logical reasoning, and industry wisdom.',
     color: 'border-blue-500 bg-blue-500/10 text-blue-300',
   },
   {
     id: 'mini_value_drop',
     label: '📊 Mini Value-Drop',
-    desc: '1 Pelajaran bernilai tinggi, actionable framework, dan ringkas.',
+    desc: '1 High-impact takeaway, actionable framework, concise breakdown.',
     color: 'border-emerald bg-emerald/10 text-emerald',
   },
   {
     id: 'founder_story',
     label: '🛠️ Founder / Builder Raw',
-    desc: 'Pengalaman nyata membangun proyek, tantangan teknis, dan transparansi.',
+    desc: 'Authentic building lessons, technical hurdles, transparent execution.',
     color: 'border-purple-500 bg-purple-500/10 text-purple-300',
   },
   {
     id: 'indo_community',
-    label: '🇮🇩 Komunitas Indo Tech & Crypto',
-    desc: 'Gaya santai, komunikatif khas komunitas tech/crypto Indonesia (Bahasa Indonesia).',
+    label: '🇮🇩 Indo Tech & Crypto Community',
+    desc: 'Casual, conversational Indonesian crypto/tech niche style (Bahasa Indonesia).',
     color: 'border-rose-500 bg-rose-500/10 text-rose-300',
   },
 ];
@@ -128,7 +128,7 @@ export const PostStudio: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!keyword.trim()) {
-      toast.error('Silakan masukkan kata kunci atau topik postingan.');
+      toast.error('Please enter a keyword or post topic.');
       return;
     }
 
@@ -155,13 +155,13 @@ export const PostStudio: React.FC = () => {
         setActiveDraftText(cleanedPosts[0]);
         setActiveProviderUsed(res.provider || 'AI Engine');
         toast.success(
-          `Berhasil membuat ${cleanedPosts.length} draf postingan via ${res.provider}!`
+          `Successfully generated ${cleanedPosts.length} post drafts via ${res.provider}!`
         );
       } else {
-        toast.error('Gagal membuat draf postingan.');
+        toast.error('Failed to generate post drafts.');
       }
     } catch (err: any) {
-      toast.error(`Error generate: ${err.message}`);
+      toast.error(`Error generating drafts: ${err.message}`);
     } finally {
       setIsGenerating(false);
     }
@@ -169,12 +169,12 @@ export const PostStudio: React.FC = () => {
 
   const handlePublishNow = async () => {
     if (!activeDraftText.trim()) {
-      toast.error('Teks postingan tidak boleh kosong.');
+      toast.error('Post text cannot be empty.');
       return;
     }
 
     if (activeAccounts.length === 0) {
-      toast.error('Tidak ada akun aktif di dalam armada.');
+      toast.error('No active accounts found in the fleet.');
       return;
     }
 
@@ -184,7 +184,7 @@ export const PostStudio: React.FC = () => {
     try {
       if (targetMode === 'single') {
         if (!selectedAccount) {
-          toast.error('Pilih akun node terlebih dahulu.');
+          toast.error('Please select a node account first.');
           return;
         }
 
@@ -196,7 +196,7 @@ export const PostStudio: React.FC = () => {
 
         if (res.success) {
           toast.success(
-            `🚀 Memulai publikasi postingan ke @${selectedAccount.username || selectedAccount.label}!`
+            `🚀 Initiated post publication to @${selectedAccount.username || selectedAccount.label}!`
           );
         }
       } else {
@@ -211,12 +211,12 @@ export const PostStudio: React.FC = () => {
 
         if (res.success) {
           toast.success(
-            `🚀 Memulai penyiaran postingan ke seluruh armada (${activeAccounts.length} Node)!`
+            `🚀 Broadcasting post to entire fleet (${activeAccounts.length} Nodes)!`
           );
         }
       }
     } catch (err: any) {
-      toast.error(`Gagal publikasi: ${err.message}`);
+      toast.error(`Publication failed: ${err.message}`);
     } finally {
       setIsPublishing(false);
     }
@@ -224,7 +224,7 @@ export const PostStudio: React.FC = () => {
 
   const handleOpenScheduleModal = () => {
     if (!activeDraftText.trim()) {
-      toast.error('Tulis atau pilih draf postingan terlebih dahulu.');
+      toast.error('Write or select a post draft first.');
       return;
     }
 
@@ -238,13 +238,13 @@ export const PostStudio: React.FC = () => {
 
   const handleSaveSchedule = async () => {
     if (!scheduleDate || !scheduleTime) {
-      toast.error('Lengkapi tanggal dan waktu eksekusi.');
+      toast.error('Please specify execution date and time.');
       return;
     }
 
     const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}:00`);
     if (isNaN(scheduledDateTime.getTime())) {
-      toast.error('Format tanggal/waktu tidak valid.');
+      toast.error('Invalid date or time format.');
       return;
     }
 
@@ -269,13 +269,13 @@ export const PostStudio: React.FC = () => {
 
       if (res.success) {
         toast.success(
-          `📅 Berhasil menjadwalkan postingan pada ${scheduledDateTime.toLocaleString('id-ID')}!`
+          `📅 Successfully scheduled post for ${scheduledDateTime.toLocaleString()}!`
         );
         setIsScheduleModalOpen(false);
         await loadSchedules();
       }
     } catch (err: any) {
-      toast.error(`Gagal menjadwalkan: ${err.message}`);
+      toast.error(`Failed to schedule: ${err.message}`);
     } finally {
       setIsScheduling(false);
     }
@@ -285,7 +285,7 @@ export const PostStudio: React.FC = () => {
     try {
       const res = await apiClient.toggleSchedule(id);
       if (res.success) {
-        toast.success(`Status jadwal berhasil diperbarui.`);
+        toast.success(`Schedule status updated successfully.`);
         await loadSchedules();
       }
     } catch (err: any) {
@@ -297,7 +297,7 @@ export const PostStudio: React.FC = () => {
     try {
       const res = await apiClient.deleteSchedule(id);
       if (res.success) {
-        toast.success('Jadwal berhasil dihapus.');
+        toast.success('Schedule deleted successfully.');
         await loadSchedules();
       }
     } catch (err: any) {
@@ -310,7 +310,7 @@ export const PostStudio: React.FC = () => {
     if (!files || files.length === 0) return;
 
     if (attachedMedia.length + files.length > 4) {
-      toast.error('Maksimal 4 gambar per postingan tweet.');
+      toast.error('Maximum 4 images per tweet post.');
       return;
     }
 
@@ -319,7 +319,7 @@ export const PostStudio: React.FC = () => {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file.type.startsWith('image/')) {
-          toast.error(`File ${file.name} bukan gambar.`);
+          toast.error(`File ${file.name} is not an image.`);
           continue;
         }
 
@@ -346,11 +346,11 @@ export const PostStudio: React.FC = () => {
               sizeKb: uploadRes.sizeKb,
             },
           ]);
-          toast.success(`Gambar ${file.name} berhasil dilampirkan.`);
+          toast.success(`Image ${file.name} attached successfully.`);
         }
       }
     } catch (err: any) {
-      toast.error(`Gagal upload media: ${err.message}`);
+      toast.error(`Failed to upload media: ${err.message}`);
     } finally {
       setIsUploadingMedia(false);
       e.target.value = '';
@@ -360,7 +360,7 @@ export const PostStudio: React.FC = () => {
   const handleCopyDraft = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(idx);
-    toast.success('Teks postingan disalin ke clipboard.');
+    toast.success('Post text copied to clipboard.');
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
@@ -375,8 +375,7 @@ export const PostStudio: React.FC = () => {
                 <Sparkles className="h-4 w-4" />
               </div>
               <p className="max-w-2xl text-xs text-slate-400">
-                Racik konten postingan berkelas, anti-AI-slop & high-engagement berdasarkan kata
-                kunci, lalu publikasikan langsung ke armada node akun X Anda.
+                Craft high-engagement, anti-AI-slop posts from target keywords, then publish directly across your X account fleet.
               </p>
             </div>
           </div>
@@ -423,7 +422,7 @@ export const PostStudio: React.FC = () => {
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
                 <Zap className="h-4 w-4 text-flame" />
-                <span>1. Konfigurasi Topik & AI Style</span>
+                <span>1. Topic &amp; AI Style Configuration</span>
               </div>
               <span className="font-mono text-[10px] text-slate-400">Step 1</span>
             </div>
@@ -431,15 +430,15 @@ export const PostStudio: React.FC = () => {
             {/* Keyword Input */}
             <div className="flex flex-col gap-1.5">
               <label className="flex items-center justify-between text-xs font-medium text-slate-300">
-                <span>Kata Kunci / Topik Postingan:</span>
-                <span className="font-mono text-[10px] text-slate-500">Wajib</span>
+                <span>Keyword / Post Topic:</span>
+                <span className="font-mono text-[10px] text-slate-500">Required</span>
               </label>
               <input
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-                placeholder="Contoh: Solana Layer 2, AI Agents, React 19, Memecoin..."
+                placeholder="e.g. Solana Layer 2, AI Agents, React 19, Memecoin..."
                 className="w-full rounded-lg border border-border/80 bg-obsidian-900 px-3.5 py-2.5 text-xs text-white transition-all placeholder:text-slate-500 focus:border-flame focus:outline-none focus:ring-1 focus:ring-flame"
               />
             </div>
@@ -473,7 +472,7 @@ export const PostStudio: React.FC = () => {
             {/* Tone Selector */}
             <div className="flex flex-col gap-2 pt-1">
               <label className="text-xs font-medium text-slate-300">
-                Pilih Gaya Bahasa & Persona:
+                Choose Writing Style &amp; Persona:
               </label>
               <div className="grid grid-cols-1 gap-2">
                 {STYLE_OPTIONS.map((style) => {
@@ -509,7 +508,7 @@ export const PostStudio: React.FC = () => {
               <div className="flex flex-col gap-1.5">
                 <label className="flex items-center gap-1 text-[11px] font-medium text-slate-300">
                   <Globe className="h-3 w-3 text-slate-400" />
-                  Bahasa:
+                  Language:
                 </label>
                 <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-obsidian-900 p-1 text-[11px]">
                   <button
@@ -540,7 +539,7 @@ export const PostStudio: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-medium text-slate-300">Jumlah Variasi:</label>
+                <label className="text-[11px] font-medium text-slate-300">Variation Count:</label>
                 <div className="grid grid-cols-3 gap-1 rounded-lg border border-border/60 bg-obsidian-900 p-1 font-mono text-[11px]">
                   {[1, 3, 5].map((cnt) => (
                     <button
@@ -570,7 +569,7 @@ export const PostStudio: React.FC = () => {
               >
                 <Sliders className="h-3 w-3 text-flame" />
                 <span>
-                  {showAdvanced ? 'Sembunyikan Custom Prompt' : '+ Kustomisasi Prompt Tambahan'}
+                  {showAdvanced ? 'Hide Custom Prompt' : '+ Additional Prompt Customization'}
                 </span>
               </button>
 
@@ -579,7 +578,7 @@ export const PostStudio: React.FC = () => {
                   <textarea
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="Instruksi tambahan untuk AI (misal: 'Sertakan analogi tentang mobil F1' atau 'Buat nada agak sarkas')..."
+                    placeholder="Additional instructions for AI (e.g. 'Include an F1 racing analogy' or 'Make the tone slightly contrarian')..."
                     rows={2}
                     className="w-full rounded-lg border border-border/80 bg-obsidian-900 p-2.5 text-[11px] text-white placeholder:text-slate-500 focus:border-flame focus:outline-none"
                   />
@@ -602,12 +601,12 @@ export const PostStudio: React.FC = () => {
               {isGenerating ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Meracik Draf Konten dengan AI...</span>
+                  <span>Crafting Content Drafts with AI...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  <span>⚡ Generate {variationCount} Draf Postingan AI</span>
+                  <span>⚡ Generate {variationCount} AI Post Drafts</span>
                 </>
               )}
             </button>
@@ -621,7 +620,7 @@ export const PostStudio: React.FC = () => {
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
                 <FileText className="h-4 w-4 text-emerald" />
-                <span>2. Hasil Variasi Draf Postingan</span>
+                <span>2. Generated Post Variations</span>
               </div>
               {activeProviderUsed && (
                 <span className="rounded border border-emerald/30 bg-emerald/10 px-2 py-0.5 font-mono text-[10px] text-emerald">
@@ -636,11 +635,10 @@ export const PostStudio: React.FC = () => {
                   <Sparkles className="h-5 w-5 text-flame opacity-70" />
                 </div>
                 <div className="text-xs font-semibold text-slate-300">
-                  Belum Ada Draf yang Dihasilkan
+                  No Drafts Generated Yet
                 </div>
                 <p className="max-w-sm text-[11px] text-slate-500">
-                  Ketik kata kunci di sebelah kiri lalu klik{' '}
-                  <strong>"Generate Draf Postingan AI"</strong>.
+                  Enter keywords on the left and click <strong>"Generate AI Post Drafts"</strong>.
                 </p>
               </div>
             ) : (
@@ -660,7 +658,7 @@ export const PostStudio: React.FC = () => {
                     >
                       <div className="flex items-center justify-between">
                         <span className="rounded bg-flame/10 px-2 py-0.5 font-mono text-[10px] font-bold text-flame">
-                          Variasi #{idx + 1}
+                          Variation #{idx + 1}
                         </span>
                         <div className="flex items-center gap-2">
                           <span
@@ -679,7 +677,7 @@ export const PostStudio: React.FC = () => {
                             type="button"
                             onClick={() => handleCopyDraft(draft, idx)}
                             className="rounded bg-obsidian-750 p-1 text-slate-400 transition-colors hover:bg-obsidian-700 hover:text-white"
-                            title="Salin teks"
+                            title="Copy text"
                           >
                             {copiedIndex === idx ? (
                               <Check className="h-3.5 w-3.5 text-emerald" />
@@ -699,7 +697,7 @@ export const PostStudio: React.FC = () => {
                           type="button"
                           onClick={() => {
                             setActiveDraftText(draft);
-                            toast.info(`Variasi #${idx + 1} dimuat ke Editor Preview.`);
+                            toast.info(`Variation #${idx + 1} loaded into Preview Editor.`);
                           }}
                           className={cn(
                             'flex items-center gap-1.5 rounded px-3 py-1 text-[11px] font-medium transition-all',
@@ -711,11 +709,11 @@ export const PostStudio: React.FC = () => {
                           {isSelected ? (
                             <>
                               <Check className="h-3 w-3" />
-                              <span>Sedang Dipilih</span>
+                              <span>Selected</span>
                             </>
                           ) : (
                             <>
-                              <span>Gunakan Draf Ini</span>
+                              <span>Use This Draft</span>
                               <ArrowRight className="h-3 w-3" />
                             </>
                           )}
@@ -733,7 +731,7 @@ export const PostStudio: React.FC = () => {
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-white">
                 <Send className="h-4 w-4 text-blue-400" />
-                <span>3. Live Tweet Editor & Fleet Dispatcher</span>
+                <span>3. Live Tweet Editor &amp; Fleet Dispatcher</span>
               </div>
               <span className="font-mono text-[10px] text-slate-400">Step 3</span>
             </div>
@@ -753,7 +751,7 @@ export const PostStudio: React.FC = () => {
             <div className="flex flex-col gap-3 rounded-lg border border-border/80 bg-obsidian-900/70 p-3.5">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs font-semibold text-slate-300">
-                  Pilih Target Publikasi:
+                  Choose Publishing Target:
                 </span>
                 <div className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-obsidian-950 p-1">
                   <button
@@ -766,7 +764,7 @@ export const PostStudio: React.FC = () => {
                         : 'text-slate-400 hover:text-white'
                     )}
                   >
-                    1 Akun Node
+                    1 Node Account
                   </button>
                   <button
                     type="button"
@@ -812,7 +810,7 @@ export const PostStudio: React.FC = () => {
                 className="gap-1.5 border-amber-500/40 font-heading text-xs font-bold text-amber-300 hover:bg-amber-500/10"
               >
                 <Calendar className="h-4 w-4 text-amber-400" />
-                <span>📅 Jadwalkan Post</span>
+                <span>📅 Schedule Post</span>
               </Button>
 
               <Button
@@ -829,15 +827,15 @@ export const PostStudio: React.FC = () => {
                 {isPublishing ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    <span>Mempublikasikan...</span>
+                    <span>Publishing...</span>
                   </>
                 ) : (
                   <>
                     <Send className="h-4 w-4" />
                     <span>
                       {targetMode === 'single'
-                        ? 'Publikasikan Sekarang (1 Akun)'
-                        : `Broadcast ke Seluruh Armada (${activeAccounts.length})`}
+                        ? 'Publish Now (1 Account)'
+                        : `Broadcast to Entire Fleet (${activeAccounts.length})`}
                     </span>
                   </>
                 )}

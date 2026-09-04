@@ -90,7 +90,7 @@ export const NavDeck: React.FC = () => {
   const coreStatus = !apiOnline
     ? { label: 'CORE OFFLINE', color: 'text-red-400', dot: 'bg-red-500' }
     : isRunning
-      ? { label: 'TASK BERJALAN', color: 'text-flame', dot: 'bg-flame' }
+      ? { label: 'TASK RUNNING', color: 'text-flame', dot: 'bg-flame' }
       : { label: 'CORE ONLINE', color: 'text-emerald', dot: 'bg-emerald' };
 
   return (
@@ -131,7 +131,7 @@ export const NavDeck: React.FC = () => {
           <button
             className="rounded-md p-1.5 text-slate-400 hover:bg-obsidian-750 hover:text-white lg:hidden"
             onClick={() => setIsMobileDrawerOpen(false)}
-            aria-label="Tutup menu navigasi"
+            aria-label="Close navigation menu"
           >
             <X className="h-5 w-5" />
           </button>

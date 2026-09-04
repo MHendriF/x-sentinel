@@ -27,14 +27,14 @@ export const AuditPagination: React.FC<AuditPaginationProps> = ({
     <div className="flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-3 sm:flex-row">
       <div className="flex items-center gap-3">
         <span className="font-mono text-xs text-muted-foreground">
-          Menampilkan{' '}
+          Showing{' '}
           <strong className="text-slate-200">{totalItems === 0 ? 0 : startIndex + 1}</strong> -{' '}
-          <strong className="text-slate-200">{endIndex}</strong> dari{' '}
-          <strong className="text-slate-200">{totalItems}</strong> entri
+          <strong className="text-slate-200">{endIndex}</strong> of{' '}
+          <strong className="text-slate-200">{totalItems}</strong> entries
         </span>
 
         <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-          <span>Baris:</span>
+          <span>Rows:</span>
           <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
@@ -55,7 +55,7 @@ export const AuditPagination: React.FC<AuditPaginationProps> = ({
           onClick={() => onPageChange(1)}
           disabled={currentPage <= 1}
           className="h-8 w-8 p-0"
-          title="Halaman Pertama"
+          title="First Page"
         >
           <ChevronsLeft className="h-4 w-4" />
         </Button>
@@ -65,13 +65,13 @@ export const AuditPagination: React.FC<AuditPaginationProps> = ({
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage <= 1}
           className="h-8 w-8 p-0"
-          title="Halaman Sebelumnya"
+          title="Previous Page"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
         <span className="rounded border border-border/80 bg-obsidian-950 px-3 py-1 font-mono text-xs text-slate-200">
-          Halaman <strong className="text-flame">{currentPage}</strong> / {totalPages}
+          Page <strong className="text-flame">{currentPage}</strong> of {totalPages}
         </span>
 
         <Button
@@ -80,7 +80,7 @@ export const AuditPagination: React.FC<AuditPaginationProps> = ({
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage >= totalPages}
           className="h-8 w-8 p-0"
-          title="Halaman Berikutnya"
+          title="Next Page"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -90,7 +90,7 @@ export const AuditPagination: React.FC<AuditPaginationProps> = ({
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage >= totalPages}
           className="h-8 w-8 p-0"
-          title="Halaman Terakhir"
+          title="Last Page"
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>

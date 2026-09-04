@@ -29,7 +29,7 @@ function originGuard(req, res, next) {
     return res.status(403).json({
       success: false,
       error: 'FORBIDDEN_ORIGIN',
-      message: 'Permintaan dari origin luar tidak diizinkan pada server lokal ini.',
+      message: 'Requests from external origins are not permitted on this local instance.',
     });
   }
 
@@ -38,7 +38,7 @@ function originGuard(req, res, next) {
     return res.status(403).json({
       success: false,
       error: 'FORBIDDEN_CROSS_SITE',
-      message: 'Permintaan lintas situs (cross-site) diblokir oleh sistem keamanan.',
+      message: 'Cross-site requests are blocked by security policy.',
     });
   }
 
@@ -50,14 +50,14 @@ function originGuard(req, res, next) {
         return res.status(403).json({
           success: false,
           error: 'FORBIDDEN_REFERER',
-          message: 'Permintaan dari referer luar tidak diizinkan pada server lokal ini.',
+          message: 'Requests from external referrers are not permitted on this local instance.',
         });
       }
     } catch {
       return res.status(403).json({
         success: false,
         error: 'INVALID_REFERER',
-        message: 'Format Referer header tidak valid.',
+        message: 'Invalid Referer header format.',
       });
     }
   }
@@ -67,7 +67,7 @@ function originGuard(req, res, next) {
     return res.status(403).json({
       success: false,
       error: 'FORBIDDEN_HOST',
-      message: 'Permintaan dengan Host header luar tidak diizinkan (DNS rebinding protection).',
+      message: 'Requests with external Host headers are forbidden (DNS rebinding protection).',
     });
   }
 

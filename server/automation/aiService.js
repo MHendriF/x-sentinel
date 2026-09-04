@@ -185,7 +185,7 @@ class AIService {
       };
     }
 
-    throw new Error(`Format respons AI tidak valid: ${trimmed.slice(0, 100)}`);
+    throw new Error(`Invalid AI response format: ${trimmed.slice(0, 100)}`);
   }
 
   /**
@@ -204,13 +204,13 @@ class AIService {
 
     const providerConfig = this.getProviderConfig(settings);
     if (!providerConfig) {
-      logger.warn(`⚠️ Provider AI tidak valid: "${provider}"`);
+      logger.warn(`⚠️ Invalid AI Provider: "${provider}"`);
       return null;
     }
 
     const apiKey = (settings.aiApiKey || '').trim();
     if (provider !== 'ollama' && !apiKey) {
-      logger.warn('⚠️ AI Mode aktif namun API Key belum diisi di Pengaturan.');
+      logger.warn('⚠️ AI Mode active but API Key is missing in Settings.');
       return null;
     }
 
@@ -234,7 +234,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
 
     try {
       logger.info(
-        `🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk meracik balasan...`
+        `🤖 Querying AI (${provider.toUpperCase()} · ${model}) to craft reply...`
       );
 
       const headers = {
@@ -278,7 +278,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
         data?.choices?.[0]?.message?.content?.trim() || data?.choices?.[0]?.text?.trim() || '';
 
       if (!rawReply) {
-        logger.warn('⚠️ AI API tidak mengembalikan konten balasan.');
+        logger.warn('⚠️ AI API returned no reply content.');
         return null;
       }
 
@@ -288,9 +288,9 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
       return cleanedReply;
     } catch (err) {
       if (err.name === 'AbortError') {
-        logger.warn('⚠️ AI API Timeout (lebih dari 15 detik). Beralih ke fallback template.');
+        logger.warn('⚠️ AI API Timeout (>15 seconds). Falling back to template.');
       } else {
-        logger.warn(`⚠️ Gagal generate AI Reply: ${err.message}. Beralih ke fallback.`);
+        logger.warn(`⚠️ AI Reply generation failed: ${err.message}. Falling back to template.`);
       }
       return null;
     }
@@ -315,17 +315,17 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
     const provider = settings.aiProvider || 'none';
 
     if (provider === 'none') {
-      return { success: false, message: 'Pilih salah satu provider AI terlebih dahulu.' };
+      return { success: false, message: 'Please select an AI provider first.' };
     }
 
     const providerConfig = this.getProviderConfig(settings);
     if (!providerConfig) {
-      return { success: false, message: `Provider "${provider}" tidak didukung.` };
+      return { success: false, message: `Provider "${provider}" is not supported.` };
     }
 
     const apiKey = (settings.aiApiKey || '').trim();
     if (provider !== 'ollama' && !apiKey) {
-      return { success: false, message: 'API Key wajib diisi untuk menguji koneksi.' };
+      return { success: false, message: 'API Key is required to test connectivity.' };
     }
 
     const model = (settings.aiModel || '').trim() || providerConfig.defaultModel;
@@ -376,12 +376,12 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
         model,
         provider,
         sampleOutput: reply || 'Connected',
-        message: `Koneksi berhasil ke ${provider.toUpperCase()} (${model})!`,
+        message: `Connection established to ${provider.toUpperCase()} (${model})!`,
       };
     } catch (err) {
       return {
         success: false,
-        message: err.name === 'AbortError' ? 'Koneksi Timeout (12s)' : err.message,
+        message: err.name === 'AbortError' ? 'Connection Timeout (25s)' : err.message,
       };
     }
   }
@@ -412,7 +412,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
     // Fallback if AI provider is disabled
     if (provider === 'none') {
       logger.info(
-        `ℹ️ AI Provider 'none'. Menggunakan generator template fallback untuk "${keyword}"...`
+        `ℹ️ AI Provider 'none'. Using fallback template generator for "${keyword}"...`
       );
       return {
         success: true,
@@ -424,7 +424,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
 
     const providerConfig = this.getProviderConfig(settings);
     if (!providerConfig) {
-      logger.warn(`⚠️ Provider AI tidak valid: "${provider}". Menggunakan fallback.`);
+      logger.warn(`⚠️ Invalid AI Provider: "${provider}". Using fallback template.`);
       return {
         success: true,
         isFallback: true,
@@ -435,7 +435,7 @@ STRICT ANTI-AI-SLOP & HUMAN CADENCE RULES:
 
     const apiKey = (settings.aiApiKey || '').trim();
     if (provider !== 'ollama' && !apiKey) {
-      logger.warn('⚠️ AI Mode aktif namun API Key belum diisi. Menggunakan template fallback.');
+      logger.warn('⚠️ AI Mode active but API Key is missing. Using fallback template.');
       return {
         success: true,
         isFallback: true,
@@ -509,7 +509,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
 
     try {
       logger.info(
-        `🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk generate ${safeCount} post tentang "${keyword}"...`
+        `🤖 Querying AI (${provider.toUpperCase()} · ${model}) to generate ${safeCount} posts for "${keyword}"...`
       );
 
       const headers = {
@@ -588,7 +588,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
             .replace(/^["'`]|["'`]$/g, '')
             .trim()
         );
-        logger.success(`🤖 Berhasil membuat ${cleaned.length} variasi post AI untuk "${keyword}"!`);
+        logger.success(`🤖 Generated ${cleaned.length} AI post variations for "${keyword}"!`);
         return {
           success: true,
           isFallback: false,
@@ -597,10 +597,10 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
         };
       }
 
-      throw new Error('Gagal mengekstrak postingan dari respons AI.');
+      throw new Error('Failed to extract posts from AI response.');
     } catch (err) {
       logger.warn(
-        `⚠️ AI Generation gagal (${err.message}). Beralih ke generator template fallback.`
+        `⚠️ AI Generation failed (${err.message}). Switching to fallback template generator.`
       );
       return {
         success: true,
@@ -665,7 +665,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
     const cleanPost = String(postText || '').trim();
 
     if (!cleanPost) {
-      throw new Error('Teks postingan target (Post) wajib diisi.');
+      throw new Error('Target post text is required.');
     }
 
     // Determine target language: if 'auto', detect if Indonesian words appear frequently
@@ -679,7 +679,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
     // Fallback if AI provider is disabled
     if (provider === 'none') {
       logger.info(
-        `ℹ️ AI Provider 'none'. Menggunakan generator fallback anti-slop untuk ${safeCount} balasan...`
+        `ℹ️ AI Provider 'none'. Using anti-slop fallback generator for ${safeCount} replies...`
       );
       return {
         success: true,
@@ -692,7 +692,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
 
     const providerConfig = this.getProviderConfig(settings);
     if (!providerConfig) {
-      logger.warn(`⚠️ Provider AI tidak valid: "${provider}". Menggunakan template fallback.`);
+      logger.warn(`⚠️ Invalid AI Provider: "${provider}". Using fallback template generator.`);
       return {
         success: true,
         isFallback: true,
@@ -704,7 +704,7 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
 
     const apiKey = (settings.aiApiKey || '').trim();
     if (provider !== 'ollama' && !apiKey) {
-      logger.warn('⚠️ AI Mode aktif namun API Key belum diisi. Menggunakan template fallback.');
+      logger.warn('⚠️ AI Mode active but API Key is missing. Using fallback template.');
       return {
         success: true,
         isFallback: true,
@@ -776,7 +776,7 @@ ${cleanPost}`;
 
     try {
       logger.info(
-        `🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk generate ${safeCount} balasan payload anti-slop...`
+        `🤖 Querying AI (${provider.toUpperCase()} · ${model}) to generate ${safeCount} anti-slop payload replies...`
       );
 
       const headers = {
@@ -893,7 +893,7 @@ ${cleanPost}`;
         }
 
         logger.success(
-          `🤖 Berhasil meracik ${finalReplies.length} balasan payload AI tanpa tanda kutip ganda!`
+          `🤖 Generated ${finalReplies.length} AI payload replies without double quotes!`
         );
         return {
           success: true,
@@ -904,10 +904,10 @@ ${cleanPost}`;
         };
       }
 
-      throw new Error('Tidak dapat mengekstrak array balasan dari respons AI.');
+      throw new Error('Unable to extract reply array from AI response.');
     } catch (err) {
       logger.warn(
-        `⚠️ AI Payload Generation gagal (${err.message}). Beralih ke generator fallback anti-slop.`
+        `⚠️ AI Payload Generation failed (${err.message}). Switching to anti-slop fallback generator.`
       );
       return {
         success: true,

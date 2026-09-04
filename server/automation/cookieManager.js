@@ -74,11 +74,11 @@ class CookieManager {
     const cleanCt0 = this.sanitizeToken(ct0);
 
     if (!cleanAuth) {
-      return { valid: false, message: 'auth_token tidak boleh kosong.' };
+      return { valid: false, message: 'auth_token cannot be empty.' };
     }
 
     if (cleanAuth.length < 20) {
-      return { valid: false, message: 'Panjang auth_token tidak valid (terlalu pendek).' };
+      return { valid: false, message: 'Invalid auth_token length (too short).' };
     }
 
     return { valid: true, cleanAuth, cleanCt0 };

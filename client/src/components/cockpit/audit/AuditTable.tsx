@@ -13,20 +13,20 @@ interface AuditTableProps {
   onSort: (key: AuditSortKey) => void;
 }
 
-/** Compact relative timestamp for fast scanning ("2 jam lalu") */
+/** Compact relative timestamp for fast scanning ("2h ago") */
 export const timeAgo = (ts?: string): string => {
   if (!ts) return '';
   const t = new Date(ts).getTime();
   if (isNaN(t)) return '';
   const diffMs = Date.now() - t;
   const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return 'baru saja';
-  if (minutes < 60) return `${minutes} mnt lalu`;
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} jam lalu`;
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days} hari lalu`;
-  return new Date(t).toLocaleDateString('id-ID');
+  if (days < 30) return `${days}d ago`;
+  return new Date(t).toLocaleDateString('en-US');
 };
 
 const SORTABLE_COLUMNS: Array<{ key: AuditSortKey; label: string }> = [
@@ -83,7 +83,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir,
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
     const year = dateObj.getFullYear();
     const dateStr = `${day}/${month}/${year}`;
-    const timeStr = dateObj.toLocaleTimeString('id-ID', {
+    const timeStr = dateObj.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -137,7 +137,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir,
           {items.length === 0 ? (
             <tr>
               <td colSpan={6} className="py-8 text-center text-slate-500">
-                Tidak ada riwayat interaksi yang sesuai dengan filter.
+                No interaction history matching current filters.
               </td>
             </tr>
           ) : (

@@ -41,7 +41,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
       id: 'tab-accounts',
       hash: '#nodes',
       title: 'Multi-Node Cluster',
-      desc: 'Kelola armada akun X, proxy tunnel, dan health diagnostic.',
+      desc: 'Manage X account fleet, proxy tunnels, and node health diagnostics.',
       icon: Layers,
       color: 'text-flame border-flame/30 hover:border-flame',
     },
@@ -49,7 +49,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
       id: 'tab-composer',
       hash: '#composer',
       title: 'AI Post Studio',
-      desc: 'Buat postingan viral AI, lampiran gambar, dan penjadwalan draf.',
+      desc: 'Draft viral AI posts, media attachments, and automated queue scheduling.',
       icon: Sparkles,
       color: 'text-amber-400 border-amber-500/30 hover:border-amber-500',
     },
@@ -57,7 +57,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
       id: 'tab-batch',
       hash: '#batch',
       title: 'Target Workbench',
-      desc: 'Otomatisasi batch like, repost, dan distribusi balasan 1-to-1.',
+      desc: 'Automate batch likes, reposts, and 1-to-1 reply thread distribution.',
       icon: Crosshair,
       color: 'text-red-400 border-red-500/30 hover:border-red-500',
     },
@@ -65,7 +65,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
       id: 'tab-analytics',
       hash: '#analytics',
       title: 'Growth Analytics',
-      desc: 'Grafik tren volume aktivitas 4-vektor dan leaderboard armada.',
+      desc: 'Track 4-vector activity velocity charts and node fleet leaderboards.',
       icon: BarChart3,
       color: 'text-emerald-400 border-emerald-500/30 hover:border-emerald-500',
     },
@@ -102,14 +102,14 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
           {/* Heading */}
           <div className="space-y-2">
             <h2 className="font-heading text-3xl font-black tracking-tight text-white sm:text-4xl">
-              Sektor Tidak Ditemukan
+              Sector Not Found
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-slate-300">
-              Rute navigasi atau sektor antarmuka{' '}
+              Navigation route or interface sector{' '}
               <code className="rounded border border-rose-500/30 bg-obsidian-950 px-2 py-0.5 font-mono text-xs text-rose-400">
                 {displayPath}
               </code>{' '}
-              tidak terdaftar di dalam sistem kendali matriks <strong>X-SENTINEL</strong>.
+              is not registered within the <strong>X-SENTINEL</strong> control matrix.
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
               className="gap-2 bg-flame font-heading text-xs font-bold text-obsidian-950 shadow-md hover:bg-flame-light"
             >
               <Home className="h-4 w-4" />
-              Kembali ke Cockpit Utama
+              Return to Main Cockpit
             </Button>
             <Button
               variant="outline"
@@ -129,7 +129,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
               className="gap-2 border-slate-700 bg-obsidian-900/80 font-mono text-xs text-slate-300 hover:border-slate-600 hover:text-white"
             >
               <BookOpen className="h-4 w-4 text-cyan-400" />
-              Dokumentasi &amp; Specs
+              Documentation &amp; Specs
             </Button>
           </div>
         </CardContent>
@@ -139,7 +139,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
       <div className="w-full max-w-3xl space-y-3">
         <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-slate-400">
           <ArrowLeft className="h-3.5 w-3.5 text-flame" />
-          SEKTOR COCKPIT YANG TERSEDIA:
+          AVAILABLE COCKPIT SECTORS:
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

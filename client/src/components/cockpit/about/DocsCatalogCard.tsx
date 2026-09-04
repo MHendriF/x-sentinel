@@ -10,27 +10,27 @@ interface DocItem {
 const DOCS_LIST: DocItem[] = [
   {
     file: '📘 docs/ARCHITECTURE.md',
-    desc: 'Diagram topologi Mermaid, arsitektur 4-layer sistem, dan alur data automasi.',
+    desc: 'Mermaid topology diagrams, 4-layer system architecture, and automation data flow.',
   },
   {
     file: '⚡ docs/API_REFERENCE.md',
-    desc: 'Katalog lengkap seluruh endpoint REST API dan spesifikasi SSE stream.',
+    desc: 'Complete catalog of REST API endpoints and SSE stream specifications.',
   },
   {
     file: '🛡️ docs/AUTOMATION_PROTOCOLS.md',
-    desc: 'Protokol Playwright stealth evasion, human cadence, dan GraphQL interceptor.',
+    desc: 'Playwright stealth evasion protocols, human cadence models, and GraphQL interceptors.',
   },
   {
     file: '🛠️ docs/DEVELOPMENT_GUIDE.md',
-    desc: 'Panduan setup environment, script commands, testing, dan struktur project tree.',
+    desc: 'Environment setup instructions, script commands, testing workflows, and project directory structure.',
   },
   {
     file: '🤖 docs/AI_AGENT_PROMPT_GUIDE.md',
-    desc: 'Aturan panduan khusus untuk AI coding agents (atomic writes, state hydration).',
+    desc: 'Specialized guidelines for AI coding agents (atomic writes, state hydration, error handling).',
   },
   {
     file: '📜 CHANGELOG.md & CONTRIBUTING.md',
-    desc: 'Riwayat rilis SemVer v1.0.0 s/d v1.3.0 dan panduan kontribusi etis.',
+    desc: 'SemVer release history v1.0.0 through v1.3.0 and responsible usage guidelines.',
   },
 ];
 
@@ -44,8 +44,8 @@ export const DocsCatalogCard: React.FC = () => {
         </div>
         <CardTitle className="text-lg">Official System &amp; AI Documentation Suite</CardTitle>
         <CardDescription>
-          Dokumentasi komprehensif untuk developer, kontributor, dan AI agent di dalam folder{' '}
-          <code>docs/</code>:
+          Comprehensive documentation for engineers, contributors, and AI agents located in the{' '}
+          <code>docs/</code> directory:
         </CardDescription>
       </CardHeader>
 

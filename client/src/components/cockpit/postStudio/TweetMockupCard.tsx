@@ -44,7 +44,7 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
       .replace(/\s+/g, ' ')
       .trim();
     setActiveDraftText(clean);
-    toast.success('Format postingan dibersihkan menjadi 1 baris mengalir.');
+    toast.success('Post format cleaned into a single continuous line.');
   };
 
   return (
@@ -80,7 +80,7 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
           <textarea
             value={activeDraftText}
             onChange={(e) => setActiveDraftText(e.target.value)}
-            placeholder="Tulis atau edit postingan di sini sebelum dipublikasikan..."
+            placeholder="Write or edit post draft here before publishing..."
             rows={4}
             className="w-full resize-y rounded-lg border border-border/70 bg-obsidian-900 p-3 font-sans text-xs leading-relaxed text-white transition-all placeholder:text-slate-600 focus:border-flame focus:outline-none"
           />
@@ -102,7 +102,7 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
                     type="button"
                     onClick={() => handleRemoveMedia(idx)}
                     className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-obsidian-950/80 text-white shadow-md transition-colors hover:bg-rose-600"
-                    title="Hapus gambar"
+                    title="Remove image"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -130,7 +130,7 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingMedia || attachedMedia.length >= 4}
                 className="flex items-center gap-1 rounded bg-obsidian-800 px-2 py-1 text-slate-300 transition-colors hover:bg-obsidian-750 hover:text-white disabled:opacity-50"
-                title="Lampirkan gambar (PNG/JPG/GIF/WebP, maks 4)"
+                title="Attach images (PNG/JPG/GIF/WebP, max 4)"
               >
                 {isUploadingMedia ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -144,7 +144,7 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
                 type="button"
                 onClick={handleCleanFormat}
                 className="flex items-center gap-1 rounded bg-obsidian-800 px-2 py-1 text-slate-300 transition-colors hover:bg-obsidian-750 hover:text-white"
-                title="Rapikan spasi & jadikan 1 baris mengalir"
+                title="Trim extra spacing and collapse into single line"
               >
                 <Sparkles className="h-3 w-3 text-emerald" />
                 <span>Single-Line</span>
@@ -155,10 +155,10 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
                 onClick={() => {
                   setActiveDraftText('');
                   setAttachedMedia([]);
-                  toast.info('Editor telah dikosongkan.');
+                  toast.info('Editor cleared.');
                 }}
                 className="flex items-center gap-1 rounded bg-obsidian-800 px-2 py-1 text-slate-400 transition-colors hover:bg-obsidian-750 hover:text-rose-400"
-                title="Bersihkan teks & media"
+                title="Clear text & media"
               >
                 <Trash2 className="h-3 w-3" />
                 <span>Reset</span>

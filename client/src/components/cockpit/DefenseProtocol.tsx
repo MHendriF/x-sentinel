@@ -78,10 +78,10 @@ export const DefenseProtocol: React.FC = () => {
       const res = await apiClient.saveSettings(payload);
       if (res.success) {
         setSettings(res.settings);
-        toast.success('Pengaturan protokol keamanan & webhook berhasil disimpan.');
+        toast.success('Security protocol & webhook settings saved successfully.');
       }
     } catch (err: any) {
-      toast.error(`Gagal menyimpan: ${err.message}`);
+      toast.error(`Failed to save: ${err.message}`);
     }
   };
 
@@ -97,10 +97,10 @@ export const DefenseProtocol: React.FC = () => {
 
       if (res.success) {
         toast.success(
-          `🔔 Pesan uji coba berhasil dikirim ke ${type === 'telegram' ? 'Telegram Bot' : 'Discord Webhook'}!`
+          `🔔 Test alert sent successfully to ${type === 'telegram' ? 'Telegram Bot' : 'Discord Webhook'}!`
         );
       } else {
-        toast.error(`Gagal mengirim alert uji coba: ${res.message}`);
+        toast.error(`Failed to send test alert: ${res.message}`);
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -122,8 +122,7 @@ export const DefenseProtocol: React.FC = () => {
               AI Provider &amp; Model Configuration
             </div>
             <div className="text-[11px] text-slate-400">
-              Konfigurasi 9router, OpenRouter, Groq, model, dan persona kini dipusatkan di tab
-              khusus.
+              Configuration for 9router, OpenRouter, Groq, models, and personas is now centralized in a dedicated tab.
             </div>
           </div>
         </div>
@@ -135,7 +134,7 @@ export const DefenseProtocol: React.FC = () => {
           onClick={() => setActiveTab('tab-ai')}
           className="shrink-0 gap-1.5 border-purple-500/40 font-mono text-xs text-purple-300 hover:bg-purple-500/10"
         >
-          <span>Buka AI Studio</span>
+          <span>Open AI Studio</span>
           <ArrowRight className="h-3 w-3 text-purple-400" />
         </Button>
       </div>
@@ -148,8 +147,7 @@ export const DefenseProtocol: React.FC = () => {
             EVASION &amp; DEFENSE PROTOCOL
           </div>
           <CardDescription>
-            Konfigurasikan interval penundaan acak manusia (*human-like randomized intervals*) dan
-            batasan kuota untuk mencegah rate-limit X.
+            Configure human-like randomized delay intervals and quota thresholds to avoid X rate limits.
           </CardDescription>
         </CardHeader>
 
@@ -159,7 +157,7 @@ export const DefenseProtocol: React.FC = () => {
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-300">
                 <Clock className="h-3.5 w-3.5 text-flame" />
-                MIN ACTION DELAY (DETIK)
+                MIN ACTION DELAY (SECONDS)
               </label>
               <Input
                 type="number"
@@ -174,7 +172,7 @@ export const DefenseProtocol: React.FC = () => {
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-300">
                 <Clock className="h-3.5 w-3.5 text-flame" />
-                MAX ACTION DELAY (DETIK)
+                MAX ACTION DELAY (SECONDS)
               </label>
               <Input
                 type="number"
@@ -190,7 +188,7 @@ export const DefenseProtocol: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="font-mono text-xs font-bold text-slate-300">
-                NODE SWITCH COOLDOWN (DETIK)
+                NODE SWITCH COOLDOWN (SECONDS)
               </label>
               <Input
                 type="number"
@@ -223,9 +221,9 @@ export const DefenseProtocol: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Cpu className="h-4 w-4 text-blue-400" />
                 <div>
-                  <div className="text-xs font-semibold text-white">Mode Headless (Background)</div>
+                  <div className="text-xs font-semibold text-white">Headless Mode (Background)</div>
                   <div className="text-[10px] text-muted-foreground">
-                    Jalankan browser tanpa jendela GUI untuk menghemat RAM.
+                    Run browser without GUI window to optimize memory usage.
                   </div>
                 </div>
               </div>
@@ -245,7 +243,7 @@ export const DefenseProtocol: React.FC = () => {
                     Humanized Scroll Simulation
                   </div>
                   <div className="text-[10px] text-muted-foreground">
-                    Lakukan scrolling acak sebelum klik tombol Like/Repost untuk meniru manusia.
+                    Perform randomized scrolling before clicking Like/Repost to simulate human behavior.
                   </div>
                 </div>
               </div>
@@ -269,8 +267,8 @@ export const DefenseProtocol: React.FC = () => {
           </div>
           <CardTitle className="text-xl">Telegram &amp; Discord Webhooks</CardTitle>
           <CardDescription>
-            Kirimkan alert real-time ke bot Telegram atau server Discord saat tweet diposting, sesi
-            kedaluwarsa, atau tugas selesai.
+            Send real-time alerts to Telegram bot or Discord server when tweets are dispatched,
+            sessions expire, or tasks complete.
           </CardDescription>
         </CardHeader>
 
@@ -309,7 +307,7 @@ export const DefenseProtocol: React.FC = () => {
                     type="text"
                     value={telegramChatId}
                     onChange={(e) => setTelegramChatId(e.target.value)}
-                    placeholder="Misal: 987654321"
+                    placeholder="e.g. 987654321"
                     className="font-mono text-xs"
                   />
                 </div>
@@ -395,7 +393,7 @@ export const DefenseProtocol: React.FC = () => {
             className="mt-4 w-full font-heading text-sm font-bold"
           >
             <Save className="mr-1.5 h-4 w-4" />
-            Simpan Semua Pengaturan Protokol &amp; Webhook
+            Save All Protocol &amp; Webhook Settings
           </Button>
         </CardContent>
       </Card>

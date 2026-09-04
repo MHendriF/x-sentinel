@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/services/apiClient';
+import { cn } from '@/lib/utils';
 
 const PAGE_SIZE_STORAGE_KEY = 'x_sentinel_page_size';
 
@@ -55,6 +56,7 @@ export const NodesGrid: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<NodeStatusFilter>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(loadStoredPageSize);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     loadAccounts();
@@ -75,22 +77,35 @@ export const NodesGrid: React.FC = () => {
 
   const handleExportFleet = () => {
     window.open('/api/accounts/export', '_blank');
-    toast.success('Mengunduh backup seluruh armada node akun (JSON)...');
+    toast.success('Downloading fleet node account backup (JSON)...');
+  };
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await loadAccounts();
+      toast.success('Fleet node data refreshed successfully.');
+    } catch (err: any) {
+      toast.error(`Failed to reload data: ${err.message}`);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleCheckFleetHealth = async () => {
     if (isCheckingHealth) return;
     setIsCheckingHealth(true);
-    toast.info('🩺 Memulai pengujian kesehatan sesi & proxy seluruh armada node...');
+    toast.info('🩺 Initiating session & proxy health diagnostics for all fleet nodes...');
 
     try {
       const res = await apiClient.checkFleetHealth();
       if (res.success) {
         toast.success(
-          `🏁 Pengecekan armada selesai: ${res.healthy}/${res.total} node dalam kondisi sehat!`
+          `🏁 Fleet verification complete: ${res.healthy}/${res.total} nodes healthy!`
         );
       } else {
-        toast.error(`Pengecekan gagal: ${res.message}`);
+        toast.error(`Health check failed: ${res.message}`);
       }
       await loadAccounts();
     } catch (err: any) {
@@ -152,73 +167,109 @@ export const NodesGrid: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Top Banner / Actions */}
-      <Card>
-        <CardHeader className="flex flex-col items-start justify-between gap-3 pb-3 md:flex-row md:items-center">
+      {/* Top Banner / Cluster Controls */}
+      <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
+        <CardHeader className="flex flex-col items-start justify-between gap-4 pb-4 lg:flex-row lg:items-center">
           <div>
-            <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
-              CLUSTER TOPOLOGY
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-flame opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-flame" />
+              </span>
+              <span className="font-mono text-[10px] font-bold tracking-widest text-flame">
+                CLUSTER TOPOLOGY
+              </span>
+              <span className="rounded border border-slate-700/80 bg-obsidian-950 px-2 py-0.5 font-mono text-[9px] text-slate-400">
+                FLEET CONTROLS
+              </span>
             </div>
-            <CardTitle className="text-lg">Node Terdaftar ({accounts.length})</CardTitle>
-            <CardDescription>
-              Setiap node mewakili sesi akun X independen dengan pool komentar, routing proxy, dan
-              status kesehatan sesi.
+
+            <CardTitle className="mt-1.5 flex flex-wrap items-center gap-2.5 text-xl font-bold text-white">
+              <span>Registered Nodes</span>
+              <div className="flex items-center gap-1.5 font-mono text-xs">
+                <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2.5 py-0.5 font-bold text-white shadow-inner">
+                  {accounts.length} {accounts.length === 1 ? 'Node' : 'Nodes'}
+                </span>
+                {accounts.length > 0 && (
+                  <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                    {accounts.filter((a) => a.enabled !== false).length} Active
+                  </span>
+                )}
+              </div>
+            </CardTitle>
+
+            <CardDescription className="mt-1 text-xs text-slate-400">
+              Each node represents an independent X session with its own comment pool, proxy tunnel, and session health state.
             </CardDescription>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+
+          {/* Functional Action Toolbar */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* 1. Fleet Health Diagnostic Button */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleCheckFleetHealth}
               disabled={isCheckingHealth}
-              className="gap-1.5 border-rose-500/30 font-mono text-xs text-rose-300 hover:bg-rose-500/10"
-              title="Periksa kesehatan sesi & proxy seluruh armada"
+              className="h-9 gap-2 border-rose-500/40 bg-rose-950/20 font-mono text-xs font-semibold text-rose-300 shadow-sm transition-all hover:border-rose-500/70 hover:bg-rose-900/30 hover:text-rose-200"
+              title="Verify session & proxy health across all fleet nodes"
             >
               {isCheckingHealth ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-rose-400" />
               ) : (
                 <Stethoscope className="h-3.5 w-3.5 text-rose-400" />
               )}
-              <span>{isCheckingHealth ? 'Memeriksa...' : 'Fleet Health'}</span>
+              <span>{isCheckingHealth ? 'Checking Fleet...' : 'Fleet Health'}</span>
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openBulkImportModal()}
-              className="gap-1.5 border-cyan-500/30 font-mono text-xs text-cyan-300 hover:bg-cyan-500/10"
-              title="Import massal akun (format teks / CSV)"
-            >
-              <UploadCloud className="h-3.5 w-3.5 text-cyan-400" />
-              <span>Import</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportFleet}
-              className="gap-1.5 border-emerald-500/30 font-mono text-xs text-emerald-300 hover:bg-emerald-500/10"
-              title="Unduh backup seluruh node ke file .json"
-            >
-              <Download className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Export</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadAccounts()}
-              className="h-8 w-8 p-0"
-              title="Muat ulang data node"
-              aria-label="Muat ulang data node"
-            >
-              <RefreshCw className="h-3.5 w-3.5 text-slate-400" />
-            </Button>
+
+            {/* 2. Segmented Data Hub Toolbar (Import, Export, Refresh) */}
+            <div className="inline-flex items-center divide-x divide-slate-800 rounded-lg border border-slate-700/80 bg-obsidian-950/90 p-0.5 shadow-inner">
+              <button
+                type="button"
+                onClick={() => openBulkImportModal()}
+                className="inline-flex h-8 items-center gap-1.5 rounded-l-md px-3 font-mono text-xs font-semibold text-cyan-300 transition-colors hover:bg-cyan-500/10 hover:text-cyan-200 focus:outline-none"
+                title="Bulk import accounts from text or token:ct0:proxy:label format"
+              >
+                <UploadCloud className="h-3.5 w-3.5 text-cyan-400" />
+                <span>Import</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportFleet}
+                className="inline-flex h-8 items-center gap-1.5 px-3 font-mono text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/10 hover:text-emerald-200 focus:outline-none"
+                title="Export entire fleet configuration backup to .json file"
+              >
+                <Download className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Export</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-r-md text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200 focus:outline-none disabled:opacity-50"
+                title="Reload all fleet node data"
+                aria-label="Reload node data"
+              >
+                <RefreshCw
+                  className={cn(
+                    'h-3.5 w-3.5 transition-transform',
+                    isRefreshing && 'animate-spin text-flame'
+                  )}
+                />
+              </button>
+            </div>
+
+            {/* 3. Primary CTA: Register Node */}
             <Button
               variant="default"
               size="sm"
               onClick={() => openAccountModal(null)}
-              className="gap-1.5 font-heading text-xs font-bold shadow-sm"
+              className="h-9 gap-1.5 bg-gradient-to-r from-flame to-amber-500 px-3.5 font-heading text-xs font-bold text-white shadow-md shadow-flame/20 transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
             >
-              <Plus className="h-4 w-4" />
-              <span>Daftarkan Node</span>
+              <Plus className="h-4 w-4 stroke-[2.5]" />
+              <span>Register Node</span>
             </Button>
           </div>
         </CardHeader>
@@ -261,9 +312,9 @@ export const NodesGrid: React.FC = () => {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-obsidian-750 text-slate-400">
             <Server className="h-6 w-6" />
           </div>
-          <h3 className="font-heading text-base font-semibold text-white">Armada Masih Kosong</h3>
+          <h3 className="font-heading text-base font-semibold text-white">Fleet Cluster Empty</h3>
           <p className="mx-auto mb-5 mt-1 max-w-md text-xs text-muted-foreground">
-            Tiga langkah untuk memulai — kerjakan berurutan, progres akan tercentang otomatis.
+            Three steps to get started — follow sequentially, progress tracks automatically.
           </p>
 
           {/* First-Run Onboarding Checklist */}
@@ -272,23 +323,23 @@ export const NodesGrid: React.FC = () => {
               {
                 done: accounts.length > 0,
                 icon: KeyRound,
-                label: 'Daftarkan node akun pertama Anda',
+                label: 'Register your first fleet node account',
                 action: () => openAccountModal(null),
-                actionLabel: 'Daftarkan',
+                actionLabel: 'Register',
               },
               {
                 done: Boolean(settings?.aiProvider && settings.aiProvider !== 'none'),
                 icon: Bot,
-                label: 'Hubungkan AI provider untuk balasan otomatis',
+                label: 'Connect an AI provider for autonomous replies',
                 action: () => setActiveTab('tab-ai'),
-                actionLabel: 'Buka Pengaturan AI',
+                actionLabel: 'Open AI Settings',
               },
               {
                 done: Number(stats?.totalPosts ?? 0) > 0,
                 icon: Send,
-                label: 'Publikasikan postingan pertama via AI Post Studio',
+                label: 'Publish your first post via AI Post Studio',
                 action: () => setActiveTab('tab-composer'),
-                actionLabel: 'Buka Post Studio',
+                actionLabel: 'Open Post Studio',
               },
             ].map((step, i) => {
               const StepIcon = step.icon;
@@ -334,9 +385,9 @@ export const NodesGrid: React.FC = () => {
       ) : paginatedAccounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-obsidian-850/50 p-8 text-center">
           <SearchX className="mb-2 h-8 w-8 text-slate-500" />
-          <h4 className="text-sm font-semibold text-slate-300">Tidak ada node yang cocok</h4>
+          <h4 className="text-sm font-semibold text-slate-300">No matching nodes found</h4>
           <p className="mt-1 text-xs text-slate-500">
-            Tidak ditemukan node akun yang sesuai dengan kata kunci atau filter status yang dipilih.
+            No account nodes match the provided search term or selected status filter.
           </p>
           <Button
             variant="outline"
@@ -347,7 +398,7 @@ export const NodesGrid: React.FC = () => {
             }}
             className="mt-3 text-xs"
           >
-            Reset Filter
+            Reset Filters
           </Button>
         </div>
       ) : (

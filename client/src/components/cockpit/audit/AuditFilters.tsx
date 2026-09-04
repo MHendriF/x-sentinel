@@ -36,7 +36,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
           <Input
             type="text"
-            placeholder="Cari URL tweet, akun, atau pesan..."
+            placeholder="Search tweet URL, account, or message..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="h-8 border-border/80 bg-obsidian-900 pl-9 pr-8 font-mono text-xs text-slate-200 placeholder:text-slate-500 focus:border-flame focus:ring-1 focus:ring-flame"
@@ -46,7 +46,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
               type="button"
               onClick={() => setSearchTerm('')}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 transition-colors hover:text-white"
-              title="Hapus pencarian"
+              title="Clear search"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -73,7 +73,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5 font-mono text-xs text-slate-400">
             <Calendar className="h-3.5 w-3.5 text-flame" />
-            <span>Range Tanggal:</span>
+            <span>Date Range:</span>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -82,15 +82,15 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="h-8 rounded-md border border-border/80 bg-obsidian-900 px-2.5 font-mono text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-flame"
-              title="Tanggal Mulai"
+              title="Start Date"
             />
-            <span className="font-mono text-xs text-slate-500">s/d</span>
+            <span className="font-mono text-xs text-slate-500">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="h-8 rounded-md border border-border/80 bg-obsidian-900 px-2.5 font-mono text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-flame"
-              title="Tanggal Selesai"
+              title="End Date"
             />
           </div>
 
@@ -99,7 +99,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
               type="button"
               onClick={onClearDate}
               className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 font-mono text-[10px] text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
-              title="Hapus Filter Tanggal"
+              title="Clear Date Filter"
             >
               <X className="h-3 w-3" />
               <span>Reset</span>
@@ -114,21 +114,21 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             onClick={() => onSetPreset('today')}
             className="rounded border border-border/80 bg-obsidian-900 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
           >
-            Hari Ini
+            Today
           </button>
           <button
             type="button"
             onClick={() => onSetPreset('7days')}
             className="rounded border border-border/80 bg-obsidian-900 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
           >
-            7 Hari
+            7 Days
           </button>
           <button
             type="button"
             onClick={() => onSetPreset('30days')}
             className="rounded border border-border/80 bg-obsidian-900 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
           >
-            30 Hari
+            30 Days
           </button>
         </div>
       </div>

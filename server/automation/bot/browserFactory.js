@@ -79,7 +79,7 @@ async function applyStealthScripts(context) {
  */
 async function launchAccountBrowser(account, options = {}) {
   if (!account) {
-    throw new Error('Akun tidak ditemukan atau belum dipilih.');
+    throw new Error('Account node not found or not selected.');
   }
 
   const settings = db.getSettings() || {};
@@ -103,13 +103,13 @@ async function launchAccountBrowser(account, options = {}) {
     if (proxyLaunch) {
       launchOptions.proxy = proxyLaunch;
       logger.info(
-        `🌐 Menggunakan Proxy untuk @${account.username || account.label}: ${proxyLaunch.server}`
+        `🌐 Routing via Proxy for @${account.username || account.label}: ${proxyLaunch.server}`
       );
     }
   }
 
   logger.info(
-    `🚀 Membuka browser untuk akun @${account.username || account.label} (Headless: ${isHeadless ? 'Aktif' : 'Nonaktif'})...`
+    `🚀 Launching browser for node @${account.username || account.label} (Headless: ${isHeadless ? 'Enabled' : 'Disabled'})...`
   );
   const browser = await chromium.launch(launchOptions);
 

@@ -52,7 +52,7 @@ const SAMPLE_POSTS = [
     text: 'Bootstrapped to $25k MRR in 6 months by doing the unscalable thing: DMing 50 active users every single week and shipping their exact feature requests within 48 hours. Velocity beats polish every single time.',
   },
   {
-    label: '🇮🇩 Komunitas Web3 Indo',
+    label: '🇮🇩 Indo Web3 Community',
     text: 'Fenomena airdrop hunter di Indonesia makin selektif. Komunitas lokal sekarang lebih paham analisis on-chain dan tokenomics daripada sekadar asal klik task bot telegram. Edukasi mulai berbuah hasil.',
   },
 ];
@@ -65,23 +65,23 @@ const TONE_OPTIONS = [
   },
   {
     id: 'indo_community',
-    label: '🇮🇩 Komunitas Indo Tech',
-    desc: 'Santai, berbobot, slang wajar tech/crypto Indonesia (POV, flow, dev).',
+    label: '🇮🇩 Indo Tech Community',
+    desc: 'Casual, conversational Indonesian crypto/tech niche style (Bahasa Indonesia).',
   },
   {
     id: 'contrarian',
     label: '🔍 Contrarian & Debate',
-    desc: 'Kritis, analitis, menyoroti trade-off tersembunyi atau risiko eksekusi.',
+    desc: 'Critical, analytical, highlighting hidden trade-offs and operational risks.',
   },
   {
     id: 'builder_raw',
     label: '🛠️ Builder Raw / Dev',
-    desc: 'Fokus arsitektur, developer tooling, dan realitas produksi.',
+    desc: 'Focus on architecture, developer tooling, and production reality.',
   },
   {
     id: 'short_punchy',
     label: '🎯 Short & Punchy',
-    desc: '8-15 kata per balasan, razor-sharp, padat tanpa basa-basi.',
+    desc: '8-15 words per reply, razor-sharp, zero filler.',
   },
 ];
 
@@ -118,7 +118,7 @@ export const PayloadBank: React.FC = () => {
   // Spintax & Templates states (Tab 2)
   const [templates, setTemplates] = useState<string[]>([]);
   const [testInput, setTestInput] = useState(
-    '{Keren|Mantap|Luar biasa} {banget|sekali} {infonya|sharingnya|tweetnya}! 🔥 {Izin bookmark|Ditunggu part 2} ya.'
+    '{Great|Superb|Impressive} {insights|analysis|take}! 🔥 {Bookmarked|Looking forward to part 2}.'
   );
   const [variations, setVariations] = useState<string[]>([]);
 
@@ -177,7 +177,7 @@ export const PayloadBank: React.FC = () => {
   // Generate replies handler
   const handleGenerateReplies = async () => {
     if (!postText.trim()) {
-      toast.error('Masukkan teks postingan target (Post) terlebih dahulu.');
+      toast.error('Please enter the target post content first.');
       return;
     }
 
@@ -196,15 +196,15 @@ export const PayloadBank: React.FC = () => {
         setProviderUsed(res.provider || 'AI Engine');
         setIsFallbackUsed(Boolean(res.isFallback));
         toast.success(
-          `Berhasil meracik ${res.replies.length} balasan payload tanpa tanda kutip ganda!`,
+          `Successfully generated ${res.replies.length} payload replies without double quotes!`,
           {
             description: res.isFallback
-              ? 'Mode fallback template anti-slop aktif.'
-              : `Dihasilkan via ${res.provider}`,
+              ? 'Anti-slop template fallback mode active.'
+              : `Generated via ${res.provider}`,
           }
         );
       } else {
-        toast.error(res.message || 'Gagal menghasilkan balasan payload.');
+        toast.error(res.message || 'Failed to generate payload replies.');
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -217,7 +217,7 @@ export const PayloadBank: React.FC = () => {
   const handleCopyReply = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(idx);
-    toast.success('Balasan disalin ke clipboard!');
+    toast.success('Reply copied to clipboard!');
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
@@ -227,7 +227,7 @@ export const PayloadBank: React.FC = () => {
     const jsonStr = JSON.stringify(generatedReplies, null, 2);
     navigator.clipboard.writeText(jsonStr);
     setCopiedAll(true);
-    toast.success(`Berhasil menyalin array JSON (${generatedReplies.length} balasan)!`);
+    toast.success(`Successfully copied JSON array (${generatedReplies.length} replies)!`);
     setTimeout(() => setCopiedAll(false), 2000);
   };
 
@@ -244,7 +244,7 @@ export const PayloadBank: React.FC = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success(`File ${saveFileName || 'replies_15.json'} berhasil diunduh!`);
+    toast.success(`File ${saveFileName || 'replies_15.json'} downloaded successfully!`);
   };
 
   // Edit single generated reply inline
@@ -260,17 +260,17 @@ export const PayloadBank: React.FC = () => {
   };
 
   const handleAddGeneratedReply = () => {
-    setGeneratedReplies([...generatedReplies, 'Poin menarik yang jarang dibahas di timeline.']);
+    setGeneratedReplies([...generatedReplies, 'Interesting point that is rarely discussed on the timeline.']);
   };
 
   // Save to Server JSON File
   const handleSavePayloadFile = async () => {
     if (generatedReplies.length === 0) {
-      toast.error('Belum ada balasan yang dibuat.');
+      toast.error('No replies generated yet.');
       return;
     }
     if (!saveFileName.trim()) {
-      toast.error('Nama file wajib diisi.');
+      toast.error('File name is required.');
       return;
     }
 
@@ -284,12 +284,12 @@ export const PayloadBank: React.FC = () => {
       });
 
       if (res.success) {
-        toast.success(res.message || `File ${res.fileName} berhasil disimpan!`);
+        toast.success(res.message || `File ${res.fileName} saved successfully!`);
         setIsSaveModalOpen(false);
         loadSavedFiles();
         if (targetAccountId) loadAccounts();
       } else {
-        toast.error(res.message || 'Gagal menyimpan file.');
+        toast.error(res.message || 'Failed to save file.');
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -306,18 +306,18 @@ export const PayloadBank: React.FC = () => {
       if (res.success) {
         const targetAcc = accounts.find((a) => a.id === accountId);
         toast.success(
-          `Payload (${generatedReplies.length} balasan) sukses dideploy ke @${targetAcc?.username || targetAcc?.label}!`
+          `Payload (${generatedReplies.length} replies) successfully deployed to @${targetAcc?.username || targetAcc?.label}!`
         );
         loadAccounts();
       }
     } catch (err: any) {
-      toast.error(`Gagal deploy ke akun: ${err.message}`);
+      toast.error(`Failed to deploy to account: ${err.message}`);
     }
   };
 
   // Tab 2 handlers
   const handleAddTemplate = () => {
-    setTemplates(['{Opsi 1|Opsi 2} pesan baru...', ...templates]);
+    setTemplates(['{Option 1|Option 2} new message...', ...templates]);
   };
 
   const handleUpdateTemplate = (index: number, val: string) => {
@@ -335,10 +335,10 @@ export const PayloadBank: React.FC = () => {
     try {
       const res = await apiClient.saveTemplates(clean);
       if (res.success) {
-        toast.success('Bank template global berhasil disimpan.');
+        toast.success('Global template bank saved successfully.');
       }
     } catch (err: any) {
-      toast.error(`Gagal menyimpan: ${err.message}`);
+      toast.error(`Failed to save: ${err.message}`);
     }
   };
 
@@ -359,7 +359,7 @@ export const PayloadBank: React.FC = () => {
   const handleApplyPresetToStack = (templatesToApply: string[]) => {
     setTemplates([...templatesToApply, ...templates]);
     toast.success(
-      `Menambahkan ${templatesToApply.length} template dari preset "${activePreset.name}" ke stack!`
+      `Added ${templatesToApply.length} templates from preset "${activePreset.name}" to stack!`
     );
   };
 
@@ -373,11 +373,10 @@ export const PayloadBank: React.FC = () => {
             PAYLOAD STUDIO & ENGINE
           </div>
           <h1 id="page-heading" className="font-heading text-2xl font-bold text-white">
-            Payload Bank & AI Reply Generator
+            Payload Bank &amp; AI Reply Generator
           </h1>
           <p className="mt-1 text-xs text-slate-400">
-            Generate balasan kontekstual dari target tweet tanpa tanda kutip ganda dan bebas AI
-            slop, lalu simpan ke file JSON.
+            Generate contextual replies from target posts without double quotes and free from AI slop, then save to JSON.
           </p>
         </div>
 
@@ -423,7 +422,7 @@ export const PayloadBank: React.FC = () => {
             }`}
           >
             <BookOpen className="h-3.5 w-3.5" />
-            Vault & JSON Files
+            Vault &amp; JSON Files
             <span className="py-0.2 rounded bg-black/30 px-1 text-[9px] text-muted-foreground">
               {savedFiles.length}
             </span>
@@ -455,7 +454,7 @@ export const PayloadBank: React.FC = () => {
                   </div>
                   <CardTitle className="text-base">Target Tweet / Focal Post</CardTitle>
                   <CardDescription>
-                    Masukkan teks postingan yang ingin dibalas oleh armada akun.
+                    Enter the target post content you want the fleet nodes to reply to.
                   </CardDescription>
                 </CardHeader>
 
@@ -493,7 +492,7 @@ export const PayloadBank: React.FC = () => {
                       rows={5}
                       value={postText}
                       onChange={(e) => setPostText(e.target.value)}
-                      placeholder="Tempel teks tweet atau topik di sini... Post: ..."
+                      placeholder="Paste tweet text or topic here... Post: ..."
                       className="font-mono text-xs leading-relaxed"
                     />
                   </div>
@@ -502,7 +501,7 @@ export const PayloadBank: React.FC = () => {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <label className="font-mono text-xs font-bold text-slate-200">
-                        JUMLAH BALASAN (REPLY COUNT)
+                        REPLY COUNT
                       </label>
                       <span className="font-mono text-xs font-bold text-flame">
                         {replyCount} replies
@@ -529,7 +528,7 @@ export const PayloadBank: React.FC = () => {
                   {/* Tone Preset */}
                   <div className="space-y-1.5">
                     <label className="font-mono text-xs font-bold text-slate-200">
-                      GAYA / TONE PERSPEKTIF
+                      PERSPECTIVE &amp; TONE STYLE
                     </label>
                     <div className="space-y-1.5">
                       {TONE_OPTIONS.map((t) => (
@@ -560,7 +559,7 @@ export const PayloadBank: React.FC = () => {
                   {/* Language Selector */}
                   <div className="space-y-1.5">
                     <label className="font-mono text-xs font-bold text-slate-200">
-                      BAHASA OUTPUT
+                      OUTPUT LANGUAGE
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
@@ -596,7 +595,7 @@ export const PayloadBank: React.FC = () => {
                         AI Prompt Instruction Pattern
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        {isCustomInstructionOpen ? 'Tutup' : 'Sesuaikan'}
+                        {isCustomInstructionOpen ? 'Close' : 'Customize'}
                       </span>
                     </button>
 
@@ -610,8 +609,7 @@ export const PayloadBank: React.FC = () => {
                           placeholder="Create 15 reply from this post without any double quotes, make not see like AI Slop then save in json file."
                         />
                         <p className="font-mono text-[9px] text-slate-500">
-                          Instruksi baku yang diteruskan ke LLM. Tanda kutip ganda dipastikan
-                          dibersihkan secara menyeluruh.
+                          System instruction passed to LLM. Double quotes are rigorously sanitized.
                         </p>
                       </div>
                     )}
@@ -651,17 +649,17 @@ export const PayloadBank: React.FC = () => {
                     </div>
                     <CardTitle className="text-base">
                       {generatedReplies.length > 0
-                        ? `${generatedReplies.length} Balasan Siap Pakai`
-                        : 'Hasil Balasan Payload'}
+                        ? `${generatedReplies.length} Replies Ready`
+                        : 'Generated Payload Results'}
                     </CardTitle>
                     <CardDescription>
                       {providerUsed ? (
                         <span>
-                          Dihasilkan oleh <code className="text-amber-300">{providerUsed}</code>
+                          Generated by <code className="text-amber-300">{providerUsed}</code>
                           {isFallbackUsed && ' (Fallback Mode)'}
                         </span>
                       ) : (
-                        'Balasan yang dibuat akan tampil di bawah ini tanpa tanda kutip ganda.'
+                        'Generated replies will appear below with all double quotes stripped.'
                       )}
                     </CardDescription>
                   </div>
@@ -674,7 +672,7 @@ export const PayloadBank: React.FC = () => {
                         variant="outline"
                         onClick={handleAddGeneratedReply}
                         className="h-8 gap-1 text-xs"
-                        title="Tambah baris manual"
+                        title="Add row manually"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         Add Row
@@ -691,11 +689,11 @@ export const PayloadBank: React.FC = () => {
                         <Sparkles className="h-6 w-6 text-amber-400" />
                       </div>
                       <h3 className="mt-3 font-heading text-sm font-bold text-white">
-                        Belum Ada Balasan Dihasilkan
+                        No Replies Generated Yet
                       </h3>
                       <p className="mt-1 max-w-sm text-xs text-slate-400">
-                        Klik tombol &quot;Generate {replyCount} Replies&quot; untuk meracik balasan
-                        alami manusia dari teks target postingan di kolom kiri.
+                        Click the &quot;Generate {replyCount} Replies&quot; button to craft human-grade
+                        contextual replies from the focal post.
                       </p>
                     </div>
                   )}
@@ -705,11 +703,10 @@ export const PayloadBank: React.FC = () => {
                     <div className="flex flex-1 flex-col items-center justify-center space-y-3 rounded-lg border border-dashed border-flame/30 bg-obsidian-950/60 p-8 text-center">
                       <RefreshCw className="h-8 w-8 animate-spin text-flame" />
                       <div className="font-heading text-sm font-bold text-white">
-                        AI Sedang Meracik {replyCount} Balasan...
+                        AI is Crafting {replyCount} Replies...
                       </div>
                       <p className="max-w-xs text-xs text-slate-400">
-                        Menerapkan aturan anti-AI slop, single-line format, dan pembersihan tanda
-                        kutip ganda.
+                        Enforcing anti-AI slop guidelines, single-sentence constraint, and strict double-quote elimination.
                       </p>
                     </div>
                   )}
@@ -745,7 +742,7 @@ export const PayloadBank: React.FC = () => {
                                 type="button"
                                 onClick={() => handleCopyReply(reply, idx)}
                                 className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-emerald-400"
-                                title="Salin balasan ini"
+                                title="Copy this reply"
                               >
                                 {copiedIndex === idx ? (
                                   <Check className="h-3.5 w-3.5 text-emerald-400" />
@@ -757,7 +754,7 @@ export const PayloadBank: React.FC = () => {
                                 type="button"
                                 onClick={() => handleRemoveGeneratedReply(idx)}
                                 className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-red-400"
-                                title="Hapus balasan"
+                                title="Delete reply"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
@@ -824,7 +821,7 @@ export const PayloadBank: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <Layers className="h-4 w-4 text-flame" />
                               <span className="font-mono text-xs font-semibold text-slate-300">
-                                Deploy ke Node Armada:
+                                Deploy to Fleet Node:
                               </span>
                             </div>
 
@@ -840,7 +837,7 @@ export const PayloadBank: React.FC = () => {
                                 defaultValue=""
                               >
                                 <option value="" disabled>
-                                  Pilih Node Akun...
+                                  Select Node Account...
                                 </option>
                                 {accounts.map((acc) => (
                                   <option key={acc.id} value={acc.id}>
@@ -889,8 +886,7 @@ export const PayloadBank: React.FC = () => {
                   </div>
                   <CardTitle>Spintax Payload Stack</CardTitle>
                   <CardDescription>
-                    Kumpulan komentar global yang digunakan jika node tidak memiliki file komentar
-                    khusus.
+                    Global comment pool utilized when a node does not have dedicated comment files.
                   </CardDescription>
                 </div>
                 <Button
@@ -913,14 +909,14 @@ export const PayloadBank: React.FC = () => {
                         value={tmpl}
                         onChange={(e) => handleUpdateTemplate(idx, e.target.value)}
                         className="font-mono text-xs"
-                        placeholder="Format spintax {Opsi 1|Opsi 2}..."
+                        placeholder="Spintax format {Option 1|Option 2}..."
                       />
                       <Button
                         size="sm"
                         variant="destructive"
                         className="h-9 px-2.5"
                         onClick={() => handleRemoveTemplate(idx)}
-                        title="Hapus baris"
+                        title="Delete row"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -948,8 +944,7 @@ export const PayloadBank: React.FC = () => {
                 </div>
                 <CardTitle>Spintax Permutation Tester</CardTitle>
                 <CardDescription>
-                  Uji format spintax bersarang (*nested spintax*) dan lihat variasi kalimat yang
-                  dihasilkan Playwright engine.
+                  Test nested spintax formatting and preview output variations produced by the engine.
                 </CardDescription>
               </CardHeader>
 
@@ -1009,9 +1004,9 @@ export const PayloadBank: React.FC = () => {
                   <FolderOpen className="h-3.5 w-3.5" />
                   SERVER PAYLOAD FILES
                 </div>
-                <CardTitle className="text-base">Daftar File .JSON di Folder comments/</CardTitle>
+                <CardTitle className="text-base">JSON Files in comments/ Directory</CardTitle>
                 <CardDescription>
-                  Semua file payload yang tersimpan di <code>data/comments/*.json</code>
+                  All payload files saved under <code>data/comments/*.json</code>
                 </CardDescription>
               </div>
 
@@ -1030,8 +1025,8 @@ export const PayloadBank: React.FC = () => {
             <CardContent>
               {savedFiles.length === 0 ? (
                 <div className="py-6 text-center text-xs text-slate-400">
-                  Belum ada file .json tersimpan di <code>data/comments/</code>. Buat file baru
-                  melalui tab AI Generator!
+                  No .json files saved in <code>data/comments/</code> yet. Generate new files
+                  via the AI Generator tab!
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1046,7 +1041,7 @@ export const PayloadBank: React.FC = () => {
                             {f.fileName}
                           </span>
                           <Badge variant="outline" className="font-mono text-[9px]">
-                            {f.count} item
+                            {f.count} items
                           </Badge>
                         </div>
                         <div className="mt-1 font-mono text-[10px] text-slate-500">
@@ -1059,7 +1054,7 @@ export const PayloadBank: React.FC = () => {
                           type="button"
                           onClick={() => {
                             navigator.clipboard.writeText(f.filePath);
-                            toast.success(`Path disalin: ${f.filePath}`);
+                            toast.success(`Path copied: ${f.filePath}`);
                           }}
                           className="rounded px-2 py-1 font-mono text-[10px] text-slate-400 hover:bg-slate-800 hover:text-white"
                         >
@@ -1090,8 +1085,7 @@ export const PayloadBank: React.FC = () => {
               </div>
               <CardTitle className="text-lg">Multi-Niche Spintax Library</CardTitle>
               <CardDescription>
-                Pilih dan gunakan template spintax berdaya pikat tinggi yang telah dirancang khusus
-                untuk Web3, AI, Developer, dan Komunitas Indonesia.
+                Select and deploy high-engagement spintax templates designed for Web3, AI, Developers, and Community trends.
               </CardDescription>
             </CardHeader>
 
@@ -1165,10 +1159,10 @@ export const PayloadBank: React.FC = () => {
                           onClick={() => {
                             setTestInput(tmpl);
                             setActiveTab('spintax');
-                            toast.info('Template dimuat ke Permutation Tester!');
+                            toast.info('Template loaded into Permutation Tester!');
                           }}
                           className="rounded p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-amber-300"
-                          title="Uji di tester"
+                          title="Test in tester"
                         >
                           <Sparkles className="h-3.5 w-3.5" />
                         </button>
@@ -1176,10 +1170,10 @@ export const PayloadBank: React.FC = () => {
                           type="button"
                           onClick={() => {
                             navigator.clipboard.writeText(tmpl);
-                            toast.success('Template disalin ke clipboard!');
+                            toast.success('Template copied to clipboard!');
                           }}
                           className="rounded p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-emerald-400"
-                          title="Salin template"
+                          title="Copy template"
                         >
                           <Copy className="h-3.5 w-3.5" />
                         </button>
@@ -1203,39 +1197,39 @@ export const PayloadBank: React.FC = () => {
               <Save className="h-3.5 w-3.5" />
               SAVE PAYLOAD TO FILE
             </div>
-            <DialogTitle>Simpan ke File .JSON</DialogTitle>
+            <DialogTitle>Save as .JSON File</DialogTitle>
             <DialogDescription>
-              Simpan {generatedReplies.length} balasan ke dalam direktori{' '}
-              <code className="text-amber-300">data/comments/</code>
+              Save {generatedReplies.length} replies into the{' '}
+              <code className="text-amber-300">data/comments/</code> directory
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             {/* File Name */}
             <div className="space-y-1.5">
-              <label className="font-mono text-xs font-semibold text-slate-200">NAMA FILE</label>
+              <label className="font-mono text-xs font-semibold text-slate-200">FILE NAME</label>
               <Input
                 value={saveFileName}
                 onChange={(e) => setSaveFileName(e.target.value)}
-                placeholder="contoh: post_replies_15.json"
+                placeholder="e.g. post_replies_15.json"
                 className="font-mono text-xs"
               />
               <span className="font-mono text-[10px] text-slate-500">
-                Otomatis disimpan di: <code>data/comments/{saveFileName || '*.json'}</code>
+                Automatically saved to: <code>data/comments/{saveFileName || '*.json'}</code>
               </span>
             </div>
 
             {/* Target Account Linkage */}
             <div className="space-y-1.5">
               <label className="font-mono text-xs font-semibold text-slate-200">
-                HUBUNGKAN KE AKUN NODE (OPSIONAL)
+                LINK TO FLEET NODE (OPTIONAL)
               </label>
               <select
                 className="w-full rounded border border-slate-700 bg-obsidian-950 p-2 font-mono text-xs text-slate-200 focus:outline-none"
                 value={targetAccountId}
                 onChange={(e) => setTargetAccountId(e.target.value)}
               >
-                <option value="">-- Tidak dihubungkan (Hanya simpan file) --</option>
+                <option value="">-- Do not link (Save file only) --</option>
                 {accounts.map((acc) => (
                   <option key={acc.id} value={acc.id}>
                     {acc.label} (@{acc.username || 'user'})
@@ -1252,13 +1246,13 @@ export const PayloadBank: React.FC = () => {
                 onChange={(e) => setSaveToTemplates(e.target.checked)}
                 className="rounded border-slate-700"
               />
-              <span>Sekaligus terapkan ke Global Fallback Stack (templates.json)</span>
+              <span>Also apply to Global Fallback Stack (templates.json)</span>
             </label>
           </div>
 
           <DialogFooter className="gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsSaveModalOpen(false)}>
-              Batal
+              Cancel
             </Button>
             <Button
               variant="default"
@@ -1268,7 +1262,7 @@ export const PayloadBank: React.FC = () => {
               className="gap-1.5 font-heading font-bold"
             >
               <Save className="h-3.5 w-3.5" />
-              {isSavingFile ? 'Menyimpan...' : 'Simpan File'}
+              {isSavingFile ? 'Saving...' : 'Save File'}
             </Button>
           </DialogFooter>
         </DialogContent>

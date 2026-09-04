@@ -331,12 +331,12 @@ class LocalDB {
    */
   bulkImportAccounts(rawText) {
     if (!rawText || typeof rawText !== 'string' || !rawText.trim()) {
-      throw new Error('Data import tidak boleh kosong.');
+      throw new Error('Import payload cannot be empty.');
     }
 
     const parsedList = this.parseBulkImportText(rawText);
     if (parsedList.length === 0) {
-      throw new Error('Tidak ada akun valid yang bisa diparse dari data yang diberikan.');
+      throw new Error('No valid accounts could be parsed from the provided data.');
     }
 
     const existingTokens = new Set((this.cache.accounts || []).map((a) => a.auth_token));

@@ -69,7 +69,7 @@ class TwitterBot {
    */
   async initAccountBrowser(account, forceNew = false) {
     if (!account) {
-      throw new Error('Akun tidak ditemukan atau belum dipilih.');
+      throw new Error('Account node not found or not selected.');
     }
 
     if (this.browser && this.context && this.currentAccount?.id === account.id && !forceNew) {
@@ -120,7 +120,7 @@ class TwitterBot {
       const active = db.getActiveAccounts();
       if (active.length === 0) {
         throw new Error(
-          'Tidak ada akun aktif yang ditemukan. Silakan tambahkan atau aktifkan akun di menu Multi-Akun.'
+          'No active accounts found. Please add or enable nodes in the Fleet Management deck.'
         );
       }
       return active;
@@ -128,12 +128,12 @@ class TwitterBot {
 
     if (Array.isArray(accountIds)) {
       const matched = accountIds.map((id) => db.getAccountById(id)).filter(Boolean);
-      if (matched.length === 0) throw new Error('Akun yang dipilih tidak valid.');
+      if (matched.length === 0) throw new Error('Selected accounts are invalid.');
       return matched;
     }
 
     const single = db.getAccountById(accountIds);
-    if (!single) throw new Error('Akun yang dipilih tidak ditemukan.');
+    if (!single) throw new Error('Selected account not found.');
     return [single];
   }
 
@@ -202,7 +202,7 @@ class TwitterBot {
 
   async runWarmupTask(account) {
     if (this.isRunning) {
-      throw new Error('Sebuah proses otomasi sedang berjalan.');
+      throw new Error('An automation process is already active.');
     }
     this.isRunning = true;
     this.abortController = new AbortController();
@@ -223,7 +223,7 @@ class TwitterBot {
    */
   async runMultiAccountPostTask(accountIds, posts, options = {}) {
     if (this.isRunning) {
-      throw new Error('Sebuah proses otomasi sedang berjalan.');
+      throw new Error('An automation process is already active.');
     }
 
     const targetAccounts = this.resolveTaskAccounts(accountIds);
@@ -235,7 +235,7 @@ class TwitterBot {
     }
 
     if (postList.length === 0) {
-      throw new Error('Konten postingan tidak boleh kosong.');
+      throw new Error('Post content cannot be empty.');
     }
 
     this.isRunning = true;
@@ -252,7 +252,7 @@ class TwitterBot {
     const mediaPaths = options.mediaPaths || [];
 
     logger.info(
-      `🚀 Memulai Multi-Account Post Publishing (${targetAccounts.length} Akun, ${postList.length} Draf Konten)...`
+      `🚀 Launching Fleet Post Publishing (${targetAccounts.length} Nodes, ${postList.length} Content Drafts)...`
     );
 
     try {
@@ -262,7 +262,7 @@ class TwitterBot {
         const postText = postList[a % postList.length];
 
         logger.action(
-          `👤 [Post ${a + 1}/${targetAccounts.length}] Akun: ${account.label} (@${account.username || 'user'})`
+          `👤 [Post ${a + 1}/${targetAccounts.length}] Node: ${account.label} (@${account.username || 'user'})`
         );
 
         try {
@@ -275,27 +275,27 @@ class TwitterBot {
           }
         } catch (err) {
           if (err.message === 'TASK_ABORTED') throw err;
-          logger.error(`❌ Error posting pada akun ${account.label}: ${err.message}`);
+          logger.error(`❌ Post error on node ${account.label}: ${err.message}`);
           this.currentTask.failed++;
         }
 
         if (a < targetAccounts.length - 1) {
           const switchDelay = options.delaySeconds || db.getSettings().accountSwitchDelaySec || 15;
-          logger.info(`⏳ Jeda rotasi antar akun ${switchDelay} detik...`);
+          logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
           await this.sleep(switchDelay * 1000);
         }
       }
 
-      logger.success(`🏁 Selesai mempublikasikan postingan ke ${targetAccounts.length} node akun.`);
+      logger.success(`🏁 Completed publishing posts across ${targetAccounts.length} account nodes.`);
       notifier.notify('TASK_COMPLETED', {
         taskType: 'Fleet Post Publisher',
         totalTargets: targetAccounts.length,
       });
     } catch (err) {
       if (err.message === 'TASK_ABORTED') {
-        logger.warn(`🛑 Tugas posting multi-akun dihentikan pengguna.`);
+        logger.warn(`🛑 Fleet post publishing task aborted by operator.`);
       } else {
-        logger.error(`❌ Terjadi error pada runner posting: ${err.message}`);
+        logger.error(`❌ Post runner error: ${err.message}`);
         notifier.notify('TASK_FAILED', {
           taskType: 'Fleet Post Publisher',
           error: err.message,
@@ -314,12 +314,12 @@ class TwitterBot {
    */
   async runMultiAccountBatchTask(accountIds, urls, options = {}) {
     if (this.isRunning) {
-      throw new Error('Sebuah proses otomasi sedang berjalan.');
+      throw new Error('An automation process is already active.');
     }
 
     const targetAccounts = this.resolveTaskAccounts(accountIds);
     if (!urls || urls.length === 0) {
-      throw new Error('Daftar URL tweet target tidak boleh kosong.');
+      throw new Error('Target tweet URL list cannot be empty.');
     }
 
     this.isRunning = true;
@@ -336,7 +336,7 @@ class TwitterBot {
     const parsedReplies = this.parseCommentPayload(options.commentText);
 
     logger.info(
-      `🚀 Memulai Multi-Account Batch (${targetAccounts.length} Akun, ${urls.length} Postingan)...`
+      `🚀 Launching Fleet Engagement Batch (${targetAccounts.length} Nodes, ${urls.length} Posts)...`
     );
 
     try {
@@ -345,14 +345,14 @@ class TwitterBot {
         const url = urls[u].trim();
         if (!url) continue;
 
-        logger.action(`📌 [Target ${u + 1}/${urls.length}] Menjalankan rotasi engagement: ${url}`);
+        logger.action(`📌 [Target ${u + 1}/${urls.length}] Executing engagement rotation: ${url}`);
 
         for (let a = 0; a < targetAccounts.length; a++) {
           if (this.abortController.signal.aborted) break;
           const account = targetAccounts[a];
 
           logger.info(
-            `👤 Menggunakan Akun [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`
+            `👤 Engaging via Node [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`
           );
 
           let accountSpecificCommentText = options.commentText;
@@ -368,13 +368,13 @@ class TwitterBot {
             this.currentTask.completed++;
           } catch (err) {
             if (err.message === 'TASK_ABORTED') throw err;
-            logger.error(`❌ Error pada akun ${account.label}: ${err.message}`);
+            logger.error(`❌ Error on node ${account.label}: ${err.message}`);
             this.currentTask.failed++;
           }
 
           if (a < targetAccounts.length - 1) {
             const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
-            logger.info(`⏳ Jeda rotasi antar akun ${switchDelay} detik...`);
+            logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
             await this.sleep(switchDelay * 1000);
           }
         }
@@ -385,13 +385,13 @@ class TwitterBot {
       }
 
       logger.success(
-        `🏁 Selesai memproses seluruh target engagement dengan ${targetAccounts.length} akun.`
+        `🏁 Finished processing all target engagements with ${targetAccounts.length} nodes.`
       );
     } catch (err) {
       if (err.message === 'TASK_ABORTED') {
-        logger.warn(`🛑 Tugas multi-akun dihentikan pengguna.`);
+        logger.warn(`🛑 Fleet engagement task aborted by operator.`);
       } else {
-        logger.error(`❌ Terjadi error pada runner: ${err.message}`);
+        logger.error(`❌ Runner error: ${err.message}`);
       }
     } finally {
       await this.closeBrowser();
@@ -406,7 +406,7 @@ class TwitterBot {
    */
   async runMultiAccountHunter(accountIds, keyword, count = 10, options = {}) {
     if (this.isRunning) {
-      throw new Error('Sebuah proses otomasi sedang berjalan.');
+      throw new Error('An automation process is already active.');
     }
 
     const targetAccounts = this.resolveTaskAccounts(accountIds);
@@ -421,7 +421,7 @@ class TwitterBot {
     };
 
     logger.info(
-      `🔍 Memulai Multi-Account Auto Hunter untuk "${keyword}" (${targetAccounts.length} Akun)...`
+      `🔍 Launching Fleet Auto Hunter for "${keyword}" (${targetAccounts.length} Nodes)...`
     );
 
     try {
@@ -429,7 +429,7 @@ class TwitterBot {
       const page = await this.getOrCreatePageForAccount(scraperAccount);
       const searchUrl = `https://x.com/search?q=${encodeURIComponent(keyword)}&f=live`;
 
-      logger.info(`🌐 Mengumpulkan tweet dari X: ${searchUrl}`);
+      logger.info(`🌐 Scraping posts from X: ${searchUrl}`);
       await page.goto(searchUrl, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(4000);
 
@@ -466,7 +466,7 @@ class TwitterBot {
 
       const targetList = Array.from(collectedUrls).slice(0, count);
       logger.success(
-        `🎯 Mengumpulkan ${targetList.length} tweet untuk di-engage oleh ${targetAccounts.length} akun.`
+        `🎯 Harvested ${targetList.length} posts for engagement across ${targetAccounts.length} nodes.`
       );
 
       const parsedReplies = this.parseCommentPayload(options.commentText);
@@ -482,7 +482,7 @@ class TwitterBot {
           const account = targetAccounts[a];
 
           logger.info(
-            `👤 Aksi Akun [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`
+            `👤 Node Action [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`
           );
 
           let accountSpecificCommentText = options.commentText;
@@ -498,7 +498,7 @@ class TwitterBot {
             this.currentTask.completed++;
           } catch (err) {
             if (err.message === 'TASK_ABORTED') throw err;
-            logger.error(`❌ Gagal interaksi dengan akun ${account.label}: ${err.message}`);
+            logger.error(`❌ Engagement failed on node ${account.label}: ${err.message}`);
           }
 
           if (a < targetAccounts.length - 1) {
@@ -512,12 +512,12 @@ class TwitterBot {
         }
       }
 
-      logger.success(`🏁 Multi-Account Hunter selesai memproses seluruh postingan.`);
+      logger.success(`🏁 Fleet Hunter finished processing all target posts.`);
     } catch (err) {
       if (err.message === 'TASK_ABORTED') {
-        logger.warn(`🛑 Auto Hunter multi-akun dihentikan.`);
+        logger.warn(`🛑 Fleet Auto Hunter aborted.`);
       } else {
-        logger.error(`❌ Error Hunter: ${err.message}`);
+        logger.error(`❌ Hunter error: ${err.message}`);
       }
     } finally {
       await this.closeBrowser();
@@ -536,7 +536,7 @@ class TwitterBot {
         mediaPaths: mediaPaths || [],
         delaySeconds: delaySeconds || 15,
       });
-      return { success: true, message: 'Jadwal postingan berhasil dipublikasikan.' };
+      return { success: true, message: 'Scheduled posts published successfully.' };
     } catch (err) {
       return { success: false, message: err.message };
     }
@@ -560,7 +560,7 @@ class TwitterBot {
         minDelay: delaySeconds,
         maxDelay: delaySeconds * 2,
       });
-      return { success: true, message: `Jadwal Hunter untuk "${keyword}" selesai diproses.` };
+      return { success: true, message: `Scheduled Hunter task for "${keyword}" completed.` };
     } catch (err) {
       return { success: false, message: err.message };
     }
@@ -568,7 +568,7 @@ class TwitterBot {
 
   stopTask() {
     if (this.isRunning && this.abortController) {
-      logger.warn(`⚠️ Mengirim sinyal penghentian ke bot runner...`);
+      logger.warn(`⚠️ Sending abort signal to bot runner...`);
       this.abortController.abort();
       return true;
     }

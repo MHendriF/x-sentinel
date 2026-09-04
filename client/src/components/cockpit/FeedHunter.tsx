@@ -21,11 +21,11 @@ export const FeedHunter: React.FC = () => {
 
   const handleStart = async () => {
     if (!keyword.trim()) {
-      toast.error('Masukkan kata kunci pencarian atau hashtag.');
+      toast.error('Please enter a search keyword or hashtag.');
       return;
     }
     if (!like && !retweet && !comment) {
-      toast.error('Pilih setidaknya satu vektor aksi.');
+      toast.error('Select at least one action vector.');
       return;
     }
 
@@ -41,10 +41,10 @@ export const FeedHunter: React.FC = () => {
 
       if (res.success) {
         setIsRunning(true, { targetCount: count, completed: 0 });
-        toast.success(`Feed Hunter aktif untuk keyword "${keyword}"!`);
+        toast.success(`Feed Hunter activated for keyword "${keyword}"!`);
         setActiveTab('tab-batch');
       } else {
-        toast.error(`Gagal memulai Feed Hunter: ${res.message}`);
+        toast.error(`Failed to start Feed Hunter: ${res.message}`);
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -60,8 +60,8 @@ export const FeedHunter: React.FC = () => {
             SURVEILLANCE RADAR
           </div>
           <CardDescription>
-            Pindai feed X/Twitter secara otomatis berdasarkan topik, hashtag, atau tren terkini,
-            lalu jalankan interaksi multi-akun seketika.
+            Automatically scan the X/Twitter feed by topic, hashtag, or trending keywords,
+            then execute multi-account engagement immediately.
           </CardDescription>
         </CardHeader>
 
@@ -75,7 +75,7 @@ export const FeedHunter: React.FC = () => {
               className="h-9 w-full rounded-md border border-border/80 bg-obsidian-950 px-3 py-1 font-mono text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-flame"
             >
               <option value="all">
-                ⚡ Semua Node Aktif ({activeAccounts.length} Node - Rotasi Berurutan)
+                ⚡ All Active Nodes ({activeAccounts.length} Nodes - Sequential Rotation)
               </option>
               {accounts.map((acc) => (
                 <option key={acc.id} value={acc.id}>
@@ -108,10 +108,10 @@ export const FeedHunter: React.FC = () => {
               onChange={(e) => setCount(parseInt(e.target.value, 10))}
               className="h-9 w-full rounded-md border border-border/80 bg-obsidian-950 px-3 py-1 font-mono text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-flame"
             >
-              <option value="5">5 Postingan Teratas (Aman / Quick Run)</option>
-              <option value="10">10 Postingan (Rekomendasi Standar)</option>
-              <option value="20">20 Postingan (Engagement Intensif)</option>
-              <option value="30">30 Postingan (Cluster Kuota Tinggi)</option>
+              <option value="5">Top 5 Posts (Safe / Quick Run)</option>
+              <option value="10">Top 10 Posts (Recommended Standard)</option>
+              <option value="20">Top 20 Posts (Intensive Engagement)</option>
+              <option value="30">Top 30 Posts (High-Quota Cluster)</option>
             </select>
           </div>
 
@@ -125,7 +125,7 @@ export const FeedHunter: React.FC = () => {
                 onClick={() => setLike(!like)}
                 role="switch"
                 aria-checked={like}
-                aria-label="Vektor Like"
+                aria-label="Like Vector"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -147,7 +147,7 @@ export const FeedHunter: React.FC = () => {
                 onClick={() => setRetweet(!retweet)}
                 role="switch"
                 aria-checked={retweet}
-                aria-label="Vektor Repost"
+                aria-label="Repost Vector"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -169,7 +169,7 @@ export const FeedHunter: React.FC = () => {
                 onClick={() => setComment(!comment)}
                 role="switch"
                 aria-checked={comment}
-                aria-label="Vektor Reply"
+                aria-label="Reply Vector"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

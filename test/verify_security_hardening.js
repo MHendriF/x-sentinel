@@ -191,7 +191,7 @@ async function runTests() {
     discordWebhookUrl: 'https://evil.com/webhook',
   });
   assert.strictEqual(testWebhookBadDiscord.success, false);
-  assert.ok(testWebhookBadDiscord.message.includes('Domain atau endpoint'));
+  assert.ok(/domain or endpoint/i.test(testWebhookBadDiscord.message));
   console.log('   ✅ notifier.testWebhook safely rejects invalid targets.');
 
   // 8. twitterBot.startPostTask and startHunterTask Methods

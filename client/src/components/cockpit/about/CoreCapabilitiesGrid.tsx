@@ -24,63 +24,63 @@ const CAPABILITIES_DATA: CapabilityItem[] = [
   {
     id: 'multi-node',
     title: '1. Multi-Node Cluster',
-    desc: 'Manajemen armada akun dengan isolasi proxy, health checker, & warmup protocol.',
+    desc: 'Fleet account management with proxy isolation, health checks, & warm-up protocols.',
     icon: <Layers className="h-5 w-5 text-flame" />,
     bullets: [
       <>
-        Otentikasi aman via cookie <code>auth_token</code> &amp; <code>ct0</code> tanpa password.
+        Secure authentication via <code>auth_token</code> &amp; <code>ct0</code> cookies without passwords.
       </>,
       <>
-        <strong>🩺 Fleet Health Diagnostic</strong>: Uji validitas sesi cookie &amp; proxy seluruh
-        node armada dengan 1 klik.
+        <strong>🩺 Fleet Health Diagnostic</strong>: Test cookie session &amp; proxy validity across
+        all fleet nodes in 1 click.
       </>,
       <>
-        <strong>🐣 Account Warm-up Protocol</strong>: Rutinitas pemanasan bertahap (Day 1-7)
-        anti-shadowban untuk akun baru.
+        <strong>🐣 Account Warm-up Protocol</strong>: Gradual staged warm-up routines (Days 1-7)
+        to prevent shadowbans for fresh accounts.
       </>,
       <>
-        <strong>🔒 Proxy Masking &amp; Auto-Pause</strong>: Sembunyikan kredensial dan auto-pause
-        node jika proxy mati.
+        <strong>🔒 Proxy Masking &amp; Auto-Pause</strong>: Mask credentials and automatically pause
+        nodes if proxies fail.
       </>,
       <>
-        <strong>📥 Bulk Import &amp; Export Backup</strong>: Onboarding massal teks/CSV dan ekspor
-        armada ke file JSON.
+        <strong>📥 Bulk Import &amp; Export Backup</strong>: Batch CSV/text onboarding and JSON
+        fleet backups.
       </>,
     ],
   },
   {
     id: 'ai-studio',
     title: '2. AI Post Studio & Scheduler',
-    desc: 'Generator konten viral AI, lampiran gambar, & auto-post scheduler.',
+    desc: 'AI viral content generation, image attachments, & scheduled dispatching.',
     icon: <Sparkles className="h-5 w-5 text-amber-400" />,
     borderClass: 'border-amber-500/30',
     bullets: [
       <>
         <strong>5 Persona Presets</strong>: Viral Hook, Alpha Insight, Mini Value-Drop, Founder
-        Story, &amp; Indo Tech.
+        Story, &amp; Tech Native.
       </>,
       <>
-        <strong>🖼️ Media &amp; Image Upload</strong>: Lampirkan hingga 4 gambar (PNG/JPG/GIF/WebP)
-        per postingan.
+        <strong>🖼️ Media &amp; Image Upload</strong>: Attach up to 4 images (PNG/JPG/GIF/WebP)
+        per post.
       </>,
       <>
-        <strong>⏰ Cron Auto-Scheduler</strong>: Jadwalkan postingan draf di masa depan dengan
-        eksekusi background otomatis.
+        <strong>⏰ Cron Auto-Scheduler</strong>: Schedule future post dispatches with automated
+        background execution.
       </>,
       <>
-        <strong>WYSIWYG Tweet Mockup</strong>: Live preview avatar, handle, media thumbnail, &amp;
+        <strong>WYSIWYG Tweet Mockup</strong>: Live preview of avatar, handle, media thumbnails, &amp;
         live 280-char meter.
       </>,
       <>
-        <strong>🎯 Single-Line Formatting</strong>: Tombol instan merapikan postingan menjadi satu
-        alur tulisan mengalir.
+        <strong>🎯 Single-Line Formatting</strong>: Instant button to flatten multi-line text into
+        a smooth, readable flow.
       </>,
     ],
   },
   {
     id: 'ai-engine',
     title: '3. AI Engine & Webhooks',
-    desc: 'Balasan tweet kontekstual & alert real-time ke Telegram/Discord.',
+    desc: 'Contextual tweet replies & real-time webhook alerts to Telegram/Discord.',
     icon: <Bot className="h-5 w-5 text-purple-400" />,
     borderClass: 'border-purple-500/30',
     bullets: [
@@ -89,109 +89,109 @@ const CAPABILITIES_DATA: CapabilityItem[] = [
         <strong>Gemini</strong>, &amp; <strong>Ollama</strong>.
       </>,
       <>
-        <strong>🔔 Telegram &amp; Discord Alerts</strong>: Notifikasi instan saat tweet terbit,
-        tugas selesai, atau sesi expired.
+        <strong>🔔 Telegram &amp; Discord Alerts</strong>: Instant notifications when tweets are published,
+        tasks complete, or sessions expire.
       </>,
-      <>Membaca teks target dan meracik balasan sesuai tone persona terpilih.</>,
+      <>Reads target tweet content and formulates replies matched to the chosen persona tone.</>,
       <>
-        <strong>Smart Fallback</strong>: Otomatis beralih ke Spintax jika kuota AI habis atau
-        timeout.
+        <strong>Smart Fallback</strong>: Automatically falls back to Spintax if AI quotas deplete
+        or timeout.
       </>,
     ],
   },
   {
     id: 'target-workbench',
     title: '4. Target Workbench',
-    desc: 'Eksekutor interaksi berurutan dengan distribusi matriks balasan 1-ke-1.',
+    desc: 'Sequential engagement executor with 1-to-1 reply matrix distribution.',
     icon: <Crosshair className="h-5 w-5 text-red-400" />,
     bullets: [
-      <>Input batch multi-line URL target dengan penundaan human jitter alami.</>,
+      <>Batch multi-line target URL inputs with natural human jitter delays.</>,
       <>
-        Vektor modular: <strong>❤️ Like</strong>, <strong>🔁 Repost</strong>, dan{' '}
+        Modular vectors: <strong>❤️ Like</strong>, <strong>🔁 Repost</strong>, and{' '}
         <strong>💬 Reply</strong>.
       </>,
       <>
-        <strong>🔀 1-to-1 JSON Matrix</strong>: Tiap akun node memposting 1 balasan unik berbeda
-        dari payload array.
+        <strong>🔀 1-to-1 JSON Matrix</strong>: Each fleet node posts a unique reply from an
+        input array.
       </>,
-      <>Dynamic selector waiting untuk rendering DOM X modern.</>,
+      <>Dynamic DOM waiting designed for modern X web interfaces.</>,
     ],
   },
   {
     id: 'spintax',
     title: '5. Multi-Niche Spintax',
-    desc: 'Bank template spintax kurasi untuk Web3, AI, Developer, dan Komunitas Indo.',
+    desc: 'Curated spintax template bank for Web3, AI, Developers, and Community discussions.',
     icon: <BookOpen className="h-5 w-5 text-amber-400" />,
     bullets: [
       <>
-        5 Kategori: <strong>Web3 Alpha</strong>, <strong>AI Agents</strong>,{' '}
-        <strong>Devs/SaaS</strong>, <strong>Indo Tech</strong>, dan <strong>Viral Hooks</strong>.
+        5 Categories: <strong>Web3 Alpha</strong>, <strong>AI Agents</strong>,{' '}
+        <strong>Devs/SaaS</strong>, <strong>Indonesian Tech</strong>, and <strong>Viral Hooks</strong>.
       </>,
       <>
-        Penyimpanan komentar terisolasi per node akun (<code>data/comments/</code>).
+        Isolated per-node comment storage (<code>data/comments/</code>).
       </>,
       <>
-        <strong>1-Click Apply</strong>: Terapkan template ke fallback atau akun tertentu.
+        <strong>1-Click Apply</strong>: Apply templates as fallback or directly to specific accounts.
       </>,
       <>
-        <strong>Live Tester</strong>: Uji ribuan permutasi spintax secara instan.
+        <strong>Live Tester</strong>: Test thousands of spintax permutations instantly.
       </>,
     ],
   },
   {
     id: 'feed-hunter',
     title: '6. Feed Hunter Radar',
-    desc: 'Radar pemindaian otomatis postingan trending berdasarkan kata kunci.',
+    desc: 'Surveillance radar automatically monitoring trending posts by keyword.',
     icon: <Radar className="h-5 w-5 text-blue-400" />,
     bullets: [
-      <>Pemindaian postingan terbaru berdasarkan kata kunci (*keywords*) atau hashtag.</>,
-      <>Penyaringan postingan teratas dan teranyar secara dinamis.</>,
-      <>Otomatisasi Like, Repost, dan Balasan langsung dari hasil temuan radar.</>,
+      <>Scan latest posts based on keywords or hashtags.</>,
+      <>Dynamic filtering for top and recent posts.</>,
+      <>Automate Likes, Reposts, and Replies directly from radar findings.</>,
       <>
-        <strong>Recurring Hunter</strong>: Penjadwalan berburu otomatis berkala via scheduler.
+        <strong>Recurring Hunter</strong>: Recurring surveillance loops scheduled via background timer.
       </>,
     ],
   },
   {
     id: 'analytics',
     title: '7. 4-Vector Analytics',
-    desc: 'Visualisasi interaktif volume interaksi dan beban kerja cluster.',
+    desc: 'Interactive telemetry visualizations of engagement volume and cluster workloads.',
     icon: <BarChart3 className="h-5 w-5 text-emerald-400" />,
     borderClass: 'border-emerald-500/30',
     bullets: [
       <>
-        <strong>4 Vektor Terintegrasi</strong>: Like, Repost, Reply, dan Postingan Baru.
+        <strong>4 Integrated Vectors</strong>: Likes, Reposts, Replies, and Published Posts.
       </>,
       <>
-        <strong>Activity Velocity (AreaChart)</strong>: Tren volume engagement harian.
+        <strong>Activity Velocity (AreaChart)</strong>: Daily engagement volume trends.
       </>,
       <>
-        <strong>Cluster Share (Donut)</strong>: Distribusi proporsi beban kerja antar node.
+        <strong>Cluster Share (Donut)</strong>: Proportional workload distribution across fleet nodes.
       </>,
       <>
-        <strong>Cumulative Badges</strong>: Ringkasan total metrik interaksi &amp; success rate.
+        <strong>Cumulative Badges</strong>: Aggregated summary of engagement metrics &amp; success rates.
       </>,
     ],
   },
   {
     id: 'audit-ledger',
     title: '8. Audit Ledger & Maintenance',
-    desc: 'Log peristiwa interaksi kekal, filter tanggal angka Indonesia, & maintenance.',
+    desc: 'Immutable event logs, custom date filtering, CSV export, & maintenance.',
     icon: <FileSpreadsheet className="h-5 w-5 text-indigo-400" />,
     bullets: [
       <>
-        <strong>GraphQL Post URL Capture</strong>: Menyimpan URL langsung postingan tweet.
+        <strong>GraphQL Post URL Capture</strong>: Stores direct URLs for dispatched tweets.
       </>,
       <>
-        <strong>📅 Date Range &amp; Preset</strong>: Filter tanggal kustom &amp; preset cepat (*Hari
-        Ini, 7 Hari, 30 Hari*) dalam format <code>DD/MM/YYYY</code>.
+        <strong>📅 Date Range &amp; Presets</strong>: Custom date filters &amp; quick presets
+        (*Today, 7 Days, 30 Days*).
       </>,
       <>
-        <strong>🧹 Ledger Maintenance</strong>: Pangkas log &gt;30 hari, &gt;7 hari, atau FAILED
+        <strong>🧹 Ledger Maintenance</strong>: Prune logs older than 30 days, 7 days, or FAILED
         status.
       </>,
       <>
-        <strong>Export CSV</strong>: Unduh riwayat audit terfilter ke file spreadsheet.
+        <strong>Export CSV</strong>: Download filtered audit records into spreadsheet formats.
       </>,
     ],
   },

@@ -10,7 +10,7 @@ const { validateBody, httpError } = require('../utils/http');
 const router = express.Router();
 
 const generatePostSchema = z.object({
-  keyword: z.string().min(1, 'Topik atau kata kunci wajib diisi.').max(500),
+  keyword: z.string().min(1, 'Topic or keyword is required.').max(500),
   style: z.string().max(50).optional(),
   language: z.string().max(10).optional(),
   count: z.number().int().min(1).max(5).optional(),
@@ -19,7 +19,7 @@ const generatePostSchema = z.object({
 });
 
 const generatePayloadRepliesSchema = z.object({
-  postText: z.string().min(1, 'Teks postingan target (Post) wajib diisi.').max(4000),
+  postText: z.string().min(1, 'Target post text is required.').max(4000),
   count: z.number().int().min(1).max(50).optional(),
   tone: z.string().max(50).optional(),
   language: z.string().max(10).optional(),
@@ -28,8 +28,8 @@ const generatePayloadRepliesSchema = z.object({
 });
 
 const savePayloadFileSchema = z.object({
-  fileName: z.string().min(1, 'Nama file wajib diisi.').max(100),
-  replies: z.array(z.string()).min(1, 'Daftar balasan tidak boleh kosong.'),
+  fileName: z.string().min(1, 'File name is required.').max(100),
+  replies: z.array(z.string()).min(1, 'Reply list cannot be empty.'),
   targetAccountId: z.string().optional(),
   saveToTemplates: z.boolean().optional(),
 });
@@ -50,7 +50,7 @@ router.post('/generate-post', validateBody(generatePostSchema), async (req, res)
   if (result && result.success === false) {
     return res.status(502).json({
       success: false,
-      message: result.message || 'Provider AI gagal menghasilkan draf.',
+      message: result.message || 'AI provider failed to generate draft.',
     });
   }
 
@@ -82,7 +82,7 @@ router.post(
     if (result && result.success === false) {
       return res.status(502).json({
         success: false,
-        message: result.message || 'Gagal menghasilkan balasan payload.',
+        message: result.message || 'Failed to generate reply payloads.',
       });
     }
 
@@ -104,7 +104,7 @@ router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (re
   const cleanedReplies = replies.map((r) => String(r).replace(/["“”]/g, '').trim()).filter(Boolean);
 
   if (cleanedReplies.length === 0) {
-    throw httpError(400, 'Daftar balasan tidak boleh kosong.', 'EMPTY_REPLIES');
+    throw httpError(400, 'Reply list cannot be empty.', 'EMPTY_REPLIES');
   }
 
   // Sanitize filename to prevent directory traversal
@@ -126,7 +126,7 @@ router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (re
 
   try {
     db.writeFile(targetPath, cleanedReplies);
-    logger.info(`💾 File payload tersimpan: ${safeName} (${cleanedReplies.length} balasan).`);
+    logger.info(`💾 Payload file saved: ${safeName} (${cleanedReplies.length} replies).`);
 
     // Optionally assign directly to target account
     if (targetAccountId) {
@@ -134,7 +134,7 @@ router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (re
       if (account) {
         db.saveAccountComments(targetAccountId, cleanedReplies);
         logger.info(
-          `🎯 Payload otomatis dihubungkan ke akun Node @${account.username || account.label}`
+          `🎯 Payload linked to node @${account.username || account.label}`
         );
       }
     }
@@ -142,7 +142,7 @@ router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (re
     // Optionally save to global templates fallback
     if (saveToTemplates) {
       db.saveTemplates(cleanedReplies);
-      logger.info('🌐 Payload balasan otomatis dimuat ke Global Templates Pool.');
+      logger.info('🌐 Reply payload loaded into Global Templates Pool.');
     }
 
     res.json({
@@ -150,11 +150,11 @@ router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (re
       fileName: safeName,
       filePath: `data/comments/${safeName}`,
       count: cleanedReplies.length,
-      message: `Berhasil menyimpan ${cleanedReplies.length} balasan ke ${safeName}`,
+      message: `Successfully saved ${cleanedReplies.length} replies to ${safeName}`,
     });
   } catch (err) {
-    logger.error(`❌ Gagal menyimpan file payload: ${err.message}`);
-    throw httpError(500, `Gagal menyimpan file: ${err.message}`, 'FILE_SAVE_ERROR');
+    logger.error(`❌ Failed to save payload file: ${err.message}`);
+    throw httpError(500, `Failed to save file: ${err.message}`, 'FILE_SAVE_ERROR');
   }
 });
 

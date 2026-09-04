@@ -17,14 +17,14 @@ const safeMediaPathSchema = z.string().refine((p) => {
   const relative = path.relative(mediaDir, resolvedPath);
   const isInside = Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
   return isInside && ALLOWED_MEDIA_EXT_RE.test(resolvedPath);
-}, 'Path file media harus berada di dalam direktori data/media dan berekstensi gambar valid (PNG, JPG, GIF, WebP).');
+}, 'Media file path must be inside the data/media directory with a valid image extension (PNG, JPG, GIF, WebP).');
 
 const scheduleSchema = z.object({
   type: z.enum(['POST_QUEUE', 'RECURRING_HUNTER']).optional(),
   title: z.string().max(200).optional(),
   scheduledAt: z
     .string()
-    .refine((v) => !Number.isNaN(Date.parse(v)), 'Format scheduledAt tidak valid.')
+    .refine((v) => !Number.isNaN(Date.parse(v)), 'Invalid scheduledAt format.')
     .optional(),
   accountIds: z.union([z.string(), z.array(z.string())]).optional(),
   posts: z.array(z.string()).optional(),
@@ -47,19 +47,19 @@ router.post('/', validateBody(scheduleSchema), (req, res) => {
   const body = req.body;
 
   if (!body.scheduledAt && body.type !== 'RECURRING_HUNTER') {
-    throw httpError(400, 'Waktu eksekusi (scheduledAt) wajib diisi.', 'VALIDATION_ERROR');
+    throw httpError(400, 'Execution time (scheduledAt) is required.', 'VALIDATION_ERROR');
   }
 
   const item = db.saveSchedule({
     ...body,
-    title: body.title || 'Jadwal Publikasi Post',
+    title: body.title || 'Scheduled Post Dispatch',
     scheduledAt: body.scheduledAt ? new Date(body.scheduledAt).toISOString() : undefined,
     accountIds: body.accountIds || 'all',
     delaySeconds: body.delaySeconds || 15,
     enabled: body.enabled !== undefined ? body.enabled : true,
   });
 
-  logger.success(`📅 Jadwal baru ditambahkan: "${item.title}" pada ${item.scheduledAt}`);
+  logger.success(`📅 New schedule added: "${item.title}" at ${item.scheduledAt}`);
   res.json({ success: true, schedule: item });
 });
 
@@ -68,10 +68,10 @@ router.delete('/:id', (req, res) => {
   const { id } = req.params;
   const deleted = db.deleteSchedule(id);
   if (deleted) {
-    logger.info(`🗑️ Jadwal ID ${id} dihapus.`);
+    logger.info(`🗑️ Schedule ID ${id} deleted.`);
     res.json({ success: true });
   } else {
-    throw httpError(404, 'Jadwal tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Schedule not found.', 'NOT_FOUND');
   }
 });
 
@@ -86,7 +86,7 @@ router.post('/:id/toggle', (req, res) => {
   if (updated) {
     res.json({ success: true, schedule: updated });
   } else {
-    throw httpError(404, 'Jadwal tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Schedule not found.', 'NOT_FOUND');
   }
 });
 

@@ -36,7 +36,7 @@ router.use((req, res) => {
   res.status(404).json({
     success: false,
     error: 'API_ENDPOINT_NOT_FOUND',
-    message: `Endpoint API '${req.method} /api${req.url}' tidak ditemukan.`,
+    message: `API endpoint '${req.method} /api${req.url}' was not found.`,
   });
 });
 

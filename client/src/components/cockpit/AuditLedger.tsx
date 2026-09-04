@@ -62,27 +62,27 @@ export const AuditLedger: React.FC = () => {
         const res = await apiClient.clearAllHistory();
         if (res.success) {
           toast.success(
-            `🧹 Seluruh riwayat audit berhasil dibersihkan (${res.deletedCount} log dihapus).`
+            `🧹 Entire audit history cleared (${res.deletedCount} logs removed).`
           );
         }
       } else if (type === 'failed') {
         const res = await apiClient.pruneHistory({ status: 'FAILED' });
         if (res.success) {
-          toast.success(`🧹 Berhasil menghapus ${res.deletedCount} log berstatus FAILED.`);
+          toast.success(`🧹 Successfully pruned ${res.deletedCount} FAILED status logs.`);
         }
       } else {
         const days = type === '30days' ? 30 : 7;
         const res = await apiClient.pruneHistory({ olderThanDays: days });
         if (res.success) {
           toast.success(
-            `🧹 Berhasil menghapus ${res.deletedCount} log lebih lama dari ${days} hari.`
+            `🧹 Successfully pruned ${res.deletedCount} logs older than ${days} days.`
           );
         }
       }
       setIsPruneModalOpen(false);
       await loadHistory();
     } catch (err: any) {
-      toast.error(`Gagal melakukan maintenance: ${err.message}`);
+      toast.error(`Maintenance failed: ${err.message}`);
     } finally {
       setIsPruning(false);
     }
@@ -148,7 +148,7 @@ export const AuditLedger: React.FC = () => {
   const handleExportCSV = () => {
     const dataToExport = filteredHistory.length > 0 ? filteredHistory : history;
     if (dataToExport.length === 0) {
-      toast.error('Tidak ada data audit untuk diekspor.');
+      toast.error('No audit records available for export.');
       return;
     }
 
@@ -176,7 +176,7 @@ export const AuditLedger: React.FC = () => {
     link.click();
     document.body.removeChild(link);
 
-    toast.success(`Berhasil mengekspor ${dataToExport.length} entri audit ke file CSV.`);
+    toast.success(`Successfully exported ${dataToExport.length} audit entries to CSV.`);
   };
 
   return (
@@ -187,8 +187,8 @@ export const AuditLedger: React.FC = () => {
             IMMUTABLE EVENT LOG
           </div>
           <CardDescription>
-            Riwayat lengkap interaksi per node akun, status keberhasilan, dan waktu eksekusi (
-            {totalItems} rekaman).
+            Comprehensive node interaction log, delivery statuses, and execution timestamps (
+            {totalItems} records).
           </CardDescription>
         </div>
 
@@ -198,7 +198,7 @@ export const AuditLedger: React.FC = () => {
             size="sm"
             onClick={() => setIsPruneModalOpen(true)}
             className="gap-1 border-rose-500/40 font-mono text-xs text-rose-300 hover:bg-rose-500/10"
-            title="Bersihkan log riwayat lama atau gagal"
+            title="Prune legacy or failed audit logs"
           >
             <Trash2 className="h-3.5 w-3.5 text-rose-400" />
             Maintenance

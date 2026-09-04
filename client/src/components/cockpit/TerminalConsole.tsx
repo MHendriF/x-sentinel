@@ -18,7 +18,7 @@ export const TerminalConsole: React.FC = () => {
   const handleCopy = () => {
     const text = logs.map((l) => `[${l.timestamp}] ${l.message}`).join('\n');
     navigator.clipboard.writeText(text);
-    toast.success('Log berhasil disalin ke clipboard.');
+    toast.success('Logs copied to clipboard.');
   };
 
   const getLevelColor = (level: string) => {
@@ -73,7 +73,7 @@ export const TerminalConsole: React.FC = () => {
       >
         {logs.length === 0 ? (
           <div className="py-6 text-center italic text-slate-600">
-            [SYS] Menunggu event telemetry dari Playwright engine...
+            [SYS] Awaiting telemetry stream from Playwright engine...
           </div>
         ) : (
           logs.map((log, idx) => (

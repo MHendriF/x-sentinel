@@ -11,8 +11,7 @@ export const SystemSpecsCard: React.FC = () => {
         </div>
         <CardTitle className="text-lg">Technology Stack &amp; Architectural Foundations</CardTitle>
         <CardDescription>
-          Dirancang dengan fondasi teknologi modern untuk kecepatan, stabilitas, dan kedaulatan data
-          lokal.
+          Engineered on modern technology foundations for velocity, resilience, and local data sovereignty.
         </CardDescription>
       </CardHeader>
 

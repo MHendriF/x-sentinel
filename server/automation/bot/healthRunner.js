@@ -14,7 +14,7 @@ const { sleep } = require('./humanCadence');
 async function verifyAccount(account) {
   let tempBrowser = null;
   try {
-    logger.info(`🔍 Memverifikasi akun: ${account.label} (@${account.username || 'unknown'})...`);
+    logger.info(`🔍 Verifying account node: ${account.label} (@${account.username || 'unknown'})...`);
 
     const validation = cookieManager.validateFormat(account.auth_token, account.ct0);
     if (!validation.valid) {
@@ -36,7 +36,7 @@ async function verifyAccount(account) {
       const proxyLaunch = proxyHelper.getPlaywrightLaunchProxy(account.proxy);
       if (proxyLaunch) {
         launchOptions.proxy = proxyLaunch;
-        logger.info(`🌐 Memeriksa koneksi melalui Proxy: ${proxyLaunch.server}`);
+        logger.info(`🌐 Testing connection via Proxy: ${proxyLaunch.server}`);
       }
     }
 
@@ -58,9 +58,9 @@ async function verifyAccount(account) {
     const currentUrl = page.url();
 
     if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
-      logger.error(`❌ Cookie untuk ${account.label} tidak valid atau kedaluwarsa.`);
+      logger.error(`❌ Cookie for ${account.label} is invalid or expired.`);
       db.saveAccount({ ...account, isValid: false, lastChecked: new Date().toISOString() });
-      return { success: false, message: 'Cookie auth_token tidak valid atau sudah kedaluwarsa.' };
+      return { success: false, message: 'auth_token cookie is invalid or expired.' };
     }
 
     let username = '';
@@ -106,14 +106,14 @@ async function verifyAccount(account) {
         lastChecked: new Date().toISOString(),
       });
 
-      logger.success(`🎉 Berhasil terhubung ke akun: @${updated.username} (${updated.name})`);
+      logger.success(`🎉 Successfully connected to node: @${updated.username} (${updated.name})`);
       return { success: true, account: updated };
     } else {
-      return { success: false, message: 'Gagal memverifikasi akun. Periksa cookie & proxy.' };
+      return { success: false, message: 'Failed to verify account. Please check cookie & proxy settings.' };
     }
   } catch (err) {
-    logger.error(`❌ Error verifikasi ${account.label}: ${err.message}`);
-    return { success: false, message: `Gagal verifikasi: ${err.message}` };
+    logger.error(`❌ Verification error for ${account.label}: ${err.message}`);
+    return { success: false, message: `Verification failed: ${err.message}` };
   } finally {
     if (tempBrowser) {
       await tempBrowser.close().catch(() => {});
@@ -125,20 +125,20 @@ async function verifyAccount(account) {
  * Check Health & Session Validity of a Single Account
  */
 async function checkAccountHealth(account) {
-  logger.info(`🩺 Memeriksa kesehatan node ${account.label} (@${account.username || 'user'})...`);
+  logger.info(`🩺 Inspecting node health: ${account.label} (@${account.username || 'user'})...`);
 
   // 1. Check Proxy connectivity first
   if (account.proxy) {
     const proxyRes = await proxyHelper.testProxy(account.proxy);
     if (!proxyRes.success) {
       logger.warn(
-        `❌ [Proxy Dead] Node ${account.label} proxy tidak terhubung: ${proxyRes.message}`
+        `❌ [Proxy Dead] Node ${account.label} proxy unreachable: ${proxyRes.message}`
       );
       const updated = db.saveAccount({
         ...account,
         enabled: false,
         healthStatus: 'PROXY_DEAD',
-        healthMessage: `Proxy mati: ${proxyRes.message}`,
+        healthMessage: `Proxy dead: ${proxyRes.message}`,
         lastCheckedAt: new Date().toISOString(),
       });
       notifier.notify('PROXY_DEAD', {
@@ -149,7 +149,7 @@ async function checkAccountHealth(account) {
         success: false,
         healthStatus: 'PROXY_DEAD',
         account: updated,
-        message: `Proxy tidak terjangkau (${proxyRes.message}). Akun otomatis di-pause.`,
+        message: `Proxy unreachable (${proxyRes.message}). Node auto-paused.`,
       };
     }
   }
@@ -169,12 +169,12 @@ async function checkAccountHealth(account) {
     const currentUrl = page.url();
     if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
       logger.warn(
-        `⚠️ [Session Expired] Cookie auth_token node ${account.label} sudah tidak valid.`
+        `⚠️ [Session Expired] auth_token cookie for node ${account.label} is no longer valid.`
       );
       const updated = db.saveAccount({
         ...account,
         healthStatus: 'EXPIRED',
-        healthMessage: 'Cookie auth_token sudah kedaluwarsa',
+        healthMessage: 'auth_token cookie has expired',
         lastCheckedAt: new Date().toISOString(),
       });
       notifier.notify('SESSION_EXPIRED', {
@@ -186,7 +186,7 @@ async function checkAccountHealth(account) {
         success: false,
         healthStatus: 'EXPIRED',
         account: updated,
-        message: 'Sesi akun kedaluwarsa. Silakan perbarui cookie auth_token.',
+        message: 'Account session expired. Please renew auth_token cookie.',
       };
     }
 
@@ -205,12 +205,12 @@ async function checkAccountHealth(account) {
       ...account,
       username: detectedUsername || account.username,
       healthStatus: 'HEALTHY',
-      healthMessage: 'Sesi aktif & terverifikasi sehat',
+      healthMessage: 'Session active & verified healthy',
       lastCheckedAt: new Date().toISOString(),
     });
 
     logger.success(
-      `✅ [Healthy] Node ${account.label} (@${detectedUsername || account.username}) aktif & valid.`
+      `✅ [Healthy] Node ${account.label} (@${detectedUsername || account.username}) is active & valid.`
     );
     await context.close().catch(() => {});
     await browser.close().catch(() => {});
@@ -219,7 +219,7 @@ async function checkAccountHealth(account) {
       success: true,
       healthStatus: 'HEALTHY',
       account: updated,
-      message: 'Sesi aktif dan terverifikasi sehat!',
+      message: 'Session is active and verified healthy!',
     };
   } catch (err) {
     if (context) await context.close().catch(() => {});
@@ -227,7 +227,7 @@ async function checkAccountHealth(account) {
     return {
       success: false,
       healthStatus: 'UNKNOWN_ERROR',
-      message: `Error saat memeriksa sesi: ${err.message}`,
+      message: `Error inspecting session: ${err.message}`,
     };
   }
 }
@@ -238,10 +238,10 @@ async function checkAccountHealth(account) {
 async function checkFleetHealth() {
   const accounts = db.getAccounts();
   if (accounts.length === 0) {
-    return { success: false, message: 'Tidak ada akun terdaftar untuk dicek.' };
+    return { success: false, message: 'No registered accounts to inspect.' };
   }
 
-  logger.info(`🩺 Memulai pengecekan kesehatan massal untuk ${accounts.length} node armada...`);
+  logger.info(`🩺 Initiating fleet health audit across ${accounts.length} nodes...`);
   const results = [];
 
   for (const acc of accounts) {
@@ -256,7 +256,7 @@ async function checkFleetHealth() {
 
   const healthyCount = results.filter((r) => r.healthStatus === 'HEALTHY').length;
   logger.success(
-    `🏁 Pengecekan armada selesai: ${healthyCount}/${accounts.length} node dalam kondisi sehat.`
+    `🏁 Fleet audit complete: ${healthyCount}/${accounts.length} nodes are healthy.`
   );
 
   return {
@@ -273,7 +273,7 @@ async function checkFleetHealth() {
 async function executeWarmupProtocol(account, abortSignal = null) {
   const currentDay = Math.min(Math.max(Number(account.warmupDay) || 1, 1), 7);
   logger.action(
-    `🐣 [@${account.username || account.label}] Memulai rutinitas pemanasan Hari ke-${currentDay}/7...`
+    `🐣 [@${account.username || account.label}] Starting warm-up routine Day ${currentDay}/7...`
   );
 
   let browser = null;
@@ -289,7 +289,7 @@ async function executeWarmupProtocol(account, abortSignal = null) {
     await page.waitForTimeout(4000);
 
     if (page.url().includes('/login')) {
-      throw new Error('Sesi akun kedaluwarsa');
+      throw new Error('Account session expired');
     }
 
     // 1. Natural Timeline Scrolling
@@ -297,7 +297,7 @@ async function executeWarmupProtocol(account, abortSignal = null) {
     for (let s = 0; s < scrollCount; s++) {
       if (abortSignal?.aborted) break;
       logger.info(
-        `📜 [@${account.username || account.label}] Scrolling timeline organik (${s + 1}/${scrollCount})...`
+        `📜 [@${account.username || account.label}] Organic timeline scroll (${s + 1}/${scrollCount})...`
       );
       await page.mouse.wheel(0, 300 + Math.random() * 400);
       await sleep(2000 + Math.random() * 3000, abortSignal);
@@ -316,7 +316,7 @@ async function executeWarmupProtocol(account, abortSignal = null) {
         await btn.click();
         likesDone++;
         logger.success(
-          `❤️ [@${account.username || account.label}] Organik like tweet (${likesDone}/${targetLikes})`
+          `❤️ [@${account.username || account.label}] Organic post like (${likesDone}/${targetLikes})`
         );
         await sleep(3000 + Math.random() * 4000, abortSignal);
       } catch (e) {}
@@ -335,7 +335,7 @@ async function executeWarmupProtocol(account, abortSignal = null) {
       accountName: account.username || account.label,
       action: 'WARMUP',
       status: 'SUCCESS',
-      details: `Selesai pemanasan Hari ke-${currentDay}: ${likesDone} organic likes`,
+      details: `Warm-up Day ${currentDay} completed: ${likesDone} organic likes`,
     });
 
     notifier.notify('WARMUP_DAY_COMPLETED', {
@@ -348,7 +348,7 @@ async function executeWarmupProtocol(account, abortSignal = null) {
     await browser.close().catch(() => {});
 
     logger.success(
-      `🎉 [@${account.username || account.label}] Berhasil menyelesaikan pemanasan Hari ke-${currentDay}! (Lanjut ke Hari ${nextDay})`
+      `🎉 [@${account.username || account.label}] Warm-up Day ${currentDay} completed successfully! (Advancing to Day ${nextDay})`
     );
 
     return {
@@ -357,12 +357,12 @@ async function executeWarmupProtocol(account, abortSignal = null) {
       nextDay,
       likesDone,
       account: updated,
-      message: `Berhasil menyelesaikan pemanasan Hari ke-${currentDay}!`,
+      message: `Warm-up Day ${currentDay} completed successfully!`,
     };
   } catch (err) {
     if (context) await context.close().catch(() => {});
     if (browser) await browser.close().catch(() => {});
-    logger.error(`❌ [@${account.username || account.label}] Gagal pemanasan: ${err.message}`);
+    logger.error(`❌ [@${account.username || account.label}] Warm-up routine failed: ${err.message}`);
     return { success: false, message: err.message };
   }
 }

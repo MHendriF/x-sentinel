@@ -19,12 +19,12 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8 MB per image
 router.post('/upload', (req, res) => {
   const { imageBase64, filename } = req.body;
   if (!imageBase64) {
-    return res.status(400).json({ success: false, message: 'Data gambar wajib disertakan.' });
+    return res.status(400).json({ success: false, message: 'Image data is required.' });
   }
 
   const matches = imageBase64.match(/^data:([A-Za-z0-9.+-]+\/[A-Za-z0-9.+-]+);base64,(.+)$/);
   if (!matches || matches.length !== 3) {
-    return res.status(400).json({ success: false, message: 'Format base64 image tidak valid.' });
+    return res.status(400).json({ success: false, message: 'Invalid base64 image format.' });
   }
 
   const mime = matches[1].toLowerCase();
@@ -32,18 +32,18 @@ router.post('/upload', (req, res) => {
   if (!ext) {
     return res.status(400).json({
       success: false,
-      message: 'Tipe file tidak didukung. Gunakan PNG, JPG, GIF, atau WebP.',
+      message: 'Unsupported file type. Use PNG, JPG, GIF, or WebP.',
     });
   }
 
   const buffer = Buffer.from(matches[2], 'base64');
   if (buffer.length === 0) {
-    return res.status(400).json({ success: false, message: 'Data gambar kosong.' });
+    return res.status(400).json({ success: false, message: 'Image data is empty.' });
   }
   if (buffer.length > MAX_IMAGE_BYTES) {
     return res.status(413).json({
       success: false,
-      message: `Ukuran gambar melebihi batas ${(MAX_IMAGE_BYTES / (1024 * 1024)).toFixed(0)} MB.`,
+      message: `Image size exceeds the ${(MAX_IMAGE_BYTES / (1024 * 1024)).toFixed(0)} MB limit.`,
     });
   }
 
@@ -58,7 +58,7 @@ router.post('/upload', (req, res) => {
 
   fs.writeFileSync(filePath, buffer);
   logger.success(
-    `🖼️ Media berhasil diunggah: ${finalFilename} (${(buffer.length / 1024).toFixed(1)} KB)`
+    `🖼️ Media uploaded successfully: ${finalFilename} (${(buffer.length / 1024).toFixed(1)} KB)`
   );
 
   res.json({
@@ -107,7 +107,7 @@ router.post('/prune', (req, res) => {
   const days = Math.max(1, Math.min(365, parseInt(req.body?.maxAgeDays, 10) || 7));
   const result = pruneOldMedia(days);
   logger.info(
-    `🧹 Pembersihan media disk: ${result.deletedCount} file lama dihapus (> ${days} hari).`
+    `🧹 Disk media cleanup: pruned ${result.deletedCount} old file(s) (> ${days} days).`
   );
   res.json({
     success: true,

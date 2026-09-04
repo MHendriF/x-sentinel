@@ -21,7 +21,7 @@ class SchedulerService {
    */
   start() {
     if (this.interval) return;
-    logger.info('⏰ Scheduler engine aktif (interval 15s).');
+    logger.info('⏰ Scheduler engine active (15s interval).');
     this.interval = setInterval(() => this.tick(), this.intervalMs);
     // Run initial tick after 5s
     setTimeout(() => this.tick(), 5000);
@@ -34,7 +34,7 @@ class SchedulerService {
     if (this.interval) {
       clearInterval(this.interval);
       this.interval = null;
-      logger.info('⏰ Scheduler engine dihentikan.');
+      logger.info('⏰ Scheduler engine stopped.');
     }
   }
 
@@ -74,7 +74,7 @@ class SchedulerService {
     if (pendingPost) {
       this.isProcessing = true;
       logger.info(
-        `⏰ [Scheduler] Menjalankan jadwal postingan: "${pendingPost.title || pendingPost.posts?.[0]?.slice(0, 30)}"...`
+        `⏰ [Scheduler] Executing scheduled post: "${pendingPost.title || pendingPost.posts?.[0]?.slice(0, 30)}"...`
       );
 
       db.saveSchedule({
@@ -94,7 +94,7 @@ class SchedulerService {
           ...pendingPost,
           status: result.success ? 'COMPLETED' : 'FAILED',
           executedAt: new Date().toISOString(),
-          lastMessage: result.message || (result.success ? 'Selesai diposting' : 'Gagal'),
+          lastMessage: result.message || (result.success ? 'Published successfully' : 'Failed'),
         });
 
         notifier.notify(result.success ? 'POST_PUBLISHED' : 'TASK_FAILED', {
@@ -127,7 +127,7 @@ class SchedulerService {
     if (dueHunter) {
       this.isProcessing = true;
       logger.info(
-        `📡 [Scheduler] Menjalankan Recurring Feed Hunter (${dueHunter.keywords?.join(', ')})...`
+        `📡 [Scheduler] Executing Recurring Feed Hunter (${dueHunter.keywords?.join(', ')})...`
       );
 
       db.saveSchedule({

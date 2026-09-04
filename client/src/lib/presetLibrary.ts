@@ -14,7 +14,7 @@ export const PRESET_LIBRARY: PresetCategory[] = [
     icon: 'Coins',
     badge: 'ENGLISH · CRYPTO',
     description:
-      'Koleksi komentar natural untuk ekosistem crypto, node runners, testnet, Base, Solana, dan tokenomics.',
+      'Curated natural comments for crypto ecosystems, node runners, testnets, Base, Solana, and tokenomics.',
     templates: [
       '{the rails are commodity now|infrastructure is solidifying}, {occupying them is the game|distribution is the real moat}. {huge shift happening|loving this development} 🚀',
       '{Solid breakdown|Great thread|Super clear explanation} on the {tokenomics|architecture|mechanics}. {Keep building|Bullish on this|Bookmarked for later}!',
@@ -29,7 +29,7 @@ export const PRESET_LIBRARY: PresetCategory[] = [
     icon: 'Bot',
     badge: 'ENGLISH · AI AGENTS',
     description:
-      'Komentar bernas untuk topik LLM, agentic workflows, model inference, AI tooling, dan autonomous systems.',
+      'Thoughtful commentary on LLMs, agentic workflows, model inference, AI tooling, and autonomous systems.',
     templates: [
       '{Agents having native counterparty capabilities|Autonomous agentic workflows} {changes the entire paradigm|is such an underrated unlock}. {Exciting times ahead|Spot on analysis} 🤖',
       '{Inference cost reduction|Open source model progress} is moving at {breakneck speed|an insane pace}. {Great observation|Really well articulated}!',
@@ -44,7 +44,7 @@ export const PRESET_LIBRARY: PresetCategory[] = [
     icon: 'Code2',
     badge: 'ENGLISH · DEV & SAAS',
     description:
-      'Komentar untuk para developer, software engineer, tech architecture, dan founder startup.',
+      'Technical commentary for software developers, engineers, stack architecture, and startup founders.',
     templates: [
       '{Clean design choices|Solid engineering principle|Love this stack architecture}. {Shipping fast without breaking things|Simplicity always wins} ⚡',
       '{Great breakdown of the technical tradeoff|Really appreciate the depth here}. {Bookmarked for reference|Bookmarking this for the team}!',
@@ -58,7 +58,7 @@ export const PRESET_LIBRARY: PresetCategory[] = [
     icon: 'MessageCircle',
     badge: 'INDONESIAN · COMMUNITY',
     description:
-      'Template komentar ramah, apresiatif, dan membumi untuk audiens dan komunitas Indonesia.',
+      'Friendly, appreciative, and culturally grounded Indonesian community discussion templates.',
     templates: [
       '{Keren banget|Mantap sekali|Insightful banget} {infonya|pembahasannya|tweetnya} {bang|kak|gan}! 🔥 {Izin bookmark ya|Ditunggu update selanjutnya|Bermanfaat banget}.',
       '{Setuju banget|Sepakat|Benar sekali} dengan poin ini. {Sangat menginspirasi|Membuka wawasan|Top markotop} 👍',
@@ -72,7 +72,7 @@ export const PRESET_LIBRARY: PresetCategory[] = [
     icon: 'Sparkles',
     badge: 'PUNCHY · ENGAGEMENT',
     description:
-      'Kalimat pendek, padat, dan memancing interaksi untuk memaksimalkan reach dan impression.',
+      'Punchy, high-signal, engagement-driving hooks designed to maximize reach and impressions.',
     templates: [
       "{100% agreed|Couldn't have said it better|Pure signal, zero noise}. {This right here|Underrated point} 🎯",
       '{Such an important point that most people overlook|This sums up the whole industry shift}. {Bookmarked|Saved}!',

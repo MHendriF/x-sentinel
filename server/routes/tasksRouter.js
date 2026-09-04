@@ -19,14 +19,14 @@ const safeMediaPathSchema = z.string().refine((p) => {
   const relative = path.relative(mediaDir, resolvedPath);
   const isInside = Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
   return isInside && ALLOWED_MEDIA_EXT_RE.test(resolvedPath);
-}, 'Path file media harus berada di dalam direktori data/media dan berekstensi gambar valid (PNG, JPG, GIF, WebP).');
+}, 'Media file path must be inside the data/media directory with a valid image extension (PNG, JPG, GIF, WebP).');
 
 const accountIdsSchema = z.union([z.string(), z.array(z.string())]).optional();
 
 const postTaskSchema = z.object({
   accountIds: accountIdsSchema,
   posts: z.union([z.string().min(1), z.array(z.string()).min(1)], {
-    message: 'Konten postingan tidak boleh kosong.',
+    message: 'Post content cannot be empty.',
   }),
   delaySeconds: z.number().min(0).max(3600).optional(),
   mediaPaths: z.array(safeMediaPathSchema).max(4).optional(),
@@ -40,10 +40,10 @@ const batchTaskSchema = z.object({
         .string()
         .refine(
           (url) => TWEET_URL_RE.test(url.trim()),
-          'Setiap URL harus merupakan tautan tweet status resmi X/Twitter (misal: https://x.com/user/status/123456).'
+          'Each URL must be an official X/Twitter tweet status link (e.g. https://x.com/user/status/123456).'
         )
     )
-    .min(1, 'Daftar URL tweet target tidak boleh kosong.'),
+    .min(1, 'Target tweet URL list cannot be empty.'),
   like: z.boolean().optional(),
   retweet: z.boolean().optional(),
   comment: z.boolean().optional(),
@@ -54,7 +54,7 @@ const batchTaskSchema = z.object({
 
 const hunterTaskSchema = z.object({
   accountIds: accountIdsSchema,
-  keyword: z.string().min(1, 'Kata kunci pencarian tidak boleh kosong.').max(200),
+  keyword: z.string().min(1, 'Search keyword cannot be empty.').max(200),
   count: z.number().int().min(1).max(50).optional(),
   like: z.boolean().optional(),
   retweet: z.boolean().optional(),
@@ -69,7 +69,7 @@ router.post('/post', validateBody(postTaskSchema), (req, res) => {
   const { accountIds, posts, delaySeconds, mediaPaths } = req.body;
 
   if (twitterBot.isRunning) {
-    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
+    throw httpError(400, 'An automation process is currently running.', 'TASK_RUNNING');
   }
 
   twitterBot
@@ -83,7 +83,7 @@ router.post('/post', validateBody(postTaskSchema), (req, res) => {
 
   res.json({
     success: true,
-    message: 'Tugas publikasi postingan telah dimulai di latar belakang.',
+    message: 'Post publication task started in the background.',
   });
 });
 
@@ -101,7 +101,7 @@ router.post('/batch', validateBody(batchTaskSchema), (req, res) => {
   } = req.body;
 
   if (twitterBot.isRunning) {
-    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
+    throw httpError(400, 'An automation process is currently running.', 'TASK_RUNNING');
   }
 
   twitterBot
@@ -119,7 +119,7 @@ router.post('/batch', validateBody(batchTaskSchema), (req, res) => {
 
   res.json({
     success: true,
-    message: `Tugas batch multi-akun dimulai untuk ${urls.length} postingan.`,
+    message: `Multi-node batch task started for ${urls.length} posts.`,
   });
 });
 
@@ -138,7 +138,7 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
   } = req.body;
 
   if (twitterBot.isRunning) {
-    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
+    throw httpError(400, 'An automation process is currently running.', 'TASK_RUNNING');
   }
 
   twitterBot
@@ -156,7 +156,7 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
 
   res.json({
     success: true,
-    message: `Tugas Feed Hunter untuk "${keyword}" dimulai di latar belakang.`,
+    message: `Feed Hunter task for "${keyword}" started in the background.`,
   });
 });
 
@@ -164,9 +164,9 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
 router.post('/stop', (req, res) => {
   const stopped = twitterBot.stopTask();
   if (stopped) {
-    res.json({ success: true, message: 'Sinyal penghentian tugas berhasil dikirim.' });
+    res.json({ success: true, message: 'Task stop signal sent successfully.' });
   } else {
-    res.json({ success: false, message: 'Tidak ada tugas yang sedang berjalan.' });
+    res.json({ success: false, message: 'No active tasks currently running.' });
   }
 });
 

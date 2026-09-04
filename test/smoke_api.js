@@ -150,7 +150,7 @@ async function main() {
   assert.strictEqual(badProxy.status, 400, 'Proxy without host:port must be rejected');
   const badProxyJson = await badProxy.json();
   assert.ok(
-    /Format proxy tunnel tidak valid/i.test(badProxyJson.message),
+    /Invalid proxy tunnel format/i.test(badProxyJson.message),
     'Rejection message must explain the expected proxy format'
   );
   const badProxyTest = await fetch(`${BASE}/api/proxy/test`, {

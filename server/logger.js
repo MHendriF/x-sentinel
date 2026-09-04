@@ -8,7 +8,7 @@ class Logger extends EventEmitter {
   }
 
   log(level, message, meta = {}) {
-    const timestamp = new Date().toLocaleTimeString('id-ID', { hour12: false });
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     const logEntry = {
       id: Date.now() + '-' + Math.random().toString(36).substr(2, 5),
       timestamp,

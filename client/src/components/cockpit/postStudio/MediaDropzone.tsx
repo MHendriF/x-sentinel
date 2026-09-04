@@ -28,7 +28,7 @@ export const MediaDropzone: React.FC<MediaDropzoneProps> = ({
     if (!files || files.length === 0) return;
 
     if (attachedMedia.length + files.length > 4) {
-      toast.error('Maksimal 4 gambar per postingan tweet.');
+      toast.error('Maximum 4 images per tweet post.');
       return;
     }
 
@@ -37,7 +37,7 @@ export const MediaDropzone: React.FC<MediaDropzoneProps> = ({
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file.type.startsWith('image/')) {
-          toast.error(`File ${file.name} bukan format gambar yang valid.`);
+          toast.error(`File ${file.name} is not a valid image format.`);
           continue;
         }
 
@@ -64,11 +64,11 @@ export const MediaDropzone: React.FC<MediaDropzoneProps> = ({
               sizeKb: uploadRes.sizeKb,
             },
           ]);
-          toast.success(`Gambar ${file.name} berhasil dilampirkan.`);
+          toast.success(`Image ${file.name} attached successfully.`);
         }
       }
     } catch (err: any) {
-      toast.error(`Gagal mengunggah media: ${err.message}`);
+      toast.error(`Failed to upload media: ${err.message}`);
     } finally {
       setIsUploadingMedia(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -102,7 +102,7 @@ export const MediaDropzone: React.FC<MediaDropzoneProps> = ({
         ) : (
           <ImageIcon className="h-3.5 w-3.5 text-amber-400" />
         )}
-        <span>+ Gambar ({attachedMedia.length}/4)</span>
+        <span>+ Image ({attachedMedia.length}/4)</span>
       </Button>
 
       {/* Thumbnails list if any attached */}
@@ -122,7 +122,7 @@ export const MediaDropzone: React.FC<MediaDropzoneProps> = ({
                 type="button"
                 onClick={() => handleRemoveMedia(i)}
                 className="absolute right-1 top-1 rounded-full bg-black/80 p-0.5 text-slate-300 opacity-0 transition-opacity hover:text-white group-hover:opacity-100"
-                title="Hapus gambar"
+                title="Remove image"
               >
                 <X className="h-3 w-3" />
               </button>

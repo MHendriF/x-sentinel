@@ -12,8 +12,7 @@ export const ModularArchitectureCard: React.FC = () => {
         </div>
         <CardTitle className="text-lg">Sub-Modules &amp; Separation of Concerns</CardTitle>
         <CardDescription>
-          Arsitektur kode refaktor yang bersih, sangat mudah di-maintain, dan terisolasi per domain
-          tanggung jawab.
+          Clean, highly maintainable codebase architecture with strict domain boundary isolation.
         </CardDescription>
       </CardHeader>
 

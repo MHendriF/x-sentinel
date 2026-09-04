@@ -167,7 +167,7 @@ class ProxyHelper {
   async testProxy(proxyString) {
     const parsed = this.getPlaywrightLaunchProxy(proxyString);
     if (!parsed) {
-      return { success: false, message: 'Format proxy tidak valid atau kosong.' };
+      return { success: false, message: 'Invalid or empty proxy format.' };
     }
 
     const { request } = require('playwright');
@@ -201,11 +201,11 @@ class ProxyHelper {
         let message = `Proxy HTTP Error: ${status}`;
         if (status === 407) {
           message =
-            'Proxy Auth Failed (407): Username atau Password proxy salah / IP belum di-whitelist.';
+            'Proxy Auth Failed (407): Incorrect proxy username/password or IP not whitelisted.';
         } else if (status === 403) {
-          message = 'Proxy Forbidden (403): Akses ke target ditolak oleh proxy provider.';
+          message = 'Proxy Forbidden (403): Target access denied by proxy provider.';
         } else if (status === 502 || status === 503) {
-          message = `Proxy Bad Gateway (${status}): Server proxy sedang offline.`;
+          message = `Proxy Bad Gateway (${status}): Proxy server is offline.`;
         }
         return {
           success: false,
@@ -218,11 +218,11 @@ class ProxyHelper {
       const latency = Date.now() - startTime;
       let msg = err.message;
       if (msg.includes('timeout')) {
-        msg = 'Connection Timeout (8s): Server proxy tidak merespon.';
+        msg = 'Connection Timeout (8s): Proxy server did not respond.';
       } else if (msg.includes('ECONNREFUSED')) {
-        msg = 'Connection Refused: IP / Port proxy tidak aktif.';
+        msg = 'Connection Refused: Proxy IP / Port is inactive.';
       } else if (msg.includes('ENOTFOUND')) {
-        msg = 'Host Not Found: Domain / IP proxy tidak valid.';
+        msg = 'Host Not Found: Invalid proxy domain or IP.';
       }
       return {
         success: false,

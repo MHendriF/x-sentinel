@@ -23,7 +23,7 @@ function parseSpintax(text) {
 
 function getRandomTemplate(templates) {
   if (!Array.isArray(templates) || templates.length === 0) {
-    return 'Keren banget infonya bang! 🔥';
+    return 'Great insights, thanks for sharing! 🔥';
   }
   const randomIndex = Math.floor(Math.random() * templates.length);
   return parseSpintax(templates[randomIndex]);
@@ -37,7 +37,7 @@ async function generateAiReply(tweetText, author, provider, apiKey, customPrompt
     return null;
   }
 
-  const prompt = `${customPrompt || 'Tulis 1 komentar singkat, positif, dan natural untuk tweet berikut'}\nPenulis: @${author || 'user'}\nIsi Tweet: "${tweetText}"\nKomentar:`;
+  const prompt = `${customPrompt || 'Write 1 concise, positive, and natural reply to the following tweet'}\nAuthor: @${author || 'user'}\nTweet Content: "${tweetText}"\nReply:`;
 
   try {
     if (provider === 'gemini') {

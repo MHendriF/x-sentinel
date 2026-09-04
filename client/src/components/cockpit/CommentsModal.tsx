@@ -47,10 +47,10 @@ export const CommentsModal: React.FC = () => {
       });
       if (res.success && res.replies && res.replies.length > 0) {
         setComments([...res.replies, ...comments]);
-        toast.success(`Berhasil menambahkan ${res.replies.length} balasan dari AI ke stack!`);
+        toast.success(`Successfully added ${res.replies.length} AI replies to stack!`);
         setIsAiOpen(false);
       } else {
-        toast.error(res.message || 'Gagal generate balasan.');
+        toast.error(res.message || 'Failed to generate replies.');
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -79,7 +79,7 @@ export const CommentsModal: React.FC = () => {
   };
 
   const handleAddComment = () => {
-    setComments(['{Keren|Mantap} banget infonya! 🔥', ...comments]);
+    setComments(['{Great|Awesome} insight! 🔥', ...comments]);
   };
 
   const handleUpdateComment = (index: number, val: string) => {
@@ -102,12 +102,12 @@ export const CommentsModal: React.FC = () => {
         const parsed = JSON.parse(event.target?.result as string);
         if (Array.isArray(parsed)) {
           setComments(parsed);
-          toast.success(`Berhasil mengimpor ${parsed.length} komentar dari ${file.name}`);
+          toast.success(`Successfully imported ${parsed.length} comments from ${file.name}`);
         } else {
-          toast.error('Format JSON harus berupa array string: ["komen 1", "komen 2"]');
+          toast.error('JSON format must be an array of strings: ["comment 1", "comment 2"]');
         }
       } catch (err: any) {
-        toast.error(`Error membaca file JSON: ${err.message}`);
+        toast.error(`Error reading JSON file: ${err.message}`);
       }
     };
     reader.readAsText(file);
@@ -117,7 +117,7 @@ export const CommentsModal: React.FC = () => {
     if (!commentsAccount) return;
     const clean = comments.map((c) => c.trim()).filter(Boolean);
     if (clean.length === 0) {
-      toast.error('Setidaknya masukkan 1 baris template komentar.');
+      toast.error('Please enter at least 1 comment template entry.');
       return;
     }
 
@@ -125,11 +125,11 @@ export const CommentsModal: React.FC = () => {
     try {
       const res = await apiClient.saveAccountComments(commentsAccount.id, clean);
       if (res.success) {
-        toast.success(`Bank payload untuk ${commentsAccount.label} berhasil disimpan!`);
+        toast.success(`Payload bank for ${commentsAccount.label} saved successfully!`);
         closeCommentsModal();
         loadAccounts();
       } else {
-        toast.error('Gagal menyimpan komentar.');
+        toast.error('Failed to save comments.');
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -150,7 +150,7 @@ export const CommentsModal: React.FC = () => {
             Payload Bank: {commentsAccount?.label} (@{commentsAccount?.username || 'user'})
           </DialogTitle>
           <DialogDescription>
-            File Target: <code className="text-amber-400">{filePath}</code>
+            Target File: <code className="text-amber-400">{filePath}</code>
           </DialogDescription>
         </DialogHeader>
 
@@ -161,10 +161,10 @@ export const CommentsModal: React.FC = () => {
               <FileJson className="h-6 w-6 shrink-0 text-amber-400" />
               <div>
                 <div className="text-xs font-semibold text-white">
-                  Import Komentar dari File .JSON
+                  Import Comments from .JSON File
                 </div>
                 <div className="font-mono text-[10px] text-muted-foreground">
-                  Format: [&quot;Keren banget!&quot;, &quot;&#123;Opsi 1|Opsi 2&#125;&quot;]
+                  Format: [&quot;Awesome insight!&quot;, &quot;&#123;Option 1|Option 2&#125;&quot;]
                 </div>
               </div>
             </div>
@@ -190,7 +190,7 @@ export const CommentsModal: React.FC = () => {
                 onClick={() => setIsAiOpen(!isAiOpen)}
                 className="text-[10px] text-slate-400 hover:text-white"
               >
-                {isAiOpen ? 'Tutup Panel' : 'Buka Generator'}
+                {isAiOpen ? 'Close Panel' : 'Open Generator'}
               </button>
             </div>
 
@@ -200,12 +200,12 @@ export const CommentsModal: React.FC = () => {
                   rows={2}
                   value={aiPostInput}
                   onChange={(e) => setAiPostInput(e.target.value)}
-                  placeholder="Tempel teks tweet / post target di sini..."
+                  placeholder="Paste target tweet / post text here..."
                   className="font-mono text-xs"
                 />
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 font-mono text-xs">
-                    <span className="text-slate-400">Jumlah:</span>
+                    <span className="text-slate-400">Count:</span>
                     {[10, 15, 20].map((cnt) => (
                       <button
                         key={cnt}
@@ -230,7 +230,7 @@ export const CommentsModal: React.FC = () => {
                     className="h-7 gap-1 font-mono text-xs font-bold"
                   >
                     <Sparkles className="h-3 w-3" />
-                    {isAiGenerating ? 'Meracik...' : `Generate ${aiCount} Balasan`}
+                    {isAiGenerating ? 'Generating...' : `Generate ${aiCount} Replies`}
                   </Button>
                 </div>
               </div>
@@ -252,7 +252,7 @@ export const CommentsModal: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setComments([...preset.templates]);
-                    toast.success(`Memuat ${preset.templates.length} template "${preset.name}"!`);
+                    toast.success(`Loaded ${preset.templates.length} templates from "${preset.name}"!`);
                   }}
                   className="cursor-pointer rounded border border-slate-700 bg-obsidian-950 px-2.5 py-1 font-mono text-[10px] font-medium text-slate-200 transition-all hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-300"
                 >
@@ -287,14 +287,14 @@ export const CommentsModal: React.FC = () => {
                     value={comment}
                     onChange={(e) => handleUpdateComment(idx, e.target.value)}
                     className="font-mono text-xs"
-                    placeholder="Mendukung spintax {Opsi 1|Opsi 2}..."
+                    placeholder="Supports spintax {Option 1|Option 2}..."
                   />
                   <Button
                     size="sm"
                     variant="destructive"
                     className="h-9 shrink-0 px-2.5"
                     onClick={() => handleRemoveComment(idx)}
-                    title="Hapus baris"
+                    title="Delete row"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

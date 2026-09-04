@@ -42,11 +42,11 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
       loadAccounts();
       toast.success(
         account.enabled !== false
-          ? `Node ${account.label} dinonaktifkan.`
-          : `Node ${account.label} diaktifkan.`
+          ? `Node ${account.label} paused.`
+          : `Node ${account.label} activated.`
       );
     } catch (err: any) {
-      toast.error(`Gagal mengubah status: ${err.message}`);
+      toast.error(`Failed to toggle status: ${err.message}`);
     }
   };
 
@@ -55,9 +55,9 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
     try {
       const res = await apiClient.checkAccountHealth(account.id);
       if (res.success) {
-        toast.success(`🩺 Node @${res.account?.username || account.label} Sehat: ${res.message}`);
+        toast.success(`🩺 Node @${res.account?.username || account.label} Healthy: ${res.message}`);
       } else {
-        toast.error(`Peringatan kesehatan node: ${res.message}`);
+        toast.error(`Node health warning: ${res.message}`);
       }
       loadAccounts();
     } catch (err: any) {
@@ -73,13 +73,13 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
       const res = await apiClient.startWarmup(account.id);
       if (res.success) {
         toast.info(
-          `🐣 Pemanasan dimulai untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`
+          `🐣 Warmup initiated for @${account.username || account.label} (Day ${account.warmupDay || 1}/7)...`
         );
       } else {
         toast.error(res.message);
       }
     } catch (err: any) {
-      toast.error(`Gagal memulai warmup: ${err.message}`);
+      toast.error(`Failed to start warmup: ${err.message}`);
     } finally {
       setIsWarmingUp(false);
     }
@@ -91,14 +91,14 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
       const res = await apiClient.testAccountProxy(account.id);
       setProxyTest(res);
       if (res.isDirect) {
-        toast.info('Node menggunakan koneksi Direct IP (tanpa proxy).');
+        toast.info('Node using Direct IP connection (no proxy).');
       } else if (res.success) {
         toast.success(`Proxy Online: ${res.ip} (${res.country}) · Latency: ${res.latency}ms`);
       } else {
         toast.error(`Proxy Error: ${res.message}`);
       }
     } catch (err: any) {
-      toast.error(`Gagal menguji proxy: ${err.message}`);
+      toast.error(`Failed to test proxy: ${err.message}`);
     } finally {
       setIsPingingProxy(false);
     }
@@ -168,17 +168,17 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           {account.healthStatus === 'HEALTHY' ? (
             <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
               <CheckCircle2 className="h-2.5 w-2.5" />
-              Sehat
+              Healthy
             </Badge>
           ) : account.healthStatus === 'EXPIRED' ? (
             <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
               <AlertTriangle className="h-2.5 w-2.5" />
-              Kadaluarsa
+              Expired
             </Badge>
           ) : account.healthStatus === 'PROXY_DEAD' ? (
             <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
               <WifiOff className="h-2.5 w-2.5" />
-              Proxy Mati
+              Proxy Dead
             </Badge>
           ) : account.isValid ? (
             <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
@@ -191,7 +191,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
               className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px] text-slate-400"
             >
               <HelpCircle className="h-2.5 w-2.5" />
-              Belum Verifikasi
+              Unchecked
             </Badge>
           )}
 
@@ -201,10 +201,10 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
               variant="outline"
               className="cursor-pointer gap-0.5 border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9.5px] text-amber-300 hover:bg-amber-500/20"
               onClick={handleStartWarmup}
-              title="Klik untuk jalankan rutinitas pemanasan"
+              title="Click to run warmup routine"
             >
               <Flame className="h-2.5 w-2.5 text-amber-400" />
-              Hari {account.warmupDay || 1}/7
+              Day {account.warmupDay || 1}/7
             </Badge>
           )}
 
@@ -250,10 +250,10 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
             variant="default"
             className="cursor-pointer gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px] transition-colors hover:bg-amber-500/20"
             onClick={() => openCommentsModal(account)}
-            title="Kelola pool komentar akun ini"
+            title="Manage comment payload pool for this node"
           >
             <MessageSquare className="h-2.5 w-2.5" />
-            {account.commentsCount ?? 3} Payload
+            {account.commentsCount ?? 3} Payloads
           </Badge>
         </div>
       </div>
@@ -266,10 +266,10 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           className="h-7 flex-1 px-2 text-[11px] font-medium"
           onClick={handleVerify}
           disabled={isVerifying}
-          title="Periksa kesehatan sesi login dan koneksi node"
+          title="Verify login session health and node connection"
         >
           <HeartPulse className="mr-1 h-3 w-3 text-amber-400" />
-          <span>{isVerifying ? 'Memeriksa...' : 'Cek Kesehatan'}</span>
+          <span>{isVerifying ? 'Checking...' : 'Health Check'}</span>
         </Button>
 
         {account.proxy && (
@@ -280,7 +280,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
             onClick={handlePingProxy}
             disabled={isPingingProxy}
             title="Ping Proxy Latency & Location"
-            aria-label="Uji latensi & lokasi proxy node ini"
+            aria-label="Test proxy latency & location for this node"
           >
             <Activity
               className={`h-3 w-3 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
@@ -294,7 +294,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           className="h-7 w-7 shrink-0 p-0 text-xs text-slate-300 hover:text-white"
           onClick={() => openAccountModal(account)}
           title="Edit Node Config"
-          aria-label="Edit konfigurasi node ini"
+          aria-label="Edit node configuration"
         >
           <SettingsIcon className="h-3 w-3" />
         </Button>
@@ -305,7 +305,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
           className="h-7 w-7 shrink-0 p-0 text-xs"
           onClick={handleDelete}
           title="Remove Node"
-          aria-label="Hapus node ini"
+          aria-label="Delete this node"
         >
           <Trash2 className="h-3 w-3" />
         </Button>

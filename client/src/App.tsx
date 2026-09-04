@@ -152,8 +152,7 @@ export const App: React.FC = () => {
           >
             <WifiOff className="h-4 w-4 shrink-0 text-red-400" />
             <span>
-              Tidak dapat terhubung ke engine — data yang ditampilkan adalah hasil terakhir yang
-              berhasil dimuat.
+              Unable to connect to X-SENTINEL engine. Displaying latest cached telemetry state.
             </span>
           </div>
         )}

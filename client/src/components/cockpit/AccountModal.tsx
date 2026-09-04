@@ -83,7 +83,7 @@ export const AccountModal: React.FC = () => {
   // Smart Extractor for Cookies
   const parseAndFillCookies = (text: string) => {
     if (!text || !text.trim()) {
-      toast.error('Teks kosong.');
+      toast.error('Text is empty.');
       return false;
     }
 
@@ -122,13 +122,13 @@ export const AccountModal: React.FC = () => {
       if (foundCt0) setCt0(foundCt0);
       if (!label) setLabel(`Node-${Date.now().toString().slice(-4)}`);
       toast.success(
-        foundCt0 ? 'Berhasil mengekstrak auth_token & ct0!' : 'Berhasil mengekstrak auth_token!'
+        foundCt0 ? 'Successfully extracted auth_token & ct0!' : 'Successfully extracted auth_token!'
       );
       setShowRawPaste(false);
       setRawPasteText('');
       return true;
     } else {
-      toast.error('Tidak ditemukan auth_token dalam teks yang dimasukkan.');
+      toast.error('No auth_token found in the provided text.');
       return false;
     }
   };
@@ -148,13 +148,13 @@ export const AccountModal: React.FC = () => {
 
   const handleTestProxyInModal = async () => {
     if (!proxy.trim()) {
-      toast.error('Masukkan string proxy terlebih dahulu.');
+      toast.error('Please enter a proxy string first.');
       return;
     }
     // Masked values are resolved server-side; raw values must be well-formed.
     if (!proxy.includes('••••') && !isValidProxyFormat(proxy)) {
       setProxyError(PROXY_FORMAT_HINT);
-      toast.error(`Format proxy tunnel tidak valid. ${PROXY_FORMAT_HINT}`);
+      toast.error(`Invalid proxy tunnel format. ${PROXY_FORMAT_HINT}`);
       return;
     }
     setProxyError(null);
@@ -171,10 +171,10 @@ export const AccountModal: React.FC = () => {
       if (res.success) {
         toast.success(`Proxy Valid: ${res.ip} (${res.country}) · ${res.latency}ms`);
       } else {
-        toast.error(`Proxy Gagal: ${res.message}`);
+        toast.error(`Proxy Failed: ${res.message}`);
       }
     } catch (err: any) {
-      toast.error(`Error pengujian proxy: ${err.message}`);
+      toast.error(`Proxy test error: ${err.message}`);
     } finally {
       setIsTestingProxy(false);
     }
@@ -182,12 +182,12 @@ export const AccountModal: React.FC = () => {
 
   const handleSave = async () => {
     if (!authToken.trim()) {
-      toast.error('auth_token cookie wajib diisi.');
+      toast.error('auth_token cookie is required.');
       return;
     }
     if (proxy.trim() && !proxy.includes('••••') && !isValidProxyFormat(proxy)) {
       setProxyError(PROXY_FORMAT_HINT);
-      toast.error(`Format proxy tunnel tidak valid. ${PROXY_FORMAT_HINT}`);
+      toast.error(`Invalid proxy tunnel format. ${PROXY_FORMAT_HINT}`);
       return;
     }
     setProxyError(null);
@@ -208,13 +208,13 @@ export const AccountModal: React.FC = () => {
       if (res.success) {
         toast.success(
           editingAccount
-            ? `Node ${label || 'Akun'} berhasil diperbarui.`
-            : 'Node baru berhasil didaftarkan.'
+            ? `Node ${label || 'Account'} updated successfully.`
+            : 'New node registered successfully.'
         );
         closeAccountModal();
         loadAccounts();
       } else {
-        toast.error(`Gagal menyimpan akun: ${res.message}`);
+        toast.error(`Failed to save account: ${res.message}`);
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -238,14 +238,14 @@ export const AccountModal: React.FC = () => {
               className="h-6 gap-1 px-2 font-mono text-[11px] text-flame hover:bg-flame/10"
             >
               <HelpCircle className="h-3.5 w-3.5" />
-              {showGuide ? 'Tutup Panduan' : 'Cara Ambil Cookie'}
+              {showGuide ? 'Close Guide' : 'How to Extract Cookies'}
             </Button>
           </div>
           <DialogTitle>
             {editingAccount ? `Edit Node: ${editingAccount.label}` : 'Register New X Node'}
           </DialogTitle>
           <DialogDescription>
-            Masukkan cookie autentikasi dan proxy untuk mengonfigurasi cluster akun.
+            Enter authentication cookies and proxy tunnel to configure the account node.
           </DialogDescription>
         </DialogHeader>
 
@@ -273,7 +273,7 @@ export const AccountModal: React.FC = () => {
           {showRawPaste && (
             <div className="animate-in fade-in space-y-2 rounded-md border border-slate-700 bg-obsidian-950 p-3">
               <div className="flex items-center justify-between font-mono text-xs text-slate-300">
-                <span>Tempel String Header Cookie / JSON di sini:</span>
+                <span>Paste Raw Cookie Header / JSON string here:</span>
                 <button
                   onClick={() => setShowRawPaste(false)}
                   className="text-slate-500 hover:text-white"
@@ -283,7 +283,7 @@ export const AccountModal: React.FC = () => {
               </div>
               <Textarea
                 rows={3}
-                placeholder="auth_token=40_karakter; ct0=160_karakter; atau paste seluruh header cookie..."
+                placeholder="auth_token=40_chars; ct0=160_chars; or paste full cookie header..."
                 value={rawPasteText}
                 onChange={(e) => setRawPasteText(e.target.value)}
                 className="font-mono text-xs"
@@ -294,7 +294,7 @@ export const AccountModal: React.FC = () => {
                 onClick={() => parseAndFillCookies(rawPasteText)}
                 className="w-full font-mono text-xs"
               >
-                Ekstrak & Isi Otomatis
+                Extract &amp; Auto-Fill
               </Button>
             </div>
           )}
@@ -304,61 +304,54 @@ export const AccountModal: React.FC = () => {
             <div className="animate-in fade-in-50 space-y-3 rounded-md border border-slate-700 bg-obsidian-950 p-3.5 font-mono text-xs">
               <div className="flex items-center gap-1.5 font-bold text-white">
                 <HelpCircle className="h-4 w-4 text-flame" />
-                PANDUAN MENGAMBIL COOKIE (HTTPONLY X.COM):
+                COOKIE EXTRACTION GUIDE (HTTPONLY X.COM):
               </div>
               <div className="space-y-2 text-[11px] leading-relaxed text-slate-300">
                 <p className="text-amber-400">
                   ⚠️{' '}
                   <em>
-                    Catatan: Cookie <code>auth_token</code> memiliki proteksi{' '}
-                    <code>HttpOnly: true</code> oleh X, sehingga tidak bisa dibaca via
-                    script/bookmarklet JavaScript biasa.
+                    Note: The <code>auth_token</code> cookie has <code>HttpOnly: true</code> flag enabled by X, so it cannot be read via standard browser JavaScript or bookmarklets.
                   </em>
                 </p>
 
                 <div className="space-y-1.5 rounded border border-slate-800 bg-obsidian-900 p-2.5">
-                  <div className="font-bold text-white">⚡ Cara Tercepat (Copy Header Cookie):</div>
+                  <div className="font-bold text-white">⚡ Fastest Method (Copy Header Cookie):</div>
                   <ol className="list-decimal space-y-1 pl-4 text-slate-300">
                     <li>
-                      Buka <strong>x.com</strong> di browser (pastikan sudah login).
+                      Open <strong>x.com</strong> in your browser (ensure you are signed in).
                     </li>
                     <li>
-                      Tekan <strong>F12</strong> (DevTools) &gt; pilih tab <strong>Network</strong>.
+                      Press <strong>F12</strong> (DevTools) &gt; select the <strong>Network</strong> tab.
                     </li>
                     <li>
-                      Klik sembarang request (misal: <code>home</code>, <code>graphql</code>, atau
-                      reload halaman).
+                      Click any request (e.g. <code>home</code>, <code>graphql</code>, or reload page).
                     </li>
                     <li>
-                      Di tab <strong>Headers</strong> &gt; cari bagian{' '}
-                      <strong>Request Headers</strong> &gt; baris <code>cookie:</code>.
+                      In the <strong>Headers</strong> tab &gt; find <strong>Request Headers</strong> &gt; line <code>cookie:</code>.
                     </li>
                     <li>
-                      Klik kanan baris <code>cookie:</code> &gt; pilih <strong>Copy value</strong>.
+                      Right-click the <code>cookie:</code> line &gt; choose <strong>Copy value</strong>.
                     </li>
                     <li>
-                      Klik tombol <strong>Paste Auto</strong> di atas! (Sistem akan otomatis
-                      mengekstrak <code>auth_token</code> &amp; <code>ct0</code>).
+                      Click <strong>Paste Auto</strong> above! (The system will automatically extract <code>auth_token</code> &amp; <code>ct0</code>).
                     </li>
                   </ol>
                 </div>
 
                 <div className="space-y-1.5 rounded border border-slate-800 bg-obsidian-900 p-2.5">
-                  <div className="font-bold text-white">🔍 Cara Manual (Tab Application):</div>
+                  <div className="font-bold text-white">🔍 Manual Method (Application Tab):</div>
                   <ol className="list-decimal space-y-1 pl-4 text-slate-300">
                     <li>
-                      Tekan <strong>F12</strong> &gt; pilih tab <strong>Application</strong>{' '}
-                      (Storage).
+                      Press <strong>F12</strong> &gt; select the <strong>Application</strong> tab (Storage).
                     </li>
                     <li>
-                      Di menu kiri: <strong>Cookies</strong> &gt; klik <code>https://x.com</code>.
+                      In the left menu: <strong>Cookies</strong> &gt; click <code>https://x.com</code>.
                     </li>
                     <li>
-                      Double-click nilai pada baris <strong>auth_token</strong> &gt; Copy &gt; Paste
-                      ke field bawah.
+                      Double-click the value in the <strong>auth_token</strong> row &gt; Copy &gt; Paste into the field below.
                     </li>
                     <li>
-                      Lakukan hal yang sama untuk <strong>ct0</strong>.
+                      Repeat the same for <strong>ct0</strong>.
                     </li>
                   </ol>
                 </div>
@@ -386,12 +379,12 @@ export const AccountModal: React.FC = () => {
                 <Key className="h-3.5 w-3.5 text-flame" />
                 COOKIE: AUTH_TOKEN <span className="text-flame">*</span>
               </label>
-              <span className="font-mono text-[10px] text-muted-foreground">40 karakter hex</span>
+              <span className="font-mono text-[10px] text-muted-foreground">40 hex characters</span>
             </div>
             <div className="relative">
               <Input
                 type={showAuthToken ? 'text' : 'password'}
-                placeholder="Paste 40 karakter auth_token hex di sini..."
+                placeholder="Paste 40-character hex auth_token here..."
                 value={authToken}
                 onChange={(e) => setAuthToken(e.target.value)}
                 className="pr-9 font-mono text-xs"
@@ -406,13 +399,12 @@ export const AccountModal: React.FC = () => {
             </div>
             {editingAccount && (
               <p className="font-mono text-[10px] text-slate-500">
-                Tersimpan (disamarkan): {editingAccount.auth_token} — biarkan apa adanya untuk
-                mempertahankan, atau tempel cookie baru untuk mengganti.
+                Stored (masked): {editingAccount.auth_token} — leave as is to preserve, or paste a new cookie to replace.
               </p>
             )}
             {authTokenChanged && (
               <p className="font-mono text-[10px] font-bold text-amber-400">
-                ● Nilai baru terdeteksi — cookie auth_token akan DIGANTI saat disimpan.
+                ● New value detected — auth_token cookie will be REPLACED upon save.
               </p>
             )}
           </div>
@@ -424,12 +416,12 @@ export const AccountModal: React.FC = () => {
                 <Shield className="h-3.5 w-3.5 text-blue-400" />
                 COOKIE: CT0 (CSRF TOKEN)
               </label>
-              <span className="font-mono text-[10px] text-muted-foreground">160 karakter hex</span>
+              <span className="font-mono text-[10px] text-muted-foreground">160 hex characters</span>
             </div>
             <div className="relative">
               <Input
                 type={showCt0 ? 'text' : 'password'}
-                placeholder="Paste 160 karakter ct0 hex di sini..."
+                placeholder="Paste 160-character hex ct0 here..."
                 value={ct0}
                 onChange={(e) => setCt0(e.target.value)}
                 className="pr-9 font-mono text-xs"
@@ -444,13 +436,12 @@ export const AccountModal: React.FC = () => {
             </div>
             {editingAccount && editingAccount.ct0 && (
               <p className="font-mono text-[10px] text-slate-500">
-                Tersimpan (disamarkan): {editingAccount.ct0} — biarkan apa adanya untuk
-                mempertahankan, atau tempel ct0 baru untuk mengganti.
+                Stored (masked): {editingAccount.ct0} — leave as is to preserve, or paste new ct0 to replace.
               </p>
             )}
             {ct0Changed && (
               <p className="font-mono text-[10px] font-bold text-amber-400">
-                ● Nilai baru terdeteksi — cookie ct0 akan DIGANTI saat disimpan.
+                ● New value detected — ct0 cookie will be REPLACED upon save.
               </p>
             )}
           </div>
@@ -466,7 +457,7 @@ export const AccountModal: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="user:pass@ip:port atau ip:port:user:pass"
+                placeholder="user:pass@ip:port or ip:port:user:pass"
                 value={proxy}
                 onChange={(e) => setProxy(e.target.value)}
                 className="flex-1 font-mono text-xs"
@@ -487,14 +478,12 @@ export const AccountModal: React.FC = () => {
             </div>
             {editingAccount && editingAccount.proxy && (
               <p className="font-mono text-[10px] text-slate-500">
-                Tersimpan (disamarkan): {editingAccount.proxy} — biarkan apa adanya untuk
-                mempertahankan, atau masukkan proxy baru untuk mengganti. Test memakai kredensial
-                tersimpan.
+                Stored (masked): {editingAccount.proxy} — leave as is to preserve, or enter new proxy to replace. Test uses stored credentials.
               </p>
             )}
             {proxyChanged && (
               <p className="font-mono text-[10px] font-bold text-amber-400">
-                ● Nilai baru terdeteksi — proxy tunnel akan DIGANTI saat disimpan.
+                ● New value detected — proxy tunnel will be REPLACED upon save.
               </p>
             )}
             {proxyError && <p className="font-mono text-[10px] text-red-400">✕ {proxyError}</p>}

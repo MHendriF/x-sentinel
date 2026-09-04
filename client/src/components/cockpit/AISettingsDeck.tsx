@@ -45,7 +45,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     name: '🚫 Disabled (Spintax / JSON Pool Only)',
     badge: 'OFFLINE',
     description:
-      'Nonaktifkan AI. Bot hanya akan menggunakan template Spintax dan JSON comment pool.',
+      'Disable AI. The bot will strictly use Spintax templates and the JSON comment pool.',
     defaultBaseUrl: '',
     defaultModel: '',
     recommendedModels: [],
@@ -56,7 +56,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     name: '9router (AI Gateway & Router)',
     badge: 'RECOMMENDED · MULTI-MODEL',
     description:
-      'Gateway multi-model ultra-efisien yang mendukung GPT-4o, Claude, DeepSeek, dan Llama dalam satu API.',
+      'Ultra-efficient multi-model gateway supporting GPT-4o, Claude, DeepSeek, and Llama in one unified API.',
     defaultBaseUrl: 'https://api.9router.com/v1',
     defaultModel: 'openai/gpt-4o-mini',
     recommendedModels: [
@@ -71,7 +71,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: 'openrouter',
     name: 'OpenRouter.ai',
     badge: 'MULTI-PROVIDER',
-    description: 'Akses ke ratusan model open-source dan proprietary melalui satu API endpoint.',
+    description: 'Access hundreds of open-source and proprietary models through a single API endpoint.',
     defaultBaseUrl: 'https://openrouter.ai/api/v1',
     defaultModel: 'openai/gpt-4o-mini',
     recommendedModels: [
@@ -86,7 +86,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: 'groq',
     name: 'Groq Cloud (LPU Inference)',
     badge: 'ULTRA FAST · <500MS',
-    description: 'Inference ultra-cepat dengan kecepatan lebih dari 300 token/detik.',
+    description: 'Ultra-fast inference at speeds exceeding 300 tokens/second.',
     defaultBaseUrl: 'https://api.groq.com/openai/v1',
     defaultModel: 'llama-3.3-70b-versatile',
     recommendedModels: [
@@ -101,7 +101,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: 'openai',
     name: 'OpenAI Official',
     badge: 'OFFICIAL API',
-    description: 'API resmi langsung dari OpenAI dengan model GPT-4o dan GPT-4o mini.',
+    description: 'Official direct OpenAI API featuring GPT-4o and GPT-4o mini.',
     defaultBaseUrl: 'https://api.openai.com/v1',
     defaultModel: 'gpt-4o-mini',
     recommendedModels: ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'],
@@ -111,7 +111,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: 'gemini',
     name: 'Google Gemini',
     badge: 'GOOGLE AI',
-    description: 'API resmi Google Generative AI (Gemini 1.5 Flash / Gemini 1.5 Pro).',
+    description: 'Official Google Generative AI API (Gemini 1.5 Flash / Gemini 1.5 Pro).',
     defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
     defaultModel: 'gemini-1.5-flash',
     recommendedModels: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'],
@@ -121,7 +121,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     id: 'ollama',
     name: 'Local Ollama (Self-Hosted)',
     badge: 'LOCAL · 100% PRIVATE',
-    description: 'Jalankan LLM secara lokal di komputer Anda tanpa biaya API eksternal.',
+    description: 'Run LLMs locally on your own machine with zero external API fees.',
     defaultBaseUrl: 'http://localhost:11434/v1',
     defaultModel: 'llama3',
     recommendedModels: ['llama3', 'mistral', 'deepseek-r1', 'qwen2.5'],
@@ -132,7 +132,7 @@ const AI_PROVIDERS: AIProviderInfo[] = [
     name: 'Custom OpenAI-Compatible API',
     badge: 'CUSTOM ENDPOINT',
     description:
-      'Gunakan provider kustom apa pun yang mematuhi standar format OpenAI /chat/completions.',
+      'Use any custom provider compatible with the OpenAI /chat/completions standard.',
     defaultBaseUrl: 'https://api.openai.com/v1',
     defaultModel: 'gpt-4o-mini',
     recommendedModels: ['gpt-4o-mini', 'default'],
@@ -231,21 +231,21 @@ export const AISettingsDeck: React.FC = () => {
       const res = await apiClient.saveSettings(payload);
       if (res.success) {
         setSettings(res.settings);
-        toast.success(`Konfigurasi AI (${aiProvider.toUpperCase()}) berhasil disimpan!`);
+        toast.success(`AI configuration (${aiProvider.toUpperCase()}) saved successfully!`);
       }
     } catch (err: any) {
-      toast.error(`Gagal menyimpan: ${err.message}`);
+      toast.error(`Failed to save: ${err.message}`);
     }
   };
 
   // Test 1: Quick Ping & Credentials Check
   const handleTestConnection = async () => {
     if (aiProvider === 'none') {
-      toast.error('Pilih provider AI selain "Disabled" untuk menguji.');
+      toast.error('Select an active AI provider other than "Disabled" to test.');
       return;
     }
     if (selectedProviderInfo.requiresApiKey && !aiApiKey.trim()) {
-      toast.error('Masukkan API Key terlebih dahulu untuk menguji koneksi.');
+      toast.error('Please enter an API Key first to test connection.');
       return;
     }
 
@@ -275,7 +275,7 @@ export const AISettingsDeck: React.FC = () => {
         toast.error(`AI Error: ${res.message}`);
       }
     } catch (err: any) {
-      toast.error(`Gagal uji koneksi AI: ${err.message}`);
+      toast.error(`AI connection test failed: ${err.message}`);
     } finally {
       setIsTestingConnection(false);
     }
@@ -284,15 +284,15 @@ export const AISettingsDeck: React.FC = () => {
   // Test 2: Live Contextual Generation on Sample Tweet
   const handleRunLiveGeneration = async () => {
     if (aiProvider === 'none') {
-      toast.error('Pilih provider AI selain "Disabled" untuk menguji.');
+      toast.error('Select an active AI provider other than "Disabled" to test.');
       return;
     }
     if (selectedProviderInfo.requiresApiKey && !aiApiKey.trim()) {
-      toast.error('Masukkan API Key terlebih dahulu untuk menguji.');
+      toast.error('Please enter an API Key first to test.');
       return;
     }
     if (!testTweetInput.trim()) {
-      toast.error('Masukkan teks tweet target pada kolom sample.');
+      toast.error('Please enter target tweet text in the sample input.');
       return;
     }
 
@@ -319,12 +319,12 @@ export const AISettingsDeck: React.FC = () => {
       });
 
       if (res.success) {
-        toast.success(`🤖 AI Reply Berhasil (${duration}ms)!`);
+        toast.success(`🤖 AI Reply Generated Successfully (${duration}ms)!`);
       } else {
         toast.error(`AI Error: ${res.message}`);
       }
     } catch (err: any) {
-      toast.error(`Gagal meracik balasan AI: ${err.message}`);
+      toast.error(`Failed to generate AI reply: ${err.message}`);
     } finally {
       setIsGeneratingReply(false);
     }
@@ -358,16 +358,16 @@ export const AISettingsDeck: React.FC = () => {
 
             <Button onClick={handleSave} className="gap-1.5 font-mono text-xs font-bold">
               <Save className="h-3.5 w-3.5" />
-              Simpan Pengaturan AI
+              Save AI Settings
             </Button>
           </div>
 
           <div>
             <p className="max-w-3xl text-xs leading-relaxed text-slate-300">
-              Konfigurasikan model bahasa besar (LLM) untuk menghasilkan balasan tweet yang 100%
-              kontekstual, cerdas, dan alami (No AI Slop). Mendukung <strong>9router</strong>,{' '}
+              Configure large language models (LLMs) to formulate 100% contextual, authentic, and
+              natural tweet replies (No AI Slop). Supports <strong>9router</strong>,{' '}
               <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>,{' '}
-              <strong>Gemini</strong>, dan <strong>Local Ollama</strong>.
+              <strong>Gemini</strong>, and <strong>Local Ollama</strong>.
             </p>
           </div>
         </CardContent>
@@ -383,7 +383,7 @@ export const AISettingsDeck: React.FC = () => {
             </div>
             <CardTitle className="text-base">AI Providers</CardTitle>
             <CardDescription className="text-xs">
-              Pilih provider yang ingin digunakan untuk otomasi komentar.
+              Select the engine provider to power automated comment generation.
             </CardDescription>
           </CardHeader>
 
@@ -443,12 +443,12 @@ export const AISettingsDeck: React.FC = () => {
                     <Bot className="h-5 w-5" />
                   </div>
                   <h4 className="font-heading text-sm font-bold text-slate-300">
-                    AI Mode Dinonaktifkan
+                    AI Engine Disabled
                   </h4>
                   <p className="mx-auto max-w-sm text-xs text-slate-400">
-                    Pilih salah satu provider di sebelah kiri (misal: <strong>9router</strong>,{' '}
-                    <strong>OpenRouter</strong>, atau <strong>Groq</strong>) untuk mengaktifkan
-                    balasan cerdas otomatis.
+                    Select a provider on the left (e.g. <strong>9router</strong>,{' '}
+                    <strong>OpenRouter</strong>, or <strong>Groq</strong>) to activate
+                    contextual auto-replies.
                   </p>
                 </div>
               ) : (
@@ -470,12 +470,12 @@ export const AISettingsDeck: React.FC = () => {
                           ) : (
                             <Eye className="h-3 w-3" />
                           )}
-                          {showApiKey ? 'Sembunyikan' : 'Tampilkan'}
+                          {showApiKey ? 'Hide' : 'Show'}
                         </button>
                       </label>
                       <Input
                         type={showApiKey ? 'text' : 'password'}
-                        placeholder={`Paste API key ${selectedProviderInfo.name}...`}
+                        placeholder={`Paste API key for ${selectedProviderInfo.name}...`}
                         value={aiApiKey}
                         onChange={(e) => setAiApiKey(e.target.value)}
                         className="bg-obsidian-950 font-mono text-xs"
@@ -556,7 +556,7 @@ export const AISettingsDeck: React.FC = () => {
                           type="button"
                           onClick={() => {
                             setAiPrompt(preset.prompt);
-                            toast.info(`Persona "${preset.name}" diterapkan!`);
+                            toast.info(`Persona "${preset.name}" applied!`);
                           }}
                           className="cursor-pointer rounded border border-slate-800 bg-obsidian-950 px-2.5 py-1 font-mono text-[10px] text-slate-300 transition-colors hover:border-purple-500/50 hover:text-purple-300"
                         >
@@ -597,8 +597,8 @@ export const AISettingsDeck: React.FC = () => {
               </div>
               <CardTitle className="text-base">Live Response &amp; Ping Tester</CardTitle>
               <CardDescription className="text-xs">
-                Uji konektivitas gateway dan simulasikan peracikan balasan alami pada teks tweet
-                target secara live.
+                Test gateway connectivity and simulate natural reply formulation on sample tweet
+                text in real time.
               </CardDescription>
             </CardHeader>
 
@@ -683,11 +683,11 @@ export const AISettingsDeck: React.FC = () => {
                         type="button"
                         onClick={() => {
                           navigator.clipboard.writeText(testResult.sampleOutput);
-                          toast.success('Disalin ke clipboard!');
+                          toast.success('Copied to clipboard!');
                         }}
                         className="flex cursor-pointer items-center gap-1 text-[10px] text-slate-400 hover:text-white"
                       >
-                        <Copy className="h-3 w-3" /> Salin
+                        <Copy className="h-3 w-3" /> Copy
                       </button>
                     )}
                   </div>

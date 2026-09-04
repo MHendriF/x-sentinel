@@ -26,16 +26,16 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
   setStatusFilter,
   counts,
 }) => {
-  // Two dimensions live side by side: session enablement (Aktif/Nonaktif) and
-  // health-check results (Sehat/Kadaluarsa/Belum Dicek). Counts are computed
+  // Two dimensions live side by side: session enablement (Active/Paused) and
+  // health-check results (Healthy/Expired/Unchecked). Counts are computed
   // independently so they intentionally do not sum to the total.
   const FILTER_TABS = [
-    { id: 'ALL', label: 'Semua', count: counts.all },
-    { id: 'ONLINE', label: 'Aktif', count: counts.online },
-    { id: 'PAUSED', label: 'Nonaktif', count: counts.paused },
-    { id: 'HEALTHY', label: 'Sehat', count: counts.healthy },
-    { id: 'EXPIRED', label: 'Kadaluarsa', count: counts.expired },
-    { id: 'UNCHECKED', label: 'Belum Dicek', count: counts.unchecked },
+    { id: 'ALL', label: 'All', count: counts.all },
+    { id: 'ONLINE', label: 'Active', count: counts.online },
+    { id: 'PAUSED', label: 'Paused', count: counts.paused },
+    { id: 'HEALTHY', label: 'Healthy', count: counts.healthy },
+    { id: 'EXPIRED', label: 'Expired', count: counts.expired },
+    { id: 'UNCHECKED', label: 'Unchecked', count: counts.unchecked },
   ] as const;
 
   return (
@@ -46,19 +46,19 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
         <Input
           id="node-search"
           type="text"
-          placeholder="Cari node (@username, label, proxy host)..."
+          placeholder="Search nodes (@username, label, proxy host)..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="h-8 border-border/70 bg-obsidian-900 pl-9 pr-8 font-mono text-xs text-slate-200 placeholder:text-slate-500 focus:border-flame focus:ring-1 focus:ring-flame"
-          aria-label="Cari node"
+          aria-label="Search nodes"
         />
         {searchTerm && (
           <button
             type="button"
             onClick={() => setSearchTerm('')}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-slate-400 transition-colors hover:text-white"
-            title="Hapus pencarian"
-            aria-label="Hapus pencarian"
+            title="Clear search"
+            aria-label="Clear search"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -70,7 +70,7 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
         <div
           className="flex items-center gap-1.5 overflow-x-auto pb-0.5 sm:pb-0"
           role="group"
-          aria-label="Filter status node"
+          aria-label="Node status filters"
         >
           {FILTER_TABS.map((tab) => {
             const isActive = statusFilter === tab.id;

@@ -23,13 +23,13 @@ const proxySchema = z
     },
     {
       message:
-        'Format proxy tunnel tidak valid. Gunakan: user:pass@ip:port, ip:port:user:pass, atau ip:port (HTTP/SOCKS5).',
+        'Invalid proxy tunnel format. Use: user:pass@ip:port, ip:port:user:pass, or ip:port (HTTP/SOCKS5).',
     }
   );
 
 const accountCreateSchema = z.object({
   label: z.string().max(100).optional(),
-  auth_token: z.string().min(4, 'auth_token terlalu pendek'),
+  auth_token: z.string().min(4, 'auth_token is too short'),
   ct0: z.string().max(500).optional(),
   proxy: proxySchema.optional(),
   comments: z.array(z.string()).max(500).optional(),
@@ -38,7 +38,7 @@ const accountCreateSchema = z.object({
 const accountUpdateSchema = accountCreateSchema.partial();
 
 const bulkImportSchema = z.object({
-  rawText: z.string().min(1, 'Format input tidak boleh kosong.'),
+  rawText: z.string().min(1, 'Input format cannot be empty.'),
 });
 
 const commentsSchema = z.object({
@@ -59,14 +59,14 @@ router.post('/', validateBody(accountCreateSchema), (req, res) => {
   const { label, auth_token, ct0, proxy, comments } = req.body;
 
   const newAccount = db.saveAccount({
-    label: label || 'Akun X',
+    label: label || 'Account X',
     auth_token: auth_token.trim(),
     ct0: (ct0 || '').trim(),
     proxy: (proxy || '').trim(),
     comments: Array.isArray(comments) ? comments : undefined,
   });
 
-  logger.info(`👥 Akun baru ditambahkan: ${newAccount.label}`);
+  logger.info(`👥 New node registered: ${newAccount.label}`);
   res.json({ success: true, account: redactAccount(newAccount) });
 });
 
@@ -82,7 +82,7 @@ router.get('/export', (req, res) => {
 // POST /api/accounts/bulk-import - Bulk import accounts
 router.post('/bulk-import', validateBody(bulkImportSchema), (req, res) => {
   const addedAccounts = db.bulkImportAccounts(req.body.rawText);
-  logger.success(`📥 Berhasil mengimpor ${addedAccounts.length} akun ke dalam armada.`);
+  logger.success(`📥 Successfully imported ${addedAccounts.length} accounts into fleet.`);
   res.json({
     success: true,
     addedCount: addedAccounts.length,
@@ -108,7 +108,7 @@ router.get('/:id', (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
   const comments = db.getAccountComments(id);
   res.json({ success: true, account: redactAccount({ ...account, comments }) });
@@ -119,7 +119,7 @@ router.put('/:id', validateBody(accountUpdateSchema), (req, res) => {
   const { id } = req.params;
   const existing = db.getAccountById(id);
   if (!existing) {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
 
   const patch = { ...existing, ...req.body, id };
@@ -134,7 +134,7 @@ router.put('/:id', validateBody(accountUpdateSchema), (req, res) => {
   }
 
   const updated = db.saveAccount(patch);
-  logger.info(`✏️ Akun diperbarui: ${updated.label}`);
+  logger.info(`✏️ Account updated: ${updated.label}`);
   res.json({ success: true, account: redactAccount(updated) });
 });
 
@@ -143,10 +143,10 @@ router.delete('/:id', (req, res) => {
   const { id } = req.params;
   const deleted = db.deleteAccount(id);
   if (deleted) {
-    logger.info(`🗑️ Akun dihapus: ID ${id}`);
+    logger.info(`🗑️ Account decommissioned: ID ${id}`);
     res.json({ success: true });
   } else {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
 });
 
@@ -155,7 +155,7 @@ router.post('/:id/toggle', (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
 
   const updated = db.saveAccount({
@@ -164,7 +164,7 @@ router.post('/:id/toggle', (req, res) => {
   });
 
   logger.info(
-    `🔘 Status akun @${updated.username || updated.label} diubah: ${updated.enabled ? 'Aktif' : 'Nonaktif'}`
+    `🔘 Account status @${updated.username || updated.label} toggled: ${updated.enabled ? 'Active' : 'Paused'}`
   );
   res.json({ success: true, account: redactAccount(updated) });
 });
@@ -174,7 +174,7 @@ router.post('/:id/verify', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
 
   const result = await twitterBot.verifyAccount(account);
@@ -189,7 +189,7 @@ router.post('/:id/check-health', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
 
   const result = await twitterBot.checkAccountHealth(account);
@@ -204,11 +204,11 @@ router.post('/:id/warmup', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
 
   if (twitterBot.isRunning) {
-    throw httpError(400, 'Sebuah proses otomasi sedang berjalan.', 'TASK_RUNNING');
+    throw httpError(400, 'An automation process is currently running.', 'TASK_RUNNING');
   }
 
   twitterBot.runWarmupTask(account).catch((err) => {
@@ -217,7 +217,7 @@ router.post('/:id/warmup', async (req, res) => {
 
   res.json({
     success: true,
-    message: `Memulai rutinitas pemanasan untuk @${account.username || account.label} (Hari ${account.warmupDay || 1}/7)...`,
+    message: `Initiating warm-up routine for @${account.username || account.label} (Day ${account.warmupDay || 1}/7)...`,
   });
 });
 
@@ -226,10 +226,10 @@ router.post('/:id/test-proxy', async (req, res) => {
   const { id } = req.params;
   const account = db.getAccountById(id);
   if (!account) {
-    throw httpError(404, 'Akun tidak ditemukan.', 'NOT_FOUND');
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
   }
   if (!account.proxy || !String(account.proxy).trim()) {
-    throw httpError(400, 'Akun ini belum memiliki proxy yang dikonfigurasi.', 'NO_PROXY');
+    throw httpError(400, 'This account has no proxy configured.', 'NO_PROXY');
   }
 
   const result = await proxyHelper.testProxy(String(account.proxy).trim());
@@ -249,7 +249,7 @@ router.post('/:id/comments', validateBody(commentsSchema), (req, res) => {
   const { comments } = req.body;
 
   db.saveAccountComments(id, comments);
-  logger.info(`💾 Komentar untuk akun ID ${id} diperbarui (${comments.length} item).`);
+  logger.info(`💾 Comments updated for node ID ${id} (${comments.length} entries).`);
   res.json({ success: true, count: comments.length });
 });
 

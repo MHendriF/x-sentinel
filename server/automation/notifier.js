@@ -12,11 +12,11 @@ class NotifierService {
    */
   async sendTelegram(botToken, chatId, message) {
     if (!botToken || !chatId)
-      return { success: false, message: 'Bot Token & Chat ID wajib diisi.' };
+      return { success: false, message: 'Bot Token & Chat ID are required.' };
 
     const cleanToken = String(botToken).trim();
     if (!/^[0-9]+:[a-zA-Z0-9_-]+$/.test(cleanToken)) {
-      return { success: false, message: 'Format Bot Token tidak valid.' };
+      return { success: false, message: 'Invalid Bot Token format.' };
     }
 
     try {
@@ -46,13 +46,13 @@ class NotifierService {
    * Send alert to Discord Webhook
    */
   async sendDiscord(webhookUrl, { title, description, color = 0xf59e0b, fields = [] }) {
-    if (!webhookUrl) return { success: false, message: 'Discord Webhook URL wajib diisi.' };
+    if (!webhookUrl) return { success: false, message: 'Discord Webhook URL is required.' };
 
     const trimmedUrl = String(webhookUrl).trim();
     try {
       const u = new URL(trimmedUrl);
       if (u.protocol !== 'https:') {
-        return { success: false, message: 'Discord Webhook harus menggunakan protokol HTTPS.' };
+        return { success: false, message: 'Discord Webhook must use HTTPS protocol.' };
       }
       const host = u.hostname.toLowerCase();
       const isDiscord =
@@ -61,10 +61,10 @@ class NotifierService {
         host.endsWith('.discord.com') ||
         host.endsWith('.discordapp.com');
       if (!isDiscord || !u.pathname.startsWith('/api/webhooks/')) {
-        return { success: false, message: 'Domain atau endpoint Discord Webhook tidak valid.' };
+        return { success: false, message: 'Invalid Discord Webhook domain or endpoint.' };
       }
     } catch {
-      return { success: false, message: 'Format URL Discord Webhook tidak valid.' };
+      return { success: false, message: 'Invalid Discord Webhook URL format.' };
     }
 
     try {
@@ -81,7 +81,7 @@ class NotifierService {
               color: typeof color === 'number' ? color : 0xf59e0b,
               fields: fields || [],
               footer: {
-                text: `X-SENTINEL Core • ${new Date().toLocaleTimeString('id-ID')}`,
+                text: `X-SENTINEL Core • ${new Date().toLocaleTimeString('en-US')}`,
               },
               timestamp: new Date().toISOString(),
             },
@@ -107,14 +107,14 @@ class NotifierService {
       return this.sendTelegram(
         telegramBotToken,
         telegramChatId,
-        '🛡️ <b>X-SENTINEL</b>: Uji koneksi notifikasi Telegram berhasil! Sistem berjalan normal.'
+        '🛡️ <b>X-SENTINEL</b>: Telegram notification connection test successful! System operating normally.'
       );
     }
 
     if (type === 'discord') {
       return this.sendDiscord(discordWebhookUrl, {
         title: '🛡️ X-SENTINEL Webhook Test',
-        description: 'Uji koneksi notifikasi Discord berhasil! Sistem pemantauan aktif.',
+        description: 'Discord notification connection test successful! Monitoring system active.',
         color: 0x10b981,
         fields: [
           { name: 'Status', value: 'ONLINE', inline: true },
@@ -128,20 +128,20 @@ class NotifierService {
       results.telegram = await this.sendTelegram(
         telegramBotToken,
         telegramChatId,
-        '🛡️ <b>X-SENTINEL</b>: Uji koneksi notifikasi Telegram berhasil!'
+        '🛡️ <b>X-SENTINEL</b>: Telegram notification connection test successful!'
       );
     }
     if (discordWebhookUrl) {
       results.discord = await this.sendDiscord(discordWebhookUrl, {
         title: '🛡️ X-SENTINEL Webhook Test',
-        description: 'Uji koneksi notifikasi Discord berhasil!',
+        description: 'Discord notification connection test successful!',
       });
     }
 
     if (Object.keys(results).length === 0) {
       return {
         success: false,
-        message: 'Tentukan tipe webhook atau lengkapi kredensial webhook terlebih dahulu.',
+        message: 'Please specify webhook type or provide complete webhook credentials.',
       };
     }
 
@@ -165,25 +165,25 @@ class NotifierService {
     let discordColor = 0x3b82f6; // blue default
     let fields = [];
 
-    const timeStr = new Date().toLocaleTimeString('id-ID');
+    const timeStr = new Date().toLocaleTimeString('en-US');
 
     switch (event) {
       case 'POST_PUBLISHED':
         tgMessage =
-          `🚀 <b>X-SENTINEL • Post Berhasil Diterbitkan!</b>\n\n` +
-          `👤 <b>Akun:</b> @${data.accountName || 'Node'}\n` +
-          `📝 <b>Konten:</b> ${data.text || '-'}\n` +
+          `🚀 <b>X-SENTINEL • Post Published Successfully!</b>\n\n` +
+          `👤 <b>Account:</b> @${data.accountName || 'Node'}\n` +
+          `📝 <b>Content:</b> ${data.text || '-'}\n` +
           (data.tweetUrl ? `🔗 <b>Link:</b> ${data.tweetUrl}\n` : '') +
-          `⏱️ <b>Waktu:</b> ${timeStr}`;
+          `⏱️ <b>Time:</b> ${timeStr}`;
 
         discordTitle = '🚀 New Tweet Post Published';
-        discordDesc = data.text || 'Postingan berhasil diterbitkan oleh armada node.';
+        discordDesc = data.text || 'Post published successfully by fleet node.';
         discordColor = 0x10b981; // emerald green
         fields = [
           { name: 'Node Account', value: `@${data.accountName || 'Node'}`, inline: true },
           {
             name: 'Status Link',
-            value: data.tweetUrl ? `[Buka Post](${data.tweetUrl})` : '-',
+            value: data.tweetUrl ? `[View Post](${data.tweetUrl})` : '-',
             inline: true,
           },
         ];
@@ -191,66 +191,66 @@ class NotifierService {
 
       case 'TASK_COMPLETED':
         tgMessage =
-          `✅ <b>X-SENTINEL • Tugas Selesai!</b>\n\n` +
-          `🎯 <b>Tipe:</b> ${data.taskType || 'Batch Engagement'}\n` +
-          `📊 <b>Target Selesai:</b> ${data.totalTargets || 0} items\n` +
-          `⏱️ <b>Waktu:</b> ${timeStr}`;
+          `✅ <b>X-SENTINEL • Task Completed!</b>\n\n` +
+          `🎯 <b>Type:</b> ${data.taskType || 'Batch Engagement'}\n` +
+          `📊 <b>Completed:</b> ${data.totalTargets || 0} items\n` +
+          `⏱️ <b>Time:</b> ${timeStr}`;
 
         discordTitle = '✅ Engagement Task Completed';
-        discordDesc = `Tugas **${data.taskType || 'Engagement'}** telah berhasil diselesaikan.`;
+        discordDesc = `Task **${data.taskType || 'Engagement'}** has been completed successfully.`;
         discordColor = 0x10b981;
         fields = [
           { name: 'Task Type', value: data.taskType || 'Batch', inline: true },
-          { name: 'Total Interaksi', value: String(data.totalTargets || 0), inline: true },
+          { name: 'Total Engagements', value: String(data.totalTargets || 0), inline: true },
         ];
         break;
 
       case 'TASK_FAILED':
         tgMessage =
-          `❌ <b>X-SENTINEL • Tugas Mengalami Kendala!</b>\n\n` +
-          `🎯 <b>Tipe:</b> ${data.taskType || 'Engagement'}\n` +
-          `⚠️ <b>Error:</b> ${data.error || 'Terjadi kesalahan sistem'}\n` +
-          `⏱️ <b>Waktu:</b> ${timeStr}`;
+          `❌ <b>X-SENTINEL • Task Error!</b>\n\n` +
+          `🎯 <b>Type:</b> ${data.taskType || 'Engagement'}\n` +
+          `⚠️ <b>Error:</b> ${data.error || 'System error encountered'}\n` +
+          `⏱️ <b>Time:</b> ${timeStr}`;
 
         discordTitle = '❌ Task Execution Failed';
-        discordDesc = `Tugas mengalami kegagalan: **${data.error || 'Unknown Error'}**`;
+        discordDesc = `Task failed: **${data.error || 'Unknown Error'}**`;
         discordColor = 0xef4444; // red
         break;
 
       case 'SESSION_EXPIRED':
         tgMessage =
-          `⚠️ <b>X-SENTINEL • Sesi Akun Kedaluwarsa!</b>\n\n` +
-          `👤 <b>Akun:</b> @${data.accountName || data.label || 'Node'}\n` +
-          `🔒 <b>Info:</b> Cookie auth_token sudah tidak valid/expired. Silakan perbarui cookie.\n` +
-          `⏱️ <b>Waktu:</b> ${timeStr}`;
+          `⚠️ <b>X-SENTINEL • Account Session Expired!</b>\n\n` +
+          `👤 <b>Account:</b> @${data.accountName || data.label || 'Node'}\n` +
+          `🔒 <b>Info:</b> auth_token cookie is no longer valid. Please renew cookies.\n` +
+          `⏱️ <b>Time:</b> ${timeStr}`;
 
         discordTitle = '⚠️ Account Session Expired';
-        discordDesc = `Sesi akun **@${data.accountName || data.label}** telah kedaluwarsa.`;
+        discordDesc = `Account session for **@${data.accountName || data.label}** has expired.`;
         discordColor = 0xf59e0b; // amber
         break;
 
       case 'PROXY_DEAD':
         tgMessage =
-          `🛑 <b>X-SENTINEL • Proxy Tidak Terjangkau!</b>\n\n` +
-          `👤 <b>Akun:</b> @${data.accountName || data.label}\n` +
+          `🛑 <b>X-SENTINEL • Proxy Unreachable!</b>\n\n` +
+          `👤 <b>Account:</b> @${data.accountName || data.label}\n` +
           `🌐 <b>Proxy:</b> ${data.proxy || '-'}\n` +
-          `🛡️ <b>Tindakan:</b> Node akun di-pause otomatis demi keamanan.\n` +
-          `⏱️ <b>Waktu:</b> ${timeStr}`;
+          `🛡️ <b>Action:</b> Account node auto-paused for safety.\n` +
+          `⏱️ <b>Time:</b> ${timeStr}`;
 
         discordTitle = '🛑 Proxy Unreachable Alert';
-        discordDesc = `Proxy untuk node **@${data.accountName || data.label}** mati. Akun otomatis di-pause.`;
+        discordDesc = `Proxy for node **@${data.accountName || data.label}** is offline. Account auto-paused.`;
         discordColor = 0xef4444;
         break;
 
       case 'WARMUP_DAY_COMPLETED':
         tgMessage =
-          `🐣 <b>X-SENTINEL • Pemanasan Akun Selesai (Hari ${data.day})!</b>\n\n` +
-          `👤 <b>Akun:</b> @${data.accountName || 'Node'}\n` +
-          `📈 <b>Aktivitas:</b> ${data.activity || 'Timeline browse & organic likes'}\n` +
-          `⏱️ <b>Waktu:</b> ${timeStr}`;
+          `🐣 <b>X-SENTINEL • Account Warm-up Completed (Day ${data.day})!</b>\n\n` +
+          `👤 <b>Account:</b> @${data.accountName || 'Node'}\n` +
+          `📈 <b>Activity:</b> ${data.activity || 'Timeline browse & organic likes'}\n` +
+          `⏱️ <b>Time:</b> ${timeStr}`;
 
         discordTitle = `🐣 Warm-up Routine Completed (Day ${data.day})`;
-        discordDesc = `Akun **@${data.accountName || 'Node'}** telah menyelesaikan rutinitas pemanasan hari ke-${data.day}.`;
+        discordDesc = `Account **@${data.accountName || 'Node'}** completed warm-up routine for day ${data.day}.`;
         discordColor = 0x8b5cf6; // purple
         break;
 

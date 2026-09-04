@@ -88,7 +88,7 @@ app.use((err, req, res, _next) => {
   res.status(status).json({
     success: false,
     error: err.code || (status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_ERROR'),
-    message: status >= 500 ? 'Terjadi kesalahan internal server.' : err.message,
+    message: status >= 500 ? 'An internal server error occurred.' : err.message,
   });
 });
 
@@ -97,10 +97,10 @@ const scheduler = require('./automation/scheduler');
 
 // Start Server (loopback bind — see config.HOST)
 const server = app.listen(config.PORT, config.HOST, () => {
-  logger.success(`🚀 X-SENTINEL Cockpit Engine berjalan di http://${config.HOST}:${config.PORT}`);
+  logger.success(`🚀 X-SENTINEL Cockpit Engine running at http://${config.HOST}:${config.PORT}`);
   console.log(`====================================================`);
   console.log(`🛡️  X-SENTINEL: Autonomous Multi-Node Fleet Engine`);
-  console.log(`🌐 Buka Dashboard di browser: http://${config.HOST}:${config.PORT}`);
+  console.log(`🌐 Open Cockpit Dashboard: http://${config.HOST}:${config.PORT}`);
   console.log(`====================================================`);
 
   // Start background scheduler
@@ -112,7 +112,7 @@ let isShuttingDown = false;
 const gracefulShutdown = async (signal) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
-  logger.warn(`🛑 Menerima sinyal ${signal}. Membersihkan proses dan mematikan engine...`);
+  logger.warn(`🛑 Received signal ${signal}. Cleaning up processes and shutting down engine...`);
 
   try {
     scheduler.stop();
@@ -127,7 +127,7 @@ const gracefulShutdown = async (signal) => {
   }
 
   server.close(() => {
-    logger.info('👋 Server ditutup dengan aman. Sampai jumpa!');
+    logger.info('👋 Server shut down gracefully. Goodbye!');
     process.exit(0);
   });
 

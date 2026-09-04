@@ -26,9 +26,9 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
           <Activity className="h-3.5 w-3.5" />
           AGGREGATED EXECUTION METRICS
         </div>
-        <CardTitle className="text-lg">Total Kumulatif Vektor</CardTitle>
+        <CardTitle className="text-lg">Cumulative Vector Total</CardTitle>
         <CardDescription>
-          Akumulasi seluruh interaksi sukses yang telah dieksekusi oleh armada node akun X-SENTINEL.
+          Accumulation of all successful engagements executed across the X-SENTINEL fleet.
         </CardDescription>
       </CardHeader>
       <CardContent>

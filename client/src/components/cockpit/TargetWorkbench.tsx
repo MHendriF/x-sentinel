@@ -42,11 +42,11 @@ export const TargetWorkbench: React.FC = () => {
 
   const handleStart = async () => {
     if (targetUrls.length === 0) {
-      toast.error('Masukkan setidaknya satu URL target tweet.');
+      toast.error('Please enter at least one target tweet URL.');
       return;
     }
     if (!like && !retweet && !comment) {
-      toast.error('Pilih setidaknya satu vektor interaksi (Like / Repost / Reply).');
+      toast.error('Select at least one interaction vector (Like / Repost / Reply).');
       return;
     }
 
@@ -62,9 +62,9 @@ export const TargetWorkbench: React.FC = () => {
 
       if (res.success) {
         setIsRunning(true, { total: targetUrls.length, completed: 0 });
-        toast.success(`Misi dimulai untuk ${targetUrls.length} target tweet!`);
+        toast.success(`Mission started for ${targetUrls.length} target tweets!`);
       } else {
-        toast.error(`Gagal memulai misi: ${res.message}`);
+        toast.error(`Failed to start mission: ${res.message}`);
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -75,7 +75,7 @@ export const TargetWorkbench: React.FC = () => {
     try {
       await apiClient.stopTask();
       setIsRunning(false);
-      toast.info('Perintah penghentian tugas dikirim.');
+      toast.info('Task abort signal sent.');
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
     }
@@ -104,8 +104,7 @@ export const TargetWorkbench: React.FC = () => {
             </div>
             <CardTitle>Batch Target Engagement</CardTitle>
             <CardDescription>
-              Eksekusi interaksi otomatis berurutan (*Sequential Multi-Node*) dengan delay acak
-              anti-deteksi.
+              Automated sequential multi-node engagement with anti-detection randomized delays.
             </CardDescription>
           </CardHeader>
 
@@ -122,7 +121,7 @@ export const TargetWorkbench: React.FC = () => {
                 className="h-9 w-full rounded-md border border-border/80 bg-obsidian-950 px-3 py-1 font-mono text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-flame"
               >
                 <option value="all">
-                  ⚡ Semua Node Aktif ({activeAccounts.length} Node - Rotasi Berurutan)
+                  ⚡ All Active Nodes ({activeAccounts.length} Nodes - Sequential Rotation)
                 </option>
                 {accounts.map((acc) => (
                   <option key={acc.id} value={acc.id}>
@@ -163,7 +162,7 @@ export const TargetWorkbench: React.FC = () => {
                   onClick={() => setLike(!like)}
                   role="switch"
                   aria-checked={like}
-                  aria-label="Vektor Like Post"
+                  aria-label="Like Post Vector"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -187,7 +186,7 @@ export const TargetWorkbench: React.FC = () => {
                   onClick={() => setRetweet(!retweet)}
                   role="switch"
                   aria-checked={retweet}
-                  aria-label="Vektor Repost / RT"
+                  aria-label="Repost / RT Vector"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -211,7 +210,7 @@ export const TargetWorkbench: React.FC = () => {
                   onClick={() => setComment(!comment)}
                   role="switch"
                   aria-checked={comment}
-                  aria-label="Vektor Reply Payload"
+                  aria-label="Reply Payload Vector"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -303,22 +302,22 @@ export const TargetWorkbench: React.FC = () => {
                     <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-purple-400" />
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-purple-100">
-                        <span>🤖 Mode AI Contextual Auto-Replies Aktif</span>
+                        <span>🤖 Contextual AI Auto-Replies Active</span>
                         <span className="py-0.2 rounded border border-purple-500/30 bg-purple-500/20 px-1.5 text-[10px] font-normal text-purple-300">
-                          Payload Kosong
+                          Empty Payload
                         </span>
                       </div>
                       <p className="font-sans text-[11px] leading-relaxed text-slate-300">
-                        Karena kolom payload di bawah ini <strong>dibiarkan kosong</strong>, bot
-                        akan <strong>secara otomatis membaca teks tweet target</strong> dan meracik
-                        balasan alami &amp; kontekstual menggunakan AI (
+                        Because the payload field below is <strong>left empty</strong>, the bot
+                        will <strong>automatically read the target tweet text</strong> and formulate
+                        a natural &amp; contextual reply using AI (
                         {settings?.aiProvider && settings.aiProvider !== 'none'
                           ? settings.aiProvider.toUpperCase()
                           : '9router/LLM'}
                         ).
                         <span className="mt-0.5 block font-mono text-[10px] text-slate-400">
-                          *Jika Anda mengisi teks manual/JSON di bawah, bot akan menggunakan payload
-                          tersebut alih-alih AI.
+                          *If you provide manual text or JSON below, the bot will use that payload
+                          instead of AI.
                         </span>
                       </p>
                     </div>
@@ -327,7 +326,7 @@ export const TargetWorkbench: React.FC = () => {
 
                 <Textarea
                   rows={7}
-                  placeholder={`💡 KOSONGKAN kolom ini jika ingin bot otomatis meracik balasan kontekstual menggunakan AI...\n\nAtau isi teks manual / Spintax / JSON Multi-Node jika ingin menggunakan template kustom:\n{\n  "topic": "Topic Title",\n  "replies": [\n    "balasan kustom untuk akun 1",\n    "balasan kustom untuk akun 2"\n  ]\n}`}
+                  placeholder={`💡 LEAVE this field empty for automatic contextual AI replies...\n\nOr enter manual text / Spintax / Multi-Node JSON to use a custom template:\n{\n  "topic": "Topic Title",\n  "replies": [\n    "custom reply for node 1",\n    "custom reply for node 2"\n  ]\n}`}
                   value={customComment}
                   onChange={(e) => setCustomComment(e.target.value)}
                   className="min-h-[160px] resize-y border-blue-500/30 bg-obsidian-950/90 font-mono text-xs font-medium leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-blue-400"
@@ -354,7 +353,7 @@ export const TargetWorkbench: React.FC = () => {
                             2
                           )
                         );
-                        toast.success('Sample JSON Multi-Node Matrix dimuat!');
+                        toast.success('Sample JSON Multi-Node Matrix loaded!');
                       }}
                       className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-blue-500/40 bg-blue-500/20 px-2.5 py-1 font-mono text-[11px] font-medium text-blue-300 shadow-sm transition-all hover:border-blue-400 hover:bg-blue-500/30 hover:shadow-blue-500/20 active:scale-95"
                     >
@@ -367,9 +366,9 @@ export const TargetWorkbench: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setCustomComment(
-                          '{Keren banget|Insightful sekali|Top markotop} {tweetnya|pembahasannya|infonya} {bang|kak}! 🔥 {Izin bookmark ya|Ditunggu update selanjutnya|Bermanfaat banget}.'
+                          '{Great insight|Super helpful|Solid breakdown} on {this topic|these points|the details}! 🔥 {Bookmarked for later|Excited for future updates|Much appreciated}.'
                         );
-                        toast.info('Template Spintax dimuat!');
+                        toast.info('Spintax template loaded!');
                       }}
                       className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-700 bg-slate-800/60 px-2 py-1 font-mono text-[11px] font-medium text-slate-300 transition-all hover:border-slate-600 hover:bg-slate-800 active:scale-95"
                     >
@@ -384,7 +383,7 @@ export const TargetWorkbench: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setCustomComment('');
-                        toast.info('Kolom reply dibersihkan');
+                        toast.info('Reply input cleared');
                       }}
                       className="cursor-pointer font-mono text-[10px] text-slate-500 transition-colors hover:text-red-400"
                     >

@@ -35,7 +35,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         </div>
 
         <p className="text-xs text-slate-300">
-          Pilih opsi pembersihan data riwayat untuk menjaga performa dan ukuran database:
+          Select a data pruning option to optimize database size and performance:
         </p>
 
         <div className="flex flex-col gap-2.5">
@@ -46,12 +46,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             className="flex items-center justify-between rounded-lg border border-border/80 bg-obsidian-900 p-3 text-left text-xs text-white transition-colors hover:bg-obsidian-800"
           >
             <div>
-              <div className="font-semibold text-slate-200">Hapus Log &gt; 30 Hari</div>
+              <div className="font-semibold text-slate-200">Prune Logs &gt; 30 Days</div>
               <div className="text-[10px] text-slate-500">
-                Hapus entri riwayat yang dibuat lebih dari 1 bulan lalu
+                Remove audit records older than 30 days
               </div>
             </div>
-            <span className="font-mono text-[11px] text-flame">&gt; 30 Hari</span>
+            <span className="font-mono text-[11px] text-flame">&gt; 30 Days</span>
           </button>
 
           <button
@@ -61,12 +61,12 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             className="flex items-center justify-between rounded-lg border border-border/80 bg-obsidian-900 p-3 text-left text-xs text-white transition-colors hover:bg-obsidian-800"
           >
             <div>
-              <div className="font-semibold text-slate-200">Hapus Log &gt; 7 Hari</div>
+              <div className="font-semibold text-slate-200">Prune Logs &gt; 7 Days</div>
               <div className="text-[10px] text-slate-500">
-                Hapus entri riwayat yang dibuat lebih dari 1 minggu lalu
+                Remove audit records older than 7 days
               </div>
             </div>
-            <span className="font-mono text-[11px] text-amber-400">&gt; 7 Hari</span>
+            <span className="font-mono text-[11px] text-amber-400">&gt; 7 Days</span>
           </button>
 
           <button
@@ -76,9 +76,9 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             className="flex items-center justify-between rounded-lg border border-rose-500/30 bg-rose-950/20 p-3 text-left text-xs text-rose-200 transition-colors hover:bg-rose-950/40"
           >
             <div>
-              <div className="font-semibold text-rose-300">Hapus Log Gagal (FAILED) Saja</div>
+              <div className="font-semibold text-rose-300">Prune Failed (FAILED) Logs Only</div>
               <div className="text-[10px] text-slate-400">
-                Bersihkan semua riwayat interaksi yang gagal
+                Clear all failed interaction records
               </div>
             </div>
             <span className="font-mono text-[11px] font-bold text-rose-400">FAILED ONLY</span>
@@ -89,7 +89,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             onClick={() => {
               if (
                 window.confirm(
-                  'Apakah Anda yakin ingin MENGHAPUS SEMUA riwayat audit? Tindakan ini tidak dapat dibatalkan.'
+                  'Are you sure you want to CLEAR ALL audit history? This action cannot be undone.'
                 )
               ) {
                 onPrune('all');
@@ -99,9 +99,9 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             className="flex items-center justify-between rounded-lg border border-rose-600/50 bg-rose-950/40 p-3 text-left text-xs text-rose-300 transition-colors hover:bg-rose-900/60"
           >
             <div>
-              <div className="font-semibold text-rose-200">Bersihkan Seluruh Riwayat (Reset)</div>
+              <div className="font-semibold text-rose-200">Clear Entire Audit Ledger (Reset)</div>
               <div className="text-[10px] text-rose-400/80">
-                Hapus 100% data log riwayat di database
+                Purge 100% of audit history logs from the database
               </div>
             </div>
             <span className="font-mono text-[11px] font-bold text-rose-300">CLEAR ALL</span>
@@ -110,7 +110,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 
         <div className="flex justify-end border-t border-border/60 pt-2">
           <Button size="sm" variant="outline" onClick={onClose} className="text-xs">
-            Tutup
+            Close
           </Button>
         </div>
       </div>

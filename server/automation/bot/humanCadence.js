@@ -28,7 +28,7 @@ async function randomDelay(minSec, maxSec, abortSignal = null) {
   const min = minSec || settings.minDelaySeconds || 15;
   const max = maxSec || settings.maxDelaySeconds || 35;
   const delayMs = Math.floor((Math.random() * (max - min + 1) + min) * 1000);
-  logger.info(`⏳ Jeda humanized delay selama ${(delayMs / 1000).toFixed(1)} detik...`);
+  logger.info(`⏳ Humanized delay cooldown: ${(delayMs / 1000).toFixed(1)}s...`);
   await sleep(delayMs, abortSignal);
 }
 

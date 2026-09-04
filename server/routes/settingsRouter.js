@@ -36,7 +36,7 @@ const discordWebhookSchema = z
     } catch {
       return false;
     }
-  }, 'URL Discord Webhook tidak valid. Harus berupa URL HTTPS resmi (misal: https://discord.com/api/webhooks/...).');
+  }, 'Invalid Discord Webhook URL. Must be an official HTTPS URL (e.g. https://discord.com/api/webhooks/...).');
 
 const telegramBotTokenSchema = z
   .string()
@@ -45,7 +45,7 @@ const telegramBotTokenSchema = z
     const trimmed = val.trim();
     if (!trimmed || isMaskedValue(trimmed)) return true;
     return /^[0-9]+:[a-zA-Z0-9_-]+$/.test(trimmed);
-  }, 'Format Telegram Bot Token tidak valid. Gunakan format standar: 123456:ABC-DEF...');
+  }, 'Invalid Telegram Bot Token format. Use standard format: 123456:ABC-DEF...');
 
 const settingsSchema = z.object({
   minDelaySeconds: z.number().int().min(0).max(3600).optional(),
@@ -82,7 +82,7 @@ const aiConnectionTestSchema = z.object({
 });
 
 const aiGenerationTestSchema = z.object({
-  tweetText: z.string().min(1, 'Teks tweet target wajib diisi.'),
+  tweetText: z.string().min(1, 'Target tweet text is required.'),
   aiProvider: z.string().max(50).optional(),
   aiApiKey: z.string().max(500).optional(),
   aiModel: z.string().max(200).optional(),
@@ -93,16 +93,16 @@ const aiGenerationTestSchema = z.object({
 const proxyTestSchema = z.object({
   proxy: z
     .string()
-    .min(1, 'Format proxy tidak boleh kosong.')
+    .min(1, 'Proxy format cannot be empty.')
     .max(500)
     .refine((val) => proxyHelper.isValidProxyFormat(val.trim()), {
       message:
-        'Format proxy tidak valid. Gunakan: user:pass@ip:port, ip:port:user:pass, atau ip:port (HTTP/SOCKS5).',
+        'Invalid proxy format. Use: user:pass@ip:port, ip:port:user:pass, or ip:port (HTTP/SOCKS5).',
     }),
 });
 
 const spintaxPreviewSchema = z.object({
-  text: z.string().min(1, 'Teks template tidak boleh kosong.').max(8000),
+  text: z.string().min(1, 'Template text cannot be empty.').max(8000),
   count: z.number().int().min(1).max(10).optional(),
 });
 
@@ -139,7 +139,7 @@ router.post('/settings', validateBody(settingsSchema), (req, res) => {
   const current = db.getSettings();
   const updated = db.saveSettings(restoreMaskedSettings(req.body, current));
 
-  logger.info(`⚙️ Pengaturan sistem diperbarui.`);
+  logger.info(`⚙️ System settings updated.`);
   res.json({ success: true, settings: redactSettings(updated) });
 });
 
@@ -177,12 +177,12 @@ router.post(
     if (!reply) {
       throw httpError(
         422,
-        'AI tidak menghasilkan balasan. Periksa provider, API key, atau prompt.',
+        'AI did not generate a reply. Check provider, API key, or prompt.',
         'AI_NO_REPLY'
       );
     }
 
-    res.json({ success: true, message: 'Balasan AI berhasil dirender.', sampleOutput: reply });
+    res.json({ success: true, message: 'AI reply rendered successfully.', sampleOutput: reply });
   }
 );
 
@@ -190,15 +190,15 @@ router.post(
 router.post('/proxy/test', validateBody(proxyTestSchema), async (req, res) => {
   const { proxy } = req.body;
 
-  logger.info(`🔍 Menguji koneksi & latensi proxy: ${maskProxyString(proxy)}`);
+  logger.info(`🔍 Testing proxy latency & connection: ${maskProxyString(proxy)}`);
   const result = await proxyHelper.testProxy(proxy);
 
   if (result.success) {
     logger.success(
-      `✅ Proxy aktif! Latensi: ${result.latency}ms | IP: ${result.ip} (${result.country}, ${result.isp})`
+      `✅ Proxy active! Latency: ${result.latency}ms | IP: ${result.ip} (${result.country}, ${result.isp})`
     );
   } else {
-    logger.warn(`❌ Proxy gagal: ${result.message}`);
+    logger.warn(`❌ Proxy check failed: ${result.message}`);
   }
 
   res.json(result);
@@ -224,7 +224,7 @@ router.get('/templates', (req, res) => {
 // POST /api/templates - Save global spintax templates
 router.post('/templates', validateBody(templatesSchema), (req, res) => {
   const saved = db.saveTemplates(req.body.templates);
-  logger.info(`💾 Global spintax template diperbarui (${saved.length} item).`);
+  logger.info(`💾 Global spintax templates updated (${saved.length} entries).`);
   res.json({ success: true, count: saved.length, templates: saved });
 });
 
@@ -236,7 +236,7 @@ router.get('/comments', (req, res) => {
 // POST /api/comments - Save global fallback comments (alias of templates)
 router.post('/comments', validateBody(commentsSchema), (req, res) => {
   const saved = db.saveComments(req.body.comments);
-  logger.info(`💾 Database fallback komentar diperbarui (${saved.length} item).`);
+  logger.info(`💾 Fallback comments database updated (${saved.length} entries).`);
   res.json({ success: true, count: saved.length });
 });
 

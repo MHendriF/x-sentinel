@@ -33,11 +33,11 @@ export const DeleteNodeDialog: React.FC = () => {
     try {
       const res = await apiClient.deleteAccount(deletingAccount.id);
       if (res.success) {
-        toast.success(`Node "${deletingAccount.label}" berhasil didekomisi dan dihapus.`);
+        toast.success(`Node "${deletingAccount.label}" successfully decommissioned and removed.`);
         closeDeleteModal();
         loadAccounts();
       } else {
-        toast.error(`Gagal menghapus node: ${res.message}`);
+        toast.error(`Failed to delete node: ${res.message}`);
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -57,10 +57,10 @@ export const DeleteNodeDialog: React.FC = () => {
             CRITICAL SYSTEM ACTION · DECOMMISSION NODE
           </div>
           <DialogTitle className="font-heading text-lg text-white">
-            Konfirmasi Hapus Node Akun?
+            Confirm Delete Account Node?
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-400">
-            Tindakan ini akan mencabut node dari sistem dan menghapus file konfigurasinya.
+            This action will revoke the node from the system and delete its local configuration file.
           </DialogDescription>
         </DialogHeader>
 
@@ -118,9 +118,9 @@ export const DeleteNodeDialog: React.FC = () => {
           <div className="flex items-start gap-2.5 rounded-md border border-red-500/30 bg-red-500/10 p-3 font-mono text-xs leading-relaxed text-red-300/90">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
             <div>
-              <strong className="mb-0.5 block font-bold text-red-300">Dampak Penghapusan:</strong>
-              Node ini tidak akan lagi diikutsertakan dalam rotasi batch atau feed hunter. Token
-              otentikasi lokal akan dimusnahkan.
+              <strong className="mb-0.5 block font-bold text-red-300">Decommission Impact:</strong>
+              This node will no longer be included in batch rotations or feed hunter sweeps. Local
+              authentication tokens will be destroyed.
             </div>
           </div>
         </div>
@@ -133,7 +133,7 @@ export const DeleteNodeDialog: React.FC = () => {
             disabled={isDeleting}
             className="font-mono text-xs"
           >
-            Batal
+            Cancel
           </Button>
           <Button
             variant="destructive"
@@ -143,7 +143,7 @@ export const DeleteNodeDialog: React.FC = () => {
             className="gap-1.5 font-heading text-xs font-bold shadow-lg shadow-red-500/20"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            {isDeleting ? 'Mendekomisi...' : 'Hapus & Dekomisi Node'}
+            {isDeleting ? 'Decommissioning...' : 'Delete & Decommission Node'}
           </Button>
         </DialogFooter>
       </DialogContent>
