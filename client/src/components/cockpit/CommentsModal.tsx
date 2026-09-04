@@ -31,6 +31,34 @@ export const CommentsModal: React.FC = () => {
   const [filePath, setFilePath] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  // AI Reply Generator states
+  const [isAiOpen, setIsAiOpen] = useState(false);
+  const [aiPostInput, setAiPostInput] = useState('');
+  const [aiCount, setAiCount] = useState(15);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+
+  const handleAiGenerate = async () => {
+    if (!aiPostInput.trim()) return;
+    setIsAiGenerating(true);
+    try {
+      const res = await apiClient.generatePayloadReplies({
+        postText: aiPostInput.trim(),
+        count: aiCount,
+      });
+      if (res.success && res.replies && res.replies.length > 0) {
+        setComments([...res.replies, ...comments]);
+        toast.success(`Berhasil menambahkan ${res.replies.length} balasan dari AI ke stack!`);
+        setIsAiOpen(false);
+      } else {
+        toast.error(res.message || 'Gagal generate balasan.');
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsAiGenerating(false);
+    }
+  };
+
   useEffect(() => {
     if (commentsAccount && isCommentsModalOpen) {
       loadAccountComments(commentsAccount.id);
@@ -150,11 +178,70 @@ export const CommentsModal: React.FC = () => {
             </label>
           </div>
 
+          {/* AI Reply Generator from Post */}
+          <div className="space-y-2 rounded-md border border-flame/30 bg-flame/5 p-3">
+            <div className="flex items-center justify-between font-mono text-[11px] font-bold text-flame">
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-flame" />
+                AI REPLY GENERATOR (FROM POST)
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsAiOpen(!isAiOpen)}
+                className="text-[10px] text-slate-400 hover:text-white"
+              >
+                {isAiOpen ? 'Tutup Panel' : 'Buka Generator'}
+              </button>
+            </div>
+
+            {isAiOpen && (
+              <div className="mt-2 space-y-2.5 border-t border-flame/20 pt-2">
+                <Textarea
+                  rows={2}
+                  value={aiPostInput}
+                  onChange={(e) => setAiPostInput(e.target.value)}
+                  placeholder="Tempel teks tweet / post target di sini..."
+                  className="font-mono text-xs"
+                />
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 font-mono text-xs">
+                    <span className="text-slate-400">Jumlah:</span>
+                    {[10, 15, 20].map((cnt) => (
+                      <button
+                        key={cnt}
+                        type="button"
+                        onClick={() => setAiCount(cnt)}
+                        className={`rounded px-2 py-0.5 text-xs font-bold ${
+                          aiCount === cnt
+                            ? 'bg-flame text-white'
+                            : 'bg-obsidian-900 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {cnt}
+                      </button>
+                    ))}
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={handleAiGenerate}
+                    disabled={isAiGenerating || !aiPostInput.trim()}
+                    className="h-7 gap-1 font-mono text-xs font-bold"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    {isAiGenerating ? 'Meracik...' : `Generate ${aiCount} Balasan`}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Niche Presets Quick-Loader */}
           <div className="space-y-1.5 rounded-md border border-amber-500/20 bg-amber-500/5 p-3">
             <div className="flex items-center justify-between font-mono text-[11px] font-bold text-amber-300">
               <span className="flex items-center gap-1">
-                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                <Layers className="h-3.5 w-3.5 text-amber-400" />
                 LOAD FROM CURATED PRESET LIBRARY
               </span>
             </div>

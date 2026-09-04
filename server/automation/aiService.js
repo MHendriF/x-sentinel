@@ -639,6 +639,361 @@ You MUST output ONLY a valid JSON object containing an array of single-line stri
     const shuffled = [...source].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
   }
+
+  /**
+   * Generate multiple human-like reply payloads from a focal post/tweet without double quotes
+   * Prompt pattern: "Create 15 reply from this post without any double quotes, make not see like AI Slop then save in json file."
+   * @param {object} params
+   * @param {string} params.postText - The tweet or focal post text
+   * @param {number} params.count - Number of replies to generate (default: 15, range: 1-50)
+   * @param {string} params.tone - Style tone (peer_native, indo_community, contrarian, builder_raw, short_punchy)
+   * @param {string} params.language - 'auto' | 'en' | 'id'
+   * @param {string} params.customInstruction - Optional custom prompt instruction
+   * @param {object} params.customOverrides - Optional settings overrides
+   */
+  async generatePayloadRepliesFromPost({
+    postText,
+    count = 15,
+    tone = 'peer_native',
+    language = 'auto',
+    customInstruction = '',
+    customOverrides = {},
+  }) {
+    const settings = { ...db.getSettings(), ...customOverrides };
+    const provider = settings.aiProvider || 'none';
+    const safeCount = Math.max(1, Math.min(50, parseInt(count, 10) || 15));
+    const cleanPost = String(postText || '').trim();
+
+    if (!cleanPost) {
+      throw new Error('Teks postingan target (Post) wajib diisi.');
+    }
+
+    // Determine target language: if 'auto', detect if Indonesian words appear frequently
+    let resolvedLanguage = language;
+    if (resolvedLanguage === 'auto') {
+      const indoKeywords =
+        /\b(dan|yang|di|ini|itu|ke|bisa|untuk|dengan|kita|kalian|udah|banget|nggak|aja|kalo|dari|buat)\b/i;
+      resolvedLanguage = indoKeywords.test(cleanPost) || tone === 'indo_community' ? 'id' : 'en';
+    }
+
+    // Fallback if AI provider is disabled
+    if (provider === 'none') {
+      logger.info(
+        `ℹ️ AI Provider 'none'. Menggunakan generator fallback anti-slop untuk ${safeCount} balasan...`
+      );
+      return {
+        success: true,
+        isFallback: true,
+        provider: 'fallback-spintax',
+        count: safeCount,
+        replies: this.generateFallbackRepliesFromPost(cleanPost, safeCount, resolvedLanguage, tone),
+      };
+    }
+
+    const providerConfig = this.getProviderConfig(settings);
+    if (!providerConfig) {
+      logger.warn(`⚠️ Provider AI tidak valid: "${provider}". Menggunakan template fallback.`);
+      return {
+        success: true,
+        isFallback: true,
+        provider: 'fallback-spintax',
+        count: safeCount,
+        replies: this.generateFallbackRepliesFromPost(cleanPost, safeCount, resolvedLanguage, tone),
+      };
+    }
+
+    const apiKey = (settings.aiApiKey || '').trim();
+    if (provider !== 'ollama' && !apiKey) {
+      logger.warn('⚠️ AI Mode aktif namun API Key belum diisi. Menggunakan template fallback.');
+      return {
+        success: true,
+        isFallback: true,
+        provider: 'fallback-spintax',
+        count: safeCount,
+        replies: this.generateFallbackRepliesFromPost(cleanPost, safeCount, resolvedLanguage, tone),
+      };
+    }
+
+    const model = (settings.aiModel || '').trim() || providerConfig.defaultModel;
+
+    // Tone instructions
+    let toneDescription = '';
+    switch (tone) {
+      case 'indo_community':
+        toneDescription =
+          'Tone: Santai, cerdas, berbobot ala komunitas tech & crypto Indonesia (slang wajar seperti "POV", "flow", "mindset", "retention", jangan kaku seperti berita koran).';
+        break;
+      case 'contrarian':
+        toneDescription =
+          'Tone: Contrarian, analytical, and slightly skeptical. Questioning assumptions, pointing out hidden tradeoffs or overlooked execution risks.';
+        break;
+      case 'builder_raw':
+        toneDescription =
+          'Tone: Pragmatic builder / developer perspective. Focused on developer tooling, shipping velocity, and real production realities.';
+        break;
+      case 'short_punchy':
+        toneDescription =
+          'Tone: Extremely punchy, witty, and concise. 8-15 words max per reply, razor-sharp observation.';
+        break;
+      case 'peer_native':
+      default:
+        toneDescription =
+          'Tone: Sharp, authentic tech/crypto practitioner peer. Intelligent, insightful, zero generic sycophancy.';
+    }
+
+    const langInstruction =
+      resolvedLanguage === 'id'
+        ? 'Language: Bahasa Indonesia (modern tech slang, natural human cadence).'
+        : 'Language: English (native Twitter / X tech discourse style).';
+
+    const systemPrompt = `You are an elite, highly authentic human commenter on X (Twitter).
+Your task is to generate exactly ${safeCount} unique, high-engagement reply options to the target post.
+
+STRICT INSTRUCTIONS:
+1. ABSOLUTELY NO DOUBLE QUOTES: Under NO circumstances should you output double quote marks (") or smart quotes (“ ”). Do not wrap individual replies in double quotes.
+2. ZERO AI SLOP OR BOT CLICHES: Never use sycophantic or generic bot phrases like "Great insights!", "Fascinating perspective!", "Spot on!", "Couldn't agree more!", "Thanks for sharing!", "In today's fast-paced world...", "It is important to remember that...".
+3. HUMAN PEER CADENCE: Sound like an actual human practitioner, trader, engineer, or researcher joining the conversation. Be insightful, concise, and direct.
+4. ONE SINGLE SENTENCE PER REPLY: Exactly 1 single line per reply (10-25 words max). Absolutely NO newlines (\\n) within any reply.
+5. DIVERSE ANGLES: Each of the ${safeCount} replies must take a distinctly different angle, tradeoff, observation, or question based on the focal post.
+6. NO FORMATTING ARTIFACTS: Never include numbers (1., 2.), bullet points (-), hashtags, or markdown formatting inside the replies. Maximum 0-1 subtle contextual emoji or none.
+${toneDescription}
+${langInstruction}
+${customInstruction ? `SPECIAL USER DIRECTIVE: ${customInstruction}` : ''}
+
+RESPONSE FORMAT:
+You MUST output ONLY a valid JSON object with a single "replies" array containing ${safeCount} clean strings:
+{
+  "replies": [
+    "reply 1 text here without double quotes",
+    "reply 2 text here without double quotes"
+  ]
+}`;
+
+    const userMessage = `Create ${safeCount} reply from this post without any double quotes, make not see like AI Slop then save in json file.
+
+Post :
+${cleanPost}`;
+
+    try {
+      logger.info(
+        `🤖 Menghubungi AI (${provider.toUpperCase()} · ${model}) untuk generate ${safeCount} balasan payload anti-slop...`
+      );
+
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        ...(providerConfig.headers || {}),
+      };
+
+      const endpoint = `${providerConfig.baseUrl}/chat/completions`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s for 15-30 items
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage },
+          ],
+          response_format: { type: 'json_object' },
+          max_tokens: Math.min(2500, Math.max(500, safeCount * 70)),
+          temperature: 0.85,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      const rawText = await response.text();
+
+      if (!response.ok) {
+        logger.warn(`⚠️ AI Payload Replies Error (${response.status}): ${rawText.slice(0, 160)}`);
+        return {
+          success: true,
+          isFallback: true,
+          provider: 'fallback-spintax',
+          count: safeCount,
+          replies: this.generateFallbackRepliesFromPost(
+            cleanPost,
+            safeCount,
+            resolvedLanguage,
+            tone
+          ),
+        };
+      }
+
+      const parsedData = this.safeParseResponse(rawText);
+      let contentStr =
+        parsedData?.choices?.[0]?.message?.content?.trim() ||
+        parsedData?.choices?.[0]?.text?.trim() ||
+        '';
+
+      let extractedReplies = [];
+
+      // 1. Try parsing direct JSON
+      try {
+        const jsonMatch = contentStr.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const jsonResult = JSON.parse(jsonMatch[0]);
+          if (Array.isArray(jsonResult.replies)) {
+            extractedReplies = jsonResult.replies;
+          } else if (Array.isArray(jsonResult.posts)) {
+            extractedReplies = jsonResult.posts;
+          } else if (Array.isArray(jsonResult)) {
+            extractedReplies = jsonResult;
+          }
+        }
+      } catch (err) {}
+
+      // 2. Fallback line extraction if JSON failed
+      if (extractedReplies.length === 0 && contentStr) {
+        extractedReplies = contentStr
+          .split(/\r?\n/)
+          .map((line) =>
+            line
+              .replace(/^\s*\d+[.)\-*]\s*/, '')
+              .replace(/^["'`]|["'`]$/g, '')
+              .trim()
+          )
+          .filter((line) => line.length > 10 && !line.startsWith('{') && !line.startsWith('}'));
+      }
+
+      // 3. Clean and sanitize all replies: STRICTLY REMOVE ALL DOUBLE QUOTES
+      const cleaned = extractedReplies
+        .map((r) =>
+          String(r)
+            .replace(/["“”]/g, '') // remove all double quotes & smart quotes
+            .replace(/[\r\n]+/g, ' ') // single line
+            .replace(/^\s*\d+[.)\-*]\s*/, '') // remove leading enumeration
+            .replace(/^['`]|['`]$/g, '') // remove wrapping single quotes
+            .replace(/\s+/g, ' ') // collapse spaces
+            .trim()
+        )
+        .filter((r) => r.length > 5);
+
+      if (cleaned.length > 0) {
+        // If we got fewer than requested, top up with non-duplicate fallbacks
+        let finalReplies = cleaned.slice(0, safeCount);
+        if (finalReplies.length < safeCount) {
+          const fallbacks = this.generateFallbackRepliesFromPost(
+            cleanPost,
+            safeCount,
+            resolvedLanguage,
+            tone
+          );
+          for (const fb of fallbacks) {
+            if (finalReplies.length >= safeCount) break;
+            if (!finalReplies.includes(fb)) {
+              finalReplies.push(fb);
+            }
+          }
+        }
+
+        logger.success(
+          `🤖 Berhasil meracik ${finalReplies.length} balasan payload AI tanpa tanda kutip ganda!`
+        );
+        return {
+          success: true,
+          isFallback: false,
+          provider: `${provider.toUpperCase()} (${model})`,
+          count: finalReplies.length,
+          replies: finalReplies,
+        };
+      }
+
+      throw new Error('Tidak dapat mengekstrak array balasan dari respons AI.');
+    } catch (err) {
+      logger.warn(
+        `⚠️ AI Payload Generation gagal (${err.message}). Beralih ke generator fallback anti-slop.`
+      );
+      return {
+        success: true,
+        isFallback: true,
+        provider: 'fallback-spintax',
+        count: safeCount,
+        replies: this.generateFallbackRepliesFromPost(cleanPost, safeCount, resolvedLanguage, tone),
+      };
+    }
+  }
+
+  /**
+   * High-quality offline fallback generator for reply payloads (no double quotes, single line, anti-slop)
+   */
+  generateFallbackRepliesFromPost(postText, count = 15, language = 'en', tone = 'peer_native') {
+    const isIndo = language === 'id' || tone === 'indo_community';
+    const cleanPost = String(postText || '').trim();
+
+    // Extract potential focal keywords or short phrases
+    const words = cleanPost
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(
+        (w) =>
+          w.length > 4 && !/^(about|their|there|which|would|could|should|these|those)$/i.test(w)
+      );
+    const focalTerm = words.length > 0 ? words[0] : isIndo ? 'tren ini' : 'this dynamic';
+
+    const englishPool = [
+      `The distribution side of ${focalTerm} will matter ten times more than raw benchmark figures.`,
+      `Most people are sleeping on the second-order effects of how this actually scales in production.`,
+      `Execution speed here is everything, whoever captures developer mindshare first wins.`,
+      `Curious how this holds up once network load and gas fees test throughput under peak stress.`,
+      `The tooling around ${focalTerm} is still surprisingly primitive, which creates massive builder upside.`,
+      `Sounds good on paper, but the true test will be 60-day user retention after initial hype cools down.`,
+      `Been thinking through this exact tradeoff lately and the friction points are very real.`,
+      `The moat here is proprietary context and data pipelining, not the raw underlying model.`,
+      `Everyone focuses on the tech stack while ignoring the incentive mechanisms that drive adoption.`,
+      `Clean breakdown of the dynamics at play, especially the observation around infrastructure maturity.`,
+      `Feels like an inflection point that most observers will only recognize in hindsight.`,
+      `Simple architectures that actually ship beat complex theoretical models every single time.`,
+      `The real alpha is in how quickly this integrates with existing legacy workflows.`,
+      `Fascinating seeing this thesis play out in real-time over the last couple quarters.`,
+      `Completely aligned on the bottleneck shifting from compute throughput to distribution velocity.`,
+      `The risk-reward asymmetry here is massive for anyone positioning early before consensus catches on.`,
+      `A lot of noise on the timeline today, but this is the signal worth paying close attention to.`,
+      `Worth watching closely how liquidity and user flows respond over the next few weeks.`,
+      `The interoperability angle will make or break this once competing protocols react.`,
+      `Underrated aspect: developer UX will determine which ecosystem captures the sticky liquidity.`,
+      `Hardest problem here is not building the rails, it is driving sustainable organic demand.`,
+      `Very few teams appreciate how much friction users experience at this exact step.`,
+      `When liquidity rotates, infrastructure that actually functions wins without exception.`,
+      `The contrast between timeline perception and actual developer activity on ${focalTerm} is striking.`,
+      `Quiet compounding happens during these phases when mainstream attention is elsewhere.`,
+    ];
+
+    const indoPool = [
+      `Poin kuncinya emang di distribusi sih, tech bagus tanpa user onboarding yang seamless bakal susah scale.`,
+      `Banyak yang masih fokus ke hype jangka pendek, padahal pondasi infrastruktur ${focalTerm} yang justru makin solid.`,
+      `Menarik banget ngeliat pergeseran tren ini, apalagi kalau diliat dari data retention belakangan ini.`,
+      `Tantangan terbesarnya nanti pas volume transaksi naik drastis, kuat nahan beban gas fee atau nggak.`,
+      `Masih banyak yang underestimate potensi ${focalTerm} cuma gara-gara harganya lagi sideways.`,
+      `Tooling ekosistemnya emang belum semulus web2, tapi potensi akselerasinya gila-gilaan.`,
+      `POV yang jarang dibahas di timeline tapi justru paling relevan buat builders jangka panjang.`,
+      `Yang paling penting itu konsistensi dev activity, bukan sekadar metrik vanity di awal rilis.`,
+      `Bakal menarik liat respon market dalam beberapa minggu ke depan setelah katalis ini jalan.`,
+      `Simpel tapi kena banget esensinya, fokus ke fundamental daripada kebawa panik arus timeline.`,
+      `Tinggal tunggu waktu sampai adopsinya mulai meluas ke layer retail.`,
+      `Infrastruktur yang reliable bakal selalu menang lawan narasi kosong pas siklus rotasi likuiditas.`,
+      `Catatan riset yang solid, terutama soal efisiensi dan komparasi arsitektur seputar ${focalTerm}.`,
+      `Eksekusi lapangan selalu lebih sulit daripada whitepaper, tapi arah geraknya udah tepat.`,
+      `Setuju, bottleneck utamanya sekarang bukan di komputasi tapi di kemudahan akses end-user.`,
+      `Asimetri risk-reward di area ini masih gede banget buat yang udah curi start riset duluan.`,
+      `Fokus ke retention user riil dan cashflow protokol, bukan sekadar rumor listing exchange.`,
+      `Angle yang fresh banget, ngebuka mata soal arah pergerakan modal smart money belakangan ini.`,
+      `UX dan biaya transaksi bakal jadi penentu utama mana yang bakal survive di siklus berikutnya.`,
+      `Satu hal yang pasti, utilitas nyata bakal selalu nemu jalannya sendiri ke market.`,
+    ];
+
+    const pool = isIndo ? indoPool : englishPool;
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, count);
+
+    // Ensure absolutely NO double quotes in fallback
+    return selected.map((s) => s.replace(/["“”]/g, '').trim());
+  }
 }
 
 module.exports = new AIService();

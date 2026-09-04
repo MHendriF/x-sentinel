@@ -268,6 +268,64 @@ export const apiClient = {
     return res.json();
   },
 
+  // AI Reply Payload Generator from Focal Post
+  async generatePayloadReplies(payload: {
+    postText: string;
+    count?: number;
+    tone?: string;
+    language?: string;
+    customInstruction?: string;
+    customOverrides?: any;
+  }): Promise<{
+    success: boolean;
+    provider?: string;
+    count?: number;
+    replies?: string[];
+    isFallback?: boolean;
+    message?: string;
+  }> {
+    const res = await fetch('/api/ai/generate-payload-replies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async savePayloadFile(payload: {
+    fileName: string;
+    replies: string[];
+    targetAccountId?: string;
+    saveToTemplates?: boolean;
+  }): Promise<{
+    success: boolean;
+    fileName?: string;
+    filePath?: string;
+    count?: number;
+    message?: string;
+  }> {
+    const res = await fetch('/api/ai/save-payload-file', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  async getPayloadFiles(): Promise<{
+    success: boolean;
+    files: Array<{
+      fileName: string;
+      filePath: string;
+      count: number;
+      sizeBytes: number;
+      updatedAt: string;
+    }>;
+  }> {
+    const res = await fetch('/api/ai/payload-files');
+    return res.json();
+  },
+
   async stopTask() {
     const res = await fetch('/api/tasks/stop', { method: 'POST' });
     return res.json();
