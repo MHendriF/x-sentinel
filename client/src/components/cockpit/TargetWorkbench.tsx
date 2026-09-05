@@ -93,7 +93,7 @@ export const TargetWorkbench: React.FC = () => {
       <DeckHeader
         tag="EXECUTION PIPELINE"
         tagColor="flame"
-        icon={<Crosshair className="h-3.5 w-3.5 text-flame" />}
+        icon={<Crosshair className="h-5 w-5 text-flame" />}
         isActive={isRunning}
         badge={isRunning ? '● EXECUTING' : '○ STANDBY'}
         title="Target Engagement Workbench"

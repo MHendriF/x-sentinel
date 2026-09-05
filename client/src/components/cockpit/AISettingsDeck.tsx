@@ -439,7 +439,7 @@ export const AISettingsDeck: React.FC = () => {
         tag="AI INTELLIGENCE SUITE"
         tagColor="purple"
         accent="purple"
-        icon={<Bot className="h-3.5 w-3.5 text-purple-400" />}
+        icon={<Bot className="h-5 w-5 text-purple-400" />}
         badge={
           <Badge
             variant="outline"

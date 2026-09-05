@@ -17,6 +17,19 @@ export type DeckHeaderIconAnimation =
   | 'spin'
   | 'none';
 
+export type DeckHeaderContextAnimation =
+  | 'auto'
+  | 'layers'
+  | 'sparkles'
+  | 'crosshair'
+  | 'radar'
+  | 'barchart'
+  | 'bot'
+  | 'sliders'
+  | 'shield'
+  | 'spreadsheet'
+  | 'none';
+
 export interface DeckHeaderProps {
   /** Subsystem/over-title tag (e.g. 'CLUSTER TOPOLOGY', 'AI INTELLIGENCE SUITE') */
   tag: string;
@@ -28,6 +41,8 @@ export interface DeckHeaderProps {
   icon?: React.ReactNode;
   /** Custom animation for icon. Defaults to 'reticle'. */
   iconAnimation?: DeckHeaderIconAnimation;
+  /** Contextual micro-animation for the icon matching its semantic role. Defaults to 'auto'. */
+  contextAnimation?: DeckHeaderContextAnimation;
   /** Whether the deck is actively executing a task/operation. Activates continuous telemetry spin mode. */
   isActive?: boolean;
   /** Main deck heading text or node */
@@ -107,12 +122,60 @@ const ACCENT_STYLES: Record<NonNullable<DeckHeaderProps['accent']>, string> = {
   rose: 'border-rose-500/30 bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-rose-950/20 shadow-xl',
 };
 
+/**
+ * Resolves the contextual micro-animation CSS class for the given Lucide icon.
+ * Supports automatic detection from React element display names / names or explicit overrides.
+ */
+function getContextAnimationClass(
+  icon: React.ReactNode,
+  contextAnimation: DeckHeaderContextAnimation = 'auto'
+): string | undefined {
+  if (contextAnimation === 'none') return undefined;
+  if (contextAnimation !== 'auto') {
+    return `group-hover-animate-${contextAnimation}`;
+  }
+
+  if (!React.isValidElement(icon)) return undefined;
+
+  const iconType = icon.type as any;
+  const name: string =
+    iconType?.displayName ||
+    iconType?.name ||
+    (typeof iconType === 'function' ? iconType.name : '') ||
+    '';
+
+  const normalized = name.toLowerCase();
+
+  if (normalized.includes('layer')) return 'group-hover-animate-layers';
+  if (normalized.includes('sparkle')) return 'group-hover-animate-sparkles';
+  if (normalized.includes('crosshair')) return 'group-hover-animate-crosshair';
+  if (normalized.includes('radar')) return 'group-hover-animate-radar';
+  if (
+    normalized.includes('chart') ||
+    normalized.includes('column') ||
+    normalized.includes('barchart')
+  )
+    return 'group-hover-animate-barchart';
+  if (normalized.includes('bot')) return 'group-hover-animate-bot';
+  if (normalized.includes('slider')) return 'group-hover-animate-sliders';
+  if (normalized.includes('shield')) return 'group-hover-animate-shield';
+  if (
+    normalized.includes('spreadsheet') ||
+    normalized.includes('sheet') ||
+    normalized.includes('file')
+  )
+    return 'group-hover-animate-spreadsheet';
+
+  return undefined;
+}
+
 export const DeckHeader: React.FC<DeckHeaderProps> = ({
   tag,
   tagColor = 'flame',
   badge,
   icon,
   iconAnimation = 'reticle',
+  contextAnimation = 'auto',
   isActive = false,
   title,
   titleBadges,
@@ -125,6 +188,7 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
 }) => {
   const colorMap = TAG_COLORS[tagColor] || TAG_COLORS.flame;
   const accentClass = ACCENT_STYLES[accent] || ACCENT_STYLES.none;
+  const contextClass = getContextAnimationClass(icon, contextAnimation);
 
   const headerContent = (
     <>
@@ -168,7 +232,7 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
               className={cn(
                 'relative flex h-11 w-11 items-center justify-center rounded-lg border bg-gradient-to-b from-obsidian-800/90 to-obsidian-950/95 shadow-xl backdrop-blur-md transition-all duration-300',
                 colorMap.border,
-                isActive ? 'border-current/90 shadow-lg' : 'group-hover:border-current/70'
+                isActive ? 'border-current/90 shadow-lg is-active' : 'group-hover:border-current/70'
               )}
             >
               {/* Corner Tech Accents */}
@@ -187,17 +251,25 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
                 )}
               />
 
-              {/* Centered Sharp Icon */}
+              {/* Centered Sharp Icon with Contextual Micro-Animation */}
               <div
                 className={cn(
                   'relative z-10 flex items-center justify-center [&_svg]:h-5 [&_svg]:w-5 transition-transform duration-300',
                   colorMap.text,
-                  isActive ? 'scale-105' : 'group-hover:scale-110',
+                  isActive ? 'scale-105' : 'group-hover:scale-105',
                   iconAnimation === 'spin' && 'animate-spin',
                   iconAnimation === 'pulse' && 'animate-pulse'
                 )}
               >
-                {icon}
+                <span
+                  className={cn(
+                    'inline-flex items-center justify-center transition-all duration-300',
+                    contextClass,
+                    isActive && 'is-active'
+                  )}
+                >
+                  {icon}
+                </span>
               </div>
             </div>
           </div>

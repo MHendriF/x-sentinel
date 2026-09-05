@@ -372,7 +372,7 @@ export const PostStudio: React.FC = () => {
         tag="PUBLISHING PIPELINE"
         tagColor="flame"
         badge="CONTENT STUDIO"
-        icon={<Sparkles className="h-3.5 w-3.5 text-flame" />}
+        icon={<Sparkles className="h-5 w-5 text-flame" />}
         title="Post Studio & Fleet Publisher"
         description="Craft high-engagement, anti-AI-slop posts from target keywords, then publish directly across your X account fleet."
         actions={
