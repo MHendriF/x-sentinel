@@ -4,12 +4,13 @@ import { NodeCard } from './NodeCard';
 import { NodesFilterBar, NodeStatusFilter } from './nodes/NodesFilterBar';
 import { NodesPagination } from './nodes/NodesPagination';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DeckHeader } from './DeckHeader';
 import {
   Plus,
   RefreshCw,
   Server,
+  Layers,
   UploadCloud,
   Download,
   Stethoscope,
@@ -168,50 +169,35 @@ export const NodesGrid: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Top Banner / Cluster Controls */}
-      <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
-        <CardHeader className="flex flex-col items-start justify-between gap-4 pb-4 lg:flex-row lg:items-center">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-flame opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-flame" />
+      <DeckHeader
+        tag="CLUSTER TOPOLOGY"
+        tagColor="flame"
+        icon={<Layers className="h-5 w-5 text-flame" />}
+        isActive={isCheckingHealth || isRefreshing}
+        badge="FLEET CONTROLS"
+        title="Registered Nodes"
+        titleBadges={
+          <>
+            <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2.5 py-0.5 font-bold text-white shadow-inner">
+              {accounts.length} {accounts.length === 1 ? 'Node' : 'Nodes'}
+            </span>
+            {accounts.length > 0 && (
+              <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                {accounts.filter((a) => a.enabled !== false).length} Active
               </span>
-              <span className="font-mono text-[10px] font-bold tracking-widest text-flame">
-                CLUSTER TOPOLOGY
-              </span>
-              <span className="rounded border border-slate-700/80 bg-obsidian-950 px-2 py-0.5 font-mono text-[9px] text-slate-400">
-                FLEET CONTROLS
-              </span>
-            </div>
-
-            <CardTitle className="mt-1.5 flex flex-wrap items-center gap-2.5 text-xl font-bold text-white">
-              <span>Registered Nodes</span>
-              <div className="flex items-center gap-1.5 font-mono text-xs">
-                <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2.5 py-0.5 font-bold text-white shadow-inner">
-                  {accounts.length} {accounts.length === 1 ? 'Node' : 'Nodes'}
-                </span>
-                {accounts.length > 0 && (
-                  <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
-                    {accounts.filter((a) => a.enabled !== false).length} Active
-                  </span>
-                )}
-              </div>
-            </CardTitle>
-
-            <CardDescription className="mt-1 text-xs text-slate-400">
-              Each node represents an independent X session with its own comment pool, proxy tunnel, and session health state.
-            </CardDescription>
-          </div>
-
-          {/* Functional Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-2.5">
+            )}
+          </>
+        }
+        description="Each node represents an independent X session with its own comment pool, proxy tunnel, and session health state."
+        actions={
+          <>
             {/* 1. Fleet Health Diagnostic Button */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleCheckFleetHealth}
               disabled={isCheckingHealth}
-              className="h-9 gap-2 border-rose-500/40 bg-rose-950/20 font-mono text-xs font-semibold text-rose-300 shadow-sm transition-all hover:border-rose-500/70 hover:bg-rose-900/30 hover:text-rose-200"
+              className="h-8 shrink-0 gap-1.5 border-rose-500/30 bg-rose-950/20 px-2.5 font-mono text-xs font-semibold text-rose-300 transition-colors hover:border-rose-500/60 hover:bg-rose-900/30 hover:text-rose-200"
               title="Verify session & proxy health across all fleet nodes"
             >
               {isCheckingHealth ? (
@@ -219,15 +205,15 @@ export const NodesGrid: React.FC = () => {
               ) : (
                 <Stethoscope className="h-3.5 w-3.5 text-rose-400" />
               )}
-              <span>{isCheckingHealth ? 'Checking Fleet...' : 'Fleet Health'}</span>
+              <span>{isCheckingHealth ? 'Checking...' : 'Fleet Health'}</span>
             </Button>
 
             {/* 2. Segmented Data Hub Toolbar (Import, Export, Refresh) */}
-            <div className="inline-flex items-center divide-x divide-slate-800 rounded-lg border border-slate-700/80 bg-obsidian-950/90 p-0.5 shadow-inner">
+            <div className="inline-flex h-8 shrink-0 items-center divide-x divide-slate-800 rounded-md border border-slate-700/80 bg-obsidian-950 p-0.5 shadow-inner">
               <button
                 type="button"
                 onClick={() => openBulkImportModal()}
-                className="inline-flex h-8 items-center gap-1.5 rounded-l-md px-3 font-mono text-xs font-semibold text-cyan-300 transition-colors hover:bg-cyan-500/10 hover:text-cyan-200 focus:outline-none"
+                className="inline-flex h-7 items-center gap-1.5 px-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:text-cyan-300 focus:outline-none"
                 title="Bulk import accounts from text or token:ct0:proxy:label format"
               >
                 <UploadCloud className="h-3.5 w-3.5 text-cyan-400" />
@@ -237,7 +223,7 @@ export const NodesGrid: React.FC = () => {
               <button
                 type="button"
                 onClick={handleExportFleet}
-                className="inline-flex h-8 items-center gap-1.5 px-3 font-mono text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/10 hover:text-emerald-200 focus:outline-none"
+                className="inline-flex h-7 items-center gap-1.5 px-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:text-emerald-300 focus:outline-none"
                 title="Export entire fleet configuration backup to .json file"
               >
                 <Download className="h-3.5 w-3.5 text-emerald-400" />
@@ -248,7 +234,7 @@ export const NodesGrid: React.FC = () => {
                 type="button"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-r-md text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200 focus:outline-none disabled:opacity-50"
+                className="inline-flex h-7 w-7 items-center justify-center text-slate-400 transition-colors hover:bg-slate-800/80 hover:text-slate-200 focus:outline-none disabled:opacity-50"
                 title="Reload all fleet node data"
                 aria-label="Reload node data"
               >
@@ -261,19 +247,19 @@ export const NodesGrid: React.FC = () => {
               </button>
             </div>
 
-            {/* 3. Primary CTA: Register Node */}
+            {/* 3. Primary CTA: Add Node */}
             <Button
               variant="default"
               size="sm"
               onClick={() => openAccountModal(null)}
-              className="h-9 gap-1.5 bg-gradient-to-r from-flame to-amber-500 px-3.5 font-heading text-xs font-bold text-white shadow-md shadow-flame/20 transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+              className="h-8 shrink-0 gap-1.5 bg-gradient-to-r from-flame to-amber-500 px-3 font-heading text-xs font-bold text-white shadow-md shadow-flame/20 transition-all hover:brightness-110 active:scale-[0.98]"
             >
-              <Plus className="h-4 w-4 stroke-[2.5]" />
-              <span>Register Node</span>
+              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>Add Node</span>
             </Button>
-          </div>
-        </CardHeader>
-      </Card>
+          </>
+        }
+      />
 
       {/* Search & Filter Bar (Only if accounts exist) */}
       {accounts.length > 0 && (

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
-import { Card, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DeckHeader } from './DeckHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { RefreshCw, Download, Trash2 } from 'lucide-react';
+import { RefreshCw, Download, Trash2, FileSpreadsheet } from 'lucide-react';
 import { AuditFilters } from './audit/AuditFilters';
 import { AuditTable } from './audit/AuditTable';
 import type { AuditSortKey, AuditSortDir } from './audit/AuditTable';
@@ -180,51 +181,55 @@ export const AuditLedger: React.FC = () => {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col justify-between gap-4 space-y-0 pb-3 sm:flex-row sm:items-center">
-        <div>
-          <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
-            IMMUTABLE EVENT LOG
-          </div>
-          <CardDescription>
-            Comprehensive node interaction log, delivery statuses, and execution timestamps (
-            {totalItems} records).
-          </CardDescription>
-        </div>
+    <div className="space-y-4">
+      <DeckHeader
+        tag="IMMUTABLE EVENT LOG"
+        tagColor="flame"
+        icon={<FileSpreadsheet className="h-5 w-5 text-flame" />}
+        isActive={isPruning}
+        title="Audit Ledger & Telemetry History"
+        titleBadges={
+          <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2.5 py-0.5 font-bold text-white shadow-inner">
+            {totalItems} {totalItems === 1 ? 'Record' : 'Records'}
+          </span>
+        }
+        description="Comprehensive node interaction log, delivery statuses, and execution timestamps."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPruneModalOpen(true)}
+              className="h-8 gap-1.5 border-rose-500/30 bg-rose-950/20 px-2.5 font-mono text-xs font-semibold text-rose-300 transition-colors hover:border-rose-500/60 hover:bg-rose-900/30 hover:text-rose-200"
+              title="Prune legacy or failed audit logs"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-rose-400" />
+              <span>Maintenance</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadHistory()}
+              className="h-8 gap-1.5 border-slate-800 bg-obsidian-950 px-2.5 font-mono text-xs font-semibold text-slate-300 hover:bg-slate-800/80 hover:text-white"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Refresh</span>
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleExportCSV}
+              className="h-8 gap-1.5 px-3 font-mono text-xs font-semibold"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Export CSV</span>
+            </Button>
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPruneModalOpen(true)}
-            className="gap-1 border-rose-500/40 font-mono text-xs text-rose-300 hover:bg-rose-500/10"
-            title="Prune legacy or failed audit logs"
-          >
-            <Trash2 className="h-3.5 w-3.5 text-rose-400" />
-            Maintenance
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => loadHistory()}
-            className="gap-1 text-xs"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Refresh
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleExportCSV}
-            className="gap-1 font-mono text-xs"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export CSV
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
+      <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
+        <CardContent className="space-y-4 pt-6">
         {/* Filters */}
         <AuditFilters
           searchTerm={searchTerm}
@@ -276,5 +281,6 @@ export const AuditLedger: React.FC = () => {
         />
       </CardContent>
     </Card>
+    </div>
   );
 };

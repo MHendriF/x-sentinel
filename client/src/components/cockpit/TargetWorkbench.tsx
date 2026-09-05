@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { TerminalConsole } from './TerminalConsole';
 import { toast } from 'sonner';
 import {
+  Crosshair,
   Heart,
   Repeat,
   MessageSquare,
@@ -23,6 +24,7 @@ import {
   Bot,
   Info,
 } from 'lucide-react';
+import { DeckHeader } from './DeckHeader';
 
 export const TargetWorkbench: React.FC = () => {
   const { accounts, isRunning, currentTask, setIsRunning, settings } = useStore();
@@ -86,27 +88,61 @@ export const TargetWorkbench: React.FC = () => {
   const progressPct = Math.min(100, Math.round((completed / total) * 100));
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-      {/* Left Column: Mission Parameters & Launchpad */}
-      <div className="space-y-5">
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
-                EXECUTION PIPELINE
-              </div>
-              <Badge
-                variant={isRunning ? 'success' : 'secondary'}
-                className="font-mono text-[10px]"
-              >
-                {isRunning ? '● EXECUTING' : '○ STANDBY'}
-              </Badge>
+    <div className="animate-in fade-in space-y-6">
+      {/* Top Deck Header Banner */}
+      <DeckHeader
+        tag="EXECUTION PIPELINE"
+        tagColor="flame"
+        icon={<Crosshair className="h-3.5 w-3.5 text-flame" />}
+        isActive={isRunning}
+        badge={isRunning ? '● EXECUTING' : '○ STANDBY'}
+        title="Target Engagement Workbench"
+        titleBadges={
+          isRunning ? (
+            <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[11px] font-bold text-amber-400">
+              {progressPct}% ({completed}/{total})
+            </span>
+          ) : undefined
+        }
+        description="Automated sequential multi-node engagement across target tweets with anti-detection randomized delays and AI payload synthesis."
+        actions={
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-slate-300">
+              <Layers className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="text-[10px] uppercase text-slate-500">Fleet:</span>
+              <span className="font-bold text-emerald-400">{activeAccounts.length} Nodes</span>
             </div>
-            <CardTitle>Batch Target Engagement</CardTitle>
-            <CardDescription>
-              Automated sequential multi-node engagement with anti-detection randomized delays.
-            </CardDescription>
-          </CardHeader>
+            <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-slate-300">
+              <span className="text-[10px] uppercase text-slate-500">Delays:</span>
+              <span className="font-bold text-slate-200">
+                {settings?.minDelaySeconds ?? 30}s - {settings?.maxDelaySeconds ?? 90}s
+              </span>
+            </div>
+          </div>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {/* Left Column: Mission Parameters & Launchpad */}
+        <div className="space-y-5">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Sparkles className="h-4 w-4 text-flame" />
+                  Mission Parameters &amp; Launchpad
+                </CardTitle>
+                <Badge
+                  variant={isRunning ? 'success' : 'secondary'}
+                  className="font-mono text-[10px]"
+                >
+                  {isRunning ? 'EXECUTING' : 'READY'}
+                </Badge>
+              </div>
+              <CardDescription>
+                Configure target URLs, interaction vectors, and AI reply synthesis for this execution batch.
+              </CardDescription>
+            </CardHeader>
 
           <CardContent className="space-y-4">
             {/* Account Node Selector */}
@@ -438,5 +474,6 @@ export const TargetWorkbench: React.FC = () => {
         <TerminalConsole />
       </div>
     </div>
+  </div>
   );
 };

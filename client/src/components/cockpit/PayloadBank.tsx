@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DeckHeader } from './DeckHeader';
 import {
   Dialog,
   DialogContent,
@@ -366,69 +367,62 @@ export const PayloadBank: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header & Tab Switcher */}
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-border/70 pb-4 sm:flex-row sm:items-center">
-        <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
-            <Zap className="h-3.5 w-3.5" />
-            PAYLOAD STUDIO & ENGINE
+      <DeckHeader
+        tag="PAYLOAD STUDIO & ENGINE"
+        tagColor="flame"
+        icon={<Sliders className="h-5 w-5 text-flame" />}
+        title="Payload Bank & AI Reply Generator"
+        description="Generate contextual replies from target posts without double quotes and free from AI slop, then save to JSON."
+        actions={
+          <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-obsidian-950/80 p-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab('generator')}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-all ${
+                activeTab === 'generator'
+                  ? 'bg-flame text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Generator
+              <span className="rounded bg-black/30 px-1 py-0.5 text-[9px]">from Post</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('spintax')}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-all ${
+                activeTab === 'spintax'
+                  ? 'bg-slate-800 text-amber-300 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sliders className="h-3.5 w-3.5" />
+              Spintax Stack
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('vault');
+                loadSavedFiles();
+              }}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-all ${
+                activeTab === 'vault'
+                  ? 'bg-slate-800 text-amber-300 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Vault &amp; JSON Files
+              <span className="rounded bg-black/30 px-1 py-0.5 text-[9px] text-muted-foreground">
+                {savedFiles.length}
+              </span>
+            </button>
           </div>
-          <h1 id="page-heading" className="font-heading text-2xl font-bold text-white">
-            Payload Bank &amp; AI Reply Generator
-          </h1>
-          <p className="mt-1 text-xs text-slate-400">
-            Generate contextual replies from target posts without double quotes and free from AI slop, then save to JSON.
-          </p>
-        </div>
-
-        {/* Tab Buttons */}
-        <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-obsidian-950/80 p-1">
-          <button
-            type="button"
-            onClick={() => setActiveTab('generator')}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-all ${
-              activeTab === 'generator'
-                ? 'bg-flame text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            AI Generator
-            <span className="py-0.2 rounded bg-black/30 px-1 text-[9px]">from Post</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('spintax')}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-all ${
-              activeTab === 'spintax'
-                ? 'bg-slate-800 text-amber-300 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Sliders className="h-3.5 w-3.5" />
-            Spintax Stack
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('vault');
-              loadSavedFiles();
-            }}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs font-semibold transition-all ${
-              activeTab === 'vault'
-                ? 'bg-slate-800 text-amber-300 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <BookOpen className="h-3.5 w-3.5" />
-            Vault &amp; JSON Files
-            <span className="py-0.2 rounded bg-black/30 px-1 text-[9px] text-muted-foreground">
-              {savedFiles.length}
-            </span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* ========================================================================= */}
       {/* TAB 1: AI REPLY PAYLOAD GENERATOR (FROM POST) */}

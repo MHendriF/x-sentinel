@@ -4,8 +4,10 @@ import { apiClient, Settings } from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { DeckHeader } from './DeckHeader';
 import { toast } from 'sonner';
 import {
+  ShieldAlert,
   ShieldCheck,
   Save,
   Clock,
@@ -140,18 +142,16 @@ export const DefenseProtocol: React.FC = () => {
       </div>
 
       {/* Main Defense Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            EVASION &amp; DEFENSE PROTOCOL
-          </div>
-          <CardDescription>
-            Configure human-like randomized delay intervals and quota thresholds to avoid X rate limits.
-          </CardDescription>
-        </CardHeader>
+      <DeckHeader
+        tag="EVASION & DEFENSE PROTOCOL"
+        tagColor="emerald"
+        icon={<ShieldAlert className="h-5 w-5 text-emerald-400" />}
+        title="Stealth & Rate Limit Protection"
+        description="Configure human-like randomized delay intervals and quota thresholds to avoid X rate limits."
+      />
 
-        <CardContent className="space-y-4">
+      <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
+        <CardContent className="space-y-4 pt-6">
           {/* Delays Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">

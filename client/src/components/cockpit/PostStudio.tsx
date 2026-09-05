@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { TweetMockupCard } from './postStudio/TweetMockupCard';
 import { ScheduleModal } from './postStudio/ScheduleModal';
 import { ScheduledQueueDeck } from './postStudio/ScheduledQueueDeck';
+import { DeckHeader } from './DeckHeader';
 
 const PRESET_KEYWORDS = [
   { label: '🔥 Solana Ecosystem', kw: 'Solana DeFi, high throughput, and ecosystem momentum' },
@@ -367,52 +368,49 @@ export const PostStudio: React.FC = () => {
   return (
     <div className="animate-in fade-in space-y-6">
       {/* Studio Header Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-950 p-5 shadow-lg">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div className="space-y-1">
-            <div className="flex items-start gap-2">
-              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 text-flame">
-                <Sparkles className="h-4 w-4" />
-              </div>
-              <p className="max-w-2xl text-xs text-slate-400">
-                Craft high-engagement, anti-AI-slop posts from target keywords, then publish directly across your X account fleet.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
+      <DeckHeader
+        tag="PUBLISHING PIPELINE"
+        tagColor="flame"
+        badge="CONTENT STUDIO"
+        icon={<Sparkles className="h-3.5 w-3.5 text-flame" />}
+        title="Post Studio & Fleet Publisher"
+        description="Craft high-engagement, anti-AI-slop posts from target keywords, then publish directly across your X account fleet."
+        actions={
+          <>
             <button
               type="button"
               onClick={() => setActiveTab('tab-ai')}
-              className="flex flex-col items-end rounded-lg border border-border/60 bg-obsidian-900/80 px-3 py-2 text-right transition-all hover:border-purple-500/40 hover:bg-obsidian-850"
+              className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-right transition-all hover:border-purple-500/40 hover:bg-obsidian-900"
             >
-              <div className="flex items-center gap-1 font-mono text-[9px] uppercase text-slate-500">
-                <span>AI Provider</span>
-                <ChevronRight className="h-2.5 w-2.5" />
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-purple-500/10 text-purple-400">
+                <Bot className="h-3.5 w-3.5" />
               </div>
-              <div className="mt-0.5 flex items-center justify-end gap-1.5 font-mono text-xs font-bold text-purple-300">
-                <Bot className="h-3.5 w-3.5 text-purple-400" />
-                <span>{settings?.aiProvider ? settings.aiProvider.toUpperCase() : 'SPINTAX'}</span>
+              <div className="text-left font-mono">
+                <div className="text-[9px] uppercase text-slate-500">AI Provider</div>
+                <div className="text-xs font-bold text-purple-300">
+                  {settings?.aiProvider ? settings.aiProvider.toUpperCase() : 'SPINTAX'}
+                </div>
               </div>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('tab-accounts')}
-              className="flex flex-col items-end rounded-lg border border-border/60 bg-obsidian-900/80 px-3 py-2 text-right transition-all hover:border-emerald/40 hover:bg-obsidian-850"
+              className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-right transition-all hover:border-emerald-500/40 hover:bg-obsidian-900"
             >
-              <div className="flex items-center gap-1 font-mono text-[9px] uppercase text-slate-500">
-                <span>Active Fleet</span>
-                <ChevronRight className="h-2.5 w-2.5" />
-              </div>
-              <div className="mt-0.5 flex items-center justify-end gap-1.5 font-mono text-xs font-bold text-emerald">
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-emerald-500/10 text-emerald-400">
                 <Layers className="h-3.5 w-3.5" />
-                {activeAccounts.length} Nodes
+              </div>
+              <div className="text-left font-mono">
+                <div className="text-[9px] uppercase text-slate-500">Active Fleet</div>
+                <div className="text-xs font-bold text-emerald-400">
+                  {activeAccounts.length} Nodes
+                </div>
               </div>
             </button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Main Studio Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

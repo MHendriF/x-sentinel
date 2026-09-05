@@ -56,6 +56,23 @@
   }
 }
 
+@keyframes reticle-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-reticle-spin {
+  animation: reticle-spin 10s linear infinite;
+}
+
+.animate-reticle-active {
+  animation: reticle-spin 6s linear infinite;
+}
+
 /* Respect users who prefer reduced motion: suppress non-essential animation */
 @media (prefers-reduced-motion: reduce) {
   *,

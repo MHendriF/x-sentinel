@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DeckHeader } from './DeckHeader';
 import { toast } from 'sonner';
 import {
   Bot,
@@ -434,45 +435,39 @@ export const AISettingsDeck: React.FC = () => {
   return (
     <div className="animate-in fade-in space-y-6 pb-8">
       {/* Top Banner Card */}
-      <Card className="relative overflow-hidden border-purple-500/40 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-purple-950/20 shadow-2xl">
-        <div className="pointer-events-none absolute right-0 top-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl"></div>
-
-        <CardContent className="relative z-10 space-y-3 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="purple" className="gap-1.5 px-3 py-1 font-mono text-[11px] font-bold">
-                <Bot className="h-3.5 w-3.5" />
-                AI INTELLIGENCE SUITE
-              </Badge>
-              <Badge
-                variant="outline"
-                className={`font-mono text-[11px] ${
-                  aiProvider !== 'none'
-                    ? 'border-purple-500/60 bg-purple-500/10 text-purple-300'
-                    : 'border-slate-700 text-slate-400'
-                }`}
-              >
-                STATUS:{' '}
-                {aiProvider !== 'none' ? `ACTIVE · ${aiProvider.toUpperCase()}` : 'DISABLED'}
-              </Badge>
-            </div>
-
-            <Button onClick={handleSave} className="gap-1.5 font-mono text-xs font-bold">
-              <Save className="h-3.5 w-3.5" />
-              Save AI Settings
-            </Button>
-          </div>
-
-          <div>
-            <p className="max-w-3xl text-xs leading-relaxed text-slate-300">
-              Configure large language models (LLMs) to formulate 100% contextual, authentic, and
-              natural tweet replies (No AI Slop). Supports <strong>9router</strong>,{' '}
-              <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>,{' '}
-              <strong>Gemini</strong>, and <strong>Local Ollama</strong>.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <DeckHeader
+        tag="AI INTELLIGENCE SUITE"
+        tagColor="purple"
+        accent="purple"
+        icon={<Bot className="h-3.5 w-3.5 text-purple-400" />}
+        badge={
+          <Badge
+            variant="outline"
+            className={`font-mono text-[10px] ${
+              aiProvider !== 'none'
+                ? 'border-purple-500/60 bg-purple-500/10 text-purple-300'
+                : 'border-slate-700 text-slate-400'
+            }`}
+          >
+            STATUS: {aiProvider !== 'none' ? `ACTIVE · ${aiProvider.toUpperCase()}` : 'DISABLED'}
+          </Badge>
+        }
+        title="AI Gateway & Engine Configuration"
+        description={
+          <>
+            Configure large language models (LLMs) to formulate 100% contextual, authentic, and
+            natural tweet replies (No AI Slop). Supports <strong>9router</strong>,{' '}
+            <strong>OpenRouter</strong>, <strong>Groq</strong>, <strong>OpenAI</strong>,{' '}
+            <strong>Gemini</strong>, and <strong>Local Ollama</strong>.
+          </>
+        }
+        actions={
+          <Button onClick={handleSave} className="gap-1.5 font-mono text-xs font-bold">
+            <Save className="h-3.5 w-3.5" />
+            Save AI Settings
+          </Button>
+        }
+      />
 
       {/* Main Grid: Provider Selection & Config */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">

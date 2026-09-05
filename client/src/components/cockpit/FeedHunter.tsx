@@ -3,12 +3,13 @@ import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { DeckHeader } from './DeckHeader';
 import { toast } from 'sonner';
 import { Radar, Heart, Repeat, MessageSquare, Flame } from 'lucide-react';
 
 export const FeedHunter: React.FC = () => {
-  const { accounts, setActiveTab, setIsRunning } = useStore();
+  const { accounts, setActiveTab, isRunning, setIsRunning } = useStore();
 
   const [keyword, setKeyword] = useState('');
   const [count, setCount] = useState(10);
@@ -52,20 +53,18 @@ export const FeedHunter: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
-            <Radar className="h-3.5 w-3.5 animate-spin" />
-            SURVEILLANCE RADAR
-          </div>
-          <CardDescription>
-            Automatically scan the X/Twitter feed by topic, hashtag, or trending keywords,
-            then execute multi-account engagement immediately.
-          </CardDescription>
-        </CardHeader>
+    <div className="space-y-4">
+      <DeckHeader
+        tag="SURVEILLANCE RADAR"
+        tagColor="flame"
+        icon={<Radar className="h-5 w-5 text-flame" />}
+        isActive={isRunning}
+        title="Feed Hunter & Lead Radar"
+        description="Automatically scan the X/Twitter feed by topic, hashtag, or trending keywords, then execute multi-account engagement immediately."
+      />
 
-        <CardContent className="space-y-4">
+      <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
+        <CardContent className="space-y-4 pt-6">
           {/* Target Nodes Selector */}
           <div className="space-y-1.5">
             <label className="font-mono text-xs font-bold text-slate-300">DEPLOYMENT NODES</label>
