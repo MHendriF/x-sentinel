@@ -1,13 +1,52 @@
 const path = require('path');
 require('dotenv').config();
 
+function parsePort(val) {
+  const p = parseInt(val, 10);
+  return !isNaN(p) && p > 0 && p <= 65535 ? p : null;
+}
+
+function resolveInitialPort() {
+  // 1. CLI flags: --port 3001, --port=3001, -p 3001, -p=3001
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg.startsWith('--port=')) {
+      const p = parsePort(arg.slice(7));
+      if (p) return p;
+    }
+    if (arg === '--port' || arg === '-p') {
+      const p = parsePort(args[i + 1]);
+      if (p) return p;
+    }
+    if (arg.startsWith('-p=')) {
+      const p = parsePort(arg.slice(3));
+      if (p) return p;
+    }
+  }
+
+  // 2. npm config (e.g. npm run dev --port=3001)
+  if (process.env.npm_config_port) {
+    const p = parsePort(process.env.npm_config_port);
+    if (p) return p;
+  }
+
+  // 3. Environment variable PORT
+  if (process.env.PORT) {
+    const p = parsePort(process.env.PORT);
+    if (p) return p;
+  }
+
+  return 3000;
+}
+
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const USER_DATA_DIR = path.join(DATA_DIR, 'browser_profile');
 
 module.exports = {
   VERSION: require('../package.json').version,
-  PORT: process.env.PORT || 3000,
+  PORT: resolveInitialPort(),
   // Loopback only by default: the API has no auth and serves session cookies,
   // so it must never be reachable from other interfaces.
   HOST: process.env.HOST || '127.0.0.1',

@@ -1,9 +1,10 @@
 const express = require('express');
+const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const config = require('./config');
 const logger = require('./logger');
-const { originGuard } = require('./security');
+const { originGuard, addAllowedPort } = require('./security');
 const apiRoutes = require('./routes/api');
 
 const app = express();
@@ -95,17 +96,59 @@ app.use((err, req, res, _next) => {
 const twitterBot = require('./automation/twitterBot');
 const scheduler = require('./automation/scheduler');
 
-// Start Server (loopback bind — see config.HOST)
-const server = app.listen(config.PORT, config.HOST, () => {
-  logger.success(`🚀 X-SENTINEL Cockpit Engine running at http://${config.HOST}:${config.PORT}`);
-  console.log(`====================================================`);
-  console.log(`🛡️  X-SENTINEL: Autonomous Multi-Node Fleet Engine`);
-  console.log(`🌐 Open Cockpit Dashboard: http://${config.HOST}:${config.PORT}`);
-  console.log(`====================================================`);
+// Start Server (loopback bind — see config.HOST) with automatic port fallback
+let server = null;
 
-  // Start background scheduler
-  scheduler.start();
-});
+function startServer(initialPort = config.PORT, host = config.HOST, maxRetries = 30) {
+  let currentPort = Number(initialPort) || 3000;
+  let retries = 0;
+
+  function tryBind() {
+    const s = http.createServer(app);
+
+    s.once('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        retries++;
+        if (retries > maxRetries) {
+          logger.error(
+            `❌ Could not find an available port after ${maxRetries} attempts starting from ${initialPort}.`
+          );
+          process.exit(1);
+        }
+        logger.warn(
+          `⚠️ Port ${currentPort} is already in use. Trying port ${currentPort + 1}...`
+        );
+        currentPort++;
+        tryBind();
+      } else {
+        logger.error(`💥 Server startup error: ${err.message}`);
+        if (err.stack) console.error(err.stack);
+        process.exit(1);
+      }
+    });
+
+    s.once('listening', () => {
+      server = s;
+      config.PORT = currentPort;
+      addAllowedPort(currentPort);
+
+      logger.success(`🚀 X-SENTINEL Cockpit Engine running at http://${host}:${currentPort}`);
+      console.log(`====================================================`);
+      console.log(`🛡️  X-SENTINEL: Autonomous Multi-Node Fleet Engine`);
+      console.log(`🌐 Open Cockpit Dashboard: http://${host}:${currentPort}`);
+      console.log(`====================================================`);
+
+      // Start background scheduler
+      scheduler.start();
+    });
+
+    s.listen(currentPort, host);
+  }
+
+  tryBind();
+}
+
+startServer(config.PORT, config.HOST);
 
 // Graceful Shutdown & Process Lifecycle Hardening
 let isShuttingDown = false;
@@ -126,10 +169,14 @@ const gracefulShutdown = async (signal) => {
     // ignore
   }
 
-  server.close(() => {
-    logger.info('👋 Server shut down gracefully. Goodbye!');
+  if (server) {
+    server.close(() => {
+      logger.info('👋 Server shut down gracefully. Goodbye!');
+      process.exit(0);
+    });
+  } else {
     process.exit(0);
-  });
+  }
 
   // Force exit after 5 seconds if hanging
   setTimeout(() => {
@@ -148,3 +195,6 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   logger.error(`💥 Unhandled Promise Rejection: ${reason}`);
 });
+
+module.exports = { app, startServer, getServer: () => server };
+

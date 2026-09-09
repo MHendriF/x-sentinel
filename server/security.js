@@ -21,11 +21,37 @@ for (const port of new Set([String(config.PORT), '5173'])) {
   allowedOrigins.add(`http://127.0.0.1:${port}`);
 }
 
+function addAllowedPort(port) {
+  if (port) {
+    allowedOrigins.add(`http://localhost:${port}`);
+    allowedOrigins.add(`http://127.0.0.1:${port}`);
+  }
+}
+
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (allowedOrigins.has(origin)) return true;
+
+  try {
+    const parsed = new URL(origin);
+    // Allow any localhost or 127.0.0.1 loopback HTTP origin (supports dynamic fallback ports)
+    if (
+      (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+      (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')
+    ) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 const ALLOWED_HOST_RE = /^(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
 function originGuard(req, res, next) {
   const origin = req.headers.origin;
-  if (origin && !allowedOrigins.has(origin)) {
+  if (origin && !isAllowedOrigin(origin)) {
     return res.status(403).json({
       success: false,
       error: 'FORBIDDEN_ORIGIN',
@@ -46,7 +72,7 @@ function originGuard(req, res, next) {
   if (referer) {
     try {
       const refererOrigin = new URL(referer).origin;
-      if (!allowedOrigins.has(refererOrigin)) {
+      if (!isAllowedOrigin(refererOrigin)) {
         return res.status(403).json({
           success: false,
           error: 'FORBIDDEN_REFERER',
@@ -172,6 +198,7 @@ function restoreMaskedSettings(body, stored) {
 module.exports = {
   MASK,
   originGuard,
+  addAllowedPort,
   maskSecret,
   maskProxyString,
   isMaskedValue,
