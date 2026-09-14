@@ -369,6 +369,15 @@ class TwitterBot {
           } catch (err) {
             if (err.message === 'TASK_ABORTED') throw err;
             logger.error(`❌ Error on node ${account.label}: ${err.message}`);
+            db.addHistory({
+              accountId: account.id,
+              accountName: account.username || account.label,
+              tweetUrl: url,
+              tweetId: this.extractTweetId(url),
+              action: 'TASK',
+              status: 'FAILED',
+              message: err.message,
+            });
             this.currentTask.failed++;
           }
 
@@ -499,6 +508,15 @@ class TwitterBot {
           } catch (err) {
             if (err.message === 'TASK_ABORTED') throw err;
             logger.error(`❌ Engagement failed on node ${account.label}: ${err.message}`);
+            db.addHistory({
+              accountId: account.id,
+              accountName: account.username || account.label,
+              tweetUrl,
+              tweetId: this.extractTweetId(tweetUrl),
+              action: 'TASK',
+              status: 'FAILED',
+              message: err.message,
+            });
           }
 
           if (a < targetAccounts.length - 1) {

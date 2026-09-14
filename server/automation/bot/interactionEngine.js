@@ -5,6 +5,59 @@ const aiService = require('../aiService');
 const { sleep, humanType, humanScroll, extractTweetId } = require('./humanCadence');
 
 /**
+ * Dismiss popups, dialog overlays, backdrops, and sheets that may intercept pointer events
+ */
+async function dismissOverlays(page) {
+  try {
+    const mask = await page.$('[data-testid="mask"]');
+    if (mask) {
+      await page.keyboard.press('Escape');
+      await sleep(300);
+    }
+    const closeBtn = await page.$(
+      '[data-testid="app-bar-close"], [aria-label="Close"], button[aria-label*="Batal"], button[aria-label*="Cancel"]'
+    );
+    if (closeBtn) {
+      const isVisible = await closeBtn.isVisible().catch(() => false);
+      if (isVisible) {
+        await closeBtn.click().catch(() => {});
+        await sleep(300);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+/**
+ * Click element safely, dismissing intercepting overlays or forcing click if needed
+ */
+async function safeClick(page, element, options = {}) {
+  if (!element) return;
+  await element.scrollIntoViewIfNeeded().catch(() => {});
+  await sleep(300);
+  try {
+    await element.click({ timeout: 5000, ...options });
+  } catch (err) {
+    if (
+      err.message.includes('intercepts pointer events') ||
+      err.message.includes('Timeout') ||
+      err.message.includes('not visible')
+    ) {
+      await dismissOverlays(page);
+      await sleep(300);
+      try {
+        await element.click({ force: true, timeout: 5000, ...options });
+      } catch (forceErr) {
+        await page.evaluate((el) => el.click(), element).catch(() => {});
+      }
+    } else {
+      throw err;
+    }
+  }
+}
+
+/**
  * Like a tweet with validation
  */
 async function likeTweet(page, tweetUrl, account) {
@@ -12,6 +65,8 @@ async function likeTweet(page, tweetUrl, account) {
   logger.action(`[@${account.username || account.label}] Dispatching Like: ${tweetUrl}`);
 
   try {
+    await dismissOverlays(page);
+
     // 1. Check if already liked
     const unlikeBtn = await page.$(
       '[data-testid="unlike"], article [data-testid="unlike"], button[aria-label*="Liked"], button[aria-label*="Batal Suka"]'
@@ -36,24 +91,45 @@ async function likeTweet(page, tweetUrl, account) {
     );
     if (!likeBtn) {
       likeBtn = await page
-        .waitForSelector('[data-testid="like"], article [data-testid="like"]', { timeout: 8000 })
+        .waitForSelector(
+          '[data-testid="like"], article [data-testid="like"], button[aria-label*="Like"], button[aria-label*="Suka"]',
+          { timeout: 8000 }
+        )
         .catch(() => null);
     }
 
     if (!likeBtn) {
-      logger.warn(
-        `⚠️ [@${account.username || account.label}] Like button not found on target page.`
-      );
-      return { success: false, message: 'Like button not found' };
+      const msg = 'Like button not found on target page';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}.`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'LIKE',
+        status: 'FAILED',
+        message: msg,
+      });
+      return { success: false, message: msg };
     }
 
-    await likeBtn.scrollIntoViewIfNeeded().catch(() => {});
-    await sleep(400);
-    await likeBtn.click();
-    await sleep(1200);
+    await safeClick(page, likeBtn);
+    await sleep(800);
 
-    // 3. Verify like state
-    const isLiked = await page.$('[data-testid="unlike"], article [data-testid="unlike"]');
+    // 3. Verify like state (wait up to 5000ms for network/proxy roundtrip)
+    let isLiked = await page
+      .waitForSelector(
+        '[data-testid="unlike"], article [data-testid="unlike"], button[aria-label*="Liked"], button[aria-label*="Batal Suka"]',
+        { timeout: 5000 }
+      )
+      .catch(() => null);
+
+    if (!isLiked) {
+      isLiked = await page.$(
+        '[data-testid="unlike"], article [data-testid="unlike"], button[aria-label*="Liked"], button[aria-label*="Batal Suka"]'
+      );
+    }
+
     if (isLiked) {
       logger.success(`❤️ [@${account.username || account.label}] Successfully Liked: ${tweetUrl}`);
       db.addHistory({
@@ -66,7 +142,18 @@ async function likeTweet(page, tweetUrl, account) {
       });
       return { success: true, status: 'SUCCESS' };
     } else {
-      return { success: false, message: 'Like verification failed' };
+      const msg = 'Like verification failed (status did not change to unlike)';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'LIKE',
+        status: 'FAILED',
+        message: msg,
+      });
+      return { success: false, message: msg };
     }
   } catch (err) {
     logger.error(`❌ [@${account.username || account.label}] Like failed: ${err.message}`);
@@ -91,6 +178,8 @@ async function retweetTweet(page, tweetUrl, account) {
   logger.action(`[@${account.username || account.label}] Dispatching Retweet: ${tweetUrl}`);
 
   try {
+    await dismissOverlays(page);
+
     const unretweetBtn = await page.$(
       '[data-testid="unretweet"], article [data-testid="unretweet"], button[aria-label*="Undo Repost"], button[aria-label*="Batal Posting Ulang"]'
     );
@@ -115,41 +204,72 @@ async function retweetTweet(page, tweetUrl, account) {
     );
     if (!retweetBtn) {
       retweetBtn = await page
-        .waitForSelector('[data-testid="retweet"], article [data-testid="retweet"]', {
-          timeout: 8000,
-        })
+        .waitForSelector(
+          '[data-testid="retweet"], article [data-testid="retweet"], button[aria-label*="Repost"], button[aria-label*="Posting ulang"]',
+          { timeout: 8000 }
+        )
         .catch(() => null);
     }
 
     if (!retweetBtn) {
-      logger.warn(
-        `⚠️ [@${account.username || account.label}] Retweet button not found on target page.`
-      );
-      return { success: false, message: 'Retweet button not found' };
+      const msg = 'Retweet button not found on target page';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}.`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'RETWEET',
+        status: 'FAILED',
+        message: msg,
+      });
+      return { success: false, message: msg };
     }
 
-    await retweetBtn.scrollIntoViewIfNeeded().catch(() => {});
-    await sleep(400);
-    await retweetBtn.click();
+    await safeClick(page, retweetBtn);
     await sleep(800);
 
     const confirmBtn = await page
       .waitForSelector(
         '[data-testid="retweetConfirm"], [role="menuitem"][data-testid="retweetConfirm"]',
-        { timeout: 5000 }
+        { timeout: 6000 }
       )
       .catch(() => null);
 
     if (!confirmBtn) {
-      return { success: false, message: 'Retweet confirmation modal did not appear' };
+      const msg = 'Retweet confirmation modal did not appear';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'RETWEET',
+        status: 'FAILED',
+        message: msg,
+      });
+      return { success: false, message: msg };
     }
 
-    await confirmBtn.click();
-    await sleep(1500);
+    await safeClick(page, confirmBtn);
+    await sleep(1000);
 
-    const isRetweeted = await page.$(
-      '[data-testid="unretweet"], article [data-testid="unretweet"]'
-    );
+    // Dismiss any modal or toast after retweet confirmation
+    await dismissOverlays(page);
+
+    let isRetweeted = await page
+      .waitForSelector(
+        '[data-testid="unretweet"], article [data-testid="unretweet"], button[aria-label*="Undo Repost"], button[aria-label*="Batal Posting Ulang"]',
+        { timeout: 5000 }
+      )
+      .catch(() => null);
+
+    if (!isRetweeted) {
+      isRetweeted = await page.$(
+        '[data-testid="unretweet"], article [data-testid="unretweet"], button[aria-label*="Undo Repost"], button[aria-label*="Batal Posting Ulang"]'
+      );
+    }
+
     if (isRetweeted) {
       logger.success(`🔁 [@${account.username || account.label}] Successfully Retweeted: ${tweetUrl}`);
       db.addHistory({
@@ -162,7 +282,18 @@ async function retweetTweet(page, tweetUrl, account) {
       });
       return { success: true, status: 'SUCCESS' };
     } else {
-      return { success: false, message: 'Retweet verification failed' };
+      const msg = 'Retweet verification failed';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'RETWEET',
+        status: 'FAILED',
+        message: msg,
+      });
+      return { success: false, message: msg };
     }
   } catch (err) {
     logger.error(`❌ [@${account.username || account.label}] Retweet failed: ${err.message}`);
@@ -187,6 +318,8 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
   logger.action(`[@${account.username || account.label}] Dispatching Reply: ${tweetUrl}`);
 
   try {
+    await dismissOverlays(page);
+
     let replyText = '';
     if (customReplyText && customReplyText.trim()) {
       replyText = spintax.parseSpintax(customReplyText.trim());
@@ -220,9 +353,11 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       '[data-testid="tweetTextarea_0"], article [data-testid="tweetTextarea_0"]'
     );
     if (!textarea) {
-      const replyIcon = await page.$('[data-testid="reply"], article [data-testid="reply"]');
+      const replyIcon = await page.$(
+        '[data-testid="reply"], article [data-testid="reply"], button[aria-label*="Reply"], button[aria-label*="Balas"]'
+      );
       if (replyIcon) {
-        await replyIcon.click();
+        await safeClick(page, replyIcon);
         await sleep(1000);
       }
       textarea = await page
@@ -231,11 +366,21 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
     }
 
     if (!textarea) {
-      logger.warn(`⚠️ [@${account.username || account.label}] Reply input field not found.`);
-      return { success: false, message: 'Reply input field not accessible' };
+      const msg = 'Reply input field not accessible';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}.`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'COMMENT',
+        status: 'FAILED',
+        message: msg,
+      });
+      return { success: false, message: msg };
     }
 
-    await textarea.click();
+    await safeClick(page, textarea);
     await sleep(400);
 
     await humanType(textarea, replyText);
@@ -243,15 +388,29 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
 
     const replyBtn = await page
       .waitForSelector('[data-testid="tweetButtonInline"], [data-testid="tweetButton"]', {
-        timeout: 6000,
+        timeout: 8000,
       })
       .catch(() => null);
     if (!replyBtn) {
-      return { success: false, message: 'Reply submit button not found' };
+      const msg = 'Reply submit button not found';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}.`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'COMMENT',
+        status: 'FAILED',
+        message: msg,
+      });
+      return { success: false, message: msg };
     }
 
-    await replyBtn.click();
-    await sleep(2000);
+    await safeClick(page, replyBtn);
+    await sleep(2500);
+
+    // Dismiss any modal/toast after replying
+    await dismissOverlays(page);
 
     logger.success(
       `💬 [@${account.username || account.label}] Reply dispatched successfully: "${replyText}"`
@@ -288,7 +447,30 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
   const { like = true, retweet = true, comment = true, commentText = null } = options;
 
   logger.info(`🌐 [@${account.username || account.label}] Navigating to: ${tweetUrl}`);
-  await page.goto(tweetUrl, { waitUntil: 'domcontentloaded' });
+  let navSuccess = false;
+  let lastNavError = null;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await page.goto(tweetUrl, { waitUntil: 'domcontentloaded', timeout: 35000 });
+      navSuccess = true;
+      break;
+    } catch (e) {
+      lastNavError = e;
+      if (attempt < 2) {
+        logger.warn(
+          `⚠️ [@${account.username || account.label}] Navigation attempt ${attempt} failed: ${e.message}. Retrying in 3s...`
+        );
+        await sleep(3000);
+      }
+    }
+  }
+
+  if (!navSuccess) {
+    throw new Error(
+      `Navigation to tweet failed: ${lastNavError ? lastNavError.message : 'Timeout'}`
+    );
+  }
 
   await page
     .waitForSelector(
@@ -296,7 +478,10 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       { timeout: 15000 }
     )
     .catch(() => null);
-  await page.waitForTimeout(2000);
+  await sleep(2000);
+
+  // Clean up any initial popups or modal overlays
+  await dismissOverlays(page);
 
   if (page.url().includes('/login') || page.url().includes('/i/flow/login')) {
     logger.error(
@@ -337,6 +522,8 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 }
 
 module.exports = {
+  dismissOverlays,
+  safeClick,
   likeTweet,
   retweetTweet,
   commentTweet,
