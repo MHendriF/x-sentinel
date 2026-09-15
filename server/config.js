@@ -61,6 +61,7 @@ module.exports = {
     hourlyLimit: 25,
     dailyLimit: 150,
     headless: false, // Default visible for stealth & transparency, can be toggled to true
+    browserEngine: 'chromium', // 'chromium' (Default) or 'camoufox' (Anti-Detect Firefox)
     humanTypingDelayMs: 65,
     scrollBeforeAction: true,
   },

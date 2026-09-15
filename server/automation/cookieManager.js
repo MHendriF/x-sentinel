@@ -23,7 +23,7 @@ class CookieManager {
 
     if (!cleanAuth) return [];
 
-    const domains = ['.x.com', '.twitter.com'];
+    const domains = ['.x.com', 'x.com', '.twitter.com', 'twitter.com'];
     const cookies = [];
 
     domains.forEach((domain) => {

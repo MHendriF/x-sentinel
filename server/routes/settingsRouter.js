@@ -54,6 +54,7 @@ const settingsSchema = z.object({
   hourlyLimit: z.number().int().min(1).max(1000).optional(),
   dailyLimit: z.number().int().min(1).max(10000).optional(),
   headless: z.boolean().optional(),
+  browserEngine: z.enum(['chromium', 'camoufox']).optional(),
   scrollBeforeAction: z.boolean().optional(),
   aiProvider: z.string().max(50).optional(),
   aiApiKey: z.string().max(500).optional(),

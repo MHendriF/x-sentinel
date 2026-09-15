@@ -54,6 +54,7 @@ class LocalDB {
       headless: config.DEFAULTS.headless,
       humanTypingDelayMs: config.DEFAULTS.humanTypingDelayMs,
       scrollBeforeAction: config.DEFAULTS.scrollBeforeAction,
+      browserEngine: config.DEFAULTS.browserEngine || 'chromium',
       aiProvider: 'none',
       aiApiKey: '',
       aiPrompt:
@@ -225,6 +226,9 @@ class LocalDB {
   getSettings() {
     if (!this.cache.settings) {
       this.cache.settings = {};
+    }
+    if (!this.cache.settings.browserEngine) {
+      this.cache.settings.browserEngine = config.DEFAULTS.browserEngine || 'chromium';
     }
     if (!Array.isArray(this.cache.settings.nineRouterModels)) {
       this.cache.settings.nineRouterModels = [

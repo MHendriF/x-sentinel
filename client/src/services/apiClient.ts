@@ -47,6 +47,7 @@ export interface Settings {
   dailyLimit: number;
   headless: boolean;
   scrollBeforeAction: boolean;
+  browserEngine?: 'chromium' | 'camoufox';
   aiProvider?: string;
   aiApiKey?: string;
   aiModel?: string;

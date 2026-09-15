@@ -77,14 +77,7 @@ async function applyStealthScripts(context) {
 /**
  * Launch an isolated Playwright Chromium instance and context for a node account
  */
-async function launchAccountBrowser(account, options = {}) {
-  if (!account) {
-    throw new Error('Account node not found or not selected.');
-  }
-
-  const settings = db.getSettings() || {};
-  const isHeadless = options.headless !== undefined ? options.headless : Boolean(settings.headless);
-
+async function launchChromiumBrowser(account, _options = {}, isHeadless = false) {
   const launchOptions = {
     headless: isHeadless,
     args: [
@@ -109,7 +102,7 @@ async function launchAccountBrowser(account, options = {}) {
   }
 
   logger.info(
-    `🚀 Launching browser for node @${account.username || account.label} (Headless: ${isHeadless ? 'Enabled' : 'Disabled'})...`
+    `🚀 Launching Chromium for node @${account.username || account.label} (Headless: ${isHeadless ? 'Enabled' : 'Disabled'})...`
   );
   const browser = await chromium.launch(launchOptions);
 
@@ -126,7 +119,92 @@ async function launchAccountBrowser(account, options = {}) {
     await cookieManager.applyCookies(context, account.auth_token, account.ct0);
   }
 
-  return { browser, context };
+  return { browser, context, engine: 'chromium' };
+}
+
+/**
+ * Launch an anti-detect Camoufox (C++ Modified Firefox) instance and context for a node account
+ */
+async function launchCamoufoxBrowser(account, _options = {}, isHeadless = false) {
+  const { Camoufox } = require('camoufox');
+
+  const camoufoxOptions = {
+    headless: isHeadless,
+    humanize: 0.5, // Enable native C++ bezier human mouse trajectories
+    window: [1280, 850], // Standard desktop window dimensions
+    block_webrtc: Boolean(account.proxy), // Prevent WebRTC IP leaks when running via proxy
+  };
+
+  if (account.proxy) {
+    const proxyLaunch = proxyHelper.getPlaywrightLaunchProxy(account.proxy);
+    if (proxyLaunch) {
+      camoufoxOptions.proxy = proxyLaunch;
+      logger.info(
+        `🌐 Routing via Proxy for @${account.username || account.label}: ${proxyLaunch.server}`
+      );
+    }
+  }
+
+  logger.info(
+    `🦊 Launching Camoufox (Anti-Detect Firefox) for node @${account.username || account.label} (Headless: ${isHeadless ? 'Enabled' : 'Disabled'})...`
+  );
+
+  const browser = await Camoufox(camoufoxOptions);
+
+  // In Camoufox, viewport: null allows Camoufox's native C++ spoofed geometry without triggering Juggler protocol schema errors
+  const contextOptions = {
+    viewport: null,
+  };
+
+  // Only assign explicit timezone when NOT proxied, using dynamic host timezone to prevent IP/timezone mismatch
+  if (!account.proxy) {
+    try {
+      contextOptions.timezoneId =
+        Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta';
+    } catch {
+      contextOptions.timezoneId = 'Asia/Jakarta';
+    }
+    contextOptions.locale = 'en-US';
+  }
+
+  const context = await browser.newContext(contextOptions);
+
+  if (account.auth_token) {
+    await cookieManager.applyCookies(context, account.auth_token, account.ct0);
+  }
+
+  return { browser, context, engine: 'camoufox' };
+}
+
+/**
+ * Router to launch browser instance using selected engine (Chromium or Camoufox) with graceful fallback
+ */
+async function launchAccountBrowser(account, options = {}) {
+  if (!account) {
+    throw new Error('Account node not found or not selected.');
+  }
+
+  const settings = db.getSettings() || {};
+  const isHeadless = options.headless !== undefined ? options.headless : Boolean(settings.headless);
+  const requestedEngine = (
+    account.browserEngine ||
+    options.engine ||
+    settings.browserEngine ||
+    'chromium'
+  ).toLowerCase();
+
+  if (requestedEngine === 'camoufox') {
+    try {
+      return await launchCamoufoxBrowser(account, options, isHeadless);
+    } catch (camoufoxErr) {
+      logger.warn(
+        `⚠️ Failed to launch Camoufox engine: ${camoufoxErr.message}. Gracefully falling back to Chromium...`
+      );
+      return await launchChromiumBrowser(account, options, isHeadless);
+    }
+  }
+
+  return await launchChromiumBrowser(account, options, isHeadless);
 }
 
 /**
@@ -146,9 +224,14 @@ async function closeBrowserResources(browser, context, page) {
     if (browser) {
       const proc = typeof browser.process === 'function' ? browser.process() : null;
       await closeWithTimeout(browser.close());
-      if (proc && !proc.killed) {
+      if (proc && !proc.killed && proc.pid) {
         try {
-          proc.kill('SIGKILL');
+          if (process.platform === 'win32') {
+            const { exec } = require('child_process');
+            exec(`taskkill /pid ${proc.pid} /T /F`, () => {});
+          } else {
+            proc.kill('SIGKILL');
+          }
         } catch {}
       }
     }
@@ -159,6 +242,8 @@ async function closeBrowserResources(browser, context, page) {
 
 module.exports = {
   applyStealthScripts,
+  launchChromiumBrowser,
+  launchCamoufoxBrowser,
   launchAccountBrowser,
   closeBrowserResources,
 };

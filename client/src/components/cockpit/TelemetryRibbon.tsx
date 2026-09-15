@@ -58,8 +58,15 @@ const TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
 };
 
 export const TelemetryRibbon: React.FC = () => {
-  const { activeTab, stats, setIsMobileDrawerOpen, isRunning, currentTask, setActiveTab } =
-    useStore();
+  const {
+    activeTab,
+    stats,
+    setIsMobileDrawerOpen,
+    isRunning,
+    currentTask,
+    setActiveTab,
+    settings,
+  } = useStore();
   const meta = TAB_TITLES[activeTab] ?? {
     title: 'X-SENTINEL Cockpit',
     subtitle: 'Autonomous Fleet Control',
@@ -84,13 +91,32 @@ export const TelemetryRibbon: React.FC = () => {
           <Menu className="h-5 w-5" />
         </button>
         <div>
-          <h1
-            id="page-heading"
-            tabIndex={-1}
-            className="font-heading text-xl font-bold tracking-tight text-white outline-none lg:text-2xl"
-          >
-            {meta.title}
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <h1
+              id="page-heading"
+              tabIndex={-1}
+              className="font-heading text-xl font-bold tracking-tight text-white outline-none lg:text-2xl"
+            >
+              {meta.title}
+            </h1>
+            <button
+              type="button"
+              onClick={() => setActiveTab('tab-safety')}
+              title={`Browser Engine: ${settings?.browserEngine === 'camoufox' ? 'Camoufox Stealth' : 'Chromium Core'} (Click to configure)`}
+              className={`hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors ${
+                settings?.browserEngine === 'camoufox'
+                  ? 'border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
+                  : 'border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20'
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  settings?.browserEngine === 'camoufox' ? 'bg-amber-400 animate-pulse' : 'bg-blue-400'
+                }`}
+              />
+              {settings?.browserEngine === 'camoufox' ? '🦊 Camoufox' : '⚡ Chromium'}
+            </button>
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground lg:text-sm">{meta.subtitle}</p>
         </div>
       </div>

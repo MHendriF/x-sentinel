@@ -6,7 +6,10 @@ module.exports = [
   },
   js.configs.recommended,
   {
-    files: ['server/automation/bot/browserFactory.js'],
+    files: [
+      'server/automation/bot/browserFactory.js',
+      'server/automation/bot/interactionEngine.js',
+    ],
     languageOptions: {
       globals: {
         // Stealth init scripts execute inside the browser context, not Node

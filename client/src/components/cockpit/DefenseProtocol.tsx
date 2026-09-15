@@ -21,6 +21,8 @@ import {
   Send,
   CheckCircle2,
   RefreshCw,
+  Globe,
+  Flame,
 } from 'lucide-react';
 
 export const DefenseProtocol: React.FC = () => {
@@ -32,6 +34,7 @@ export const DefenseProtocol: React.FC = () => {
   const [dailyLimit, setDailyLimit] = useState(150);
   const [headless, setHeadless] = useState(false);
   const [scrollAction, setScrollAction] = useState(true);
+  const [browserEngine, setBrowserEngine] = useState<'chromium' | 'camoufox'>('chromium');
 
   // Webhooks state
   const [telegramEnabled, setTelegramEnabled] = useState(false);
@@ -53,6 +56,7 @@ export const DefenseProtocol: React.FC = () => {
       setDailyLimit(settings.dailyLimit ?? 150);
       setHeadless(Boolean(settings.headless));
       setScrollAction(Boolean(settings.scrollBeforeAction));
+      setBrowserEngine((settings.browserEngine as 'chromium' | 'camoufox') || 'chromium');
       setTelegramEnabled(Boolean(settings.telegramEnabled));
       setTelegramBotToken(settings.telegramBotToken || '');
       setTelegramChatId(settings.telegramChatId || '');
@@ -69,6 +73,7 @@ export const DefenseProtocol: React.FC = () => {
       dailyLimit: Number(dailyLimit),
       headless,
       scrollBeforeAction: scrollAction,
+      browserEngine,
       telegramEnabled,
       telegramBotToken: telegramBotToken.trim(),
       telegramChatId: telegramChatId.trim(),
@@ -212,6 +217,65 @@ export const DefenseProtocol: React.FC = () => {
                 max={500}
                 className="font-mono text-xs"
               />
+            </div>
+          </div>
+
+          {/* Browser Engine Selection */}
+          <div className="space-y-2 border-t border-border/60 pt-3">
+            <div className="flex items-center justify-between">
+              <label className="font-mono text-xs font-bold text-slate-300">
+                BROWSER ENGINE &amp; ANTI-DETECT RUNTIME
+              </label>
+              <span className="font-mono text-[10px] text-slate-400">
+                {browserEngine === 'camoufox' ? '🔥 Camoufox Stealth Active' : '⚡ Chromium Core Active'}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setBrowserEngine('chromium')}
+                className={`flex text-left flex-col justify-between rounded-md border p-3 transition-all ${
+                  browserEngine === 'chromium'
+                    ? 'border-blue-500/80 bg-blue-950/20 shadow-sm shadow-blue-500/10 ring-1 ring-blue-500/50'
+                    : 'border-border/80 bg-obsidian-950/60 opacity-70 hover:border-slate-700 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <Globe className={`h-4 w-4 ${browserEngine === 'chromium' ? 'text-blue-400' : 'text-slate-400'}`} />
+                    <span className="text-xs font-bold text-white">Chromium Core</span>
+                  </div>
+                  <span className="rounded bg-blue-500/20 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-blue-300">
+                    DEFAULT
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[11px] text-slate-400">
+                  Standard Playwright engine. Fast startup, low footprint, reliable on standard environments.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setBrowserEngine('camoufox')}
+                className={`flex text-left flex-col justify-between rounded-md border p-3 transition-all ${
+                  browserEngine === 'camoufox'
+                    ? 'border-amber-500/80 bg-amber-950/20 shadow-sm shadow-amber-500/10 ring-1 ring-amber-500/50'
+                    : 'border-border/80 bg-obsidian-950/60 opacity-70 hover:border-slate-700 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <Flame className={`h-4 w-4 ${browserEngine === 'camoufox' ? 'text-amber-400' : 'text-slate-400'}`} />
+                    <span className="text-xs font-bold text-white">Camoufox Stealth</span>
+                  </div>
+                  <span className="rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-amber-300">
+                    ANTI-DETECT
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[11px] text-slate-400">
+                  Stealth C++ Firefox build with hardware spoofing, fingerprint randomization &amp; evasion.
+                </p>
+              </button>
             </div>
           </div>
 
