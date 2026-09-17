@@ -226,6 +226,9 @@ export const apiClient = {
     like: boolean;
     retweet: boolean;
     comment: boolean;
+    commentText?: string;
+    minDelay?: number;
+    maxDelay?: number;
   }) {
     const res = await fetch('/api/tasks/hunter', {
       method: 'POST',

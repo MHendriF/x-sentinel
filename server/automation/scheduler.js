@@ -197,6 +197,8 @@ class SchedulerService {
           vectors: dueHunter.vectors || ['LIKE', 'RETWEET', 'COMMENT'],
           maxTweets: dueHunter.maxTweets || 3,
           delaySeconds: dueHunter.delaySeconds || 15,
+          accountIds: dueHunter.accountIds || 'all',
+          commentText: dueHunter.commentText || null,
         });
 
         notifier.notify(result.success ? 'TASK_COMPLETED' : 'TASK_FAILED', {

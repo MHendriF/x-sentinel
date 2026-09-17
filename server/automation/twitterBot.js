@@ -568,13 +568,16 @@ class TwitterBot {
     vectors = ['LIKE', 'RETWEET', 'COMMENT'],
     maxTweets = 3,
     delaySeconds = 15,
+    accountIds = 'all',
+    commentText = null,
   } = {}) {
     try {
       const keyword = Array.isArray(keywords) && keywords.length > 0 ? keywords[0] : 'crypto';
-      await this.runMultiAccountHunter('all', keyword, maxTweets, {
+      await this.runMultiAccountHunter(accountIds || 'all', keyword, maxTweets, {
         like: vectors.includes('LIKE'),
         retweet: vectors.includes('RETWEET'),
         comment: vectors.includes('COMMENT'),
+        commentText: commentText || null,
         minDelay: delaySeconds,
         maxDelay: delaySeconds * 2,
       });
