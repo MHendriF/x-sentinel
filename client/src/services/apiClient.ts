@@ -184,6 +184,40 @@ export const apiClient = {
     return res.json();
   },
 
+  async batchToggleAccounts(
+    ids: string[],
+    enabled: boolean
+  ): Promise<{ success: boolean; updatedCount: number; enabled: boolean }> {
+    const res = await fetch('/api/accounts/batch-toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids, enabled }),
+    });
+    return res.json();
+  },
+
+  async batchDeleteAccounts(
+    ids: string[]
+  ): Promise<{ success: boolean; deletedCount: number }> {
+    const res = await fetch('/api/accounts/batch-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    });
+    return res.json();
+  },
+
+  async batchTestProxies(
+    ids?: string[]
+  ): Promise<{ success: boolean; total: number; results: Record<string, ProxyTestResult> }> {
+    const res = await fetch('/api/accounts/test-proxies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: ids || [] }),
+    });
+    return res.json();
+  },
+
   async verifyAccount(id: string) {
     const res = await fetch(`/api/accounts/${id}/verify`, { method: 'POST' });
     return res.json();

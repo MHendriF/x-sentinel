@@ -45,6 +45,19 @@ const commentsSchema = z.object({
   comments: z.array(z.string()).max(500),
 });
 
+const batchToggleSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(500),
+  enabled: z.boolean(),
+});
+
+const batchDeleteSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(500),
+});
+
+const testProxiesSchema = z.object({
+  ids: z.array(z.string().min(1)).max(500).optional(),
+});
+
 // GET /api/accounts - List all accounts (session cookies & proxy creds masked)
 router.get('/', (req, res) => {
   const accounts = db.getAccounts().map((acc) => {
@@ -77,6 +90,120 @@ router.get('/export', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   res.send(JSON.stringify(backupData, null, 2));
+});
+
+// GET /api/accounts/export-csv - Download fleet accounts as clean CSV
+router.get('/export-csv', (req, res) => {
+  const accounts = db.getAccounts();
+  const headers = [
+    'Label',
+    'Username',
+    'Status',
+    'Health',
+    'Proxy Host',
+    'Warmup Day',
+    'Likes',
+    'Reposts',
+    'Replies',
+    'Posts',
+    'Total Actions',
+    'Last Checked',
+  ];
+
+  const rows = accounts.map((a) => {
+    const totalActs =
+      (a.stats?.likes || 0) +
+      (a.stats?.retweets || 0) +
+      (a.stats?.comments || 0) +
+      (a.stats?.posts || 0);
+    const cleanProxy = proxyHelper.extractProxyHostPort
+      ? proxyHelper.extractProxyHostPort(a.proxy)
+      : a.proxy || '';
+    return [
+      `"${(a.label || '').replace(/"/g, '""')}"`,
+      `"${a.username || ''}"`,
+      a.enabled !== false ? 'Active' : 'Paused',
+      a.healthStatus || (a.isValid ? 'Valid' : 'Unchecked'),
+      `"${cleanProxy}"`,
+      String(a.warmupDay || 1),
+      String(a.stats?.likes || 0),
+      String(a.stats?.retweets || 0),
+      String(a.stats?.comments || 0),
+      String(a.stats?.posts || 0),
+      String(totalActs),
+      `"${a.lastCheckedAt || a.lastChecked || ''}"`,
+    ];
+  });
+
+  const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  const filename = `x_sentinel_fleet_${new Date().toISOString().slice(0, 10)}.csv`;
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8;');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(csv);
+});
+
+// POST /api/accounts/batch-toggle - Bulk activate / pause accounts
+router.post('/batch-toggle', validateBody(batchToggleSchema), (req, res) => {
+  const { ids, enabled } = req.body;
+  const accounts = db.getAccounts();
+  let updatedCount = 0;
+
+  accounts.forEach((acc) => {
+    if (ids.includes(acc.id)) {
+      acc.enabled = enabled;
+      updatedCount += 1;
+    }
+  });
+
+  if (updatedCount > 0) {
+    db.save('accounts');
+    logger.info(`🔘 Batch toggled ${updatedCount} nodes: ${enabled ? 'Activated' : 'Paused'}`);
+  }
+
+  res.json({ success: true, updatedCount, enabled });
+});
+
+// POST /api/accounts/batch-delete - Bulk delete accounts
+router.post('/batch-delete', validateBody(batchDeleteSchema), (req, res) => {
+  const { ids } = req.body;
+  let deletedCount = 0;
+
+  ids.forEach((id) => {
+    if (db.deleteAccount(id)) {
+      deletedCount += 1;
+    }
+  });
+
+  logger.warn(`🗑️ Batch deleted ${deletedCount} nodes from fleet.`);
+  res.json({ success: true, deletedCount });
+});
+
+// POST /api/accounts/test-proxies - Mass test proxies across fleet concurrently
+router.post('/test-proxies', validateBody(testProxiesSchema), async (req, res) => {
+  const { ids } = req.body;
+  const accounts = db.getAccounts();
+  const targetAccounts = accounts.filter((acc) => {
+    if (!acc.proxy || !String(acc.proxy).trim()) return false;
+    if (Array.isArray(ids) && ids.length > 0) {
+      return ids.includes(acc.id);
+    }
+    return true;
+  });
+
+  logger.info(`🌐 Testing proxies for ${targetAccounts.length} fleet nodes concurrently...`);
+
+  const results = {};
+  const promises = targetAccounts.map(async (acc) => {
+    try {
+      const result = await proxyHelper.testProxy(String(acc.proxy).trim());
+      results[acc.id] = result;
+    } catch (err) {
+      results[acc.id] = { success: false, message: err.message, latency: 0, status: 'DEAD' };
+    }
+  });
+
+  await Promise.allSettled(promises);
+  res.json({ success: true, total: targetAccounts.length, results });
 });
 
 // POST /api/accounts/bulk-import - Bulk import accounts

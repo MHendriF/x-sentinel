@@ -27,9 +27,15 @@ import {
 
 interface NodeCardProps {
   account: AccountNode;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
+export const NodeCard: React.FC<NodeCardProps> = ({
+  account,
+  isSelected = false,
+  onToggleSelect,
+}) => {
   const { loadAccounts, openAccountModal, openCommentsModal, openDeleteModal } = useStore();
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPingingProxy, setIsPingingProxy] = useState(false);
@@ -112,14 +118,25 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between gap-2.5 rounded-lg border border-border/80 bg-obsidian-850 p-3 shadow-md transition-all duration-200 hover:border-slate-600/80 ${
-        account.enabled === false ? 'opacity-50 grayscale' : ''
-      }`}
+      className={`group relative flex flex-col justify-between gap-2.5 rounded-lg border p-3 shadow-md transition-all duration-200 ${
+        isSelected
+          ? 'border-cyan-500/80 bg-cyan-950/20 ring-1 ring-cyan-500/40 shadow-cyan-950/50'
+          : 'border-border/80 bg-obsidian-850 hover:border-slate-600/80'
+      } ${account.enabled === false ? 'opacity-60' : ''}`}
     >
       {/* Top Header */}
       <div>
         <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex min-w-0 items-center gap-2">
+            {onToggleSelect && (
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={onToggleSelect}
+                className="checkbox-flame shrink-0"
+                title="Select node"
+              />
+            )}
             <img
               src={
                 account.avatar ||
@@ -129,10 +146,10 @@ export const NodeCard: React.FC<NodeCardProps> = ({ account }) => {
               className="h-8 w-8 shrink-0 rounded-md border border-slate-700 bg-obsidian-950 object-cover"
             />
             <div className="min-w-0">
-              <h4 className="max-w-[130px] truncate font-heading text-xs font-bold leading-tight tracking-tight text-white sm:max-w-[160px]">
+              <h4 className="max-w-[120px] truncate font-heading text-xs font-bold leading-tight tracking-tight text-white sm:max-w-[150px]">
                 {account.label || 'Node'}
               </h4>
-              <div className="max-w-[130px] truncate font-mono text-[10.5px] text-flame sm:max-w-[160px]">
+              <div className="max-w-[120px] truncate font-mono text-[10.5px] text-flame sm:max-w-[150px]">
                 @{account.username || 'unverified'}
               </div>
             </div>
