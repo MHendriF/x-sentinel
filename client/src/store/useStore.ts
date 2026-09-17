@@ -45,7 +45,7 @@ interface AppState {
 
   history: HistoryItem[];
   setHistory: (history: HistoryItem[]) => void;
-  loadHistory: () => Promise<void>;
+  loadHistory: (limit?: number) => Promise<void>;
 
   logs: LogEntry[];
   addLog: (log: LogEntry) => void;
@@ -230,9 +230,9 @@ export const useStore = create<AppState>((set, get) => ({
 
   history: [],
   setHistory: (history) => set({ history }),
-  loadHistory: async () => {
+  loadHistory: async (limit: number = 100) => {
     try {
-      const data = await apiClient.getHistory(100);
+      const data = await apiClient.getHistory(limit);
       if (data.success) {
         if (data.history) set({ history: data.history });
         if (data.stats) set({ stats: data.stats });
