@@ -157,3 +157,39 @@ The interaction engine (`server/automation/bot/interactionEngine.js`) employs mu
    - Activates inline reply placeholders or clicks the tweet reply icon to mount the contenteditable editor.
    - Supports 12 textarea selectors and dual input strategies (humanized keystrokes with `document.execCommand('insertText')` fallback).
 
+---
+
+## 🛡️ 9. Driver Resilience & Playwright Location Crash Guard
+
+Target web pages frequently run third-party telemetry scripts or ads that emit unhandled window errors lacking source location stacks. In upstream Playwright Core (`playwright-core/lib/coreBundle.js`), reading `pageError.location.url` caused fatal process crashes: `TypeError: Cannot read properties of undefined (reading 'url')`.
+
+### Automated Driver Patch (`server/automation/bot/patchPlaywright.js`)
+
+X-SENTINEL executes an automatic patch during `postinstall` (and server startup fallback):
+
+```javascript
+// Upstream vulnerable line in playwright-core/lib/coreBundle.js:
+// url: pageError.location.url
+
+// Patched resilient line:
+// url: pageError.location?.url || ''
+```
+
+- **Runtime Verification**: `node test/verify_url_resilience.js` tests both driver patch integrity and URL edge cases (`null`, `undefined`, lightbox paths `/photo/1`, and legacy `twitter.com` status parameters).
+- **Graceful Error Handling**: Even when target pages execute malformed scripts, the automation loop intercepts and ignores non-fatal page exceptions without terminating the batch runner.
+
+---
+
+## 🚀 10. Staggered Fleet Broadcasting & Anti-Burst Timing
+
+Simultaneous post publishing across dozens of nodes from the same host or proxy subnet triggers immediate behavioral velocity alerts on Twitter. X-SENTINEL implements staggered cadence:
+
+1. **Inter-Node Jitter Delays**:
+   - Post Studio fleet dispatcher enforces a configurable inter-account rotation delay ($5\text{s} - 60\text{s}$, default $10\text{s}$).
+   - Injects a $\pm 20\%$ micro-jitter to prevent periodic clock detection.
+2. **Draft Variation Distribution**:
+   - Distributes distinct draft items from the generated variations deck or **Drafts Stash Drawer** to each active node.
+   - Eliminates duplicate content penalties across node clusters.
+3. **Atomic Task Queue Execution**:
+   - Tasks queued via Cron Scheduler evaluate concurrency locks (`twitterBot.isRunning === false`) before executing sequentially, ensuring no two automation routines compete for browser context resources.
+

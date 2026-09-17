@@ -56,6 +56,112 @@ Returns current automation runner state, active task progress, and system statis
 }
 ```
 
+### `GET /api/system/health`
+
+Returns real-time runtime engine telemetry, process memory heap utilization, and sovereign local zero-database disk consumption.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "uptime": 14280,
+  "nodeVersion": "v20.18.0",
+  "platform": "win32",
+  "arch": "x64",
+  "pid": 28244,
+  "memory": {
+    "rss": 116375552,
+    "heapUsed": 49163360,
+    "heapTotal": 52142080,
+    "external": 4069660
+  },
+  "storage": {
+    "accountsCount": 15,
+    "accountsSizeBytes": 11465,
+    "historyCount": 100,
+    "historySizeBytes": 272740,
+    "commentsFilesCount": 17,
+    "logFileSizeBytes": 21264
+  },
+  "fleet": {
+    "total": 15,
+    "active": 15
+  },
+  "aiProvider": "9router",
+  "browserEngine": "camoufox",
+  "botRunning": false,
+  "timestamp": "2026-09-17T15:44:40.278Z"
+}
+```
+
+### `GET /api/system/diagnostics`
+
+Executes a live 6-Pillar System Self-Diagnostic Health Audit across all critical subsystems:
+
+1. `storage_io`: Atomic I/O write & read latency test in `data/`.
+2. `browser_engine`: Active browser engine and URL resilience driver check.
+3. `ai_gateway`: Model gateway reachability and provider status.
+4. `fleet_readiness`: Session authentication and cookie validity count.
+5. `stealth_cadence`: Human typing jitter and bezier mouse curve verification.
+6. `scheduler_engine`: Automated background cron daemon status.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "score": 100,
+  "totalPillars": 6,
+  "passedPillars": 6,
+  "pillars": [
+    {
+      "id": "storage_io",
+      "name": "Local Storage & Zero-DB I/O",
+      "passed": true,
+      "status": "HEALTHY",
+      "message": "Atomic I/O operational in 1ms."
+    },
+    {
+      "id": "browser_engine",
+      "name": "Stealth Browser Drivers",
+      "passed": true,
+      "status": "OPTIMAL",
+      "message": "Configured engine: CAMOUFOX. WebRTC leak guard and URL resilience drivers active."
+    },
+    {
+      "id": "ai_gateway",
+      "name": "AI Model Gateway",
+      "passed": true,
+      "status": "READY",
+      "message": "Active provider: 9ROUTER. Model ready for contextual replies."
+    },
+    {
+      "id": "fleet_readiness",
+      "name": "Fleet Node Session Health",
+      "passed": true,
+      "status": "READY",
+      "message": "15/15 nodes active with authenticated sessions."
+    },
+    {
+      "id": "stealth_cadence",
+      "name": "Defense & Human Cadence",
+      "passed": true,
+      "status": "HARDENED",
+      "message": "Human typing jitter active (90ms). Bezier mouse trajectory enabled."
+    },
+    {
+      "id": "scheduler_engine",
+      "name": "Background Scheduler Daemon",
+      "passed": true,
+      "status": "RUNNING",
+      "message": "Scheduler active with 2 queue entries tracked."
+    }
+  ],
+  "timestamp": "2026-09-17T15:44:45.429Z"
+}
+```
+
 ### `GET /api/logs/stream` (SSE)
 
 Establishes a Server-Sent Events stream for real-time log messages.
@@ -287,6 +393,68 @@ Generates high-engagement X posts based on a topic and persona style.
   ]
 }
 ```
+
+### `POST /api/ai/generate-payload-replies`
+
+Generates high-signal, anti-AI-slop replies from a target tweet text without double quotation marks.
+
+**Request Body:**
+
+```json
+{
+  "postText": "Open-source AI models are closing the frontier gap faster than incumbents expected...",
+  "count": 15,
+  "tone": "peer_native",
+  "language": "auto",
+  "customInstruction": "Create 15 reply from this post without any double quotes, make not see like AI Slop then save in json file."
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "provider": "Groq",
+  "count": 15,
+  "replies": [
+    "The moat is shifting from weights to proprietary eval benchmarks and distribution velocity.",
+    "Data pipeline quality is where the actual differentiation happens in production."
+  ],
+  "isFallback": false
+}
+```
+
+### `POST /api/ai/save-payload-file`
+
+Safely writes cleaned comment arrays into `data/comments/*.json` with path-traversal hardening. Optionally links directly to a fleet node or appends to global templates.
+
+**Request Body:**
+
+```json
+{
+  "fileName": "solana_replies_15.json",
+  "replies": ["Insight 1", "Insight 2"],
+  "targetAccountId": "acc-123",
+  "saveToTemplates": false
+}
+```
+
+### `GET /api/ai/payload-files`
+
+Lists all `.json` payload files saved in the `data/comments/` directory with file size, reply item count, and last modification timestamp.
+
+### `GET /api/ai/payload-file/:fileName`
+
+Inspects and returns the full JSON array of replies stored in a specific payload file.
+
+### `DELETE /api/ai/payload-file/:fileName`
+
+Safely deletes a payload file from `data/comments/`.
+
+### `POST /api/ai/test-connection`
+
+Tests API connectivity and latency for a specified AI provider and API key.
 
 ---
 

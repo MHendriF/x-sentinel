@@ -79,7 +79,13 @@ graph TD
 ### 1. Presentation Layer (`client/`)
 
 - **Framework**: React 19 with TypeScript, bundled by Vite.
-- **State Management**: Single centralized store in `client/src/store/useStore.ts` (Zustand), including connectivity (`apiOnline`) and dataset hydration flags.
+- **State Management**: Single centralized store in `client/src/store/useStore.ts` (Zustand), including connectivity (`apiOnline`), hash synchronization, and dataset hydration flags.
+- **Modular Subsystems**: Highly decoupled domain modules in `client/src/components/cockpit/`:
+  - `postStudio/`: PostGeneratorForm, DraftVariationsDeck, DraftsStashDrawer, FleetDispatcherPanel, TweetMockupCard.
+  - `payloadBank/`: AIPayloadGenerator, SpintaxStackWorkbench, PayloadVaultDeck, SavePayloadModal.
+  - `ai/`: AIProviderSelector, AIEngineConfig, AIPersonaStudio, AISandboxTester.
+  - `audit/`: AuditStatsHUD, AuditFilters, AuditDetailModal.
+  - `about/`: LiveTelemetryHUD, SystemDiagnosticModal, CoreCapabilitiesGrid, DocsCatalogCard.
 - **Styling**: Vanilla Tailwind CSS + dark mode obsidian design system + shadcn/ui primitives. Self-hosted fonts via `@fontsource` (no CDN dependency).
 - **UI Conventions**: flame/amber tokens for primary CTAs, Indonesian operational labels, skeleton loaders while datasets hydrate, and `__APP_VERSION__` injected from `package.json` by Vite.
 - **Global Telemetry**: running-task progress strip + engine-offline banner in the ribbon; sidebar CORE status reflects real engine/task state; keyboard shortcuts (`1-9` tabs, `/` search).
@@ -91,8 +97,16 @@ graph TD
 - **Web Server**: Express 5 on Bun/Node.js runtime, bound to loopback (`127.0.0.1`).
 - **Local Security Guard** (`server/security.js`): rejects requests with foreign `Origin`/`Host` headers (anti drive-by exfiltration & DNS rebinding) and provides the secret-masking helpers used by every read endpoint.
 - **Validation & Errors**: request bodies validated with zod schemas (`server/utils/http.js`); a centralized error handler in `server/index.js` maps `HttpError` to JSON responses.
+- **Path Traversal Shield**: strict verification (`getSafeCommentsFilePath`) ensuring comment files stay locked inside `data/comments/`.
 - **Real-Time Streaming**: Server-Sent Events (SSE) broadcasting real-time logs from `server/logger.js`.
-- **API Routing**: `server/routes/api.js` exposes structured endpoints for accounts, tasks, AI post generator, proxy testing, scheduling, webhooks, and history pruning.
+- **Modular Routers**: `server/routes/` delegates to specialized domain controllers:
+  - `systemRouter.js`: Real-time system health telemetry and 6-pillar self-diagnostic audit.
+  - `accountsRouter.js`: Fleet CRUD, proxy latency testing, and bulk import/export.
+  - `tasksRouter.js`: Multi-post, batch engagement, and autonomous Feed Hunter execution.
+  - `aiRouter.js`: AI tweet generator, anti-slop payload replier, and file vault manager.
+  - `schedulesRouter.js`: Background cron post queues.
+  - `historyRouter.js`: Audit ledger event logging and RFC-4180 pruning.
+  - `settingsRouter.js`: Defense evasion, proxy testing, and spintax preview.
 - **Process Hardening**: Graceful shutdown handles `SIGINT`/`SIGTERM`, safely closing Chromium browser contexts and background timers.
 
 ### 3. Automation & Intelligence Layer (`server/automation/`)

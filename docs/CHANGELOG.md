@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.5] - 2026-09-17
+
+### 🌟 Added
+
+- **🛰️ Live Telemetry HUD & 6-Pillar Diagnostics Audit (`AboutDeck.tsx`, `server/routes/systemRouter.js`)**:
+  - Live system telemetry ribbon polling `GET /api/system/health`: Heap & RSS memory consumption, uptime counter, node fleet count, and disk storage metrics.
+  - Interactive **6-Pillar Diagnostic Audit 1-Klik** (`GET /api/system/diagnostics`): performs synchronous self-tests on Zero-DB Atomic Storage I/O, Stealth Browser Drivers, AI Gateway connectivity, Fleet session readiness, Defense human cadence jitter, and Background Scheduler daemon.
+  - Interactive surface quick-launchers with real-time health indicator badges.
+  - Modularized `AboutDeck` into domain components in `client/src/components/cockpit/about/` (`AboutHero.tsx`, `LiveTelemetryHUD.tsx`, `SystemDiagnosticsCard.tsx`, `CoreCapabilitiesGrid.tsx`, `SystemSpecsCard.tsx`, `DocsCatalogCard.tsx`).
+- **💬 Modular Payload Bank Studio & Anti-Slop AI Replier (`PayloadBank.tsx`, `server/routes/aiRouter.js`)**:
+  - Modularized into `client/src/components/cockpit/payloadBank/` (`PayloadBankHeader.tsx`, `PayloadBankMetrics.tsx`, `PayloadTable.tsx`, `PayloadBulkImportModal.tsx`, `PayloadEditorModal.tsx`, `PayloadFiltersBar.tsx`).
+  - High-signal AI reply generator (`POST /api/ai/generate-payload-replies`) producing clean, quote-free (`"..."`) replies strictly aligned with tweet context.
+  - Single-row AI regenerate button allowing selective reply item regeneration without discarding the full batch.
+  - 280-character limit barometer per reply item with visual headroom cues.
+  - Safe payload file management (`POST /api/ai/save-payload-file`, `GET /api/ai/payload-files`, `GET /api/ai/payload-file/:fileName`, `DELETE /api/ai/payload-file/:fileName`).
+  - Strict path traversal protection (`db.getSafeCommentsFilePath`) guaranteeing files stay locked in `data/comments/`.
+- **✨ Modular AI Post Studio, Persistent Drafts Stash & Fleet Dispatcher (`PostStudio.tsx`)**:
+  - Modularized into `client/src/components/cockpit/postStudio/` (`PostStudioHeader.tsx`, `PostComposerForm.tsx`, `SingleLineSanitizerBar.tsx`, `TweetMockupPreview.tsx`, `FleetDispatchModal.tsx`, `DraftsStashDrawer.tsx`).
+  - Persistent **Drafts Stash Drawer** backed by `localStorage` with tag filtering and search to store unlimited post concepts.
+  - **⚡ 4 Quick Polishers**: 1-click quick-action modifiers (_Hook Booster_, _Punchline Polish_, _Formalize_, _Slop Purge_).
+  - Staggered Fleet Broadcasting with configurable inter-account rotation delays ($5\text{s} - 60\text{s}$) to avoid burst-traffic flags.
+  - Interactive single-line sanitizer bar with newline stripper and whitespace normalizer.
+- **🤖 Enterprise AI Prompt & Model Studio (`AISettingsDeck.tsx`)**:
+  - Modularized into `client/src/components/cockpit/ai/` (`AiModelConfigCard.tsx`, `AiPersonaPresetsCard.tsx`, `AiGuardrailsCard.tsx`, `AiSandboxCard.tsx`, `AiWebhookAlertsCard.tsx`).
+  - Universal model registry with quick-select options for Groq, OpenRouter, OpenAI, Gemini, Ollama, 9router, plus custom model ID overrides.
+  - 7 calibrated persona presets including *Anti-Slop Native*, *Contrarian Tech*, and *Alpha Analyst*.
+  - Anti-slop system guardrails configuration to enforce conversational brevity and eliminate AI summary clichés.
+  - Interactive Live AI Sandbox for prompt experimentation with token estimation and response timing.
+- **📊 Forensic Audit Ledger Overhaul (`AuditLedger.tsx`)**:
+  - Modularized into `client/src/components/cockpit/audit/` (`AuditMetricsBar.tsx`, `AuditFiltersBar.tsx`, `AuditTable.tsx`, `AuditDetailModal.tsx`, `AuditBatchActions.tsx`, `AuditPagination.tsx`, `AuditMaintenanceDialog.tsx`).
+  - Telemetry HUD showing real-time event rates, success ratios, and failure breakdowns.
+  - Detail Event Inspector Modal for viewing complete prompt payloads, API responses, raw error stacks, and target tweet URLs.
+  - RFC-4180 compliant CSV export with proper quotation escaping for comma- and newline-heavy texts.
+- **🛡️ Driver Resilience & Location Crash Patch (`server/automation/bot/patchPlaywright.js`)**:
+  - Automated `postinstall` patch in `playwright-core/lib/coreBundle.js` replacing vulnerable `pageError.location.url` with safe optional chaining `pageError.location?.url`.
+  - Comprehensive test suite `test/verify_url_resilience.js` asserting driver patch and handling of malformed/null/lightbox tweet URLs.
+
+### 🔒 Security
+
+- Hardened file operations against path traversal by enforcing `db.getSafeCommentsFilePath(fileName)` across all comment and payload vault endpoints.
+
+---
+
 ## [1.3.4] - 2026-09-15
 
 ### 🌟 Added

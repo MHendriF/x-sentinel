@@ -64,13 +64,27 @@ bun start
 
 ```
 x-sentinel/
-├── client/                     # Frontend Application
+├── client/                     # Frontend Application (React 19 + Vite)
 │   ├── src/
-│   │   ├── components/cockpit/ # Modular UI Decks (PostStudio, NodesGrid, etc.)
+│   │   ├── components/cockpit/ # Modular Cockpit Decks & Domain Subdirectories
+│   │   │   ├── about/          # LiveTelemetryHUD, SystemDiagnosticsCard, Specs, DocsCatalog
+│   │   │   ├── ai/             # AiModelConfigCard, AiPersonaPresets, AiGuardrails, AiSandbox
+│   │   │   ├── audit/          # AuditMetricsBar, AuditFiltersBar, AuditTable, AuditDetailModal
+│   │   │   ├── payloadBank/    # PayloadBankHeader, PayloadMetrics, PayloadTable, BulkImportModal
+│   │   │   ├── postStudio/     # PostComposerForm, TweetMockupPreview, DraftsStashDrawer, FleetDispatch
+│   │   │   ├── NodesGrid.tsx   # Fleet Cluster Management
+│   │   │   ├── TargetWorkbench.tsx # Batch Engagement Workbench
+│   │   │   ├── FeedHunter.tsx  # Feed Hunter Radar
+│   │   │   ├── AISettingsDeck.tsx # AI Settings Container Deck
+│   │   │   ├── PayloadBank.tsx # Modular Payload Bank Deck
+│   │   │   ├── PostStudio.tsx  # Modular AI Post Studio Deck
+│   │   │   ├── AuditLedger.tsx # Modular Forensic Audit Deck
+│   │   │   ├── AboutDeck.tsx   # Modular About & Diagnostics Deck
+│   │   │   └── DefenseProtocol.tsx # Dual Engine & Defense Protocol
 │   │   ├── components/ui/      # shadcn/ui Base Component Library
-│   │   ├── services/           # apiClient.ts (REST & SSE Stream Client)
-│   │   ├── store/              # useStore.ts (Zustand Central State)
-│   │   ├── lib/                # Preset libraries & utility helpers
+│   │   ├── services/           # apiClient.ts (Type-safe REST & SSE Stream Client)
+│   │   ├── store/              # useStore.ts (Zustand Central State Store)
+│   │   ├── lib/                # Preset libraries, proxy validation & utility helpers
 │   │   ├── App.tsx             # Root App Shell & Layout
 │   │   └── main.tsx            # React 19 Entry Point
 │   ├── vite.config.ts          # Vite Configuration & API Proxy
@@ -81,19 +95,33 @@ x-sentinel/
 │   ├── schedules.json          # Scheduled Post & Hunter Queue
 │   ├── history.json            # Immutable Interaction Audit Records
 │   ├── stats.json              # Cumulative System Metrics
-│   ├── comments/               # Isolated Per-Node Spintax Storage
+│   ├── comments/               # Isolated Per-Node & Payload JSON Storage
 │   └── media/                  # Uploaded Image Storage
 ├── docs/                       # Engineering & AI Agent Documentation
-├── server/                     # Backend Application
-│   ├── automation/             # Playwright Bot, Scheduler, Notifier, AIService
-│   │   ├── twitterBot.js       # Main Automation Runner & Warmup Engine
+├── server/                     # Backend Application (Express 5 on Bun/Node)
+│   ├── automation/             # Playwright Bot, Camoufox, Scheduler, Notifier, AIService
+│   │   ├── bot/                # Modularized Bot Logic
+│   │   │   ├── browserFactory.js   # Dual Engine Contexts & Bezier Mouse Curves
+│   │   │   ├── healthRunner.js     # Diagnostic & 7-Day Warmup Sequence
+│   │   │   ├── humanCadence.js     # Human Jitter, Typing & Scrolling
+│   │   │   ├── interactionEngine.js# Resilient Like, Repost, Comment Vectors
+│   │   │   ├── patchPlaywright.js  # Automated Playwright Location Driver Patch
+│   │   │   └── tweetComposer.js    # Post Composer & Media Uploader
+│   │   ├── aiService.js        # Multi-Provider AI Inference Engine
 │   │   ├── scheduler.js        # Background Cron Loop (15s evaluation)
 │   │   ├── notifier.js         # Telegram & Discord Webhook Engine
-│   │   ├── aiService.js        # Multi-Provider AI Inference Engine
 │   │   ├── proxyHelper.js      # Proxy Ping & GeoIP Resolver
 │   │   └── cookieManager.js    # Cookie Injector & Formatter
-│   ├── routes/api.js           # REST API Endpoint Handlers
-│   ├── db.js                   # Atomic JSON Storage Engine & Pruning
+│   ├── routes/                 # Express Sub-Routers
+│   │   ├── systemRouter.js     # Realtime Telemetry HUD & 6-Pillar Diagnostics
+│   │   ├── accountsRouter.js   # Fleet CRUD, Proxy Testing & Bulk Import
+│   │   ├── tasksRouter.js      # Automation Task Runners
+│   │   ├── aiRouter.js         # AI Generator & Safe Comments Vault
+│   │   ├── schedulesRouter.js  # Cron Queue Routes
+│   │   ├── historyRouter.js    # Audit History & RFC-4180 Pruning
+│   │   └── api.js              # Master Router Mount
+│   ├── db.js                   # Atomic JSON Storage Engine & Safe Path Resolver
+│   ├── security.js             # Local Origin Guard & Secret Masking
 │   ├── logger.js               # Structured Logger with SSE Broadcaster
 │   ├── config.js               # Configuration Constants & Defaults
 │   └── index.js                # Server Entry Point & Lifecycle Teardown
@@ -121,6 +149,9 @@ Run the automated verification scripts located in the `test/` folder:
 # Module verification suite (spintax, cookie manager, db, hardening, import, etc.)
 node test/verify.js
 
+# Driver & URL resilience suite (location patch check, null/photo URL edge cases)
+node test/verify_url_resilience.js
+
 # Bulk fleet import & export verification (uses an isolated temp data dir)
 node test/verify_bulk_import.js
 
@@ -129,7 +160,7 @@ node test/verify_bulk_import.js
 node test/smoke_api.js
 ```
 
-> Note: the package.json `test` script runs `node test/verify.js` (there is no Bun test runner configured).
+> Note: the package.json `test` script runs `node test/verify.js`. You can also execute `node test/verify_url_resilience.js` to assert browser engine driver integrity.
 
 ---
 
@@ -151,3 +182,8 @@ node test/smoke_api.js
    - Corrupt JSON files are quarantined (`.corrupt.<timestamp>`), never silently overwritten. Atomic writes (`.tmp` + `fsync` + rename) must never fall back to direct writes.
 8. **New Cockpit Tabs**:
    - Register the tab in `App.tsx` (`VALID_TABS`), `NavDeck.tsx`, and **always add a `TAB_TITLES` entry in `TelemetryRibbon.tsx`** so the page header stays in sync. Validate request bodies with zod (`server/utils/http.js`) and mask secrets in GET responses (`server/security.js`).
+9. **Path Traversal Shield**:
+   - Never access or write files with raw user input filenames. Always sanitize filenames using `path.basename(fileName)` and verify with `getSafeCommentsFilePath(fileName)` to ensure paths never escape `data/comments/`.
+10. **Anti-AI-Slop & Barometer Standards**:
+    - AI-generated replies and tweets must be sanitized of enclosing double quotation marks (`"..."`), formatted for high signal density, and visually monitored with character limit barometers (280 max).
+
