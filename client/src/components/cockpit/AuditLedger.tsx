@@ -409,140 +409,156 @@ export const AuditLedger: React.FC = () => {
         isActive={isPruning || isRefreshing}
         title="Audit Ledger & Telemetry History"
         titleBadges={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2.5 py-0.5 font-mono text-xs font-bold text-white shadow-inner">
               {totalItems} {totalItems === 1 ? 'Record' : 'Records'}
             </span>
+            {hasActiveFilters && totalItems !== history.length && (
+              <span className="rounded-md border border-flame/30 bg-flame/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-flame">
+                Filtered from {history.length}
+              </span>
+            )}
             {pollInterval > 0 && (
-              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/40 px-2 py-0.5 font-mono text-[10px] text-emerald-300 animate-pulse">
-                <Radio className="h-2.5 w-2.5 text-emerald-400" />
-                Live ({pollInterval / 1000}s)
+              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/50 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-300 shadow-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                LIVE ({pollInterval / 1000}s)
               </span>
             )}
           </div>
         }
         description="Comprehensive node interaction log, forensic delivery statuses, and telemetry execution timestamps."
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Live Stream Polling Selector */}
-            <div className="flex items-center gap-1 rounded border border-border/80 bg-obsidian-950 px-2 py-1">
-              <Radio
-                className={cn(
-                  'h-3 w-3',
-                  pollInterval > 0 ? 'text-emerald-400 animate-pulse' : 'text-slate-500'
-                )}
-              />
-              <span className="font-mono text-[10px] text-slate-400">Stream:</span>
-              <select
-                value={pollInterval}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setPollInterval(val);
-                  if (val > 0) toast.success(`Live stream polling active (${val / 1000}s).`);
-                  else toast.info('Live stream polling disabled.');
-                }}
-                className="bg-transparent font-mono text-xs text-slate-200 focus:outline-none cursor-pointer"
-                title="Auto-refresh audit logs interval"
-              >
-                <option value={0} className="bg-obsidian-900 text-slate-300">
-                  OFF
-                </option>
-                <option value={5000} className="bg-obsidian-900 text-slate-300">
-                  5s
-                </option>
-                <option value={10000} className="bg-obsidian-900 text-slate-300">
-                  10s
-                </option>
-                <option value={30000} className="bg-obsidian-900 text-slate-300">
-                  30s
-                </option>
-              </select>
+          <div className="flex shrink-0 items-center gap-2">
+            {/* 1. Telemetry Stream & Scope Capsule */}
+            <div className="inline-flex h-8 items-center divide-x divide-slate-800 rounded-md border border-slate-700/80 bg-obsidian-950 p-0.5 shadow-inner">
+              {/* Stream Polling Control */}
+              <div className="flex items-center gap-1.5 px-2 font-mono text-xs">
+                <Radio
+                  className={cn(
+                    'h-3 w-3',
+                    pollInterval > 0
+                      ? 'text-emerald-400 animate-pulse'
+                      : 'text-slate-500'
+                  )}
+                />
+                <span className="text-[10px] uppercase tracking-wider text-slate-400">Stream:</span>
+                <select
+                  value={pollInterval}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setPollInterval(val);
+                    if (val > 0) toast.success(`Live stream polling active (${val / 1000}s).`);
+                    else toast.info('Live stream polling disabled.');
+                  }}
+                  className="bg-transparent font-mono text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer hover:text-white"
+                  title="Auto-refresh audit logs interval"
+                >
+                  <option value={0} className="bg-obsidian-900 text-slate-300">
+                    OFF
+                  </option>
+                  <option value={5000} className="bg-obsidian-900 text-slate-300">
+                    5s
+                  </option>
+                  <option value={10000} className="bg-obsidian-900 text-slate-300">
+                    10s
+                  </option>
+                  <option value={30000} className="bg-obsidian-900 text-slate-300">
+                    30s
+                  </option>
+                </select>
+              </div>
+
+              {/* History Scope Limit */}
+              <div className="flex items-center gap-1.5 px-2 font-mono text-xs">
+                <SlidersHorizontal className="h-3 w-3 text-flame" />
+                <span className="text-[10px] uppercase tracking-wider text-slate-400">Scope:</span>
+                <select
+                  value={historyLimit}
+                  onChange={(e) => handleLimitChange(Number(e.target.value))}
+                  className="bg-transparent font-mono text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer hover:text-white"
+                  title="Number of historical events to fetch from database"
+                >
+                  <option value={100} className="bg-obsidian-900 text-slate-300">
+                    100
+                  </option>
+                  <option value={250} className="bg-obsidian-900 text-slate-300">
+                    250
+                  </option>
+                  <option value={500} className="bg-obsidian-900 text-slate-300">
+                    500
+                  </option>
+                  <option value={1000} className="bg-obsidian-900 text-slate-300">
+                    1000
+                  </option>
+                </select>
+              </div>
             </div>
 
-            {/* Scope / History Limit Selector */}
-            <div className="flex items-center gap-1 rounded border border-border/80 bg-obsidian-950 px-2 py-1">
-              <SlidersHorizontal className="h-3 w-3 text-flame" />
-              <span className="font-mono text-[10px] text-slate-400">Scope:</span>
-              <select
-                value={historyLimit}
-                onChange={(e) => handleLimitChange(Number(e.target.value))}
-                className="bg-transparent font-mono text-xs text-slate-200 focus:outline-none cursor-pointer"
-                title="Number of historical events to fetch from database"
+            {/* 2. Export & Refresh Segmented Toolbar */}
+            <div className="inline-flex h-8 items-center divide-x divide-slate-800 rounded-md border border-slate-700/80 bg-obsidian-950 p-0.5 shadow-inner">
+              <button
+                type="button"
+                onClick={() => handleExportCSV(false)}
+                className="inline-flex h-7 items-center gap-1.5 px-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:text-emerald-300 focus:outline-none"
+                title="Export filtered records to spreadsheet (CSV)"
               >
-                <option value={100} className="bg-obsidian-900 text-slate-300">
-                  100 logs
-                </option>
-                <option value={250} className="bg-obsidian-900 text-slate-300">
-                  250 logs
-                </option>
-                <option value={500} className="bg-obsidian-900 text-slate-300">
-                  500 logs
-                </option>
-                <option value={1000} className="bg-obsidian-900 text-slate-300">
-                  1000 logs
-                </option>
-              </select>
+                <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
+                <span>CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportJSON}
+                className="inline-flex h-7 items-center gap-1.5 px-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:text-sky-300 focus:outline-none"
+                title="Export complete telemetry payload as JSON"
+              >
+                <FileJson className="h-3.5 w-3.5 text-sky-400" />
+                <span>JSON</span>
+              </button>
+
+              {hudMetrics.failedCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleExportCSV(true)}
+                  className="inline-flex h-7 items-center gap-1.5 bg-rose-950/40 px-2.5 font-mono text-xs font-semibold text-rose-300 transition-colors hover:bg-rose-900/60 hover:text-rose-100 focus:outline-none"
+                  title={`Export ${hudMetrics.failedCount} failed records for incident report`}
+                >
+                  <AlertOctagon className="h-3.5 w-3.5 text-rose-400 animate-pulse" />
+                  <span>Failures ({hudMetrics.failedCount})</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="inline-flex h-7 w-7 items-center justify-center text-slate-400 transition-colors hover:bg-slate-800/80 hover:text-slate-200 focus:outline-none disabled:opacity-50"
+                title="Refresh audit ledger data from database"
+                aria-label="Refresh audit data"
+              >
+                <RefreshCw
+                  className={cn(
+                    'h-3.5 w-3.5 transition-transform',
+                    isRefreshing && 'animate-spin text-flame'
+                  )}
+                />
+              </button>
             </div>
 
-            {/* Maintenance Button */}
+            {/* 3. Maintenance Button */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsPruneModalOpen(true)}
-              className="h-8 gap-1.5 border-rose-500/30 bg-rose-950/20 px-2.5 font-mono text-xs font-semibold text-rose-300 transition-colors hover:border-rose-500/60 hover:bg-rose-900/30 hover:text-rose-200"
+              className="h-8 shrink-0 gap-1.5 border-rose-500/30 bg-rose-950/20 px-2.5 font-mono text-xs font-semibold text-rose-300 transition-colors hover:border-rose-500/60 hover:bg-rose-900/30 hover:text-rose-200 shadow-sm"
               title="Prune legacy or failed audit logs"
             >
               <Trash2 className="h-3.5 w-3.5 text-rose-400" />
-              <span>Maintenance</span>
+              <span className="hidden sm:inline">Maintenance</span>
             </Button>
-
-            {/* Refresh Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="h-8 gap-1.5 border-slate-800 bg-obsidian-950 px-2.5 font-mono text-xs font-semibold text-slate-300 hover:bg-slate-800/80 hover:text-white"
-            >
-              <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-flame')} />
-              <span>Refresh</span>
-            </Button>
-
-            {/* Export Actions */}
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => handleExportCSV(false)}
-              className="h-8 gap-1.5 px-3 font-mono text-xs font-semibold"
-              title="Download audit records as CSV spreadsheet"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>CSV</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportJSON}
-              className="h-8 gap-1.5 border-slate-800 bg-obsidian-950 px-2.5 font-mono text-xs font-semibold text-slate-300 hover:bg-slate-800/80 hover:text-white"
-              title="Export complete telemetry payload in JSON format"
-            >
-              <FileJson className="h-3.5 w-3.5 text-sky-400" />
-              <span>JSON</span>
-            </Button>
-
-            {hudMetrics.failedCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExportCSV(true)}
-                className="h-8 gap-1.5 border-rose-500/40 bg-rose-950/30 px-2.5 font-mono text-xs font-semibold text-rose-300 hover:bg-rose-950/50"
-                title="Download only failed records for troubleshooting"
-              >
-                <AlertOctagon className="h-3.5 w-3.5 text-rose-400" />
-                <span>Export Failures ({hudMetrics.failedCount})</span>
-              </Button>
-            )}
           </div>
         }
       />
