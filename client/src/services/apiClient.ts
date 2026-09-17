@@ -63,7 +63,7 @@ export interface Settings {
 
 export interface ScheduleItem {
   id: string;
-  type: 'POST_QUEUE' | 'RECURRING_HUNTER';
+  type: 'POST_QUEUE' | 'RECURRING_HUNTER' | 'BATCH_ENGAGEMENT';
   title?: string;
   enabled: boolean;
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
@@ -72,6 +72,11 @@ export interface ScheduleItem {
   lastRunAt?: string | null;
   accountIds?: string[] | 'all';
   posts?: string[];
+  urls?: string[];
+  like?: boolean;
+  retweet?: boolean;
+  comment?: boolean;
+  commentText?: string;
   mediaPaths?: string[];
   delaySeconds?: number;
   keywords?: string[];

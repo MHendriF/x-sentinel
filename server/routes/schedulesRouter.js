@@ -20,7 +20,7 @@ const safeMediaPathSchema = z.string().refine((p) => {
 }, 'Media file path must be inside the data/media directory with a valid image extension (PNG, JPG, GIF, WebP).');
 
 const scheduleSchema = z.object({
-  type: z.enum(['POST_QUEUE', 'RECURRING_HUNTER']).optional(),
+  type: z.enum(['POST_QUEUE', 'RECURRING_HUNTER', 'BATCH_ENGAGEMENT']).optional(),
   title: z.string().max(200).optional(),
   scheduledAt: z
     .string()
@@ -28,6 +28,11 @@ const scheduleSchema = z.object({
     .optional(),
   accountIds: z.union([z.string(), z.array(z.string())]).optional(),
   posts: z.array(z.string()).optional(),
+  urls: z.array(z.string()).optional(),
+  like: z.boolean().optional(),
+  retweet: z.boolean().optional(),
+  comment: z.boolean().optional(),
+  commentText: z.string().max(5000).optional(),
   mediaPaths: z.array(safeMediaPathSchema).max(4).optional(),
   delaySeconds: z.number().min(0).max(3600).optional(),
   keywords: z.array(z.string()).optional(),
@@ -52,7 +57,11 @@ router.post('/', validateBody(scheduleSchema), (req, res) => {
 
   const item = db.saveSchedule({
     ...body,
-    title: body.title || 'Scheduled Post Dispatch',
+    title:
+      body.title ||
+      (body.type === 'BATCH_ENGAGEMENT'
+        ? 'Scheduled Target Engagement'
+        : 'Scheduled Post Dispatch'),
     scheduledAt: body.scheduledAt ? new Date(body.scheduledAt).toISOString() : undefined,
     accountIds: body.accountIds || 'all',
     delaySeconds: body.delaySeconds || 15,

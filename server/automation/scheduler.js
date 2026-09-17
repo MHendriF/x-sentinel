@@ -116,7 +116,63 @@ class SchedulerService {
       return;
     }
 
-    // 2. Process Recurring Feed Hunter
+    // 2. Process Pending Batch Engagement
+    const pendingBatch = schedules.find(
+      (s) =>
+        s.type === 'BATCH_ENGAGEMENT' &&
+        s.enabled &&
+        (s.status === 'PENDING' || !s.status) &&
+        new Date(s.scheduledAt).getTime() <= now
+    );
+
+    if (pendingBatch) {
+      this.isProcessing = true;
+      logger.info(
+        `⏰ [Scheduler] Executing scheduled batch engagement: "${pendingBatch.title || 'Batch Engagement'}" (${pendingBatch.urls?.length || 0} targets)...`
+      );
+
+      db.saveSchedule({
+        ...pendingBatch,
+        status: 'RUNNING',
+      });
+
+      try {
+        const result = await twitterBot.startBatchTask({
+          accountIds: pendingBatch.accountIds || 'all',
+          urls: pendingBatch.urls || [],
+          like: pendingBatch.like !== undefined ? pendingBatch.like : true,
+          retweet: pendingBatch.retweet !== undefined ? pendingBatch.retweet : true,
+          comment: Boolean(pendingBatch.comment),
+          commentText: pendingBatch.commentText || undefined,
+        });
+
+        db.saveSchedule({
+          ...pendingBatch,
+          status: result.success ? 'COMPLETED' : 'FAILED',
+          executedAt: new Date().toISOString(),
+          lastMessage: result.message || (result.success ? 'Batch completed' : 'Batch failed'),
+        });
+
+        notifier.notify(result.success ? 'TASK_COMPLETED' : 'TASK_FAILED', {
+          taskType: 'Batch Engagement',
+          totalTargets: pendingBatch.urls?.length || 0,
+          error: result.message,
+        });
+      } catch (err) {
+        logger.error(`❌ [Scheduler Batch Error]: ${err.message}`);
+        db.saveSchedule({
+          ...pendingBatch,
+          status: 'FAILED',
+          executedAt: new Date().toISOString(),
+          lastMessage: err.message,
+        });
+      } finally {
+        this.isProcessing = false;
+      }
+      return;
+    }
+
+    // 3. Process Recurring Feed Hunter
     const dueHunter = schedules.find((s) => {
       if (s.type !== 'RECURRING_HUNTER' || !s.enabled) return false;
       if (!s.lastRunAt) return true;
