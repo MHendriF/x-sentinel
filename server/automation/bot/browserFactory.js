@@ -249,10 +249,86 @@ async function closeBrowserResources(browser, context, page) {
   }
 }
 
+/**
+ * Test browser launch and verify evasion/stealth features in headless mode
+ */
+async function testBrowserLaunch(engine = 'chromium') {
+  const startTime = Date.now();
+  let browserInstance = null;
+  let contextInstance = null;
+
+  try {
+    const isCamoufox = engine === 'camoufox';
+    if (isCamoufox) {
+      const { Camoufox } = require('camoufox');
+      browserInstance = await Camoufox({
+        headless: true,
+        i_know_what_im_doing: true,
+        window: [1280, 850],
+        config: {
+          'window.screenX': 0,
+          'window.screenY': 0,
+        },
+      });
+      contextInstance = await browserInstance.newContext({ viewport: null });
+    } else {
+      browserInstance = await chromium.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-blink-features=AutomationControlled',
+        ],
+      });
+      contextInstance = await browserInstance.newContext({
+        userAgent: config.USER_AGENT,
+        viewport: { width: 1280, height: 850 },
+      });
+      await applyStealthScripts(contextInstance);
+    }
+
+    const page = await contextInstance.newPage();
+    const stealthReport = await page.evaluate(() => {
+      return {
+        webdriverMasked: navigator.webdriver === undefined || navigator.webdriver === false,
+        userAgent: navigator.userAgent,
+        hardwareConcurrency: navigator.hardwareConcurrency || 4,
+        deviceMemory: navigator.deviceMemory || null,
+        languages: navigator.languages || [],
+      };
+    });
+
+    await page.close().catch(() => {});
+    await closeBrowserResources(browserInstance, contextInstance);
+
+    const duration = Date.now() - startTime;
+    return {
+      success: true,
+      duration,
+      engine,
+      stealth: stealthReport,
+      message: `${isCamoufox ? 'Camoufox Anti-Detect' : 'Chromium Core'} verified successfully in ${duration}ms.`,
+    };
+  } catch (err) {
+    if (browserInstance || contextInstance) {
+      await closeBrowserResources(browserInstance, contextInstance);
+    }
+    const duration = Date.now() - startTime;
+    return {
+      success: false,
+      duration,
+      engine,
+      error: err.message,
+      message: `Failed to launch ${engine}: ${err.message}`,
+    };
+  }
+}
+
 module.exports = {
   applyStealthScripts,
   launchChromiumBrowser,
   launchCamoufoxBrowser,
   launchAccountBrowser,
   closeBrowserResources,
+  testBrowserLaunch,
 };

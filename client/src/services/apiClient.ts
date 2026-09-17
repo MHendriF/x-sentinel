@@ -48,6 +48,7 @@ export interface Settings {
   headless: boolean;
   scrollBeforeAction: boolean;
   browserEngine?: 'chromium' | 'camoufox';
+  humanTypingDelayMs?: number;
   aiProvider?: string;
   aiApiKey?: string;
   aiModel?: string;
@@ -59,6 +60,9 @@ export interface Settings {
   telegramChatId?: string;
   discordEnabled?: boolean;
   discordWebhookUrl?: string;
+  notifyOnTaskComplete?: boolean;
+  notifyOnRateLimit?: boolean;
+  notifyOnSessionExpire?: boolean;
 }
 
 export interface ScheduleItem {
@@ -533,6 +537,29 @@ export const apiClient = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
+
+  // Browser Engine Stealth Test
+  async testBrowser(engine: 'chromium' | 'camoufox'): Promise<{
+    success: boolean;
+    message: string;
+    duration?: number;
+    engine?: string;
+    stealth?: {
+      webdriverMasked: boolean;
+      userAgent: string;
+      hardwareConcurrency: number;
+      deviceMemory?: number | null;
+      languages?: string[];
+    };
+    error?: string;
+  }> {
+    const res = await fetch('/api/settings/test-browser', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ browserEngine: engine }),
     });
     return res.json();
   },

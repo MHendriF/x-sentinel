@@ -55,6 +55,7 @@ const settingsSchema = z.object({
   dailyLimit: z.number().int().min(1).max(10000).optional(),
   headless: z.boolean().optional(),
   browserEngine: z.enum(['chromium', 'camoufox']).optional(),
+  humanTypingDelayMs: z.number().int().min(10).max(1000).optional(),
   scrollBeforeAction: z.boolean().optional(),
   aiProvider: z.string().max(50).optional(),
   aiApiKey: z.string().max(500).optional(),
@@ -67,6 +68,13 @@ const settingsSchema = z.object({
   telegramChatId: z.string().max(100).optional(),
   discordEnabled: z.boolean().optional(),
   discordWebhookUrl: discordWebhookSchema.optional(),
+  notifyOnTaskComplete: z.boolean().optional(),
+  notifyOnRateLimit: z.boolean().optional(),
+  notifyOnSessionExpire: z.boolean().optional(),
+});
+
+const browserTestSchema = z.object({
+  browserEngine: z.enum(['chromium', 'camoufox']).optional(),
 });
 
 const webhookTestSchema = z.object({
@@ -149,6 +157,14 @@ router.post('/settings', validateBody(settingsSchema), (req, res) => {
 
   logger.info(`⚙️ System settings updated.`);
   res.json({ success: true, settings: redactSettings(updated) });
+});
+
+// POST /api/settings/test-browser - Quick headless launch & evasion test
+router.post('/settings/test-browser', validateBody(browserTestSchema), async (req, res) => {
+  const { browserEngine = 'chromium' } = req.body;
+  const browserFactory = require('../automation/bot/browserFactory');
+  const result = await browserFactory.testBrowserLaunch(browserEngine);
+  res.json(result);
 });
 
 // POST /api/settings/test-webhook - Test webhook alert
