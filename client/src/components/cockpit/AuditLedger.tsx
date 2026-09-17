@@ -1,38 +1,86 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useStore } from '@/store/useStore';
-import { apiClient } from '@/services/apiClient';
+import { apiClient, HistoryItem } from '@/services/apiClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DeckHeader } from './DeckHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { RefreshCw, Download, Trash2, FileSpreadsheet } from 'lucide-react';
-import { AuditFilters } from './audit/AuditFilters';
+import {
+  RefreshCw,
+  Download,
+  Trash2,
+  FileSpreadsheet,
+  FileJson,
+  Radio,
+  AlertOctagon,
+  RotateCcw,
+  SlidersHorizontal,
+} from 'lucide-react';
+import { AuditFilters, StatusCounts } from './audit/AuditFilters';
 import { AuditTable } from './audit/AuditTable';
 import type { AuditSortKey, AuditSortDir } from './audit/AuditTable';
 import { AuditPagination } from './audit/AuditPagination';
 import { MaintenanceModal } from './audit/MaintenanceModal';
+import { AuditStatsHUD } from './audit/AuditStatsHUD';
+import { AuditDetailModal } from './audit/AuditDetailModal';
+import { cn } from '@/lib/utils';
+
+const AUDIT_LIMIT_STORAGE_KEY = 'x_sentinel_audit_limit';
 
 export const AuditLedger: React.FC = () => {
-  const { history, historyHydrated, loadHistory } = useStore();
+  const { history, historyHydrated, loadHistory, accounts } = useStore();
+
+  // Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [accountFilter, setAccountFilter] = useState<string>('ALL');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+
+  // Table Sorting & Pagination State
   const [sortKey, setSortKey] = useState<AuditSortKey>('timestamp');
   const [sortDir, setSortDir] = useState<AuditSortDir>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Maintenance & Modal State
   const [isPruneModalOpen, setIsPruneModalOpen] = useState(false);
   const [isPruning, setIsPruning] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
 
+  // Live Auto-Stream Polling & Scope
+  const [historyLimit, setHistoryLimit] = useState<number>(() => {
+    try {
+      const stored = Number(localStorage.getItem(AUDIT_LIMIT_STORAGE_KEY));
+      if ([100, 250, 500, 1000].includes(stored)) return stored;
+    } catch {
+      // ignore
+    }
+    return 250;
+  });
+  const [pollInterval, setPollInterval] = useState<number>(0); // 0 = OFF, 5000 = 5s, 10000 = 10s, 30000 = 30s
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Initial and dynamic limit loader
   useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+    loadHistory(historyLimit);
+  }, [loadHistory, historyLimit]);
 
+  // Live Auto-Polling Stream Effect
+  useEffect(() => {
+    if (pollInterval <= 0) return;
+    const interval = setInterval(() => {
+      loadHistory(historyLimit);
+    }, pollInterval);
+    return () => clearInterval(interval);
+  }, [pollInterval, historyLimit, loadHistory]);
+
+  // Reset to page 1 whenever any filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, actionFilter, startDate, endDate, pageSize]);
+  }, [searchTerm, actionFilter, statusFilter, accountFilter, startDate, endDate, pageSize]);
 
   const handleSetDatePreset = (preset: 'today' | '7days' | '30days') => {
     const today = new Date();
@@ -54,6 +102,46 @@ export const AuditLedger: React.FC = () => {
   const handleClearDateFilter = () => {
     setStartDate('');
     setEndDate('');
+  };
+
+  const handleResetAllFilters = () => {
+    setSearchTerm('');
+    setActionFilter('ALL');
+    setStatusFilter('ALL');
+    setAccountFilter('ALL');
+    setStartDate('');
+    setEndDate('');
+  };
+
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+      actionFilter !== 'ALL' ||
+      statusFilter !== 'ALL' ||
+      accountFilter !== 'ALL' ||
+      startDate ||
+      endDate
+  );
+
+  const handleLimitChange = (newLimit: number) => {
+    setHistoryLimit(newLimit);
+    try {
+      localStorage.setItem(AUDIT_LIMIT_STORAGE_KEY, String(newLimit));
+    } catch {
+      // ignore
+    }
+    toast.info(`Audit scope set to fetch last ${newLimit} events.`);
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadHistory(historyLimit);
+      toast.success('Audit history refreshed from node database.');
+    } catch {
+      toast.error('Failed to refresh history.');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handlePruneLogs = async (type: '30days' | '7days' | 'failed' | 'all') => {
@@ -81,7 +169,7 @@ export const AuditLedger: React.FC = () => {
         }
       }
       setIsPruneModalOpen(false);
-      await loadHistory();
+      await loadHistory(historyLimit);
     } catch (err: any) {
       toast.error(`Maintenance failed: ${err.message}`);
     } finally {
@@ -89,6 +177,67 @@ export const AuditLedger: React.FC = () => {
     }
   };
 
+  // Unique Account Options (from store accounts + existing history records)
+  const accountOptions = useMemo(() => {
+    const set = new Set<string>();
+    accounts.forEach((a) => {
+      if (a.name) set.add(a.name);
+    });
+    history.forEach((h) => {
+      if (h.accountName) set.add(h.accountName);
+    });
+    return Array.from(set).sort();
+  }, [accounts, history]);
+
+  // Status Counts for current search, action, account, and date context
+  const statusCounts: StatusCounts = useMemo(() => {
+    let all = 0;
+    let success = 0;
+    let failed = 0;
+    let alreadyDone = 0;
+
+    history.forEach((item) => {
+      // Check search match
+      const matchesSearch =
+        !searchTerm ||
+        (item.tweetUrl && item.tweetUrl.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.accountName && item.accountName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.message && item.message.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.details && item.details.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      // Check action match
+      const matchesAction = actionFilter === 'ALL' || item.action === actionFilter;
+
+      // Check account match
+      const matchesAccount =
+        accountFilter === 'ALL' ||
+        item.accountName === accountFilter ||
+        item.accountId === accountFilter;
+
+      // Check date match
+      let matchesDate = true;
+      if (startDate || endDate) {
+        if (!item.timestamp) {
+          matchesDate = false;
+        } else {
+          const itemDateStr = item.timestamp.slice(0, 10);
+          if (startDate && itemDateStr < startDate) matchesDate = false;
+          if (endDate && itemDateStr > endDate) matchesDate = false;
+        }
+      }
+
+      if (matchesSearch && matchesAction && matchesAccount && matchesDate) {
+        all += 1;
+        if (item.status === 'SUCCESS') success += 1;
+        else if (item.status === 'FAILED') failed += 1;
+        else if (item.status === 'ALREADY_DONE') alreadyDone += 1;
+      }
+    });
+
+    return { ALL: all, SUCCESS: success, FAILED: failed, ALREADY_DONE: alreadyDone };
+  }, [history, searchTerm, actionFilter, accountFilter, startDate, endDate]);
+
+  // Filtered History
   const filteredHistory = useMemo(() => {
     return history.filter((item) => {
       const matchesSearch =
@@ -99,6 +248,11 @@ export const AuditLedger: React.FC = () => {
         (item.details && item.details.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesAction = actionFilter === 'ALL' || item.action === actionFilter;
+      const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter;
+      const matchesAccount =
+        accountFilter === 'ALL' ||
+        item.accountName === accountFilter ||
+        item.accountId === accountFilter;
 
       let matchesDate = true;
       if (startDate || endDate) {
@@ -111,9 +265,47 @@ export const AuditLedger: React.FC = () => {
         }
       }
 
-      return matchesSearch && matchesAction && matchesDate;
+      return matchesSearch && matchesAction && matchesStatus && matchesAccount && matchesDate;
     });
-  }, [history, searchTerm, actionFilter, startDate, endDate]);
+  }, [history, searchTerm, actionFilter, statusFilter, accountFilter, startDate, endDate]);
+
+  // Statistics for HUD computed from filtered items
+  const hudMetrics = useMemo(() => {
+    let success = 0;
+    let failed = 0;
+    let alreadyDone = 0;
+    let like = 0;
+    let retweet = 0;
+    let comment = 0;
+    let post = 0;
+    const uniqueAccounts = new Set<string>();
+
+    filteredHistory.forEach((h) => {
+      if (h.status === 'SUCCESS') success += 1;
+      else if (h.status === 'FAILED') failed += 1;
+      else if (h.status === 'ALREADY_DONE') alreadyDone += 1;
+
+      if (h.action === 'LIKE') like += 1;
+      else if (h.action === 'RETWEET') retweet += 1;
+      else if (h.action === 'COMMENT') comment += 1;
+      else if (h.action === 'POST') post += 1;
+
+      if (h.accountName) uniqueAccounts.add(h.accountName);
+      else if (h.accountId) uniqueAccounts.add(h.accountId);
+    });
+
+    return {
+      totalCount: filteredHistory.length,
+      successCount: success,
+      failedCount: failed,
+      alreadyDoneCount: alreadyDone,
+      likeCount: like,
+      retweetCount: retweet,
+      commentCount: comment,
+      postCount: post,
+      activeAccountsCount: uniqueAccounts.size,
+    };
+  }, [filteredHistory]);
 
   const handleSort = (key: AuditSortKey) => {
     if (sortKey === key) {
@@ -146,56 +338,153 @@ export const AuditLedger: React.FC = () => {
   const endIndex = Math.min(startIndex + pageSize, totalItems);
   const paginatedHistory = sortedHistory.slice(startIndex, endIndex);
 
-  const handleExportCSV = () => {
-    const dataToExport = filteredHistory.length > 0 ? filteredHistory : history;
-    if (dataToExport.length === 0) {
-      toast.error('No audit records available for export.');
+  // Robust RFC-4180 Blob Downloader
+  const downloadBlobFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportCSV = (onlyFailed = false) => {
+    const targetData = onlyFailed
+      ? filteredHistory.filter((i) => i.status === 'FAILED')
+      : filteredHistory.length > 0
+        ? filteredHistory
+        : history;
+
+    if (targetData.length === 0) {
+      toast.error(onlyFailed ? 'No failed audit records to export.' : 'No audit records available for export.');
       return;
     }
 
-    const headers = ['Timestamp', 'Account', 'Action', 'Tweet URL', 'Status', 'Details'];
-    const rows = dataToExport.map((h) => [
+    const headers = ['ID', 'Timestamp', 'Account', 'Action', 'Target Tweet URL', 'Status', 'Payload Details'];
+    const rows = targetData.map((h) => [
+      `"${h.id || ''}"`,
       `"${h.timestamp || ''}"`,
-      `"${h.accountName || ''}"`,
+      `"${(h.accountName || h.accountId || '').replace(/"/g, '""')}"`,
       `"${h.action || ''}"`,
-      `"${h.tweetUrl || ''}"`,
+      `"${(h.tweetUrl || '').replace(/"/g, '""')}"`,
       `"${h.status || ''}"`,
       `"${(h.details || h.message || '').replace(/"/g, '""')}"`,
     ]);
 
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute(
-      'download',
-      `x_automation_audit_${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const csvContent = [headers.join(','), ...rows.map((e) => e.join(','))].join('\r\n');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = onlyFailed
+      ? `x_sentinel_failed_audit_${dateStr}.csv`
+      : `x_sentinel_audit_ledger_${dateStr}.csv`;
 
-    toast.success(`Successfully exported ${dataToExport.length} audit entries to CSV.`);
+    downloadBlobFile(csvContent, filename, 'text/csv;charset=utf-8;');
+    toast.success(`Exported ${targetData.length} records to ${filename}.`);
+  };
+
+  const handleExportJSON = () => {
+    const targetData = filteredHistory.length > 0 ? filteredHistory : history;
+    if (targetData.length === 0) {
+      toast.error('No audit records available for JSON export.');
+      return;
+    }
+
+    const jsonContent = JSON.stringify(targetData, null, 2);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = `x_sentinel_audit_telemetry_${dateStr}.json`;
+
+    downloadBlobFile(jsonContent, filename, 'application/json;charset=utf-8;');
+    toast.success(`Exported ${targetData.length} telemetry records to ${filename}.`);
   };
 
   return (
     <div className="space-y-4">
+      {/* Deck Header */}
       <DeckHeader
         tag="IMMUTABLE EVENT LOG"
         tagColor="flame"
         icon={<FileSpreadsheet className="h-5 w-5 text-flame" />}
-        isActive={isPruning}
+        isActive={isPruning || isRefreshing}
         title="Audit Ledger & Telemetry History"
         titleBadges={
-          <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2.5 py-0.5 font-bold text-white shadow-inner">
-            {totalItems} {totalItems === 1 ? 'Record' : 'Records'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2.5 py-0.5 font-mono text-xs font-bold text-white shadow-inner">
+              {totalItems} {totalItems === 1 ? 'Record' : 'Records'}
+            </span>
+            {pollInterval > 0 && (
+              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/40 px-2 py-0.5 font-mono text-[10px] text-emerald-300 animate-pulse">
+                <Radio className="h-2.5 w-2.5 text-emerald-400" />
+                Live ({pollInterval / 1000}s)
+              </span>
+            )}
+          </div>
         }
-        description="Comprehensive node interaction log, delivery statuses, and execution timestamps."
+        description="Comprehensive node interaction log, forensic delivery statuses, and telemetry execution timestamps."
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Live Stream Polling Selector */}
+            <div className="flex items-center gap-1 rounded border border-border/80 bg-obsidian-950 px-2 py-1">
+              <Radio
+                className={cn(
+                  'h-3 w-3',
+                  pollInterval > 0 ? 'text-emerald-400 animate-pulse' : 'text-slate-500'
+                )}
+              />
+              <span className="font-mono text-[10px] text-slate-400">Stream:</span>
+              <select
+                value={pollInterval}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setPollInterval(val);
+                  if (val > 0) toast.success(`Live stream polling active (${val / 1000}s).`);
+                  else toast.info('Live stream polling disabled.');
+                }}
+                className="bg-transparent font-mono text-xs text-slate-200 focus:outline-none cursor-pointer"
+                title="Auto-refresh audit logs interval"
+              >
+                <option value={0} className="bg-obsidian-900 text-slate-300">
+                  OFF
+                </option>
+                <option value={5000} className="bg-obsidian-900 text-slate-300">
+                  5s
+                </option>
+                <option value={10000} className="bg-obsidian-900 text-slate-300">
+                  10s
+                </option>
+                <option value={30000} className="bg-obsidian-900 text-slate-300">
+                  30s
+                </option>
+              </select>
+            </div>
+
+            {/* Scope / History Limit Selector */}
+            <div className="flex items-center gap-1 rounded border border-border/80 bg-obsidian-950 px-2 py-1">
+              <SlidersHorizontal className="h-3 w-3 text-flame" />
+              <span className="font-mono text-[10px] text-slate-400">Scope:</span>
+              <select
+                value={historyLimit}
+                onChange={(e) => handleLimitChange(Number(e.target.value))}
+                className="bg-transparent font-mono text-xs text-slate-200 focus:outline-none cursor-pointer"
+                title="Number of historical events to fetch from database"
+              >
+                <option value={100} className="bg-obsidian-900 text-slate-300">
+                  100 logs
+                </option>
+                <option value={250} className="bg-obsidian-900 text-slate-300">
+                  250 logs
+                </option>
+                <option value={500} className="bg-obsidian-900 text-slate-300">
+                  500 logs
+                </option>
+                <option value={1000} className="bg-obsidian-900 text-slate-300">
+                  1000 logs
+                </option>
+              </select>
+            </div>
+
+            {/* Maintenance Button */}
             <Button
               variant="outline"
               size="sm"
@@ -206,81 +495,151 @@ export const AuditLedger: React.FC = () => {
               <Trash2 className="h-3.5 w-3.5 text-rose-400" />
               <span>Maintenance</span>
             </Button>
+
+            {/* Refresh Button */}
             <Button
               variant="outline"
               size="sm"
-              onClick={() => loadHistory()}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
               className="h-8 gap-1.5 border-slate-800 bg-obsidian-950 px-2.5 font-mono text-xs font-semibold text-slate-300 hover:bg-slate-800/80 hover:text-white"
             >
-              <RefreshCw className="h-3.5 w-3.5" />
+              <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-flame')} />
               <span>Refresh</span>
             </Button>
+
+            {/* Export Actions */}
             <Button
               variant="secondary"
               size="sm"
-              onClick={handleExportCSV}
+              onClick={() => handleExportCSV(false)}
               className="h-8 gap-1.5 px-3 font-mono text-xs font-semibold"
+              title="Download audit records as CSV spreadsheet"
             >
               <Download className="h-3.5 w-3.5" />
-              <span>Export CSV</span>
+              <span>CSV</span>
             </Button>
-          </>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportJSON}
+              className="h-8 gap-1.5 border-slate-800 bg-obsidian-950 px-2.5 font-mono text-xs font-semibold text-slate-300 hover:bg-slate-800/80 hover:text-white"
+              title="Export complete telemetry payload in JSON format"
+            >
+              <FileJson className="h-3.5 w-3.5 text-sky-400" />
+              <span>JSON</span>
+            </Button>
+
+            {hudMetrics.failedCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExportCSV(true)}
+                className="h-8 gap-1.5 border-rose-500/40 bg-rose-950/30 px-2.5 font-mono text-xs font-semibold text-rose-300 hover:bg-rose-950/50"
+                title="Download only failed records for troubleshooting"
+              >
+                <AlertOctagon className="h-3.5 w-3.5 text-rose-400" />
+                <span>Export Failures ({hudMetrics.failedCount})</span>
+              </Button>
+            )}
+          </div>
         }
+      />
+
+      {/* Forensic Telemetry Metrics HUD */}
+      <AuditStatsHUD
+        totalCount={hudMetrics.totalCount}
+        successCount={hudMetrics.successCount}
+        failedCount={hudMetrics.failedCount}
+        alreadyDoneCount={hudMetrics.alreadyDoneCount}
+        likeCount={hudMetrics.likeCount}
+        retweetCount={hudMetrics.retweetCount}
+        commentCount={hudMetrics.commentCount}
+        postCount={hudMetrics.postCount}
+        activeAccountsCount={hudMetrics.activeAccountsCount}
+        onSelectStatus={(status) => setStatusFilter(status)}
       />
 
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
         <CardContent className="space-y-4 pt-6">
-        {/* Filters */}
-        <AuditFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          actionFilter={actionFilter}
-          setActionFilter={setActionFilter}
-          startDate={startDate}
-          setStartDate={setStartDate}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          onSetPreset={handleSetDatePreset}
-          onClearDate={handleClearDateFilter}
-        />
-
-        {/* Ledger Table (skeleton while hydrating) */}
-        {!historyHydrated ? (
-          <div className="space-y-2 rounded-md border border-border/80 p-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-full" />
-            ))}
-          </div>
-        ) : (
-          <AuditTable
-            items={paginatedHistory}
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSort={handleSort}
+          {/* Deep Filter Suite */}
+          <AuditFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            actionFilter={actionFilter}
+            setActionFilter={setActionFilter}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            statusCounts={statusCounts}
+            accountFilter={accountFilter}
+            setAccountFilter={setAccountFilter}
+            accountOptions={accountOptions}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            setEndDate={setEndDate}
+            onSetPreset={handleSetDatePreset}
+            onClearDate={handleClearDateFilter}
+            onResetAll={handleResetAllFilters}
+            hasActiveFilters={hasActiveFilters}
           />
-        )}
 
-        {/* Pagination */}
-        <AuditPagination
-          currentPage={safeCurrentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          totalItems={totalItems}
-          onPageChange={setCurrentPage}
-        />
+          {/* Ledger Table (skeleton while hydrating) */}
+          {!historyHydrated ? (
+            <div className="space-y-2 rounded-md border border-border/80 p-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-9 w-full" />
+              ))}
+            </div>
+          ) : (
+            <AuditTable
+              items={paginatedHistory}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={handleSort}
+              onSelectItem={(item) => setSelectedItem(item)}
+              onFilterAccount={(acc) => setAccountFilter(acc)}
+              onFilterStatus={(st) => setStatusFilter(st)}
+            />
+          )}
 
-        {/* Maintenance & Prune Modal */}
-        <MaintenanceModal
-          isOpen={isPruneModalOpen}
-          onClose={() => setIsPruneModalOpen(false)}
-          isPruning={isPruning}
-          onPrune={handlePruneLogs}
-        />
-      </CardContent>
-    </Card>
+          {/* Pagination */}
+          <AuditPagination
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalItems={totalItems}
+            onPageChange={setCurrentPage}
+          />
+
+          {/* Maintenance & Prune Modal */}
+          <MaintenanceModal
+            isOpen={isPruneModalOpen}
+            onClose={() => setIsPruneModalOpen(false)}
+            isPruning={isPruning}
+            onPrune={handlePruneLogs}
+          />
+
+          {/* Forensic Event Detail Inspector Modal */}
+          <AuditDetailModal
+            item={selectedItem}
+            isOpen={Boolean(selectedItem)}
+            onClose={() => setSelectedItem(null)}
+            onFilterAccount={(acc) => {
+              setAccountFilter(acc);
+              setSelectedItem(null);
+            }}
+            onFilterTweet={(url) => {
+              setSearchTerm(url);
+              setSelectedItem(null);
+            }}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

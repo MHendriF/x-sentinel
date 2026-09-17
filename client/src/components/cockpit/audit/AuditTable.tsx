@@ -1,7 +1,19 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import {
+  ExternalLink,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Copy,
+  Check,
+  Eye,
+  AlertTriangle,
+  CheckCircle2,
+} from 'lucide-react';
 import { HistoryItem } from '@/services/apiClient';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export type AuditSortKey = 'timestamp' | 'accountName' | 'action' | 'status';
 export type AuditSortDir = 'asc' | 'desc';
@@ -11,6 +23,9 @@ interface AuditTableProps {
   sortKey: AuditSortKey;
   sortDir: AuditSortDir;
   onSort: (key: AuditSortKey) => void;
+  onSelectItem?: (item: HistoryItem) => void;
+  onFilterAccount?: (accountName: string) => void;
+  onFilterStatus?: (status: string) => void;
 }
 
 /** Compact relative timestamp for fast scanning ("2h ago") */
@@ -36,7 +51,27 @@ const SORTABLE_COLUMNS: Array<{ key: AuditSortKey; label: string }> = [
   { key: 'status', label: 'Status' },
 ];
 
-export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir, onSort }) => {
+export const AuditTable: React.FC<AuditTableProps> = ({
+  items,
+  sortKey,
+  sortDir,
+  onSort,
+  onSelectItem,
+  onFilterAccount,
+  onFilterStatus,
+}) => {
+  const [copiedUrl, setCopiedUrl] = React.useState<string | null>(null);
+
+  const handleCopyUrl = (e: React.MouseEvent, url: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(url);
+    toast.success('Tweet URL copied to clipboard.');
+    setTimeout(() => {
+      setCopiedUrl((cur) => (cur === url ? null : cur));
+    }, 2000);
+  };
+
   const getActionBadge = (action: string) => {
     switch (action) {
       case 'LIKE':
@@ -59,15 +94,46 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir,
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'SUCCESS':
-        return <Badge variant="success">SUCCESS</Badge>;
+        return (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onFilterStatus?.('SUCCESS');
+            }}
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-300 transition-colors hover:bg-emerald-900/50"
+            title="Click to filter SUCCESS logs"
+          >
+            <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
+            SUCCESS
+          </span>
+        );
       case 'ALREADY_DONE':
         return (
-          <Badge variant="default" className="border-amber-500/30 bg-amber-500/10 text-amber-400">
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onFilterStatus?.('ALREADY_DONE');
+            }}
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/30 px-2 py-0.5 font-mono text-[10px] font-semibold text-amber-400 transition-colors hover:bg-amber-900/40"
+            title="Click to filter ALREADY DONE logs"
+          >
             ALREADY DONE
-          </Badge>
+          </span>
         );
       case 'FAILED':
-        return <Badge variant="destructive">FAILED</Badge>;
+        return (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onFilterStatus?.('FAILED');
+            }}
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-rose-500/50 bg-rose-950/50 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-300 transition-colors hover:bg-rose-900/60"
+            title="Click to filter FAILED logs"
+          >
+            <AlertTriangle className="h-2.5 w-2.5 text-rose-400 animate-pulse" />
+            FAILED
+          </span>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -101,7 +167,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir,
         onClick={() => onSort(column)}
         aria-sort={isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
         className={`flex items-center gap-1 uppercase transition-colors hover:text-slate-200 ${
-          isSorted ? 'text-flame' : ''
+          isSorted ? 'text-flame font-bold' : ''
         }`}
       >
         {label}
@@ -113,9 +179,9 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir,
   const sortableMap = Object.fromEntries(SORTABLE_COLUMNS.map((c) => [c.key, c.label]));
 
   return (
-    <div className="overflow-x-auto rounded-md border border-border/80">
+    <div className="overflow-x-auto rounded-lg border border-border/80 bg-obsidian-950/40">
       <table className="w-full text-left text-xs">
-        <thead className="border-b border-border/80 bg-obsidian-950/80 font-mono text-[10px] uppercase text-muted-foreground">
+        <thead className="border-b border-border/80 bg-obsidian-950 font-mono text-[10px] uppercase text-muted-foreground">
           <tr>
             <th className="px-4 py-3">
               <SortHeader column="timestamp" label={sortableMap.timestamp} />
@@ -130,21 +196,42 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir,
             <th className="px-4 py-3">
               <SortHeader column="status" label={sortableMap.status} />
             </th>
-            <th className="px-4 py-3">Details / Message</th>
+            <th className="px-4 py-3">Payload / Message Details</th>
+            <th className="px-3 py-3 text-right">Inspect</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40 font-mono">
           {items.length === 0 ? (
             <tr>
-              <td colSpan={6} className="py-8 text-center text-slate-500">
-                No interaction history matching current filters.
+              <td colSpan={7} className="py-12 text-center text-slate-500">
+                <div className="flex flex-col items-center justify-center gap-1">
+                  <span className="font-mono text-sm text-slate-400">No interaction records found</span>
+                  <span className="text-[11px] text-slate-500">
+                    Try loosening your search terms, date range, or status filters.
+                  </span>
+                </div>
               </td>
             </tr>
           ) : (
             items.map((item, index) => {
               const { date, time } = formatTimestamp(item.timestamp);
+              const isFailed = item.status === 'FAILED';
+              const isAlreadyDone = item.status === 'ALREADY_DONE';
+
               return (
-                <tr key={index} className="transition-colors hover:bg-obsidian-900/50">
+                <tr
+                  key={item.id || index}
+                  onClick={() => onSelectItem?.(item)}
+                  className={cn(
+                    'group cursor-pointer transition-colors',
+                    isFailed
+                      ? 'border-l-2 border-l-rose-500 bg-rose-950/15 hover:bg-rose-950/25'
+                      : isAlreadyDone
+                        ? 'border-l-2 border-l-amber-500/50 bg-amber-950/10 hover:bg-amber-950/20'
+                        : 'hover:bg-obsidian-900/60'
+                  )}
+                >
+                  {/* Timestamp */}
                   <td className="whitespace-nowrap px-4 py-3 text-slate-300">
                     <div className="flex flex-col">
                       <span className="font-semibold text-slate-200">{date}</span>
@@ -154,32 +241,94 @@ export const AuditTable: React.FC<AuditTableProps> = ({ items, sortKey, sortDir,
                       </span>
                     </div>
                   </td>
+
+                  {/* Account Node */}
                   <td className="whitespace-nowrap px-4 py-3 font-semibold text-white">
-                    {item.accountName || item.accountId || 'System'}
+                    <span
+                      onClick={(e) => {
+                        if (item.accountName && onFilterAccount) {
+                          e.stopPropagation();
+                          onFilterAccount(item.accountName);
+                        }
+                      }}
+                      className="cursor-pointer transition-colors hover:text-sky-400 hover:underline"
+                      title="Click to filter logs by this account"
+                    >
+                      {item.accountName || item.accountId || 'System'}
+                    </span>
                   </td>
+
+                  {/* Vector Action */}
                   <td className="whitespace-nowrap px-4 py-3">{getActionBadge(item.action)}</td>
-                  <td className="max-w-[200px] truncate px-4 py-3">
+
+                  {/* Target Tweet URL */}
+                  <td className="max-w-[200px] px-4 py-3">
                     {item.tweetUrl && item.tweetUrl !== '-' ? (
-                      <a
-                        href={item.tweetUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1 text-slate-300 transition-colors hover:text-flame hover:underline"
-                        title={item.tweetUrl}
-                      >
-                        <span className="truncate">{item.tweetUrl}</span>
-                        <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
-                      </a>
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={item.tweetUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="truncate text-slate-300 transition-colors hover:text-flame hover:underline"
+                          title={item.tweetUrl}
+                        >
+                          <span className="truncate">{item.tweetUrl}</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={(e) => handleCopyUrl(e, item.tweetUrl)}
+                          className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-white transition-opacity"
+                          title="Copy Tweet URL"
+                        >
+                          {copiedUrl === item.tweetUrl ? (
+                            <Check className="h-3 w-3 text-emerald-400" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </button>
+                        <a
+                          href={item.tweetUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-0.5 text-slate-400 hover:text-flame"
+                          title="Open in X"
+                        >
+                          <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
+                        </a>
+                      </div>
                     ) : (
                       <span className="text-slate-600">-</span>
                     )}
                   </td>
+
+                  {/* Status Badge */}
                   <td className="whitespace-nowrap px-4 py-3">{getStatusBadge(item.status)}</td>
+
+                  {/* Details / Message */}
                   <td
-                    className="max-w-[280px] truncate px-4 py-3 text-slate-400"
+                    className="max-w-[260px] truncate px-4 py-3 text-slate-400"
                     title={item.details || item.message || ''}
                   >
-                    {item.details || item.message || '-'}
+                    <span className={cn(isFailed && 'text-rose-300 font-medium')}>
+                      {item.details || item.message || '-'}
+                    </span>
+                  </td>
+
+                  {/* Inspect Button */}
+                  <td className="whitespace-nowrap px-3 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectItem?.(item);
+                      }}
+                      className="rounded p-1 text-slate-400 opacity-70 transition-all hover:bg-obsidian-800 hover:text-white hover:opacity-100"
+                      title="Inspect full event telemetry"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </button>
                   </td>
                 </tr>
               );
