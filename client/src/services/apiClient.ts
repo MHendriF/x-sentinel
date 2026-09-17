@@ -374,6 +374,29 @@ export const apiClient = {
     return res.json();
   },
 
+  async getPayloadFileContent(fileName: string): Promise<{
+    success: boolean;
+    fileName?: string;
+    filePath?: string;
+    count?: number;
+    replies?: string[];
+    message?: string;
+  }> {
+    const res = await fetch(`/api/ai/payload-file/${encodeURIComponent(fileName)}`);
+    return res.json();
+  },
+
+  async deletePayloadFile(fileName: string): Promise<{
+    success: boolean;
+    fileName?: string;
+    message?: string;
+  }> {
+    const res = await fetch(`/api/ai/payload-file/${encodeURIComponent(fileName)}`, {
+      method: 'DELETE',
+    });
+    return res.json();
+  },
+
   async stopTask() {
     const res = await fetch('/api/tasks/stop', { method: 'POST' });
     return res.json();

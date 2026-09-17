@@ -96,6 +96,29 @@ router.post(
   }
 );
 
+// Sanitize filename helper to prevent directory traversal
+function getSafeCommentsFilePath(fileName) {
+  if (!fileName || typeof fileName !== 'string') {
+    throw httpError(400, 'Invalid or missing file name.', 'INVALID_FILENAME');
+  }
+  let baseName = path.basename(fileName).trim();
+  if (!baseName.toLowerCase().endsWith('.json')) {
+    baseName = `${baseName}.json`;
+  }
+  const safeName = baseName.replace(/[^a-zA-Z0-9_\-.]/g, '_');
+  const targetPath = path.resolve(db.commentsDir, safeName);
+  const normalizedCommentsDir = path.resolve(db.commentsDir);
+
+  if (
+    !targetPath.startsWith(normalizedCommentsDir + path.sep) &&
+    targetPath !== normalizedCommentsDir
+  ) {
+    throw httpError(400, 'Invalid file path traversal detected.', 'SECURITY_VIOLATION');
+  }
+
+  return { safeName, targetPath };
+}
+
 // POST /api/ai/save-payload-file - Save replies to a .json file safely
 router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (req, res) => {
   const { fileName, replies, targetAccountId, saveToTemplates } = req.body;
@@ -107,22 +130,7 @@ router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (re
     throw httpError(400, 'Reply list cannot be empty.', 'EMPTY_REPLIES');
   }
 
-  // Sanitize filename to prevent directory traversal
-  let baseName = path.basename(fileName).trim();
-  if (!baseName.toLowerCase().endsWith('.json')) {
-    baseName = `${baseName}.json`;
-  }
-  const safeName = baseName.replace(/[^a-zA-Z0-9_\-.]/g, '_');
-
-  const targetPath = path.resolve(db.commentsDir, safeName);
-  const normalizedCommentsDir = path.resolve(db.commentsDir);
-
-  if (
-    !targetPath.startsWith(normalizedCommentsDir + path.sep) &&
-    targetPath !== normalizedCommentsDir
-  ) {
-    throw httpError(400, 'Invalid file path traversal detected.', 'SECURITY_VIOLATION');
-  }
+  const { safeName, targetPath } = getSafeCommentsFilePath(fileName);
 
   try {
     db.writeFile(targetPath, cleanedReplies);
@@ -155,6 +163,49 @@ router.post('/save-payload-file', validateBody(savePayloadFileSchema), async (re
   } catch (err) {
     logger.error(`❌ Failed to save payload file: ${err.message}`);
     throw httpError(500, `Failed to save file: ${err.message}`, 'FILE_SAVE_ERROR');
+  }
+});
+
+// GET /api/ai/payload-file/:fileName - Read specific payload file content
+router.get('/payload-file/:fileName', (req, res) => {
+  const { safeName, targetPath } = getSafeCommentsFilePath(req.params.fileName);
+  if (!fs.existsSync(targetPath)) {
+    throw httpError(404, `Payload file '${safeName}' not found.`, 'FILE_NOT_FOUND');
+  }
+  try {
+    const raw = fs.readFileSync(targetPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    const replies = Array.isArray(parsed) ? parsed : [];
+    res.json({
+      success: true,
+      fileName: safeName,
+      filePath: `data/comments/${safeName}`,
+      count: replies.length,
+      replies,
+    });
+  } catch (err) {
+    logger.error(`❌ Failed to read payload file: ${err.message}`);
+    throw httpError(500, `Failed to read file: ${err.message}`, 'FILE_READ_ERROR');
+  }
+});
+
+// DELETE /api/ai/payload-file/:fileName - Safely delete a payload file
+router.delete('/payload-file/:fileName', (req, res) => {
+  const { safeName, targetPath } = getSafeCommentsFilePath(req.params.fileName);
+  if (!fs.existsSync(targetPath)) {
+    throw httpError(404, `Payload file '${safeName}' not found.`, 'FILE_NOT_FOUND');
+  }
+  try {
+    fs.unlinkSync(targetPath);
+    logger.info(`🗑️ Payload file deleted: ${safeName}`);
+    res.json({
+      success: true,
+      fileName: safeName,
+      message: `Payload file '${safeName}' deleted successfully.`,
+    });
+  } catch (err) {
+    logger.error(`❌ Failed to delete payload file: ${err.message}`);
+    throw httpError(500, `Failed to delete file: ${err.message}`, 'FILE_DELETE_ERROR');
   }
 });
 
