@@ -113,6 +113,54 @@ export interface LogEntry {
   meta?: any;
 }
 
+export interface SystemHealthData {
+  success: boolean;
+  uptime: number;
+  nodeVersion: string;
+  platform: string;
+  arch: string;
+  pid: number;
+  memory: {
+    rss: number;
+    heapUsed: number;
+    heapTotal: number;
+    external: number;
+  };
+  storage: {
+    accountsCount: number;
+    accountsSizeBytes: number;
+    historyCount: number;
+    historySizeBytes: number;
+    commentsFilesCount: number;
+    logFileSizeBytes: number;
+  };
+  fleet: {
+    total: number;
+    active: number;
+  };
+  aiProvider: string;
+  browserEngine: string;
+  botRunning: boolean;
+  timestamp: string;
+}
+
+export interface DiagnosticPillar {
+  id: string;
+  name: string;
+  passed: boolean;
+  status: string;
+  message: string;
+}
+
+export interface SystemDiagnosticsData {
+  success: boolean;
+  score: number;
+  totalPillars: number;
+  passedPillars: number;
+  pillars: DiagnosticPillar[];
+  timestamp: string;
+}
+
 export interface ProxyTestResult {
   success: boolean;
   isDirect?: boolean;
@@ -429,9 +477,19 @@ export const apiClient = {
     return res.json();
   },
 
-  // Settings
+  // Settings & System Health
   async getSettings(): Promise<{ success: boolean; settings: Settings }> {
     const res = await fetch('/api/settings');
+    return res.json();
+  },
+
+  async getSystemHealth(): Promise<SystemHealthData> {
+    const res = await fetch('/api/system/health');
+    return res.json();
+  },
+
+  async getSystemDiagnostics(): Promise<SystemDiagnosticsData> {
+    const res = await fetch('/api/system/diagnostics');
     return res.json();
   },
 

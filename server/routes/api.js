@@ -11,6 +11,7 @@ const schedulesRouter = require('./schedulesRouter');
 const mediaRouter = require('./mediaRouter');
 const historyRouter = require('./historyRouter');
 const settingsRouter = require('./settingsRouter');
+const systemRouter = require('./systemRouter');
 
 // GET /api/status - Get current bot status, active accounts & stats
 router.get('/status', (req, res) => {
@@ -23,6 +24,7 @@ router.get('/status', (req, res) => {
 });
 
 // Mount Modular Sub-Routers
+router.use('/system', systemRouter);
 router.use('/accounts', accountsRouter);
 router.use('/tasks', tasksRouter);
 router.use('/ai', aiRouter);
