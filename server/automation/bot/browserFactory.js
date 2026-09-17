@@ -137,6 +137,11 @@ async function launchCamoufoxBrowser(account, _options = {}, isHeadless = false)
     humanize: 0.5, // Enable native C++ bezier human mouse trajectories
     window: [1280, 850], // Standard desktop window dimensions
     block_webrtc: Boolean(account.proxy), // Prevent WebRTC IP leaks when running via proxy
+    config: {
+      'window.screenX': 0,
+      'window.screenY': 0,
+    },
+    i_know_what_im_doing: true,
   };
 
   if (account.proxy) {

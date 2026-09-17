@@ -59,7 +59,13 @@ async function verifyAccount(account) {
 
     if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
       logger.error(`❌ Cookie for ${account.label} is invalid or expired.`);
-      db.saveAccount({ ...account, isValid: false, lastChecked: new Date().toISOString() });
+      db.saveAccount({
+        ...account,
+        isValid: false,
+        healthStatus: 'EXPIRED',
+        healthMessage: 'auth_token cookie is invalid or expired.',
+        lastChecked: new Date().toISOString(),
+      });
       return { success: false, message: 'auth_token cookie is invalid or expired.' };
     }
 
@@ -103,6 +109,8 @@ async function verifyAccount(account) {
         name: name || username,
         avatar: avatar || account.avatar || '',
         isValid: true,
+        healthStatus: 'HEALTHY',
+        healthMessage: 'Session verified healthy',
         lastChecked: new Date().toISOString(),
       });
 
@@ -224,9 +232,19 @@ async function checkAccountHealth(account) {
   } catch (err) {
     if (context) await context.close().catch(() => {});
     if (browser) await browser.close().catch(() => {});
+    logger.warn(
+      `⚠️ [Audit Failed] Node ${account.label} (@${account.username || 'unknown'}): ${err.message}`
+    );
+    const updated = db.saveAccount({
+      ...account,
+      healthStatus: 'UNKNOWN_ERROR',
+      healthMessage: `Error inspecting session: ${err.message}`,
+      lastCheckedAt: new Date().toISOString(),
+    });
     return {
       success: false,
       healthStatus: 'UNKNOWN_ERROR',
+      account: updated,
       message: `Error inspecting session: ${err.message}`,
     };
   }

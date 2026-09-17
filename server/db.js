@@ -266,20 +266,27 @@ class LocalDB {
     const defaultComments = this.getTemplates();
     const sanitizedId = String(id).replace(/[^a-zA-Z0-9_-]/g, '');
 
+    const existing = existingIndex >= 0 ? this.cache.accounts[existingIndex] : {};
     const updatedAccount = {
       id,
-      label: (accountData.label || 'Akun X').trim(),
-      auth_token: (accountData.auth_token || '').trim(),
-      ct0: (accountData.ct0 || '').trim(),
-      username: (accountData.username || '').replace(/^@/, '').trim(),
-      name: (accountData.name || '').trim(),
-      avatar: accountData.avatar || '',
-      proxy: (accountData.proxy || '').trim(),
-      commentsFile: `comments_${sanitizedId}.json`,
-      enabled: accountData.enabled !== undefined ? accountData.enabled : true,
-      isValid: accountData.isValid !== undefined ? accountData.isValid : false,
-      lastChecked: accountData.lastChecked || null,
-      stats: accountData.stats || { likes: 0, retweets: 0, comments: 0 },
+      label: (accountData.label !== undefined ? accountData.label : (existing.label || 'Akun X')).trim(),
+      auth_token: (accountData.auth_token !== undefined ? accountData.auth_token : (existing.auth_token || '')).trim(),
+      ct0: (accountData.ct0 !== undefined ? accountData.ct0 : (existing.ct0 || '')).trim(),
+      username: (accountData.username !== undefined ? accountData.username : (existing.username || '')).replace(/^@/, '').trim(),
+      name: (accountData.name !== undefined ? accountData.name : (existing.name || '')).trim(),
+      avatar: accountData.avatar !== undefined ? accountData.avatar : (existing.avatar || ''),
+      proxy: (accountData.proxy !== undefined ? accountData.proxy : (existing.proxy || '')).trim(),
+      commentsFile: existing.commentsFile || `comments_${sanitizedId}.json`,
+      enabled: accountData.enabled !== undefined ? accountData.enabled : (existing.enabled !== undefined ? existing.enabled : true),
+      isValid: accountData.isValid !== undefined ? accountData.isValid : (existing.isValid !== undefined ? existing.isValid : false),
+      healthStatus: accountData.healthStatus !== undefined ? accountData.healthStatus : existing.healthStatus,
+      healthMessage: accountData.healthMessage !== undefined ? accountData.healthMessage : existing.healthMessage,
+      lastCheckedAt: accountData.lastCheckedAt || accountData.lastChecked || existing.lastCheckedAt || existing.lastChecked || null,
+      lastChecked: accountData.lastChecked || accountData.lastCheckedAt || existing.lastChecked || existing.lastCheckedAt || null,
+      warmupMode: accountData.warmupMode !== undefined ? accountData.warmupMode : (existing.warmupMode !== undefined ? existing.warmupMode : true),
+      warmupDay: accountData.warmupDay !== undefined ? accountData.warmupDay : (existing.warmupDay !== undefined ? existing.warmupDay : 1),
+      lastWarmupAt: accountData.lastWarmupAt !== undefined ? accountData.lastWarmupAt : (existing.lastWarmupAt || null),
+      stats: accountData.stats || existing.stats || { likes: 0, retweets: 0, comments: 0 },
     };
 
     if (existingIndex >= 0) {
