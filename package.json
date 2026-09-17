@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node test/verify.js",
-    "smoke": "node test/smoke_api.js"
+    "smoke": "node test/smoke_api.js",
+    "postinstall": "node server/automation/bot/patchPlaywright.js"
   },
   "keywords": [
     "x",

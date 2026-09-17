@@ -21,8 +21,8 @@ async function createPost(page, text, account, mediaPaths = []) {
   // Intercept GraphQL CreateTweet response to capture exact status URL
   const responseHandler = async (response) => {
     try {
-      const url = response.url();
-      if (url.includes('CreateTweet') || url.includes('/graphql/')) {
+      const url = typeof response?.url === 'function' ? response.url() : '';
+      if (url && (url.includes('CreateTweet') || url.includes('/graphql/'))) {
         const json = await response.json().catch(() => null);
         const tweetId = json?.data?.create_tweet?.tweet_results?.result?.rest_id;
         if (tweetId) {
@@ -47,7 +47,8 @@ async function createPost(page, text, account, mediaPaths = []) {
     await sleep(2500);
 
     // Verify session
-    if (page.url().includes('/login') || page.url().includes('/i/flow/login')) {
+    const currentUrl = typeof page?.url === 'function' ? page.url() : '';
+    if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
       throw new Error('Login session expired while opening composer.');
     }
 

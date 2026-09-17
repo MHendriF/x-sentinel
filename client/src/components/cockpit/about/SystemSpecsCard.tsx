@@ -41,7 +41,8 @@ export const SystemSpecsCard: React.FC = () => {
             <div className="space-y-1 font-mono text-xs text-slate-400">
               <div>• Bun Runtime / Node.js 18+ (High Throughput)</div>
               <div>• Express 5 Modular REST API Routers</div>
-              <div>• Microsoft Playwright Headless Browser Engine</div>
+              <div>• Dual-Engine: Playwright Chromium &amp; Camoufox Firefox</div>
+              <div>• Native C++ Mouse Humanization &amp; WebRTC Shield</div>
               <div>• GraphQL CreateTweet Network Interceptor</div>
               <div>• Multi-Provider LLM Engine (Groq / OpenRouter)</div>
               <div>• SOCKS5 &amp; HTTP Isolated Proxy Tunneling</div>

@@ -1,10 +1,66 @@
 const EventEmitter = require('events');
+const fs = require('fs');
+const path = require('path');
 
 class Logger extends EventEmitter {
   constructor() {
     super();
     this.logs = [];
     this.maxLogs = 300;
+
+    // Persistent file logging setup
+    this.logsDir = path.join(__dirname, '..', 'data', 'logs');
+    this.logFile = path.join(this.logsDir, 'x-sentinel.log');
+    this.maxFileSizeBytes = 10 * 1024 * 1024; // 10MB auto-rotation limit
+    this.ensureLogDir();
+  }
+
+  ensureLogDir() {
+    try {
+      if (!fs.existsSync(this.logsDir)) {
+        fs.mkdirSync(this.logsDir, { recursive: true });
+      }
+    } catch {
+      // ignore directory creation errors
+    }
+  }
+
+  writeToFile(logEntry) {
+    try {
+      const now = new Date();
+      const dateStr = now.toISOString().replace('T', ' ').slice(0, 23);
+      const levelUpper = (logEntry.level || 'info').toUpperCase().padEnd(7);
+
+      let line = `[${dateStr}] [${levelUpper}] ${logEntry.message}`;
+      if (logEntry.meta && Object.keys(logEntry.meta).length > 0) {
+        try {
+          line += ` | ${JSON.stringify(logEntry.meta)}`;
+        } catch {
+          // ignore serialization errors
+        }
+      }
+      line += '\n';
+
+      // Check for rotation if file exceeds 10MB
+      try {
+        if (fs.existsSync(this.logFile)) {
+          const stat = fs.statSync(this.logFile);
+          if (stat.size > this.maxFileSizeBytes) {
+            const oldFile = path.join(this.logsDir, 'x-sentinel.old.log');
+            if (fs.existsSync(oldFile)) {
+              fs.unlinkSync(oldFile);
+            }
+            fs.renameSync(this.logFile, oldFile);
+          }
+        }
+      } catch {
+        // ignore rotation errors
+      }
+
+      fs.appendFile(this.logFile, line, 'utf8', () => {});
+    } catch {
+      // Never let file logging interrupt runtime execution
+    }
   }
 
   log(level, message, meta = {}) {
@@ -33,6 +89,10 @@ class Logger extends EventEmitter {
 
     console.log(`[${timestamp}] ${consolePrefix} ${message}`);
     this.emit('log', logEntry);
+
+    // Persist to .log file asynchronously
+    this.writeToFile(logEntry);
+
     return logEntry;
   }
 
@@ -54,6 +114,10 @@ class Logger extends EventEmitter {
 
   getRecentLogs(limit = 100) {
     return this.logs.slice(0, limit);
+  }
+
+  getLogFilePath() {
+    return this.logFile;
   }
 
   clear() {

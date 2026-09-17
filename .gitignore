@@ -15,6 +15,7 @@ data/stats.json
 data/schedules.json
 data/media/
 data/comments/
+data/logs/
 
 # Temporary files and logs
 *.log

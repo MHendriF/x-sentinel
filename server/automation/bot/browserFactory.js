@@ -4,6 +4,10 @@ const db = require('../../db');
 const logger = require('../../logger');
 const proxyHelper = require('../proxyHelper');
 const cookieManager = require('../cookieManager');
+const { patchPlaywright } = require('./patchPlaywright');
+
+// Hotfix: Ensure Playwright driver handles undefined location in Firefox/Camoufox
+patchPlaywright();
 
 /**
  * Apply stealth evasion scripts to Chromium context

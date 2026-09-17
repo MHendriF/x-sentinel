@@ -113,3 +113,47 @@ This ensures every published tweet has an exact clickable status link stored in 
 - Checks if `twitterBot.isRunning` is `false` before acquiring execution locks.
 - Automatically handles `POST_QUEUE` and `RECURRING_HUNTER` triggers.
 - Dispatches webhook alerts upon task completion or unexpected failure.
+
+---
+
+## 🦊 7. Dual Browser Engine Architecture (Chromium & Camoufox Anti-Detect)
+
+X-SENTINEL features a switchable dual-engine runtime architecture (`server/automation/bot/browserFactory.js`):
+
+### A. Chromium Core (Standard)
+- Built on standard Playwright Chromium.
+- Enhanced with client-side stealth overrides: masking `navigator.webdriver`, mocking `window.chrome`, realistic hardware concurrency/memory, WebGL GPU vendor/renderer spoofing, and disabled WebRTC non-proxied UDP.
+- Fast startup times, low footprint, and ideal for standard automation environments.
+
+### B. Camoufox Stealth (C++ Modified Firefox)
+- Built on **Camoufox** (`camoufox@0.1.19`), a custom C++ stealth Firefox browser specifically engineered to resist modern browser fingerprinting and bot probes.
+- **Native C++ Mouse Trajectory Humanization (`humanize: 0.5`)**: All Playwright pointer events and clicks are mapped to biological human Bezier curves with micro-jitter at the browser engine level, evading behavioral ML detectors.
+- **WebRTC STUN Leak Protection (`block_webrtc: Boolean(account.proxy)`)**: Prevents WebRTC STUN requests from bypassing proxy tunnels and exposing the host machine's residential/datacenter IP address.
+- **Dynamic Timezone & Locale Matching**: Context timezone is resolved dynamically from the host environment or allowed to follow proxy network headers without hardcoded city overrides, preventing IP vs client timezone mismatch flags.
+- **Viewport Protocol Compliance (`viewport: null`)**: Configured to let Camoufox handle screen geometry spoofing natively without triggering Playwright Juggler protocol schema errors.
+- **Process Tree Watchdog on Windows**: Cleanly terminates Firefox content subprocesses (`taskkill /pid ${pid} /T /F`) during abrupt task teardown to eliminate background zombie processes.
+- **Transparent Fallback**: If Camoufox encounters an OS-level binary incompatibility, `launchAccountBrowser` logs a warning and transparently falls back to Chromium so active automation batches continue uninterrupted.
+
+---
+
+## 🎯 8. Resilient Multi-Layer Engagement Vectors (Like, Repost, Reply)
+
+The interaction engine (`server/automation/bot/interactionEngine.js`) employs multi-layer fallback strategies to prevent selector timeouts or false-negative failures on dynamic X web interfaces:
+
+1. **Canonical URL Normalization**:
+   - Strips lightbox modal segments (`/photo/1`, `/video/1`) and tracking query parameters (`?s=20&t=xyz`).
+   - Normalizes URLs to `https://x.com/i/status/${tweetId}` to guarantee deterministic page layouts.
+2. **Interstitials & Overlay Auto-Dismissal**:
+   - Automatically dismisses cookie consent dialogs, bottom sheets, and promotional modals.
+   - Handles sensitive content warnings (*"View"* button) and detects deleted/unavailable posts immediately without hanging.
+3. **Multi-Lingual DOM & SVG Signature Fallbacks**:
+   - Evaluates standard `data-testid` attributes (`like`, `unlike`, `retweet`) alongside English and Indonesian aria-labels (`Suka`, `Disukai`, `Diposting ulang`).
+   - Structural SVG path signatures locate action buttons even when testids and labels are completely obfuscated:
+     - **❤️ Heart SVG Signature**: Path string containing `16.697` / `20.884` / `12 4.24`.
+     - **🔁 Retweet SVG Signature**: Path string containing `4.5 3.88` / `4.432` / `16.5 6`.
+     - **💬 Reply Speech Bubble Signature**: Path string containing `1.751 10` / `8.005`.
+4. **Composer Multi-Step Activation & Restrictions**:
+   - Detects author-level reply restrictions (*"Who can reply" / "Siapa yang dapat membalas"*) and reports `RESTRICTED` status immediately.
+   - Activates inline reply placeholders or clicks the tweet reply icon to mount the contenteditable editor.
+   - Supports 12 textarea selectors and dual input strategies (humanized keystrokes with `document.execCommand('insertText')` fallback).
+

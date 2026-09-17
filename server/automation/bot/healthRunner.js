@@ -55,7 +55,7 @@ async function verifyAccount(account) {
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(4000);
 
-    const currentUrl = page.url();
+    const currentUrl = typeof page?.url === 'function' ? page.url() : '';
 
     if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
       logger.error(`❌ Cookie for ${account.label} is invalid or expired.`);
@@ -166,7 +166,7 @@ async function checkAccountHealth(account) {
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 25000 });
     await page.waitForTimeout(3000);
 
-    const currentUrl = page.url();
+    const currentUrl = typeof page?.url === 'function' ? page.url() : '';
     if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
       logger.warn(
         `⚠️ [Session Expired] auth_token cookie for node ${account.label} is no longer valid.`
@@ -288,7 +288,8 @@ async function executeWarmupProtocol(account, abortSignal = null) {
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(4000);
 
-    if (page.url().includes('/login')) {
+    const currentUrl = typeof page?.url === 'function' ? page.url() : '';
+    if (currentUrl.includes('/login')) {
       throw new Error('Account session expired');
     }
 

@@ -1171,7 +1171,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
   await dismissOverlays(page);
 
   // Check login and checkpoint status
-  const currentUrl = page.url();
+  const currentUrl = typeof page?.url === 'function' ? page.url() : '';
   if (currentUrl.includes('/login') || currentUrl.includes('/i/flow/login')) {
     logger.error(
       `❌ [@${account.username || account.label}] Login session expired / redirected to login page.`

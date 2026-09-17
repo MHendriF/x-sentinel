@@ -29,13 +29,13 @@ export const ModularArchitectureCard: React.FC = () => {
                 • <code>humanCadence.js</code>: Jitter, scrolling, typing delays
               </li>
               <li>
-                • <code>browserFactory.js</code>: Playwright context &amp; stealth
+                • <code>browserFactory.js</code>: Dual engine (Chromium &amp; Camoufox), C++ stealth, WebRTC guard
               </li>
               <li>
                 • <code>tweetComposer.js</code>: Tweet publisher &amp; media attachments
               </li>
               <li>
-                • <code>interactionEngine.js</code>: Like, Repost, Reply pipelines
+                • <code>interactionEngine.js</code>: Resilient Like, Repost, Reply with SVG fallbacks
               </li>
               <li>
                 • <code>healthRunner.js</code>: Fleet health &amp; warmup protocols

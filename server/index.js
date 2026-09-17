@@ -70,6 +70,20 @@ app.get('/api/logs/stream', (req, res) => {
   });
 });
 
+// GET /api/logs/file - View or download raw runtime .log file
+app.get('/api/logs/file', (req, res) => {
+  const logFile = logger.getLogFilePath();
+  if (fs.existsSync(logFile)) {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    if (req.query.download === 'true') {
+      res.setHeader('Content-Disposition', 'attachment; filename="x-sentinel.log"');
+    }
+    fs.createReadStream(logFile).pipe(res);
+  } else {
+    res.status(404).json({ success: false, message: 'Log file not found.' });
+  }
+});
+
 // REST API routes
 app.use('/api', apiRoutes);
 
@@ -194,6 +208,11 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (reason) => {
   logger.error(`💥 Unhandled Promise Rejection: ${reason}`);
+  if (reason && reason.stack) {
+    console.error(reason.stack);
+  } else if (reason) {
+    console.error(reason);
+  }
 });
 
 module.exports = { app, startServer, getServer: () => server };

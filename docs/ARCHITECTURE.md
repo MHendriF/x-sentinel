@@ -97,17 +97,24 @@ graph TD
 
 ### 3. Automation & Intelligence Layer (`server/automation/`)
 
-- **`twitterBot.js`**: Core Playwright runner executing browser automation.
-  - Multi-node isolated browser contexts with per-node proxy routing.
-  - Natural human emulation: mouse jitter, typing delays, randomized action intervals.
-  - GraphQL `CreateTweet` interception to capture exact status post URLs.
-  - Fleet Health Validator & Session Probing.
-  - Account Warmup Protocol (Tiered Day 1 to Day 7 routines).
+- **`bot/browserFactory.js`**: Dual-Engine Runtime Manager:
+  - **Chromium Core**: Playwright Chromium with client-side stealth overrides and GPU spoofing.
+  - **Camoufox Stealth**: C++ modified Firefox anti-detect engine featuring native Bezier mouse trajectory humanization (`humanize: 0.5`), WebRTC STUN IP leak shield, dynamic timezone matching, and Windows process-tree cleanup.
+  - **Smart Router & Fallback**: Automatically switches engines and transparently falls back to Chromium if any binary or platform incompatibility arises.
+- **`bot/interactionEngine.js`**: Resilient Engagement Engine:
+  - Like, Repost, and Reply pipelines with canonical URL normalization (strips `/photo/1` and tracking query parameters).
+  - Interstitial & overlay auto-dismissal (cookies, sensitive content warnings, deleted post detection).
+  - Multi-lingual DOM detection (`Suka`, `Disukai`, `Diposting ulang`) and structural SVG path signature fallbacks.
+  - Composer multi-step activation with author reply restriction detection (*"Who can reply"*).
+- **`bot/tweetComposer.js`**: Post composer with multi-image attachments and GraphQL `CreateTweet` interception to capture exact published tweet URLs.
+- **`bot/healthRunner.js`**: Fleet Health Validator, cookie session probing, and 7-Day Tiered Warmup Protocol.
+- **`bot/humanCadence.js`**: Human jitter emulation, randomized typing cadences, and timeline scrolling.
+- **`twitterBot.js`**: Bot orchestrator facade coordinating lifecycle, task cancellation, and node execution.
 - **`scheduler.js`**: Background cron loop evaluating pending schedules every 15 seconds.
 - **`notifier.js`**: Instant webhook alert dispatcher for Telegram Bot and Discord channels.
-- **`aiService.js`**: Contextual LLM inference with support for Groq, OpenRouter, OpenAI, Gemini, and Ollama, featuring automatic fallback to Spintax.
-- **`proxyHelper.js`**: Realtime latency tester and GeoIP resolver (IP, Country, ISP).
-- **`cookieManager.js`**: Formats and injects `auth_token` and `ct0` into Chromium contexts.
+- **`aiService.js`**: Contextual LLM inference with support for 9router, Groq, OpenRouter, OpenAI, Gemini, and Ollama, featuring automatic fallback to Spintax.
+- **`proxyHelper.js`**: Multi-format proxy parser (HTTP, SOCKS5), realtime latency tester, and GeoIP resolver.
+- **`cookieManager.js`**: Formats and injects `auth_token` and `ct0` across all 4 domain variations (`.x.com`, `x.com`, `.twitter.com`, `twitter.com`).
 - **`spintax.js`**: Recursive parser for nested `{synonym1|synonym2}` templates.
 
 ### 4. Storage & Persistence Layer (`server/db.js`)

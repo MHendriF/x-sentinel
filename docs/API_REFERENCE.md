@@ -357,11 +357,56 @@ Uploads an image file (Base64) to the server's local storage (`data/media/`).
 
 ### `GET /api/settings`
 
-Retrieves defense and webhook settings.
+Retrieves defense protocols, dual browser engine configuration, and webhook settings. Secret keys are returned masked (`••••`).
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "settings": {
+    "minDelaySeconds": 15,
+    "maxDelaySeconds": 35,
+    "accountSwitchDelaySec": 10,
+    "hourlyLimit": 50,
+    "dailyLimit": 150,
+    "headless": false,
+    "browserEngine": "chromium",
+    "scrollBeforeAction": true,
+    "telegramEnabled": false,
+    "telegramBotToken": "••••",
+    "telegramChatId": "••••",
+    "discordEnabled": false,
+    "discordWebhookUrl": "••••",
+    "aiProvider": "none"
+  }
+}
+```
 
 ### `POST /api/settings`
 
-Saves updated defense protocol and webhook settings.
+Saves updated defense protocol, dual browser engine selection, and webhook settings. Masked values (`••••`) are automatically restored from storage.
+
+**Request Body:**
+
+```json
+{
+  "minDelaySeconds": 15,
+  "maxDelaySeconds": 35,
+  "accountSwitchDelaySec": 10,
+  "dailyLimit": 150,
+  "headless": true,
+  "browserEngine": "camoufox",
+  "scrollBeforeAction": true,
+  "telegramEnabled": true,
+  "telegramBotToken": "123456789:ABCdefGhIJKlmNoPQRs",
+  "telegramChatId": "987654321",
+  "discordEnabled": false,
+  "discordWebhookUrl": ""
+}
+```
+
+- **`browserEngine`**: (optional, enum: `"chromium"` | `"camoufox"`, default: `"chromium"`). Selects the active browser automation engine across all fleet tasks.
 
 ### `POST /api/settings/test-webhook`
 

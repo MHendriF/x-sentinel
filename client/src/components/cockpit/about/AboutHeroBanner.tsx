@@ -16,13 +16,13 @@ export const AboutHeroBanner: React.FC = () => {
             className="gap-1.5 bg-flame px-3 py-1 font-mono text-[11px] font-bold text-obsidian-950 shadow-md"
           >
             <Shield className="h-3.5 w-3.5" />
-            X-SENTINEL CORE v1.3.0
+            X-SENTINEL CORE v1.3.4
           </Badge>
           <Badge
             variant="outline"
             className="border-slate-700 bg-obsidian-900/60 font-mono text-[11px] text-slate-300"
           >
-            MODULAR ARCHITECTURE · REACT 19 · AI POST STUDIO · MULTI-NODE FLEET · BUN ENGINE
+            DUAL ENGINE (CHROMIUM &amp; CAMOUFOX) · REACT 19 · AI POST STUDIO · MULTI-NODE FLEET
           </Badge>
         </div>
 
@@ -57,6 +57,10 @@ export const AboutHeroBanner: React.FC = () => {
           <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-3 py-1.5">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span>Hardened Stealth &amp; Evasion</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-amber-300">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+            <span>Camoufox Anti-Detect Firefox Engine</span>
           </div>
         </div>
       </CardContent>

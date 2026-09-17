@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.3.4] - 2026-08-30
+## [1.3.4] - 2026-09-15
+
+### 🌟 Added
+
+- **🦊 Dual-Engine Architecture (Chromium & Camoufox Anti-Detect Firefox)**:
+  - Integrated `camoufox@0.1.19`, a custom C++ stealth Firefox build resistant to browser fingerprinting and telemetry probes.
+  - Native C++ Bezier mouse trajectory humanization (`humanize: 0.5`) mapping clicks to natural biological curves with micro-jitter.
+  - WebRTC STUN IP leak shield (`block_webrtc: Boolean(account.proxy)`) preventing local IP exposure through proxies.
+  - Dynamic timezone and locale matching to avoid IP vs `Asia/Jakarta` fingerprint mismatch flags.
+  - Graceful fallback: automatically falls back to Chromium if any binary or platform incompatibility is encountered.
+  - Process-tree watchdog on Windows (`taskkill /pid ${pid} /T /F`) to eliminate zombie background `camoufox.exe` processes.
+- **🎯 Resilient Multi-Layer Engagement Vectors (Like, Repost, Reply)**:
+  - Canonical tweet URL normalization (clears lightbox `/photo/1` and tracking query strings).
+  - Interstitial & overlay auto-dismissal (cookie dialogs, bottom sheets, sensitive content warnings, deleted tweet detection).
+  - Multi-lingual DOM selectors (`Suka`, `Disukai`, `Diposting ulang`) and structural SVG path signature fallbacks (Heart `16.697`, Retweet `4.5 3.88`, Reply `1.751 10`).
+  - Author reply restriction detection (*"Who can reply"*) reporting `RESTRICTED` status without timeout loops.
+  - Multi-step composer activation supporting 12 textarea selectors and dual input strategies.
+- **🖥️ Cockpit UI & Telemetry Enhancements**:
+  - Interactive dual-engine selector cards in Defense Protocol deck.
+  - Real-time active browser engine badge (`🦊 Camoufox` / `⚡ Chromium`) in TelemetryRibbon header.
+  - Updated About Deck with Dual-Engine capabilities, system specifications, and architecture cards.
+- **Proxy tunnel format validation**: proxy fields are now structurally validated (explicit `host:port` required) on `POST /api/accounts`, `PUT /api/accounts/:id`, and `POST /api/proxy/test` — garbage like `dsdsd2323` is rejected with a 400 explaining the accepted formats (`user:pass@ip:port`, `ip:port:user:pass`, `ip:port`, optional `http(s)/socks4/socks5://` scheme). Masked round-trips (`••••@host:port`) stay accepted. The node modal mirrors the same rules client-side (`client/src/lib/proxy.ts`) with an inline error before any network call.
+- Added smoke regression `5b` covering the proxy validation matrix.
 
 ### 🐛 Fixed
 
@@ -17,11 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **API responses were cacheable**: `GET /api/*` (including `/api/accounts/export`) sent no `Cache-Control` header, so a browser heuristically serving a cached GET could mask a just-saved edit. All API responses now send `Cache-Control: no-store`.
 - Fixed the ct0 reveal (eye) toggle in the node modal flipping the auth_token visibility state instead of its own.
 - Added smoke regression `4b`: a PUT with newly typed raw `auth_token`/`ct0` must replace the stored values in `accounts.json`.
-
-### 🌟 Added
-
-- **Proxy tunnel format validation**: proxy fields are now structurally validated (explicit `host:port` required) on `POST /api/accounts`, `PUT /api/accounts/:id`, and `POST /api/proxy/test` — garbage like `dsdsd2323` is rejected with a 400 explaining the accepted formats (`user:pass@ip:port`, `ip:port:user:pass`, `ip:port`, optional `http(s)/socks4/socks5://` scheme). Masked round-trips (`••••@host:port`) stay accepted. The node modal mirrors the same rules client-side (`client/src/lib/proxy.ts`) with an inline error before any network call.
-- Added smoke regression `5b` covering the proxy validation matrix.
 
 ---
 

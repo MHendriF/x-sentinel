@@ -9,6 +9,7 @@ import {
   Radar,
   BarChart3,
   FileSpreadsheet,
+  Flame,
 } from 'lucide-react';
 
 interface CapabilityItem {
@@ -192,6 +193,27 @@ const CAPABILITIES_DATA: CapabilityItem[] = [
       </>,
       <>
         <strong>Export CSV</strong>: Download filtered audit records into spreadsheet formats.
+      </>,
+    ],
+  },
+  {
+    id: 'stealth-defense',
+    title: '9. Dual-Engine Anti-Detect',
+    desc: 'Switchable Chromium Core & Camoufox Firefox C++ stealth browser engines.',
+    icon: <Flame className="h-5 w-5 text-amber-400" />,
+    borderClass: 'border-amber-500/30',
+    bullets: [
+      <>
+        <strong>🦊 Camoufox Firefox</strong>: Native C++ fingerprint randomization &amp; hardware spoofing.
+      </>,
+      <>
+        <strong>🖱️ Bezier Mouse Curves</strong>: C++ level humanized cursor trajectories (<code>humanize: 0.5</code>).
+      </>,
+      <>
+        <strong>🛡️ WebRTC IP Leak Guard</strong>: Prevents STUN requests from leaking real host IPs through proxies.
+      </>,
+      <>
+        <strong>🔄 Resilient Vector Selectors</strong>: Multi-lingual DOM detection with SVG path signature fallbacks.
       </>,
     ],
   },

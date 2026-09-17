@@ -5,6 +5,28 @@ All notable changes to the **X-SENTINEL** project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.4] - 2026-09-15
+
+### 🌟 Added
+
+- **🦊 Dual-Engine Architecture (Chromium & Camoufox Anti-Detect Firefox)**:
+  - Integrated `camoufox@0.1.19`, a custom C++ stealth Firefox build resistant to browser fingerprinting and telemetry probes.
+  - Native C++ Bezier mouse trajectory humanization (`humanize: 0.5`) mapping clicks to natural biological curves with micro-jitter.
+  - WebRTC STUN IP leak shield (`block_webrtc: Boolean(account.proxy)`) preventing local IP exposure through proxies.
+  - Dynamic timezone and locale matching to avoid IP vs `Asia/Jakarta` fingerprint mismatch flags.
+  - Graceful fallback: automatically falls back to Chromium if any binary or platform incompatibility is encountered.
+  - Process-tree watchdog on Windows (`taskkill /pid ${pid} /T /F`) to eliminate zombie background `camoufox.exe` processes.
+- **🎯 Resilient Multi-Layer Engagement Vectors (Like, Repost, Reply)**:
+  - Canonical tweet URL normalization (clears lightbox `/photo/1` and tracking query strings).
+  - Interstitial & overlay auto-dismissal (cookie dialogs, bottom sheets, sensitive content warnings, deleted tweet detection).
+  - Multi-lingual DOM selectors (`Suka`, `Disukai`, `Diposting ulang`) and structural SVG path signature fallbacks (Heart `16.697`, Retweet `4.5 3.88`, Reply `1.751 10`).
+  - Author reply restriction detection (*"Who can reply"*) reporting `RESTRICTED` status without timeout loops.
+  - Multi-step composer activation supporting 12 textarea selectors and dual input strategies.
+- **🖥️ Cockpit UI & Telemetry Enhancements**:
+  - Interactive dual-engine selector cards in Defense Protocol deck.
+  - Real-time active browser engine badge (`🦊 Camoufox` / `⚡ Chromium`) in TelemetryRibbon header.
+  - Updated About Deck with Dual-Engine capabilities, system specifications, and architecture cards.
+
 ---
 
 ## [1.3.0] - 2026-08-27
