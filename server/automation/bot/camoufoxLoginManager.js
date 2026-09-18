@@ -249,32 +249,44 @@ async function startCamoufoxLogin(account, options = {}) {
         const finalAuth = finalCookies.find((c) => c.name === 'auth_token') || authCookie;
         const finalCt0 = finalCookies.find((c) => c.name === 'ct0') || ct0Cookie;
 
-        // Try extracting user handle from DOM
+        // Extract user handle and display name from DOM safely
         let detectedUsername = '';
         let detectedName = '';
         let detectedAvatar = '';
 
         try {
-          detectedUsername = await page
-            .$eval('[data-testid="SideNav_AccountSwitcher_Button"] [dir="ltr"]', (el) =>
-              el.innerText.replace('@', '').trim()
+          // In X's switcher, there are spans/divs with display name and @handle
+          const switcherTexts = await page
+            .$$eval(
+              '[data-testid="SideNav_AccountSwitcher_Button"] [dir="ltr"], [data-testid="SideNav_AccountSwitcher_Button"] span',
+              (els) => els.map((el) => el.innerText.trim()).filter(Boolean)
             )
-            .catch(() => '');
+            .catch(() => []);
 
+          // Find text explicitly starting with '@' for username handle
+          const handleText = switcherTexts.find((t) => t.startsWith('@') && t.length > 1 && !t.includes(' '));
+          if (handleText) {
+            detectedUsername = handleText.replace('@', '').trim();
+          }
+
+          // Fallback to Profile link href
           if (!detectedUsername) {
             const profileHref = await page
               .$eval('[data-testid="AppTabBar_Profile_Link"]', (el) => el.getAttribute('href'))
               .catch(() => '');
-            if (profileHref && profileHref.startsWith('/')) {
-              detectedUsername = profileHref.replace('/', '').split(/[?#]/)[0].trim();
+            if (profileHref && profileHref.startsWith('/') && !profileHref.includes('/home')) {
+              const candidate = profileHref.replace('/', '').split(/[?#]/)[0].trim();
+              if (candidate && !candidate.includes(' ')) {
+                detectedUsername = candidate;
+              }
             }
           }
 
-          detectedName = await page
-            .$eval('[data-testid="SideNav_AccountSwitcher_Button"] span', (el) =>
-              el.innerText.trim()
-            )
-            .catch(() => '');
+          // Display Name: pick first text in switcher that doesn't start with '@'
+          const nameText = switcherTexts.find((t) => !t.startsWith('@') && t.length > 0);
+          if (nameText) {
+            detectedName = nameText;
+          }
 
           detectedAvatar = await page
             .$eval('[data-testid="SideNav_AccountSwitcher_Button"] img', (el) => el.src)
@@ -289,11 +301,21 @@ async function startCamoufoxLogin(account, options = {}) {
 
         // Update account record in DB
         const existingAccount = db.getAccountById(account.id) || account;
+
+        // Validate detectedUsername (Twitter handles never contain spaces)
+        const isValidHandle =
+          detectedUsername && !detectedUsername.includes(' ') && detectedUsername.length <= 25;
+        const finalUsername = isValidHandle
+          ? detectedUsername
+          : existingAccount.username && !existingAccount.username.includes(' ')
+            ? existingAccount.username
+            : detectedUsername || existingAccount.username || '';
+
         const updatedAccount = {
           ...existingAccount,
           auth_token: finalAuth.value,
           ct0: finalCt0 ? finalCt0.value : existingAccount.ct0 || '',
-          username: detectedUsername || existingAccount.username || '',
+          username: finalUsername,
           name: detectedName || existingAccount.name || '',
           avatar: detectedAvatar || existingAccount.avatar || '',
           isValid: true,
