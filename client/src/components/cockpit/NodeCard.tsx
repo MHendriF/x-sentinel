@@ -140,16 +140,16 @@ export const NodeCard: React.FC<NodeCardProps> = ({
 
   return (
     <div
-      className={`group relative flex flex-col justify-between gap-2.5 rounded-lg border p-3 shadow-md transition-all duration-200 ${
+      className={`group relative flex flex-col justify-between gap-2.5 rounded-xl border p-3.5 shadow-md transition-all duration-200 ${
         isSelected
           ? 'border-cyan-500/80 bg-cyan-950/20 ring-1 ring-cyan-500/40 shadow-cyan-950/50'
-          : 'border-border/80 bg-obsidian-850 hover:border-slate-600/80'
-      } ${account.enabled === false ? 'opacity-60' : ''}`}
+          : 'border-slate-800/80 bg-obsidian-850 hover:border-slate-700/80 hover:shadow-lg hover:shadow-black/30'
+      } ${account.enabled === false ? 'opacity-65' : ''}`}
     >
       {/* Top Header */}
       <div>
         <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2.5">
             {onToggleSelect && (
               <input
                 type="checkbox"
@@ -159,19 +159,29 @@ export const NodeCard: React.FC<NodeCardProps> = ({
                 title="Select node"
               />
             )}
-            <img
-              src={
-                account.avatar ||
-                'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'
-              }
-              alt={account.label}
-              className="h-8 w-8 shrink-0 rounded-md border border-slate-700 bg-obsidian-950 object-cover"
-            />
+            <div className="relative shrink-0">
+              <img
+                src={
+                  account.avatar ||
+                  'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'
+                }
+                alt={account.label}
+                className="h-8 w-8 rounded-lg border border-slate-700/70 bg-obsidian-950 object-cover"
+              />
+              {account.camoufoxProfile?.hasProfile && (
+                <span
+                  className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-obsidian-900 text-[9px] shadow"
+                  title="Native Camoufox Profile active"
+                >
+                  🦊
+                </span>
+              )}
+            </div>
             <div className="min-w-0">
-              <h4 className="max-w-[120px] truncate font-heading text-xs font-bold leading-tight tracking-tight text-white sm:max-w-[150px]">
+              <h4 className="truncate font-heading text-xs font-bold leading-snug tracking-tight text-white">
                 {account.label || 'Node'}
               </h4>
-              <div className="max-w-[120px] truncate font-mono text-[10.5px] text-flame sm:max-w-[150px]">
+              <div className="truncate font-mono text-[10.5px] text-flame">
                 @{account.username || 'unverified'}
               </div>
             </div>
@@ -182,201 +192,225 @@ export const NodeCard: React.FC<NodeCardProps> = ({
             variant="outline"
             className={`h-6 shrink-0 px-2 font-mono text-[10px] font-bold transition-all ${
               account.enabled !== false
-                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-sm hover:bg-emerald-500/20'
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 shadow-sm hover:bg-emerald-500/20'
                 : 'border-slate-700 bg-obsidian-900 text-slate-400 hover:bg-slate-800'
             }`}
             onClick={handleToggle}
           >
             {account.enabled !== false ? (
               <span className="flex items-center text-emerald-400">
-                <span className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                <span className="mr-1.5 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 ONLINE
               </span>
             ) : (
               <span className="flex items-center text-slate-400">
-                <Power className="mr-1 h-2.5 w-2.5 text-slate-400" />
+                <Power className="mr-1.5 h-2.5 w-2.5 text-slate-400" />
                 PAUSED
               </span>
             )}
           </Button>
         </div>
 
-        {/* Tags Row */}
-        <div className="mt-2 flex flex-wrap items-center gap-1">
-          {/* Health status badge */}
-          {account.healthStatus === 'HEALTHY' ? (
-            <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
-              <CheckCircle2 className="h-2.5 w-2.5" />
-              Healthy
-            </Badge>
-          ) : account.healthStatus === 'EXPIRED' ? (
-            <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
-              <AlertTriangle className="h-2.5 w-2.5" />
-              Expired
-            </Badge>
-          ) : account.healthStatus === 'PROXY_DEAD' ? (
-            <Badge variant="destructive" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
-              <WifiOff className="h-2.5 w-2.5" />
-              Proxy Dead
-            </Badge>
-          ) : account.isValid ? (
-            <Badge variant="success" className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]">
-              <CheckCircle2 className="h-2.5 w-2.5" />
-              Valid
-            </Badge>
-          ) : (
-            <Badge
-              variant="secondary"
-              className="gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px] text-slate-400"
-            >
-              <HelpCircle className="h-2.5 w-2.5" />
-              Unchecked
-            </Badge>
-          )}
-
-          {/* Warmup progress badge */}
-          {account.warmupMode !== false && (
-            <Badge
-              variant="outline"
-              className="cursor-pointer gap-0.5 border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9.5px] text-amber-300 hover:bg-amber-500/20"
-              onClick={handleStartWarmup}
-              title="Click to run warmup routine"
-            >
-              <Flame className="h-2.5 w-2.5 text-amber-400" />
-              Day {account.warmupDay || 1}/7
-            </Badge>
-          )}
-
-          {/* Camoufox Native Profile badge */}
-          {account.camoufoxProfile?.hasProfile && (
-            <Badge
-              variant="outline"
-              className="gap-0.5 border-orange-500/40 bg-orange-500/10 px-1.5 py-0.5 font-mono text-[9.5px] text-orange-300"
-              title={`Camoufox Native Profile Active (Logged in: ${account.camoufoxProfile.lastLoginAt ? new Date(account.camoufoxProfile.lastLoginAt).toLocaleDateString() : 'Active'})`}
-            >
-              <span>🦊 Camoufox Native</span>
-            </Badge>
-          )}
-
-          {cleanProxy ? (
-            <Badge
-              variant="purple"
-              className="max-w-[130px] gap-0.5 truncate px-1.5 py-0.5 font-mono text-[9.5px]"
-              title={`Proxy: ${cleanProxy}`}
-            >
-              <Globe className="h-2.5 w-2.5 shrink-0" />
-              <span className="truncate">{cleanProxy}</span>
-            </Badge>
-          ) : (
-            <Badge
-              variant="outline"
-              className="px-1.5 py-0.5 font-mono text-[9.5px] text-slate-500"
-            >
-              Direct
-            </Badge>
-          )}
-
-          {/* Proxy Ping Live Status */}
-          {proxyTest && !proxyTest.isDirect && (
-            <Badge
-              variant={proxyTest.success ? 'success' : 'destructive'}
-              className="animate-in fade-in gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px]"
-            >
-              {proxyTest.success ? (
-                <>
-                  <Wifi className="h-2.5 w-2.5" />
-                  {proxyTest.latency}ms · {proxyTest.countryCode || 'OK'}
-                </>
+        {/* Structured Info Rows */}
+        <div className="mt-2.5 flex flex-col gap-1.5">
+          {/* Row 1: Session Health & Warmup Progress */}
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              {account.healthStatus === 'HEALTHY' ? (
+                <Badge variant="success" className="gap-1 px-1.5 py-0.5 font-mono text-[9.5px]">
+                  <CheckCircle2 className="h-2.5 w-2.5 shrink-0 text-emerald-400" />
+                  Healthy
+                </Badge>
+              ) : account.healthStatus === 'EXPIRED' ? (
+                <Badge variant="destructive" className="gap-1 px-1.5 py-0.5 font-mono text-[9.5px]">
+                  <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-red-400" />
+                  Expired
+                </Badge>
+              ) : account.healthStatus === 'PROXY_DEAD' ? (
+                <Badge variant="destructive" className="gap-1 px-1.5 py-0.5 font-mono text-[9.5px]">
+                  <WifiOff className="h-2.5 w-2.5 shrink-0 text-red-400" />
+                  Proxy Dead
+                </Badge>
+              ) : account.isValid ? (
+                <Badge variant="success" className="gap-1 px-1.5 py-0.5 font-mono text-[9.5px]">
+                  <CheckCircle2 className="h-2.5 w-2.5 shrink-0 text-emerald-400" />
+                  Valid
+                </Badge>
               ) : (
-                <>
-                  <WifiOff className="h-2.5 w-2.5" />
-                  Dead ({proxyTest.latency}ms)
-                </>
+                <Badge
+                  variant="secondary"
+                  className="gap-1 px-1.5 py-0.5 font-mono text-[9.5px] text-slate-400"
+                >
+                  <HelpCircle className="h-2.5 w-2.5 shrink-0 text-slate-400" />
+                  Unchecked
+                </Badge>
               )}
-            </Badge>
-          )}
 
-          <Badge
-            variant="default"
-            className="cursor-pointer gap-0.5 px-1.5 py-0.5 font-mono text-[9.5px] transition-colors hover:bg-amber-500/20"
-            onClick={() => openCommentsModal(account)}
-            title="Manage comment payload pool for this node"
-          >
-            <MessageSquare className="h-2.5 w-2.5" />
-            {account.commentsCount ?? 3} Payloads
-          </Badge>
+              {account.warmupMode !== false && (
+                <Badge
+                  variant="outline"
+                  className="cursor-pointer gap-1 border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9.5px] text-amber-300 hover:bg-amber-500/20 transition-colors"
+                  onClick={handleStartWarmup}
+                  title="Click to run warmup routine"
+                >
+                  <Flame className="h-2.5 w-2.5 shrink-0 text-amber-400" />
+                  Day {account.warmupDay || 1}/7
+                </Badge>
+              )}
+            </div>
+
+            {account.camoufoxProfile?.hasProfile ? (
+              <Badge
+                variant="outline"
+                className="shrink-0 gap-1 border-orange-500/30 bg-orange-500/10 px-1.5 py-0.5 font-mono text-[9.5px] font-semibold text-orange-300"
+                title={`Camoufox Native Profile Active (Last login: ${account.camoufoxProfile.lastLoginAt ? new Date(account.camoufoxProfile.lastLoginAt).toLocaleDateString() : 'Active'})`}
+              >
+                <span>🦊 Native</span>
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="shrink-0 border-slate-700/60 bg-slate-800/40 px-1.5 py-0.5 font-mono text-[9.5px] text-slate-400"
+                title="Standard Session Profile"
+              >
+                <span>Default</span>
+              </Badge>
+            )}
+          </div>
+
+          {/* Row 2: Proxy Tunnel & Comments Pool */}
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="min-w-0 flex-1">
+              {cleanProxy ? (
+                <div
+                  className="inline-flex max-w-full items-center gap-1 rounded border border-purple-500/30 bg-purple-500/10 px-1.5 py-0.5 font-mono text-[10px] text-purple-300"
+                  title={
+                    proxyTest?.success
+                      ? `Proxy: ${cleanProxy} (${proxyTest.latency}ms · ${proxyTest.countryCode || 'OK'})`
+                      : `Proxy: ${cleanProxy}`
+                  }
+                >
+                  <Globe className="h-2.5 w-2.5 shrink-0 text-purple-400" />
+                  <span className="truncate">{cleanProxy}</span>
+                  {proxyTest && !proxyTest.isDirect && (
+                    <span
+                      className={`shrink-0 text-[9px] font-bold ${
+                        proxyTest.success ? 'text-emerald-400' : 'text-red-400'
+                      }`}
+                    >
+                      · {proxyTest.success ? `${proxyTest.latency}ms` : 'Dead'}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="border-slate-700/50 bg-slate-800/30 px-1.5 py-0.5 font-mono text-[9.5px] text-slate-400"
+                >
+                  Direct IP
+                </Badge>
+              )}
+            </div>
+
+            <button
+              type="button"
+              className="inline-flex shrink-0 items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 transition-colors hover:border-amber-500/60 hover:bg-amber-500/20"
+              onClick={() => openCommentsModal(account)}
+              title="Manage comment payload pool for this node"
+            >
+              <MessageSquare className="h-2.5 w-2.5 text-amber-400" />
+              <span>{account.commentsCount ?? 3} Payloads</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center gap-1 border-t border-border/50 pt-2">
+      <div className="flex items-center gap-1.5 border-t border-slate-800/80 pt-2.5">
+        {/* Camoufox Native Login Action */}
         <Button
           size="sm"
           variant="outline"
-          className="h-7 px-2 text-[11px] font-medium border-orange-500/30 bg-orange-500/5 text-orange-300 hover:bg-orange-500/20 hover:text-orange-200"
+          className={`h-7 flex-1 px-2 text-[11px] font-medium transition-all ${
+            account.camoufoxProfile?.hasProfile
+              ? 'border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 hover:text-orange-200'
+              : 'border-slate-700/80 bg-slate-800/40 text-slate-300 hover:border-orange-500/50 hover:bg-orange-500/10 hover:text-orange-200'
+          }`}
           onClick={handleCamoufoxLogin}
           disabled={isLoggingInCamoufox}
-          title="Login directly via Camoufox to generate native Firefox session"
+          title={
+            account.camoufoxProfile?.hasProfile
+              ? 'Camoufox Profile Active - Click to Re-Login'
+              : 'Launch Camoufox to generate native Firefox session'
+          }
         >
           <span className="mr-1">🦊</span>
-          <span>
+          <span className="truncate">
             {isLoggingInCamoufox
               ? 'Opening...'
               : account.camoufoxProfile?.hasProfile
               ? 'Re-Login'
-              : 'Login Camoufox'}
+              : 'Login'}
           </span>
         </Button>
 
+        {/* Health Check Action */}
         <Button
           size="sm"
           variant="secondary"
-          className="h-7 flex-1 px-2 text-[11px] font-medium"
+          className="h-7 flex-1 px-2 text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200"
           onClick={handleVerify}
           disabled={isVerifying}
           title="Verify login session health and node connection"
         >
-          <HeartPulse className="mr-1 h-3 w-3 text-amber-400" />
-          <span>{isVerifying ? 'Checking...' : 'Health Check'}</span>
+          <HeartPulse
+            className={`mr-1 h-3 w-3 shrink-0 ${
+              isVerifying ? 'animate-pulse text-amber-400' : 'text-emerald-400'
+            }`}
+          />
+          <span className="truncate">{isVerifying ? 'Checking...' : 'Check'}</span>
         </Button>
 
-        {account.proxy && (
+        {/* Utility Quick Actions */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          {account.proxy && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 text-slate-400 hover:text-purple-300 hover:bg-purple-950/30"
+              onClick={handlePingProxy}
+              disabled={isPingingProxy}
+              title="Ping Proxy Latency & Location"
+              aria-label="Test proxy latency & location for this node"
+            >
+              <Activity
+                className={`h-3.5 w-3.5 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
+              />
+            </Button>
+          )}
+
           <Button
             size="sm"
-            variant="outline"
-            className="h-7 w-7 shrink-0 p-0 text-xs"
-            onClick={handlePingProxy}
-            disabled={isPingingProxy}
-            title="Ping Proxy Latency & Location"
-            aria-label="Test proxy latency & location for this node"
+            variant="ghost"
+            className="h-7 w-7 p-0 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+            onClick={() => openAccountModal(account)}
+            title="Edit Node Config"
+            aria-label="Edit node configuration"
           >
-            <Activity
-              className={`h-3 w-3 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
-            />
+            <SettingsIcon className="h-3.5 w-3.5" />
           </Button>
-        )}
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 w-7 shrink-0 p-0 text-xs text-slate-300 hover:text-white"
-          onClick={() => openAccountModal(account)}
-          title="Edit Node Config"
-          aria-label="Edit node configuration"
-        >
-          <SettingsIcon className="h-3 w-3" />
-        </Button>
-
-        <Button
-          size="sm"
-          variant="destructive"
-          className="h-7 w-7 shrink-0 p-0 text-xs"
-          onClick={handleDelete}
-          title="Remove Node"
-          aria-label="Delete this node"
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0 text-slate-400 hover:text-rose-400 hover:bg-rose-950/30"
+            onClick={handleDelete}
+            title="Remove Node"
+            aria-label="Delete this node"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
     </div>
   );
