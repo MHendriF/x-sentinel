@@ -140,7 +140,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({
 
   return (
     <div
-      className={`group relative flex flex-col justify-between gap-2.5 rounded-xl border p-3.5 shadow-md transition-all duration-200 ${
+      className={`group relative flex flex-col justify-between gap-2.5 rounded-xl border p-3 shadow-md transition-all duration-200 overflow-hidden ${
         isSelected
           ? 'border-cyan-500/80 bg-cyan-950/20 ring-1 ring-cyan-500/40 shadow-cyan-950/50'
           : 'border-slate-800/80 bg-obsidian-850 hover:border-slate-700/80 hover:shadow-lg hover:shadow-black/30'
@@ -278,9 +278,9 @@ export const NodeCard: React.FC<NodeCardProps> = ({
             )}
           </div>
 
-          {/* Row 2: Proxy Tunnel & Comments Pool */}
+          {/* Row 2: Proxy Tunnel (with inline Ping) & Comments Pool */}
           <div className="flex items-center justify-between gap-1.5">
-            <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1 min-w-0 flex-1">
               {cleanProxy ? (
                 <div
                   className="inline-flex max-w-full items-center gap-1 rounded border border-purple-500/30 bg-purple-500/10 px-1.5 py-0.5 font-mono text-[10px] text-purple-300"
@@ -310,6 +310,21 @@ export const NodeCard: React.FC<NodeCardProps> = ({
                   Direct IP
                 </Badge>
               )}
+
+              {account.proxy && (
+                <button
+                  type="button"
+                  onClick={handlePingProxy}
+                  disabled={isPingingProxy}
+                  className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-purple-500/30 bg-purple-500/10 text-purple-300 transition-colors hover:bg-purple-500/25 hover:text-purple-200"
+                  title="Ping proxy latency & location"
+                  aria-label="Test proxy latency & location for this node"
+                >
+                  <Activity
+                    className={`h-2.5 w-2.5 ${isPingingProxy ? 'animate-spin text-flame' : ''}`}
+                  />
+                </button>
+              )}
             </div>
 
             <button
@@ -326,12 +341,12 @@ export const NodeCard: React.FC<NodeCardProps> = ({
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center gap-1.5 border-t border-slate-800/80 pt-2.5">
+      <div className="flex items-center gap-1.5 border-t border-slate-800/80 pt-2">
         {/* Camoufox Native Login Action */}
         <Button
           size="sm"
           variant="outline"
-          className={`h-7 flex-1 px-2 text-[11px] font-medium transition-all ${
+          className={`h-7 flex-1 min-w-0 px-2 text-[10.5px] font-medium transition-all ${
             account.camoufoxProfile?.hasProfile
               ? 'border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 hover:text-orange-200'
               : 'border-slate-700/80 bg-slate-800/40 text-slate-300 hover:border-orange-500/50 hover:bg-orange-500/10 hover:text-orange-200'
@@ -358,7 +373,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({
         <Button
           size="sm"
           variant="secondary"
-          className="h-7 flex-1 px-2 text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200"
+          className="h-7 flex-1 min-w-0 px-2 text-[10.5px] font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200"
           onClick={handleVerify}
           disabled={isVerifying}
           title="Verify login session health and node connection"
@@ -372,23 +387,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({
         </Button>
 
         {/* Utility Quick Actions */}
-        <div className="flex items-center gap-0.5 shrink-0">
-          {account.proxy && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 w-7 p-0 text-slate-400 hover:text-purple-300 hover:bg-purple-950/30"
-              onClick={handlePingProxy}
-              disabled={isPingingProxy}
-              title="Ping Proxy Latency & Location"
-              aria-label="Test proxy latency & location for this node"
-            >
-              <Activity
-                className={`h-3.5 w-3.5 ${isPingingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
-              />
-            </Button>
-          )}
-
+        <div className="flex items-center gap-1 shrink-0">
           <Button
             size="sm"
             variant="ghost"
