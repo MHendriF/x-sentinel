@@ -23,6 +23,8 @@ const safeMediaPathSchema = z.string().refine((p) => {
 
 const accountIdsSchema = z.union([z.string(), z.array(z.string())]).optional();
 
+const engineSchema = z.enum(['chromium', 'camoufox']).optional();
+
 const postTaskSchema = z.object({
   accountIds: accountIdsSchema,
   posts: z.union([z.string().min(1), z.array(z.string()).min(1)], {
@@ -30,6 +32,7 @@ const postTaskSchema = z.object({
   }),
   delaySeconds: z.number().min(0).max(3600).optional(),
   mediaPaths: z.array(safeMediaPathSchema).max(4).optional(),
+  engine: engineSchema,
 });
 
 const batchTaskSchema = z.object({
@@ -50,6 +53,7 @@ const batchTaskSchema = z.object({
   commentText: z.string().optional(),
   minDelay: z.number().min(0).max(3600).optional(),
   maxDelay: z.number().min(0).max(7200).optional(),
+  engine: engineSchema,
 });
 
 const hunterTaskSchema = z.object({
@@ -62,11 +66,12 @@ const hunterTaskSchema = z.object({
   commentText: z.string().optional(),
   minDelay: z.number().min(0).max(3600).optional(),
   maxDelay: z.number().min(0).max(7200).optional(),
+  engine: engineSchema,
 });
 
 // POST /api/tasks/post - Broadcast / publish new tweets
 router.post('/post', validateBody(postTaskSchema), (req, res) => {
-  const { accountIds, posts, delaySeconds, mediaPaths } = req.body;
+  const { accountIds, posts, delaySeconds, mediaPaths, engine } = req.body;
 
   if (twitterBot.isRunning) {
     throw httpError(400, 'An automation process is currently running.', 'TASK_RUNNING');
@@ -76,6 +81,7 @@ router.post('/post', validateBody(postTaskSchema), (req, res) => {
     .runMultiAccountPostTask(accountIds, posts, {
       delaySeconds,
       mediaPaths: mediaPaths || [],
+      engine,
     })
     .catch((err) => {
       logger.error(`❌ Background post task error: ${err.message}`);
@@ -98,6 +104,7 @@ router.post('/batch', validateBody(batchTaskSchema), (req, res) => {
     commentText,
     minDelay,
     maxDelay,
+    engine,
   } = req.body;
 
   if (twitterBot.isRunning) {
@@ -112,6 +119,7 @@ router.post('/batch', validateBody(batchTaskSchema), (req, res) => {
       commentText: commentText || null,
       minDelay,
       maxDelay,
+      engine,
     })
     .catch((err) => {
       logger.error(`❌ Background task error: ${err.message}`);
@@ -135,6 +143,7 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
     commentText,
     minDelay,
     maxDelay,
+    engine,
   } = req.body;
 
   if (twitterBot.isRunning) {
@@ -149,6 +158,7 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
       commentText: commentText || null,
       minDelay,
       maxDelay,
+      engine,
     })
     .catch((err) => {
       logger.error(`❌ Background hunter error: ${err.message}`);

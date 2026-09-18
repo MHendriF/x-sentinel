@@ -81,11 +81,33 @@ async function runTests() {
   };
   assert.strictEqual(failingAccount.browserEngine, 'camoufox');
   console.log('Testing fallback try/catch wrapper structure...');
-  // Restore settings
-  db.saveSettings(currentSettings);
   console.log('✅ Test 5 PASSED: Error handling & fallback structure confirmed.\n');
 
-  console.log('🎉 ALL 5 DUAL ENGINE TESTS COMPLETED SUCCESSFULLY!');
+  // Test 6: Account with Camoufox persistent profile respects settings.browserEngine and options.engine
+  console.log('Test 6: Verify account with active Camoufox profile honors settings.browserEngine...');
+  const accountWithCamoufoxProfile = {
+    ...mockAccount,
+    camoufoxProfile: {
+      hasProfile: true,
+      profileDir: 'dummy/path',
+      engine: 'camoufox',
+    },
+  };
+
+  db.saveSettings({ ...currentSettings, browserEngine: 'chromium' });
+  const profileChromRes = await launchAccountBrowser(accountWithCamoufoxProfile, { headless: true });
+  assert.strictEqual(profileChromRes.engine, 'chromium', 'Account with Camoufox profile MUST respect settings.browserEngine=chromium');
+  await closeBrowserResources(profileChromRes.browser, profileChromRes.context);
+
+  const profileOverrideRes = await launchAccountBrowser(accountWithCamoufoxProfile, { engine: 'camoufox', headless: true });
+  assert.strictEqual(profileOverrideRes.engine, 'camoufox', 'options.engine=camoufox MUST override settings');
+  await closeBrowserResources(profileOverrideRes.browser, profileOverrideRes.context);
+
+  // Restore settings
+  db.saveSettings(currentSettings);
+  console.log('✅ Test 6 PASSED: Account with Camoufox profile accurately respects settings.browserEngine & options.engine.\n');
+
+  console.log('🎉 ALL 6 DUAL ENGINE TESTS COMPLETED SUCCESSFULLY!');
 }
 
 runTests().catch((err) => {

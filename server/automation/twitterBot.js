@@ -67,7 +67,7 @@ class TwitterBot {
   /**
    * Initialize or reuse browser context for a specific node account
    */
-  async initAccountBrowser(account, forceNew = false) {
+  async initAccountBrowser(account, forceNew = false, options = {}) {
     if (!account) {
       throw new Error('Account node not found or not selected.');
     }
@@ -79,7 +79,7 @@ class TwitterBot {
     await this.closeBrowser();
     this.currentAccount = account;
 
-    const { browser, context, engine, isPersistent } = await launchAccountBrowser(account);
+    const { browser, context, engine, isPersistent } = await launchAccountBrowser(account, options);
     this.browser = browser;
     this.context = context;
     this.currentEngine = engine;
@@ -88,13 +88,13 @@ class TwitterBot {
     return { browser: this.browser, context: this.context };
   }
 
-  async createAccountContext(account) {
-    const { context } = await this.initAccountBrowser(account);
+  async createAccountContext(account, options = {}) {
+    const { context } = await this.initAccountBrowser(account, false, options);
     return context;
   }
 
-  async getOrCreatePageForAccount(account) {
-    await this.initAccountBrowser(account);
+  async getOrCreatePageForAccount(account, options = {}) {
+    await this.initAccountBrowser(account, false, options);
     if (!this.page || this.page.isClosed()) {
       this.page = await this.context.newPage();
       this.page.setDefaultTimeout(35000);
@@ -283,7 +283,7 @@ class TwitterBot {
         const account = targetAccounts[a];
         const postText = postList[a % postList.length];
 
-        await this.initAccountBrowser(account);
+        await this.initAccountBrowser(account, false, options);
         const engineTag = this.currentEngine
           ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
           : '';
@@ -401,7 +401,7 @@ class TwitterBot {
             throw new Error('TASK_ABORTED');
           }
           const account = targetAccounts[a];
-          await this.initAccountBrowser(account);
+          await this.initAccountBrowser(account, false, options);
           const engineTag = this.currentEngine
             ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
             : '';
@@ -504,7 +504,7 @@ class TwitterBot {
 
     try {
       const scraperAccount = targetAccounts[0];
-      const page = await this.getOrCreatePageForAccount(scraperAccount);
+      const page = await this.getOrCreatePageForAccount(scraperAccount, options);
       const searchUrl = `https://x.com/search?q=${encodeURIComponent(keyword)}&f=live`;
 
       logger.info(`🌐 Scraping posts from X: ${searchUrl}`);
@@ -561,7 +561,7 @@ class TwitterBot {
         for (let a = 0; a < targetAccounts.length; a++) {
           if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
           const account = targetAccounts[a];
-          await this.initAccountBrowser(account);
+          await this.initAccountBrowser(account, false, options);
           const engineTag = this.currentEngine
             ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
             : '';

@@ -228,10 +228,10 @@ async function launchAccountBrowser(account, options = {}) {
   );
 
   const requestedEngine = (
-    account.browserEngine ||
     options.engine ||
-    (hasCamoufoxProfile ? 'camoufox' : null) ||
+    account.browserEngine ||
     settings.browserEngine ||
+    (hasCamoufoxProfile ? 'camoufox' : null) ||
     'chromium'
   ).toLowerCase();
 
