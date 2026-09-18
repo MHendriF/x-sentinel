@@ -58,6 +58,10 @@ bun run dev
 3. Test and build locally:
    ```bash
    bun run lint
+   node test/verify.js
+   node test/verify_url_resilience.js
+   node test/verify_api_interceptor.js
+   node test/verify_reply_interaction.js
    bun run smoke
    bun run --cwd client build
    ```
@@ -115,6 +119,18 @@ Before opening a PR, ensure the frontend builds cleanly without TypeScript or Vi
 ```bash
 bun run --cwd client build
 ```
+
+### 6. Lexical Single-Focus Typing
+
+In automation typing routines, always use single-focus `page.keyboard.type(char)` in `humanCadence.js`. Never invoke repeated `element.type()` on rich text editors.
+
+### 7. Camoufox Persistent Profiles
+
+Manage persistent profiles strictly through `server/automation/bot/camoufoxLoginManager.js`. Session resets must never delete account credentials or historical audit data.
+
+### 8. Daily Rotating Logging
+
+Always log server messages through `server/logger.js`. Never write directly to arbitrary log files in `data/`.
 
 ---
 

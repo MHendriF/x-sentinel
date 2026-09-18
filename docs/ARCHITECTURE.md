@@ -42,19 +42,23 @@ graph TD
         Bot --> AI
     end
 
-    subgraph Storage ["Persistent Local JSON Storage"]
+    subgraph Storage ["Persistent Local JSON & Profile Storage"]
         AccJSON[(accounts.json)]
         SetJSON[(settings.json)]
         HistJSON[(history.json)]
         SchJSON[(schedules.json)]
         MediaDir[(data/media/)]
         CommentsDir[(data/comments/)]
+        LogsDir[(data/logs/)]
+        ProfilesDir[(data/camoufox_profiles/)]
         DB --> AccJSON
         DB --> SetJSON
         DB --> HistJSON
         DB --> SchJSON
         DB --> MediaDir
         DB --> CommentsDir
+        Server --> LogsDir
+        Bot --> ProfilesDir
     end
 
     subgraph External ["External Services"]
@@ -86,6 +90,7 @@ graph TD
   - `ai/`: AIProviderSelector, AIEngineConfig, AIPersonaStudio, AISandboxTester.
   - `audit/`: AuditStatsHUD, AuditFilters, AuditDetailModal.
   - `about/`: LiveTelemetryHUD, SystemDiagnosticModal, CoreCapabilitiesGrid, DocsCatalogCard.
+  - `ResetCamoufoxDialog.tsx`: Modal interface for safe 1-click persistent Camoufox session resets.
 - **Styling**: Vanilla Tailwind CSS + dark mode obsidian design system + shadcn/ui primitives. Self-hosted fonts via `@fontsource` (no CDN dependency).
 - **UI Conventions**: flame/amber tokens for primary CTAs, Indonesian operational labels, skeleton loaders while datasets hydrate, and `__APP_VERSION__` injected from `package.json` by Vite.
 - **Global Telemetry**: running-task progress strip + engine-offline banner in the ribbon; sidebar CORE status reflects real engine/task state; keyboard shortcuts (`1-9` tabs, `/` search).
@@ -98,14 +103,14 @@ graph TD
 - **Local Security Guard** (`server/security.js`): rejects requests with foreign `Origin`/`Host` headers (anti drive-by exfiltration & DNS rebinding) and provides the secret-masking helpers used by every read endpoint.
 - **Validation & Errors**: request bodies validated with zod schemas (`server/utils/http.js`); a centralized error handler in `server/index.js` maps `HttpError` to JSON responses.
 - **Path Traversal Shield**: strict verification (`getSafeCommentsFilePath`) ensuring comment files stay locked inside `data/comments/`.
-- **Real-Time Streaming**: Server-Sent Events (SSE) broadcasting real-time logs from `server/logger.js`.
+- **Real-Time Streaming & Daily Log Rotation**: Server-Sent Events (SSE) broadcasting real-time logs from `server/logger.js`, paired with date-stamped file rotation (`data/logs/x-sentinel-YYYY-MM-DD.log`), 30-day automated log retention, and log file browser endpoints (`/api/logs/files`, `/api/logs/file`).
 - **Modular Routers**: `server/routes/` delegates to specialized domain controllers:
   - `systemRouter.js`: Real-time system health telemetry and 6-pillar self-diagnostic audit.
-  - `accountsRouter.js`: Fleet CRUD, proxy latency testing, and bulk import/export.
+  - `accountsRouter.js`: Fleet CRUD, proxy latency testing, bulk import/export, and Camoufox persistent profile lifecycle management (`/api/accounts/:id/camoufox-status`, `/api/accounts/:id/camoufox-profile`, `/api/accounts/batch-delete-camoufox`).
   - `tasksRouter.js`: Multi-post, batch engagement, and autonomous Feed Hunter execution.
   - `aiRouter.js`: AI tweet generator, anti-slop payload replier, and file vault manager.
   - `schedulesRouter.js`: Background cron post queues.
-  - `historyRouter.js`: Audit ledger event logging and RFC-4180 pruning.
+  - `historyRouter.js`: Audit ledger event logging, `browser_engine` attribution, and RFC-4180 pruning.
   - `settingsRouter.js`: Defense evasion, proxy testing, and spintax preview.
 - **Process Hardening**: Graceful shutdown handles `SIGINT`/`SIGTERM`, safely closing Chromium browser contexts and background timers.
 
@@ -119,10 +124,12 @@ graph TD
   - Like, Repost, and Reply pipelines with canonical URL normalization (strips `/photo/1` and tracking query parameters).
   - Interstitial & overlay auto-dismissal (cookies, sensitive content warnings, deleted post detection).
   - Multi-lingual DOM detection (`Suka`, `Disukai`, `Diposting ulang`) and structural SVG path signature fallbacks.
-  - Composer multi-step activation with author reply restriction detection (*"Who can reply"*).
+  - Composer multi-step activation with author reply restriction detection (_"Who can reply"_).
+  - Automatic interception of X daily limits (GraphQL errors 344 and 185) and detection of "Add a phone / Daily limit" challenge modals.
+- **`bot/camoufoxLoginManager.js`**: Manages node-isolated persistent profile directories (`data/camoufox_profiles/<accountId>/`), session storage states, and clean profile resets.
 - **`bot/tweetComposer.js`**: Post composer with multi-image attachments and GraphQL `CreateTweet` interception to capture exact published tweet URLs.
-- **`bot/healthRunner.js`**: Fleet Health Validator, cookie session probing, and 7-Day Tiered Warmup Protocol.
-- **`bot/humanCadence.js`**: Human jitter emulation, randomized typing cadences, and timeline scrolling.
+- **`bot/healthRunner.js`**: Fleet Health Validator, cookie session probing with auto-routing to Camoufox for persistent profile nodes, and 7-Day Tiered Warmup Protocol.
+- **`bot/humanCadence.js`**: Human jitter emulation, single-focus `page.keyboard` Lexical typing to prevent cursor desynchronization, and timeline scrolling.
 - **`twitterBot.js`**: Bot orchestrator facade coordinating lifecycle, task cancellation, and node execution.
 - **`scheduler.js`**: Background cron loop evaluating pending schedules every 15 seconds.
 - **`notifier.js`**: Instant webhook alert dispatcher for Telegram Bot and Discord channels.
@@ -135,7 +142,12 @@ graph TD
 
 - **Atomic JSON Storage**: Uses in-memory caching combined with atomic file writes (writing to `.tmp`, `fsync`, then `fs.renameSync`, with transient-lock retries) to eliminate data corruption risks during sudden power loss or process termination. Direct non-atomic writes are never used as a fallback.
 - **Corruption Quarantine**: If a JSON file fails to parse, it is renamed to `.corrupt.<timestamp>` instead of being silently overwritten — user data is preserved for manual recovery.
-- **Zero External Database Dependency**: All data is self-contained in local `.json` files inside the `data/` folder (git-ignored for security).
+- **Zero External Database Dependency**: All data is self-contained in local files inside `data/` (git-ignored for security):
+  - `accounts.json`, `settings.json`, `history.json`, `schedules.json`, `stats.json`
+  - `comments/*.json` (isolated reply payloads)
+  - `media/*` (uploaded images cache)
+  - `logs/x-sentinel-YYYY-MM-DD.log` (daily rotating execution logs with 30-day auto-retention)
+  - `camoufox_profiles/<accountId>/` (node-isolated browser session state)
 
 ---
 

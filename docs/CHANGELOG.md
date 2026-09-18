@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🤖 Enterprise AI Prompt & Model Studio (`AISettingsDeck.tsx`)**:
   - Modularized into `client/src/components/cockpit/ai/` (`AiModelConfigCard.tsx`, `AiPersonaPresetsCard.tsx`, `AiGuardrailsCard.tsx`, `AiSandboxCard.tsx`, `AiWebhookAlertsCard.tsx`).
   - Universal model registry with quick-select options for Groq, OpenRouter, OpenAI, Gemini, Ollama, 9router, plus custom model ID overrides.
-  - 7 calibrated persona presets including *Anti-Slop Native*, *Contrarian Tech*, and *Alpha Analyst*.
+  - 7 calibrated persona presets including _Anti-Slop Native_, _Contrarian Tech_, and _Alpha Analyst_.
   - Anti-slop system guardrails configuration to enforce conversational brevity and eliminate AI summary clichés.
   - Interactive Live AI Sandbox for prompt experimentation with token estimation and response timing.
 - **📊 Forensic Audit Ledger Overhaul (`AuditLedger.tsx`)**:
@@ -43,6 +43,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **🛡️ Driver Resilience & Location Crash Patch (`server/automation/bot/patchPlaywright.js`)**:
   - Automated `postinstall` patch in `playwright-core/lib/coreBundle.js` replacing vulnerable `pageError.location.url` with safe optional chaining `pageError.location?.url`.
   - Comprehensive test suite `test/verify_url_resilience.js` asserting driver patch and handling of malformed/null/lightbox tweet URLs.
+- **🦊 Camoufox Persistent Profiles & 1-Click Session Reset (`ResetCamoufoxDialog.tsx`, `server/automation/bot/camoufoxLoginManager.js`, `server/routes/accountsRouter.js`)**:
+  - Node-isolated browser profile directories (`data/camoufox_profiles/<accountId>/`) maintaining cookies, IndexedDB, and cache partitions to prevent repeated login challenges.
+  - Interactive Session Reset Dialog in Cockpit frontend allowing operators to flush corrupted profile directories without deleting account credentials or history.
+  - REST endpoints: `GET /api/accounts/:id/camoufox-status`, `DELETE /api/accounts/:id/camoufox-profile`, and `POST /api/accounts/batch-delete-camoufox`.
+  - Auto-routing: health check and verification routines automatically route to Camoufox for accounts with persistent profiles.
+  - Dynamic defense profile persistence across tab navigation in `DefenseProtocol.tsx`.
+- **🛑 Rate Limit (Error 344 & 185) & Phone Challenge Modal Interception (`server/automation/bot/interactionEngine.js`, `test/verify_api_interceptor.js`)**:
+  - GraphQL error code interception for code `344` (Daily limit reached), `185` (Status update limit), `226` (Anti-automation challenge), and `385` (Restricted author).
+  - Detection of "Add a phone / Daily limit" modal dialogs and toast alert messages (_"This request looks like it might be automated"_) to halt operations safely before account locks.
+  - Comprehensive unit test suite `test/verify_api_interceptor.js`.
+- **⌨️ Lexical Typing Resilience & Modal-Scoped Reply Submissions (`server/automation/bot/humanCadence.js`, `server/automation/bot/interactionEngine.js`, `test/verify_reply_interaction.js`)**:
+  - Replaced repetitive `element.type()` with single-focus `page.keyboard` typing in `humanType`, preventing cursor desynchronization in Meta's Lexical text editor.
+  - Scoped reply submit buttons strictly to modal dialogs or thread inline containers, preventing misfired clicks on main feed buttons.
+  - `aria-disabled` verification and recovery keystrokes (space + backspace) before submit.
+  - History tracking: records active `browser_engine` (`chromium` | `camoufox`) in audit records.
+  - New test suite `test/verify_reply_interaction.js`.
+- **📜 Daily Rotating Logging System with 30-Day Retention (`server/logger.js`, `server/index.js`)**:
+  - Implemented daily date-stamped log files (`data/logs/x-sentinel-YYYY-MM-DD.log`).
+  - Automated 30-day retention cleaner purging stale logs on startup and rotation.
+  - Log inspection endpoints: `GET /api/logs/files` and `GET /api/logs/file?date=YYYY-MM-DD`.
+- **🔧 Account Schema Flexibility (`server/routes/accountsRouter.js`)**:
+  - Supported custom `avatar`, `username`, and `name` in account update schemas.
 
 ### 🔒 Security
 
@@ -65,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Canonical tweet URL normalization (clears lightbox `/photo/1` and tracking query strings).
   - Interstitial & overlay auto-dismissal (cookie dialogs, bottom sheets, sensitive content warnings, deleted tweet detection).
   - Multi-lingual DOM selectors (`Suka`, `Disukai`, `Diposting ulang`) and structural SVG path signature fallbacks (Heart `16.697`, Retweet `4.5 3.88`, Reply `1.751 10`).
-  - Author reply restriction detection (*"Who can reply"*) reporting `RESTRICTED` status without timeout loops.
+  - Author reply restriction detection (_"Who can reply"_) reporting `RESTRICTED` status without timeout loops.
   - Multi-step composer activation supporting 12 textarea selectors and dual input strategies.
 - **🖥️ Cockpit UI & Telemetry Enhancements**:
   - Interactive dual-engine selector cards in Defense Protocol deck.

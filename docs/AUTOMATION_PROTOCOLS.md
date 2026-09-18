@@ -121,11 +121,13 @@ This ensures every published tweet has an exact clickable status link stored in 
 X-SENTINEL features a switchable dual-engine runtime architecture (`server/automation/bot/browserFactory.js`):
 
 ### A. Chromium Core (Standard)
+
 - Built on standard Playwright Chromium.
 - Enhanced with client-side stealth overrides: masking `navigator.webdriver`, mocking `window.chrome`, realistic hardware concurrency/memory, WebGL GPU vendor/renderer spoofing, and disabled WebRTC non-proxied UDP.
 - Fast startup times, low footprint, and ideal for standard automation environments.
 
 ### B. Camoufox Stealth (C++ Modified Firefox)
+
 - Built on **Camoufox** (`camoufox@0.1.19`), a custom C++ stealth Firefox browser specifically engineered to resist modern browser fingerprinting and bot probes.
 - **Native C++ Mouse Trajectory Humanization (`humanize: 0.5`)**: All Playwright pointer events and clicks are mapped to biological human Bezier curves with micro-jitter at the browser engine level, evading behavioral ML detectors.
 - **WebRTC STUN Leak Protection (`block_webrtc: Boolean(account.proxy)`)**: Prevents WebRTC STUN requests from bypassing proxy tunnels and exposing the host machine's residential/datacenter IP address.
@@ -145,7 +147,7 @@ The interaction engine (`server/automation/bot/interactionEngine.js`) employs mu
    - Normalizes URLs to `https://x.com/i/status/${tweetId}` to guarantee deterministic page layouts.
 2. **Interstitials & Overlay Auto-Dismissal**:
    - Automatically dismisses cookie consent dialogs, bottom sheets, and promotional modals.
-   - Handles sensitive content warnings (*"View"* button) and detects deleted/unavailable posts immediately without hanging.
+   - Handles sensitive content warnings (_"View"_ button) and detects deleted/unavailable posts immediately without hanging.
 3. **Multi-Lingual DOM & SVG Signature Fallbacks**:
    - Evaluates standard `data-testid` attributes (`like`, `unlike`, `retweet`) alongside English and Indonesian aria-labels (`Suka`, `Disukai`, `Diposting ulang`).
    - Structural SVG path signatures locate action buttons even when testids and labels are completely obfuscated:
@@ -153,7 +155,7 @@ The interaction engine (`server/automation/bot/interactionEngine.js`) employs mu
      - **🔁 Retweet SVG Signature**: Path string containing `4.5 3.88` / `4.432` / `16.5 6`.
      - **💬 Reply Speech Bubble Signature**: Path string containing `1.751 10` / `8.005`.
 4. **Composer Multi-Step Activation & Restrictions**:
-   - Detects author-level reply restrictions (*"Who can reply" / "Siapa yang dapat membalas"*) and reports `RESTRICTED` status immediately.
+   - Detects author-level reply restrictions (_"Who can reply" / "Siapa yang dapat membalas"_) and reports `RESTRICTED` status immediately.
    - Activates inline reply placeholders or clicks the tweet reply icon to mount the contenteditable editor.
    - Supports 12 textarea selectors and dual input strategies (humanized keystrokes with `document.execCommand('insertText')` fallback).
 
@@ -193,3 +195,69 @@ Simultaneous post publishing across dozens of nodes from the same host or proxy 
 3. **Atomic Task Queue Execution**:
    - Tasks queued via Cron Scheduler evaluate concurrency locks (`twitterBot.isRunning === false`) before executing sequentially, ensuring no two automation routines compete for browser context resources.
 
+---
+
+## 🦊 11. Camoufox Persistent Profiles & Profile Lifecycle
+
+To eliminate repetitive identity verification checks and session invalidation caused by spinning up fresh browser contexts, X-SENTINEL supports **node-isolated persistent profiles** for Camoufox:
+
+### A. Directory Isolation
+
+- Each account node with a persistent profile stores its browser state in `data/camoufox_profiles/<accountId>/`.
+- Isolates cookies, `localStorage`, `IndexedDB`, session storage, and cache partitions per node account.
+- Configured through `camoufoxLoginManager.js` and initialized dynamically during browser launch.
+
+### B. Auto-Routing for Health & Verification
+
+- When executing health checks or verification routines, nodes configured with persistent Camoufox profiles are automatically routed to the Camoufox engine regardless of global default settings, preventing session collisions between Chromium and Firefox engines.
+
+### C. 1-Click Session Reset
+
+- If a browser session becomes desynchronized or corrupted, the operator can trigger a clean profile reset via `ResetCamoufoxDialog.tsx` or `DELETE /api/accounts/:id/camoufox-profile`.
+- The reset purges `data/camoufox_profiles/<accountId>/` while preserving account credentials (`auth_token`, `ct0`, proxy configuration) and audit history intact.
+
+---
+
+## 🛑 12. Rate Limit (Error 344 & 185) & Anti-Automation Defense
+
+X-SENTINEL actively intercepts background network responses and DOM overlays to prevent burning accounts when rate limits or challenge walls are encountered:
+
+### A. GraphQL Error Code Interception
+
+During engagement tasks (`CreateRetweet`, `CreateTweet`, `FavoriteTweet`), `interactionEngine.js` intercepts raw GraphQL response codes:
+
+- **Error 344**: Daily Tweet Limit reached (`isDailyLimit: true`). Halts further publishing actions on the node immediately.
+- **Error 185**: User is over daily status update limit.
+- **Error 226**: Anti-automation flag (`isAutomated: true`).
+- **Error 327 / 139**: Already Retweeted / Already Liked (`isAlreadyDone: true`). Handled idempotently without counting as failures.
+- **Error 385**: Target post author has restricted replies.
+
+### B. DOM Challenge & Toast Detection
+
+- **Challenge Modal Interception**: Identifies "Add a phone / Daily limit" modal dialogs on X web interfaces, logging a clear warning and halting tasks before account locking escalates.
+- **Toast Alert Monitoring**: Scans for anti-automation toast notifications in multiple languages (_"This request looks like it might be automated" / "Permintaan ini tampaknya diotomatiskan"_).
+
+---
+
+## ⌨️ 13. Lexical Editor Typing & Modal-Scoped Reply Submission
+
+Modern X web interfaces use Meta's Lexical contenteditable framework, which frequently desynchronizes when standard `element.type()` methods simulate keystrokes.
+
+### A. Single-Focus `page.keyboard` Typing
+
+- In `humanCadence.js`, `humanType` focuses the target input element once and routes subsequent keystrokes strictly through `page.keyboard.type(char)`.
+- Prevents focus bounce, cursor resets, and dropped characters during humanized typing delays ($25\text{ms} - 90\text{ms}$).
+
+### B. Scoped Submit Button Targeting
+
+- Reply submission buttons are strictly scoped to the active modal dialog container (`[role="dialog"] [data-testid="tweetButton"]`) or thread inline container.
+- Eliminates misfired clicks against hidden or background feed tweet buttons.
+
+### C. Keystroke State Verification & Recovery
+
+- Verifies that the submit button's `aria-disabled` attribute transitions to `"false"`.
+- If Lexical fails to recognize typed text due to delayed state reconciliation, recovery keystrokes (space + backspace) are applied to force the DOM to synchronize before clicking.
+
+### D. History Engine Tracking
+
+- The active browser engine (`chromium` or `camoufox`) is tagged in every recorded interaction event in `history.json` (`browser_engine` field) for comprehensive forensic auditing.

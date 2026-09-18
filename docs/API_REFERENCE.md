@@ -16,15 +16,16 @@ All JSON requests should include the header `Content-Type: application/json`.
 
 1. [System Status & Telemetry](#1-system-status--telemetry)
 2. [Multi-Node Account Management](#2-multi-node-account-management)
-3. [Fleet Health & Session Validation](#3-fleet-health--session-validation)
-4. [Account Warm-up Protocol](#4-account-warm-up-protocol)
-5. [Engagement & Publishing Tasks](#5-engagement--publishing-tasks)
-6. [AI Post Studio & Contextual Inference](#6-ai-post-studio--contextual-inference)
-7. [Cron Scheduler & Post Queue](#7-cron-scheduler--post-queue)
-8. [Media & Image Uploads](#8-media--image-uploads)
-9. [Webhooks & Settings](#9-webhooks--settings)
-10. [Audit Ledger & Maintenance](#10-audit-ledger--maintenance)
-11. [Proxy & Spintax Utilities](#11-proxy--spintax-utilities)
+3. [Camoufox Persistent Profile Management](#3-camoufox-persistent-profile-management)
+4. [Fleet Health & Session Validation](#4-fleet-health--session-validation)
+5. [Account Warm-up Protocol](#5-account-warm-up-protocol)
+6. [Engagement & Publishing Tasks](#6-engagement--publishing-tasks)
+7. [AI Post Studio & Contextual Inference](#7-ai-post-studio--contextual-inference)
+8. [Cron Scheduler & Post Queue](#8-cron-scheduler--post-queue)
+9. [Media & Image Uploads](#9-media--image-uploads)
+10. [Webhooks & Settings](#10-webhooks--settings)
+11. [Audit Ledger & Maintenance](#11-audit-ledger--maintenance)
+12. [Proxy & Spintax Utilities](#12-proxy--spintax-utilities)
 
 ---
 
@@ -172,6 +173,29 @@ Establishes a Server-Sent Events stream for real-time log messages.
 data: {"id":"1724749200000","timestamp":"16:07:53","level":"success","message":"Berhasil memposting tweet..."}
 ```
 
+### `GET /api/logs/files`
+
+Returns the list of available daily rotating log files in `data/logs/` and the active log filename.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "files": ["x-sentinel-2026-09-18.log", "x-sentinel-2026-09-17.log"],
+  "current": "x-sentinel-2026-09-18.log"
+}
+```
+
+### `GET /api/logs/file`
+
+Views or downloads a specific daily log file. Supports optional date query filter (`?date=YYYY-MM-DD`) and attachment download flag (`?download=true`). If date is omitted, it defaults to the current day's log file with fallback to legacy `x-sentinel.log`.
+
+**Query Parameters:**
+
+- `date`: (optional, string format `YYYY-MM-DD`) Selects a specific daily log.
+- `download`: (optional, boolean `"true"` | `"false"`) Sends `Content-Disposition: attachment`.
+
 ---
 
 ## 2. Multi-Node Account Management
@@ -239,7 +263,62 @@ Downloads a JSON backup file of all registered accounts.
 
 ---
 
-## 3. Fleet Health & Session Validation
+## 3. Camoufox Persistent Profile Management
+
+### `GET /api/accounts/:id/camoufox-status`
+
+Checks whether an isolated persistent Camoufox profile directory exists and has active session storage state for a specific node account.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": {
+    "hasProfileDir": true,
+    "hasStorageState": true
+  }
+}
+```
+
+### `DELETE /api/accounts/:id/camoufox-profile`
+
+Safely deletes and resets the persistent Camoufox browser profile directory (`data/camoufox_profiles/<accountId>`) for an account without deleting account metadata or session tokens.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Camoufox profile removed."
+}
+```
+
+### `POST /api/accounts/batch-delete-camoufox`
+
+Bulk purges persistent Camoufox browser profile directories across multiple node accounts.
+
+**Request Body:**
+
+```json
+{
+  "ids": ["acc_1", "acc_2"]
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Removed 2 Camoufox profile(s).",
+  "deletedCount": 2
+}
+```
+
+---
+
+## 4. Fleet Health & Session Validation
 
 ### `POST /api/accounts/check-health`
 
@@ -291,7 +370,7 @@ A dead proxy returns `200` with `success: false`, `status: "DEAD"` and a human-r
 
 ---
 
-## 4. Account Warm-up Protocol
+## 5. Account Warm-up Protocol
 
 ### `POST /api/accounts/:id/warmup`
 
@@ -308,7 +387,7 @@ Triggers an automated warmup routine (timeline browsing and organic likes based 
 
 ---
 
-## 5. Engagement & Publishing Tasks
+## 6. Engagement & Publishing Tasks
 
 ### `POST /api/tasks/post`
 
@@ -364,7 +443,7 @@ Sends an abort signal to terminate any active automation task immediately.
 
 ---
 
-## 6. AI Post Studio & Contextual Inference
+## 7. AI Post Studio & Contextual Inference
 
 ### `POST /api/ai/generate-post`
 
@@ -458,7 +537,7 @@ Tests API connectivity and latency for a specified AI provider and API key.
 
 ---
 
-## 7. Cron Scheduler & Post Queue
+## 8. Cron Scheduler & Post Queue
 
 ### `GET /api/schedules`
 
@@ -493,7 +572,7 @@ Toggles active state of a scheduled task.
 
 ---
 
-## 8. Media & Image Uploads
+## 9. Media & Image Uploads
 
 ### `POST /api/media/upload`
 
@@ -521,7 +600,7 @@ Uploads an image file (Base64) to the server's local storage (`data/media/`).
 
 ---
 
-## 9. Webhooks & Settings
+## 10. Webhooks & Settings
 
 ### `GET /api/settings`
 
@@ -635,11 +714,37 @@ Read / save the global spintax template bank (also aliased as `GET/POST /api/com
 
 ---
 
-## 10. Audit Ledger & Maintenance
+## 11. Audit Ledger & Maintenance
 
 ### `GET /api/history?limit=100`
 
-Retrieves engagement history records and cumulative stats.
+Retrieves engagement history records and cumulative stats. Each interaction event records the active browser engine (`chromium` or `camoufox`) used for execution.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "history": [
+    {
+      "id": "hist_1899123456",
+      "accountId": "acc_1",
+      "accountLabel": "Node 1",
+      "vector": "COMMENT",
+      "targetUrl": "https://x.com/user/status/1899123456789012345",
+      "status": "SUCCESS",
+      "browser_engine": "camoufox",
+      "timestamp": "2026-09-18T13:45:00.000Z"
+    }
+  ],
+  "stats": {
+    "totalLikes": 142,
+    "totalRetweets": 38,
+    "totalComments": 51,
+    "totalPosts": 19
+  }
+}
+```
 
 ### `POST /api/history/prune`
 
@@ -660,7 +765,7 @@ Clears 100% of interaction audit history records.
 
 ---
 
-## 11. Proxy & Spintax Utilities
+## 12. Proxy & Spintax Utilities
 
 ### `POST /api/proxy/test`
 
