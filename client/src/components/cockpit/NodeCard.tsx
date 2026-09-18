@@ -40,7 +40,29 @@ export const NodeCard: React.FC<NodeCardProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPingingProxy, setIsPingingProxy] = useState(false);
   const [isWarmingUp, setIsWarmingUp] = useState(false);
+  const [isLoggingInCamoufox, setIsLoggingInCamoufox] = useState(false);
   const [proxyTest, setProxyTest] = useState<ProxyTestResult | null>(null);
+
+  const handleCamoufoxLogin = async () => {
+    setIsLoggingInCamoufox(true);
+    toast.info(
+      `🦊 Opening Camoufox for @${account.username || account.label}. Please complete login in the opened browser window...`,
+      { duration: 10000 }
+    );
+    try {
+      const res = await apiClient.startCamoufoxLogin(account.id);
+      if (res.success) {
+        toast.success(res.message);
+        loadAccounts();
+      } else {
+        toast.error(`Camoufox login failed: ${res.message}`);
+      }
+    } catch (err: any) {
+      toast.error(`Camoufox login error: ${err.message}`);
+    } finally {
+      setIsLoggingInCamoufox(false);
+    }
+  };
 
   const handleToggle = async () => {
     try {
@@ -225,6 +247,17 @@ export const NodeCard: React.FC<NodeCardProps> = ({
             </Badge>
           )}
 
+          {/* Camoufox Native Profile badge */}
+          {account.camoufoxProfile?.hasProfile && (
+            <Badge
+              variant="outline"
+              className="gap-0.5 border-orange-500/40 bg-orange-500/10 px-1.5 py-0.5 font-mono text-[9.5px] text-orange-300"
+              title={`Camoufox Native Profile Active (Logged in: ${account.camoufoxProfile.lastLoginAt ? new Date(account.camoufoxProfile.lastLoginAt).toLocaleDateString() : 'Active'})`}
+            >
+              <span>🦊 Camoufox Native</span>
+            </Badge>
+          )}
+
           {cleanProxy ? (
             <Badge
               variant="purple"
@@ -277,6 +310,24 @@ export const NodeCard: React.FC<NodeCardProps> = ({
 
       {/* Action Footer */}
       <div className="flex items-center gap-1 border-t border-border/50 pt-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 px-2 text-[11px] font-medium border-orange-500/30 bg-orange-500/5 text-orange-300 hover:bg-orange-500/20 hover:text-orange-200"
+          onClick={handleCamoufoxLogin}
+          disabled={isLoggingInCamoufox}
+          title="Login directly via Camoufox to generate native Firefox session"
+        >
+          <span className="mr-1">🦊</span>
+          <span>
+            {isLoggingInCamoufox
+              ? 'Opening...'
+              : account.camoufoxProfile?.hasProfile
+              ? 'Re-Login'
+              : 'Login Camoufox'}
+          </span>
+        </Button>
+
         <Button
           size="sm"
           variant="secondary"

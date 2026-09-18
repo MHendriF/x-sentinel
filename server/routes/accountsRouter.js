@@ -6,6 +6,7 @@ const twitterBot = require('../automation/twitterBot');
 const proxyHelper = require('../automation/proxyHelper');
 const { redactAccount, resolveSecret, resolveProxyString, isMaskedValue } = require('../security');
 const { validateBody, httpError } = require('../utils/http');
+const camoufoxLoginManager = require('../automation/bot/camoufoxLoginManager');
 
 const router = express.Router();
 
@@ -380,4 +381,60 @@ router.post('/:id/comments', validateBody(commentsSchema), (req, res) => {
   res.json({ success: true, count: comments.length });
 });
 
+// POST /api/accounts/:id/camoufox-login - Start interactive Camoufox login session
+router.post('/:id/camoufox-login', async (req, res) => {
+  const { id } = req.params;
+  const account = db.getAccountById(id);
+  if (!account) {
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
+  }
+
+  if (twitterBot.isRunning) {
+    throw httpError(
+      400,
+      'An automation task is currently running. Please wait or pause the task before logging in.',
+      'TASK_RUNNING'
+    );
+  }
+
+  try {
+    const result = await camoufoxLoginManager.startCamoufoxLogin(account);
+    res.json({
+      success: true,
+      message: result.message,
+      account: redactAccount(result.account),
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+// GET /api/accounts/:id/camoufox-status - Check status of Camoufox profile
+router.get('/:id/camoufox-status', (req, res) => {
+  const { id } = req.params;
+  const account = db.getAccountById(id);
+  if (!account) {
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
+  }
+
+  const status = camoufoxLoginManager.getCamoufoxProfileStatus(id);
+  res.json({ success: true, status });
+});
+
+// DELETE /api/accounts/:id/camoufox-profile - Remove Camoufox persistent profile
+router.delete('/:id/camoufox-profile', (req, res) => {
+  const { id } = req.params;
+  const account = db.getAccountById(id);
+  if (!account) {
+    throw httpError(404, 'Account not found.', 'NOT_FOUND');
+  }
+
+  const result = camoufoxLoginManager.deleteCamoufoxProfile(id);
+  res.json({ success: true, message: result.message });
+});
+
 module.exports = router;
+

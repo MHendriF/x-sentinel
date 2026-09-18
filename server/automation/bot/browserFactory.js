@@ -156,11 +156,30 @@ async function launchCamoufoxBrowser(account, _options = {}, isHeadless = false)
     }
   }
 
+  const fs = require('fs');
+  const path = require('path');
+  const profileDir = path.join(config.CAMOUFOX_PROFILES_DIR, account.id);
+  const hasPersistentProfile = fs.existsSync(profileDir);
+
+  if (hasPersistentProfile) {
+    camoufoxOptions.data_dir = profileDir;
+    logger.info(
+      `🦊 [@${account.username || account.label}] Loading dedicated Camoufox persistent profile: ${account.id}`
+    );
+  }
+
   logger.info(
-    `🦊 Launching Camoufox (Anti-Detect Firefox) for node @${account.username || account.label} (Headless: ${isHeadless ? 'Enabled' : 'Disabled'})...`
+    `🦊 Launching Camoufox (Anti-Detect Firefox) for node @${account.username || account.label} (Headless: ${isHeadless ? 'Enabled' : 'Disabled'}, Profile: ${hasPersistentProfile ? 'Persistent' : 'Ephemeral'})...`
   );
 
-  const browser = await Camoufox(camoufoxOptions);
+  const instance = await Camoufox(camoufoxOptions);
+
+  if (hasPersistentProfile) {
+    // In Camoufox, data_dir returns a BrowserContext directly from launchPersistentContext
+    const context = instance;
+    const browser = typeof instance.browser === 'function' ? instance.browser() : null;
+    return { browser, context, engine: 'camoufox', isPersistent: true };
+  }
 
   // In Camoufox, viewport: null allows Camoufox's native C++ spoofed geometry without triggering Juggler protocol schema errors
   const contextOptions = {
@@ -178,13 +197,14 @@ async function launchCamoufoxBrowser(account, _options = {}, isHeadless = false)
     contextOptions.locale = 'en-US';
   }
 
+  const browser = instance;
   const context = await browser.newContext(contextOptions);
 
   if (account.auth_token) {
     await cookieManager.applyCookies(context, account.auth_token, account.ct0);
   }
 
-  return { browser, context, engine: 'camoufox' };
+  return { browser, context, engine: 'camoufox', isPersistent: false };
 }
 
 /**
@@ -232,7 +252,7 @@ async function closeBrowserResources(browser, context, page) {
     if (context) {
       await closeWithTimeout(context.close());
     }
-    if (browser) {
+    if (browser && browser !== context) {
       const proc = typeof browser.process === 'function' ? browser.process() : null;
       await closeWithTimeout(browser.close());
       if (proc && !proc.killed && proc.pid) {

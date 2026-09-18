@@ -43,6 +43,7 @@ function resolveInitialPort() {
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const USER_DATA_DIR = path.join(DATA_DIR, 'browser_profile');
+const CAMOUFOX_PROFILES_DIR = path.join(DATA_DIR, 'camoufox_profiles');
 
 module.exports = {
   VERSION: require('../package.json').version,
@@ -53,6 +54,7 @@ module.exports = {
   ROOT_DIR,
   DATA_DIR,
   USER_DATA_DIR,
+  CAMOUFOX_PROFILES_DIR,
 
   // Default Anti-Ban & Rate Limits
   DEFAULTS: {

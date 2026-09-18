@@ -24,6 +24,12 @@ export interface AccountNode {
     comments: number;
     posts?: number;
   };
+  camoufoxProfile?: {
+    hasProfile: boolean;
+    profileDir?: string;
+    lastLoginAt?: string;
+    engine?: string;
+  } | null;
 }
 
 export type Account = AccountNode;
@@ -268,6 +274,24 @@ export const apiClient = {
 
   async verifyAccount(id: string) {
     const res = await fetch(`/api/accounts/${id}/verify`, { method: 'POST' });
+    return res.json();
+  },
+
+  // Camoufox Dedicated Login & Profile Management
+  async startCamoufoxLogin(
+    id: string
+  ): Promise<{ success: boolean; message: string; account?: AccountNode }> {
+    const res = await fetch(`/api/accounts/${id}/camoufox-login`, { method: 'POST' });
+    return res.json();
+  },
+
+  async getCamoufoxStatus(id: string): Promise<{ success: boolean; status: any }> {
+    const res = await fetch(`/api/accounts/${id}/camoufox-status`);
+    return res.json();
+  },
+
+  async deleteCamoufoxProfile(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`/api/accounts/${id}/camoufox-profile`, { method: 'DELETE' });
     return res.json();
   },
 

@@ -287,6 +287,10 @@ class LocalDB {
       warmupDay: accountData.warmupDay !== undefined ? accountData.warmupDay : (existing.warmupDay !== undefined ? existing.warmupDay : 1),
       lastWarmupAt: accountData.lastWarmupAt !== undefined ? accountData.lastWarmupAt : (existing.lastWarmupAt || null),
       stats: accountData.stats || existing.stats || { likes: 0, retweets: 0, comments: 0 },
+      camoufoxProfile:
+        accountData.camoufoxProfile !== undefined
+          ? accountData.camoufoxProfile
+          : existing.camoufoxProfile || null,
     };
 
     if (existingIndex >= 0) {
