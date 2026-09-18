@@ -121,6 +121,7 @@ export const DefenseProfilePresets: React.FC<DefenseProfilePresetsProps> = ({
           return (
             <button
               key={prof.id}
+              id={`defense-profile-${prof.id}`}
               type="button"
               onClick={() => onApplyProfile(prof)}
               className={`flex flex-col justify-between rounded-lg border p-3 text-left transition-all ${

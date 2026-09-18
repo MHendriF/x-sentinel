@@ -27,32 +27,69 @@ import {
   Check,
   Zap,
 } from 'lucide-react';
-import { DefenseProfilePresets, DefenseProfile } from './defense/DefenseProfilePresets';
+import { DefenseProfilePresets, DefenseProfile, DEFENSE_PROFILES } from './defense/DefenseProfilePresets';
 import { DefensePostureHUD } from './defense/DefensePostureHUD';
 
 export const DefenseProtocol: React.FC = () => {
   const { settings, setSettings, loadSettings, setActiveTab } = useStore();
 
-  const [minDelay, setMinDelay] = useState(15);
-  const [maxDelay, setMaxDelay] = useState(35);
-  const [switchDelay, setSwitchDelay] = useState(10);
-  const [hourlyLimit, setHourlyLimit] = useState(25);
-  const [dailyLimit, setDailyLimit] = useState(150);
-  const [typingDelay, setTypingDelay] = useState(65);
-  const [headless, setHeadless] = useState(false);
-  const [scrollAction, setScrollAction] = useState(true);
-  const [browserEngine, setBrowserEngine] = useState<'chromium' | 'camoufox'>('chromium');
-  const [activeProfileId, setActiveProfileId] = useState<string | null>('balanced');
+  const [minDelay, setMinDelay] = useState(settings?.minDelaySeconds ?? 15);
+  const [maxDelay, setMaxDelay] = useState(settings?.maxDelaySeconds ?? 35);
+  const [switchDelay, setSwitchDelay] = useState(settings?.accountSwitchDelaySec ?? 10);
+  const [hourlyLimit, setHourlyLimit] = useState(settings?.hourlyLimit ?? 25);
+  const [dailyLimit, setDailyLimit] = useState(settings?.dailyLimit ?? 150);
+  const [typingDelay, setTypingDelay] = useState(settings?.humanTypingDelayMs ?? 65);
+  const [headless, setHeadless] = useState(Boolean(settings?.headless));
+  const [scrollAction, setScrollAction] = useState(settings ? Boolean(settings.scrollBeforeAction) : true);
+  const [browserEngine, setBrowserEngine] = useState<'chromium' | 'camoufox'>(
+    (settings?.browserEngine as 'chromium' | 'camoufox') || 'chromium'
+  );
+
+  // Derive active profile dynamically from current settings values
+  const activeProfileId = useMemo(() => {
+    const matched = DEFENSE_PROFILES.find((prof) => {
+      const s = prof.settings;
+      const minMatch = Number(minDelay) === s.minDelay;
+      const maxMatch = Number(maxDelay) === s.maxDelay;
+      const switchMatch = Number(switchDelay) === s.switchDelay;
+      const hourlyMatch = Number(hourlyLimit) === s.hourlyLimit;
+      const dailyMatch = Number(dailyLimit) === s.dailyLimit;
+      const typingMatch = Number(typingDelay) === s.typingDelay;
+      const scrollMatch = Boolean(scrollAction) === Boolean(s.scrollAction);
+      const engineMatch = s.browserEngine ? browserEngine === s.browserEngine : true;
+
+      return (
+        minMatch &&
+        maxMatch &&
+        switchMatch &&
+        hourlyMatch &&
+        dailyMatch &&
+        typingMatch &&
+        scrollMatch &&
+        engineMatch
+      );
+    });
+    return matched ? matched.id : null;
+  }, [
+    minDelay,
+    maxDelay,
+    switchDelay,
+    hourlyLimit,
+    dailyLimit,
+    typingDelay,
+    scrollAction,
+    browserEngine,
+  ]);
 
   // Webhooks state
-  const [telegramEnabled, setTelegramEnabled] = useState(false);
-  const [telegramBotToken, setTelegramBotToken] = useState('');
-  const [telegramChatId, setTelegramChatId] = useState('');
-  const [discordEnabled, setDiscordEnabled] = useState(false);
-  const [discordWebhookUrl, setDiscordWebhookUrl] = useState('');
-  const [notifyOnTaskComplete, setNotifyOnTaskComplete] = useState(true);
-  const [notifyOnRateLimit, setNotifyOnRateLimit] = useState(true);
-  const [notifyOnSessionExpire, setNotifyOnSessionExpire] = useState(true);
+  const [telegramEnabled, setTelegramEnabled] = useState(Boolean(settings?.telegramEnabled));
+  const [telegramBotToken, setTelegramBotToken] = useState(settings?.telegramBotToken || '');
+  const [telegramChatId, setTelegramChatId] = useState(settings?.telegramChatId || '');
+  const [discordEnabled, setDiscordEnabled] = useState(Boolean(settings?.discordEnabled));
+  const [discordWebhookUrl, setDiscordWebhookUrl] = useState(settings?.discordWebhookUrl || '');
+  const [notifyOnTaskComplete, setNotifyOnTaskComplete] = useState(settings?.notifyOnTaskComplete !== false);
+  const [notifyOnRateLimit, setNotifyOnRateLimit] = useState(settings?.notifyOnRateLimit !== false);
+  const [notifyOnSessionExpire, setNotifyOnSessionExpire] = useState(settings?.notifyOnSessionExpire !== false);
 
   // Testing states
   const [isTestingWebhook, setIsTestingWebhook] = useState<'telegram' | 'discord' | null>(null);
@@ -136,7 +173,6 @@ export const DefenseProtocol: React.FC = () => {
   ]);
 
   const handleApplyProfile = (profile: DefenseProfile) => {
-    setActiveProfileId(profile.id);
     setMinDelay(profile.settings.minDelay);
     setMaxDelay(profile.settings.maxDelay);
     setSwitchDelay(profile.settings.switchDelay);
@@ -340,10 +376,7 @@ export const DefenseProtocol: React.FC = () => {
               <Input
                 type="number"
                 value={minDelay}
-                onChange={(e) => {
-                  setMinDelay(Number(e.target.value));
-                  setActiveProfileId(null);
-                }}
+                onChange={(e) => setMinDelay(Number(e.target.value))}
                 min={3}
                 max={300}
                 className="font-mono text-xs"
@@ -361,10 +394,7 @@ export const DefenseProtocol: React.FC = () => {
               <Input
                 type="number"
                 value={maxDelay}
-                onChange={(e) => {
-                  setMaxDelay(Number(e.target.value));
-                  setActiveProfileId(null);
-                }}
+                onChange={(e) => setMaxDelay(Number(e.target.value))}
                 min={5}
                 max={600}
                 className="font-mono text-xs"
@@ -382,10 +412,7 @@ export const DefenseProtocol: React.FC = () => {
               <Input
                 type="number"
                 value={switchDelay}
-                onChange={(e) => {
-                  setSwitchDelay(Number(e.target.value));
-                  setActiveProfileId(null);
-                }}
+                onChange={(e) => setSwitchDelay(Number(e.target.value))}
                 min={2}
                 max={180}
                 className="font-mono text-xs"
@@ -408,10 +435,7 @@ export const DefenseProtocol: React.FC = () => {
               <Input
                 type="number"
                 value={hourlyLimit}
-                onChange={(e) => {
-                  setHourlyLimit(Number(e.target.value));
-                  setActiveProfileId(null);
-                }}
+                onChange={(e) => setHourlyLimit(Number(e.target.value))}
                 min={1}
                 max={200}
                 className="font-mono text-xs"
@@ -434,10 +458,7 @@ export const DefenseProtocol: React.FC = () => {
               <Input
                 type="number"
                 value={dailyLimit}
-                onChange={(e) => {
-                  setDailyLimit(Number(e.target.value));
-                  setActiveProfileId(null);
-                }}
+                onChange={(e) => setDailyLimit(Number(e.target.value))}
                 min={5}
                 max={1000}
                 className="font-mono text-xs"
@@ -465,10 +486,7 @@ export const DefenseProtocol: React.FC = () => {
               max={150}
               step={5}
               value={typingDelay}
-              onChange={(e) => {
-                setTypingDelay(Number(e.target.value));
-                setActiveProfileId(null);
-              }}
+              onChange={(e) => setTypingDelay(Number(e.target.value))}
               className="w-full accent-amber-500"
             />
             <div className="flex justify-between text-[10px] text-slate-500 font-mono">
