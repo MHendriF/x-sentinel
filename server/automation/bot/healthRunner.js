@@ -1,11 +1,9 @@
-const { chromium } = require('playwright');
-const config = require('../../config');
 const db = require('../../db');
 const logger = require('../../logger');
 const proxyHelper = require('../proxyHelper');
 const cookieManager = require('../cookieManager');
 const notifier = require('../notifier');
-const { applyStealthScripts, launchAccountBrowser } = require('./browserFactory');
+const { launchAccountBrowser, closeBrowserResources } = require('./browserFactory');
 const { sleep } = require('./humanCadence');
 
 /**
@@ -13,6 +11,8 @@ const { sleep } = require('./humanCadence');
  */
 async function verifyAccount(account) {
   let tempBrowser = null;
+  let tempContext = null;
+  let page = null;
   try {
     logger.info(`🔍 Verifying account node: ${account.label} (@${account.username || 'unknown'})...`);
 
@@ -21,35 +21,11 @@ async function verifyAccount(account) {
       return { success: false, message: validation.message };
     }
 
-    const launchOptions = {
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-blink-features=AutomationControlled',
-        '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
-        '--enforce-webrtc-ip-permission-check',
-      ],
-    };
+    const launchRes = await launchAccountBrowser(account, { headless: true });
+    tempBrowser = launchRes.browser;
+    tempContext = launchRes.context;
 
-    if (account.proxy) {
-      const proxyLaunch = proxyHelper.getPlaywrightLaunchProxy(account.proxy);
-      if (proxyLaunch) {
-        launchOptions.proxy = proxyLaunch;
-        logger.info(`🌐 Testing connection via Proxy: ${proxyLaunch.server}`);
-      }
-    }
-
-    tempBrowser = await chromium.launch(launchOptions);
-    const tempContext = await tempBrowser.newContext({
-      userAgent: config.USER_AGENT,
-      viewport: { width: 1280, height: 800 },
-    });
-
-    await applyStealthScripts(tempContext);
-    await cookieManager.applyCookies(tempContext, account.auth_token, account.ct0);
-
-    const page = await tempContext.newPage();
+    page = await tempContext.newPage();
     page.setDefaultTimeout(30000);
 
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
@@ -123,9 +99,7 @@ async function verifyAccount(account) {
     logger.error(`❌ Verification error for ${account.label}: ${err.message}`);
     return { success: false, message: `Verification failed: ${err.message}` };
   } finally {
-    if (tempBrowser) {
-      await tempBrowser.close().catch(() => {});
-    }
+    await closeBrowserResources(tempBrowser, tempContext, page);
   }
 }
 
@@ -188,8 +162,7 @@ async function checkAccountHealth(account) {
       notifier.notify('SESSION_EXPIRED', {
         accountName: account.username || account.label,
       });
-      await context.close().catch(() => {});
-      await browser.close().catch(() => {});
+      await closeBrowserResources(browser, context, page);
       return {
         success: false,
         healthStatus: 'EXPIRED',
@@ -203,35 +176,38 @@ async function checkAccountHealth(account) {
       const accountLink = await page.$('a[data-testid="AppTabBar_Profile_Link"]');
       if (accountLink) {
         const href = await accountLink.getAttribute('href');
-        if (href && href.length > 1) {
+        if (href && href.length > 1 && !href.includes('/home')) {
           detectedUsername = href.replace('/', '').trim();
         }
       }
     } catch (e) {}
 
+    const isCamoufox = launchRes.engine === 'camoufox';
     const updated = db.saveAccount({
       ...account,
       username: detectedUsername || account.username,
       healthStatus: 'HEALTHY',
-      healthMessage: 'Session active & verified healthy',
+      healthMessage: isCamoufox
+        ? 'Camoufox native Firefox session verified healthy'
+        : 'Session active & verified healthy',
       lastCheckedAt: new Date().toISOString(),
     });
 
     logger.success(
-      `✅ [Healthy] Node ${account.label} (@${detectedUsername || account.username}) is active & valid.`
+      `✅ [Healthy] Node ${account.label} (@${detectedUsername || account.username}) is active & valid (${launchRes.engine || 'chromium'}).`
     );
-    await context.close().catch(() => {});
-    await browser.close().catch(() => {});
+    await closeBrowserResources(browser, context, page);
 
     return {
       success: true,
       healthStatus: 'HEALTHY',
       account: updated,
-      message: 'Session is active and verified healthy!',
+      message: isCamoufox
+        ? 'Camoufox native Firefox session is active & verified healthy!'
+        : 'Session is active and verified healthy!',
     };
   } catch (err) {
-    if (context) await context.close().catch(() => {});
-    if (browser) await browser.close().catch(() => {});
+    await closeBrowserResources(browser, context);
     logger.warn(
       `⚠️ [Audit Failed] Node ${account.label} (@${account.username || 'unknown'}): ${err.message}`
     );

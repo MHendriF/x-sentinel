@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { chromium } = require('playwright');
 const config = require('../../config');
 const db = require('../../db');
@@ -157,8 +159,6 @@ async function launchCamoufoxBrowser(account, _options = {}, isHeadless = false)
     }
   }
 
-  const fs = require('fs');
-  const path = require('path');
   const profileDir = path.join(config.CAMOUFOX_PROFILES_DIR, account.id);
   const hasPersistentProfile = fs.existsSync(profileDir);
 
@@ -218,9 +218,19 @@ async function launchAccountBrowser(account, options = {}) {
 
   const settings = db.getSettings() || {};
   const isHeadless = options.headless !== undefined ? options.headless : Boolean(settings.headless);
+
+  // Smart Engine Routing: Automatically prioritize Camoufox if account has an active persistent profile
+  const profileDir = config.CAMOUFOX_PROFILES_DIR
+    ? path.join(config.CAMOUFOX_PROFILES_DIR, account.id)
+    : null;
+  const hasCamoufoxProfile = Boolean(
+    account.camoufoxProfile?.hasProfile || (profileDir && fs.existsSync(profileDir))
+  );
+
   const requestedEngine = (
     account.browserEngine ||
     options.engine ||
+    (hasCamoufoxProfile ? 'camoufox' : null) ||
     settings.browserEngine ||
     'chromium'
   ).toLowerCase();
