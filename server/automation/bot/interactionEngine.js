@@ -137,6 +137,193 @@ async function handlePageInterstitials(page) {
 }
 
 /**
+ * Parse an intercepted GraphQL response from X
+ */
+function parseGraphQLResponse(url, status, json) {
+  if (!url || !url.includes('/graphql/')) return null;
+
+  let actionType = null;
+  if (url.includes('CreateRetweet')) actionType = 'RETWEET';
+  else if (url.includes('DeleteRetweet')) actionType = 'UNRETWEET';
+  else if (url.includes('CreateTweet')) actionType = 'TWEET';
+  else if (url.includes('FavoriteTweet')) actionType = 'LIKE';
+  else if (url.includes('UnfavoriteTweet')) actionType = 'UNLIKE';
+
+  if (!actionType) return null;
+
+  // Check for GraphQL errors
+  if (json?.errors && Array.isArray(json.errors) && json.errors.length > 0) {
+    const err = json.errors[0];
+    const code = err.code || status;
+    const message = err.message || 'Unknown GraphQL Error';
+    const isAutomated =
+      code === 226 ||
+      /automated/i.test(message) ||
+      /diotomatiskan/i.test(message) ||
+      /spam/i.test(message) ||
+      /protect our users/i.test(message);
+    const isAlreadyDone =
+      code === 327 ||
+      code === 139 ||
+      /already (?:re)?tweeted/i.test(message) ||
+      /already favorited/i.test(message);
+
+    return {
+      actionType,
+      success: false,
+      isAutomated,
+      isAlreadyDone,
+      code,
+      message,
+      status,
+      raw: json,
+    };
+  }
+
+  // Check for HTTP error status without structured errors
+  if (status >= 400) {
+    const isAutomated = status === 403;
+    return {
+      actionType,
+      success: false,
+      isAutomated,
+      code: status,
+      message: `HTTP ${status}`,
+      status,
+      raw: json,
+    };
+  }
+
+  // Check for GraphQL success data
+  if (json?.data) {
+    let restId = null;
+    if (actionType === 'RETWEET') {
+      restId = json.data?.create_retweet?.retweet_results?.result?.rest_id;
+    } else if (actionType === 'TWEET') {
+      restId =
+        json.data?.create_tweet?.tweet_results?.result?.rest_id ||
+        json.data?.create_tweet?.tweet_results?.result?.legacy?.id_str;
+    }
+
+    return {
+      actionType,
+      success: true,
+      restId,
+      status,
+      raw: json,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Inspect page for toast alerts, error banners, or anti-automation warnings
+ */
+async function checkToastAlert(page) {
+  if (!page || typeof page.evaluate !== 'function') return null;
+  return await page
+    .evaluate(() => {
+      const selectors = [
+        '[data-testid="toast"]',
+        'div[role="alert"]',
+        '[data-testid="error-detail"]',
+        '#layers [role="status"]',
+      ];
+      for (const sel of selectors) {
+        const els = document.querySelectorAll(sel);
+        for (const el of els) {
+          const text = (el.innerText || el.textContent || '').trim();
+          if (text) {
+            const lower = text.toLowerCase();
+            const isAutomated =
+              lower.includes('automated') ||
+              lower.includes('otomatiskan') ||
+              lower.includes('diotomatiskan') ||
+              lower.includes('spam and other malicious') ||
+              lower.includes('protect our users');
+            return {
+              text,
+              isAutomated,
+              isError:
+                isAutomated ||
+                lower.includes('wrong') ||
+                lower.includes('error') ||
+                lower.includes('gagal') ||
+                lower.includes('kesalahan') ||
+                lower.includes('cannot') ||
+                lower.includes('tidak dapat'),
+            };
+          }
+        }
+      }
+      return null;
+    })
+    .catch(() => null);
+}
+
+/**
+ * Create an action tracker that monitors GraphQL network responses
+ */
+function createActionTracker(page, targetAction) {
+  let captured = null;
+
+  if (!page || typeof page.on !== 'function') {
+    return {
+      cleanup: () => {},
+      getResult: () => null,
+      waitForResult: async () => null,
+    };
+  }
+
+  const responseHandler = async (response) => {
+    try {
+      const url = typeof response?.url === 'function' ? response.url() : '';
+      if (!url || !url.includes('/graphql/')) return;
+
+      const status = typeof response.status === 'function' ? response.status() : 200;
+      const json = await response.json().catch(() => null);
+
+      const parsed = parseGraphQLResponse(url, status, json);
+      if (parsed) {
+        if (
+          !targetAction ||
+          parsed.actionType === targetAction ||
+          (targetAction === 'REPLY' && parsed.actionType === 'TWEET')
+        ) {
+          captured = parsed;
+        }
+      }
+    } catch (e) {
+      // ignore interceptor errors
+    }
+  };
+
+  page.on('response', responseHandler);
+
+  return {
+    cleanup: () => {
+      try {
+        if (typeof page.off === 'function') {
+          page.off('response', responseHandler);
+        } else if (typeof page.removeListener === 'function') {
+          page.removeListener('response', responseHandler);
+        }
+      } catch (e) {}
+    },
+    getResult: () => captured,
+    waitForResult: async (timeoutMs = 6000) => {
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        if (captured) return captured;
+        await sleep(200);
+      }
+      return captured;
+    },
+  };
+}
+
+/**
  * Locate the primary or target tweet article container on page
  */
 async function findTargetTweetArticle(page, tweetId) {
@@ -427,44 +614,115 @@ async function likeTweet(page, tweetUrl, account) {
       return { success: false, message: msg };
     }
 
-    await safeClick(page, likeBtn);
-    await sleep(800);
+    const tracker = createActionTracker(page, 'LIKE');
 
-    let isLiked = false;
-    const startTime = Date.now();
-    while (Date.now() - startTime < 6000) {
-      const verified = await checkAlreadyLiked(targetArticle, page);
-      if (verified) {
-        isLiked = true;
-        break;
+    try {
+      await safeClick(page, likeBtn);
+      await sleep(800);
+
+      let isLiked = false;
+      let failureReason = null;
+      let isAutomatedBlock = false;
+      let errorCode = null;
+
+      const startTime = Date.now();
+      while (Date.now() - startTime < 6000) {
+        // 1. Check API response
+        const apiRes = tracker.getResult();
+        if (apiRes) {
+          if (apiRes.success) {
+            isLiked = true;
+            break;
+          } else if (apiRes.isAlreadyDone) {
+            logger.info(
+              `ℹ️ [@${account.username || account.label}] Post already liked previously.`
+            );
+            db.addHistory({
+              accountId: account.id,
+              accountName: account.username || account.label,
+              tweetUrl,
+              tweetId,
+              action: 'LIKE',
+              status: 'ALREADY_DONE',
+              message: 'Already liked',
+            });
+            return { success: true, status: 'ALREADY_DONE' };
+          } else {
+            failureReason = apiRes.message || 'Like rejected by X API';
+            isAutomatedBlock = Boolean(apiRes.isAutomated);
+            errorCode = apiRes.code;
+            break;
+          }
+        }
+
+        // 2. Check toast
+        const toast = await checkToastAlert(page);
+        if (toast && toast.isError) {
+          failureReason = toast.text;
+          isAutomatedBlock = Boolean(toast.isAutomated);
+          break;
+        }
+
+        // 3. Check DOM button state
+        const verified = await checkAlreadyLiked(targetArticle, page);
+        if (verified) {
+          isLiked = true;
+          break;
+        }
+        await sleep(400);
       }
-      await sleep(500);
-    }
 
-    if (isLiked) {
-      logger.success(`❤️ [@${account.username || account.label}] Successfully Liked: ${tweetUrl}`);
-      db.addHistory({
-        accountId: account.id,
-        accountName: account.username || account.label,
-        tweetUrl,
-        tweetId,
-        action: 'LIKE',
-        status: 'SUCCESS',
-      });
-      return { success: true, status: 'SUCCESS' };
-    } else {
-      const msg = 'Like verification failed (status did not change to unlike)';
-      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}`);
-      db.addHistory({
-        accountId: account.id,
-        accountName: account.username || account.label,
-        tweetUrl,
-        tweetId,
-        action: 'LIKE',
-        status: 'FAILED',
-        message: msg,
-      });
-      return { success: false, message: msg };
+      if (isLiked) {
+        logger.success(
+          `❤️ [@${account.username || account.label}] Successfully Liked: ${tweetUrl}`
+        );
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          tweetUrl,
+          tweetId,
+          action: 'LIKE',
+          status: 'SUCCESS',
+        });
+        return { success: true, status: 'SUCCESS' };
+      } else {
+        const errorMsg =
+          failureReason || 'Like verification failed (status did not change to unlike)';
+        if (isAutomatedBlock || /automated/i.test(errorMsg) || /otomatis/i.test(errorMsg)) {
+          logger.error(
+            `🛡️ [@${account.username || account.label}] Like BLOCKED by X Anti-Automation: "${errorMsg}" (Code: ${errorCode || 226})`
+          );
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl,
+            tweetId,
+            action: 'LIKE',
+            status: 'FAILED',
+            message: `Anti-Automation Block (${errorCode || 226}): ${errorMsg}`,
+          });
+          return {
+            success: false,
+            status: 'AUTOMATED_FLAG',
+            code: errorCode || 226,
+            message: errorMsg,
+          };
+        }
+
+        logger.warn(`⚠️ [@${account.username || account.label}] ${errorMsg}`);
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          tweetUrl,
+          tweetId,
+          action: 'LIKE',
+          status: 'FAILED',
+          message: errorMsg,
+        });
+        return { success: false, message: errorMsg };
+      }
+    } finally {
+      tracker.cleanup();
     }
   } catch (err) {
     logger.error(`❌ [@${account.username || account.label}] Like failed: ${err.message}`);
@@ -579,9 +837,7 @@ async function findRetweetInGroup(container) {
         if (
           testid === 'retweet' ||
           (aria.includes('repost') && !aria.includes('undo') && !aria.includes('reposted')) ||
-          (aria.includes('posting ulang') &&
-            !aria.includes('batal') &&
-            !aria.includes('diposting'))
+          (aria.includes('posting ulang') && !aria.includes('batal') && !aria.includes('diposting'))
         ) {
           return true;
         }
@@ -660,9 +916,7 @@ async function retweetTweet(page, tweetUrl, account) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       const unretweetBtn = await checkAlreadyRetweeted(targetArticle, page);
       if (unretweetBtn) {
-        logger.info(
-          `ℹ️ [@${account.username || account.label}] Post already reposted previously.`
-        );
+        logger.info(`ℹ️ [@${account.username || account.label}] Post already reposted previously.`);
         db.addHistory({
           accountId: account.id,
           accountName: account.username || account.label,
@@ -693,8 +947,7 @@ async function retweetTweet(page, tweetUrl, account) {
           if (btn && btn.getAttribute('aria-disabled') === 'true') return true;
           const text = document.body ? document.body.innerText : '';
           return (
-            text.includes("You can't Repost") ||
-            text.includes('Anda tidak dapat memposting ulang')
+            text.includes("You can't Repost") || text.includes('Anda tidak dapat memposting ulang')
           );
         })
         .catch(() => false);
@@ -753,48 +1006,118 @@ async function retweetTweet(page, tweetUrl, account) {
       return { success: false, message: msg };
     }
 
-    await safeClick(page, confirmBtn);
-    await sleep(1000);
+    const tracker = createActionTracker(page, 'RETWEET');
 
-    await dismissOverlays(page);
+    try {
+      await safeClick(page, confirmBtn);
+      await sleep(1000);
 
-    let isRetweeted = false;
-    const startTime = Date.now();
-    while (Date.now() - startTime < 6000) {
-      const verified = await checkAlreadyRetweeted(targetArticle, page);
-      if (verified) {
-        isRetweeted = true;
-        break;
+      let isRetweeted = false;
+      let failureReason = null;
+      let isAutomatedBlock = false;
+      let errorCode = null;
+
+      const startTime = Date.now();
+      while (Date.now() - startTime < 7000) {
+        // 1. Check API response from GraphQL interceptor
+        const apiRes = tracker.getResult();
+        if (apiRes) {
+          if (apiRes.success) {
+            isRetweeted = true;
+            break;
+          } else if (apiRes.isAlreadyDone) {
+            logger.info(
+              `ℹ️ [@${account.username || account.label}] API reported: Already reposted.`
+            );
+            db.addHistory({
+              accountId: account.id,
+              accountName: account.username || account.label,
+              tweetUrl,
+              tweetId,
+              action: 'RETWEET',
+              status: 'ALREADY_DONE',
+              message: apiRes.message || 'Already reposted',
+            });
+            return { success: true, status: 'ALREADY_DONE' };
+          } else {
+            failureReason = apiRes.message || 'Retweet rejected by X API';
+            isAutomatedBlock = Boolean(apiRes.isAutomated);
+            errorCode = apiRes.code;
+            break;
+          }
+        }
+
+        // 2. Check UI Toast alert for instant error notification
+        const toast = await checkToastAlert(page);
+        if (toast && toast.isError) {
+          failureReason = toast.text;
+          isAutomatedBlock = Boolean(toast.isAutomated);
+          break;
+        }
+
+        // 3. Check DOM for button state change
+        const verified = await checkAlreadyRetweeted(targetArticle, page);
+        if (verified) {
+          isRetweeted = true;
+          break;
+        }
+
+        await sleep(400);
       }
-      await sleep(500);
-    }
 
-    if (isRetweeted) {
-      logger.success(
-        `🔁 [@${account.username || account.label}] Successfully Retweeted: ${tweetUrl}`
-      );
-      db.addHistory({
-        accountId: account.id,
-        accountName: account.username || account.label,
-        tweetUrl,
-        tweetId,
-        action: 'RETWEET',
-        status: 'SUCCESS',
-      });
-      return { success: true, status: 'SUCCESS' };
-    } else {
-      const msg = 'Retweet verification failed';
-      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}`);
-      db.addHistory({
-        accountId: account.id,
-        accountName: account.username || account.label,
-        tweetUrl,
-        tweetId,
-        action: 'RETWEET',
-        status: 'FAILED',
-        message: msg,
-      });
-      return { success: false, message: msg };
+      await dismissOverlays(page);
+
+      if (isRetweeted) {
+        logger.success(
+          `🔁 [@${account.username || account.label}] Successfully Retweeted: ${tweetUrl}`
+        );
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          tweetUrl,
+          tweetId,
+          action: 'RETWEET',
+          status: 'SUCCESS',
+        });
+        return { success: true, status: 'SUCCESS' };
+      } else {
+        const errorMsg =
+          failureReason || 'Retweet verification failed (no state change or API confirmation)';
+        if (isAutomatedBlock || /automated/i.test(errorMsg) || /otomatis/i.test(errorMsg)) {
+          logger.error(
+            `🛡️ [@${account.username || account.label}] Retweet BLOCKED by X Anti-Automation: "${errorMsg}" (Code: ${errorCode || 226})`
+          );
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl,
+            tweetId,
+            action: 'RETWEET',
+            status: 'FAILED',
+            message: `Anti-Automation Block (${errorCode || 226}): ${errorMsg}`,
+          });
+          return {
+            success: false,
+            status: 'AUTOMATED_FLAG',
+            code: errorCode || 226,
+            message: errorMsg,
+          };
+        }
+
+        logger.warn(`⚠️ [@${account.username || account.label}] Retweet failed: ${errorMsg}`);
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          tweetUrl,
+          tweetId,
+          action: 'RETWEET',
+          status: 'FAILED',
+          message: errorMsg,
+        });
+        return { success: false, status: 'FAILED', message: errorMsg };
+      }
+    } finally {
+      tracker.cleanup();
     }
   } catch (err) {
     logger.error(`❌ [@${account.username || account.label}] Retweet failed: ${err.message}`);
@@ -1093,24 +1416,115 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       return { success: false, message: msg };
     }
 
-    await safeClick(page, replyBtn);
-    await sleep(2500);
+    const tracker = createActionTracker(page, 'REPLY');
 
-    await dismissOverlays(page);
+    try {
+      await safeClick(page, replyBtn);
 
-    logger.success(
-      `💬 [@${account.username || account.label}] Reply dispatched successfully: "${replyText}"`
-    );
-    db.addHistory({
-      accountId: account.id,
-      accountName: account.username || account.label,
-      tweetUrl,
-      tweetId,
-      action: 'COMMENT',
-      status: 'SUCCESS',
-      details: replyText,
-    });
-    return { success: true, status: 'SUCCESS', replyText };
+      let isReplySuccess = false;
+      let failureReason = null;
+      let isAutomatedBlock = false;
+      let errorCode = null;
+      let capturedReplyId = null;
+
+      const startTime = Date.now();
+      while (Date.now() - startTime < 8000) {
+        // 1. Check API response from GraphQL interceptor
+        const apiRes = tracker.getResult();
+        if (apiRes) {
+          if (apiRes.success) {
+            isReplySuccess = true;
+            capturedReplyId = apiRes.restId;
+            break;
+          } else {
+            failureReason = apiRes.message || 'Reply rejected by X API';
+            isAutomatedBlock = Boolean(apiRes.isAutomated);
+            errorCode = apiRes.code;
+            break;
+          }
+        }
+
+        // 2. Check UI Toast alert for instant error notification
+        const toast = await checkToastAlert(page);
+        if (toast && toast.isError) {
+          failureReason = toast.text;
+          isAutomatedBlock = Boolean(toast.isAutomated);
+          break;
+        }
+
+        // 3. Check if textarea dialog/inline input has closed
+        const isStillVisible = await textarea.isVisible().catch(() => false);
+        if (!isStillVisible && Date.now() - startTime > 1500) {
+          isReplySuccess = true;
+          break;
+        }
+
+        await sleep(400);
+      }
+
+      await dismissOverlays(page);
+
+      if (isReplySuccess) {
+        const idTag = capturedReplyId ? ` (Tweet ID: ${capturedReplyId})` : '';
+        logger.success(
+          `💬 [@${account.username || account.label}] Reply verified & published successfully${idTag}: "${replyText}"`
+        );
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          tweetUrl,
+          tweetId: capturedReplyId || tweetId,
+          action: 'COMMENT',
+          status: 'SUCCESS',
+          details: replyText,
+        });
+        return { success: true, status: 'SUCCESS', replyText, tweetId: capturedReplyId };
+      } else {
+        const stillOpen = await textarea.isVisible().catch(() => false);
+        const errorMsg =
+          failureReason ||
+          (stillOpen
+            ? 'Reply submission failed: input editor remained open and unsubmitted'
+            : 'Reply verification failed');
+
+        if (isAutomatedBlock || /automated/i.test(errorMsg) || /otomatis/i.test(errorMsg)) {
+          logger.error(
+            `🛡️ [@${account.username || account.label}] Reply BLOCKED by X Anti-Automation: "${errorMsg}" (Code: ${errorCode || 226})`
+          );
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl,
+            tweetId,
+            action: 'COMMENT',
+            status: 'FAILED',
+            message: `Anti-Automation Block (${errorCode || 226}): ${errorMsg}`,
+            details: replyText,
+          });
+          return {
+            success: false,
+            status: 'AUTOMATED_FLAG',
+            code: errorCode || 226,
+            message: errorMsg,
+          };
+        }
+
+        logger.warn(`⚠️ [@${account.username || account.label}] Reply failed: ${errorMsg}`);
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          tweetUrl,
+          tweetId,
+          action: 'COMMENT',
+          status: 'FAILED',
+          message: errorMsg,
+          details: replyText,
+        });
+        return { success: false, status: 'FAILED', message: errorMsg };
+      }
+    } finally {
+      tracker.cleanup();
+    }
   } catch (err) {
     logger.error(`❌ [@${account.username || account.label}] Reply failed: ${err.message}`);
     db.addHistory({
@@ -1228,11 +1642,23 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (like) {
     results.like = await likeTweet(page, tweetUrl, account);
+    if (results.like?.status === 'AUTOMATED_FLAG') {
+      logger.warn(
+        `🛡️ [@${account.username || account.label}] Anti-Automation flag detected on Like vector. Aborting subsequent vectors to safeguard account node.`
+      );
+      return results;
+    }
     if (retweet || comment) await sleep(2000 + Math.floor(Math.random() * 2000));
   }
 
   if (retweet) {
     results.retweet = await retweetTweet(page, tweetUrl, account);
+    if (results.retweet?.status === 'AUTOMATED_FLAG') {
+      logger.warn(
+        `🛡️ [@${account.username || account.label}] Anti-Automation flag detected on Retweet vector. Aborting subsequent vectors to safeguard account node.`
+      );
+      return results;
+    }
     if (comment) await sleep(2500 + Math.floor(Math.random() * 2000));
   }
 
@@ -1261,4 +1687,7 @@ module.exports = {
   findReplyButtonInGroup,
   commentTweet,
   processTweetWithAccount,
+  parseGraphQLResponse,
+  checkToastAlert,
+  createActionTracker,
 };

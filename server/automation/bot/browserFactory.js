@@ -134,6 +134,7 @@ async function launchCamoufoxBrowser(account, _options = {}, isHeadless = false)
 
   const camoufoxOptions = {
     headless: isHeadless,
+    os: 'windows', // Lock OS to Windows to prevent random OS jumping (macOS/Linux) across runs
     humanize: 0.5, // Enable native C++ bezier human mouse trajectories
     window: [1280, 850], // Standard desktop window dimensions
     block_webrtc: Boolean(account.proxy), // Prevent WebRTC IP leaks when running via proxy
@@ -148,6 +149,7 @@ async function launchCamoufoxBrowser(account, _options = {}, isHeadless = false)
     const proxyLaunch = proxyHelper.getPlaywrightLaunchProxy(account.proxy);
     if (proxyLaunch) {
       camoufoxOptions.proxy = proxyLaunch;
+      camoufoxOptions.geoip = true; // Auto-align locale, timezone, and geolocation with proxy exit IP
       logger.info(
         `🌐 Routing via Proxy for @${account.username || account.label}: ${proxyLaunch.server}`
       );

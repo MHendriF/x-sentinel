@@ -17,6 +17,7 @@ async function createPost(page, text, account, mediaPaths = []) {
 
   let capturedTweetUrl = null;
   let capturedTweetId = null;
+  let capturedApiError = null;
 
   // Intercept GraphQL CreateTweet response to capture exact status URL
   const responseHandler = async (response) => {
@@ -24,6 +25,9 @@ async function createPost(page, text, account, mediaPaths = []) {
       const url = typeof response?.url === 'function' ? response.url() : '';
       if (url && (url.includes('CreateTweet') || url.includes('/graphql/'))) {
         const json = await response.json().catch(() => null);
+        if (json?.errors && Array.isArray(json.errors) && json.errors.length > 0) {
+          capturedApiError = json.errors[0].message || 'CreateTweet rejected by X API';
+        }
         const tweetId = json?.data?.create_tweet?.tweet_results?.result?.rest_id;
         if (tweetId) {
           capturedTweetId = tweetId;
@@ -133,6 +137,10 @@ async function createPost(page, text, account, mediaPaths = []) {
     await tweetButton.click();
     logger.info(`⏳ [@${account.username || account.label}] Dispatching post to X network...`);
     await sleep(4000);
+
+    if (capturedApiError) {
+      throw new Error(`X API Error: ${capturedApiError}`);
+    }
 
     // Fallback URL discovery if GraphQL did not trigger
     if (!capturedTweetUrl && account.username) {
