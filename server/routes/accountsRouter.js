@@ -30,6 +30,8 @@ const proxySchema = z
 
 const accountCreateSchema = z.object({
   label: z.string().max(100).optional(),
+  username: z.string().max(100).optional(),
+  name: z.string().max(100).optional(),
   auth_token: z.string().min(4, 'auth_token is too short'),
   ct0: z.string().max(500).optional(),
   proxy: proxySchema.optional(),
