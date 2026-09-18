@@ -7,13 +7,17 @@ const { sleep, humanType } = require('./humanCadence');
 /**
  * Compose and publish a new Tweet post with optional image attachments
  */
-async function createPost(page, text, account, mediaPaths = []) {
+async function createPost(page, text, account, mediaPaths = [], abortSignal = null, options = {}) {
+  if (abortSignal?.aborted) {
+    throw new Error('TASK_ABORTED');
+  }
   if (!text || !text.trim()) {
     throw new Error('Tweet text cannot be empty.');
   }
 
+  const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
   const trimmedText = text.trim();
-  logger.action(`[@${account.username || account.label}] Launching Twitter composer...`);
+  logger.action(`[@${account.username || account.label}]${engineTag} Launching Twitter composer...`);
 
   let capturedTweetUrl = null;
   let capturedTweetId = null;
@@ -44,11 +48,12 @@ async function createPost(page, text, account, mediaPaths = []) {
   page.on('response', responseHandler);
 
   try {
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     await page.goto('https://x.com/compose/post', {
       waitUntil: 'domcontentloaded',
       timeout: 30000,
     });
-    await sleep(2500);
+    await sleep(2500, abortSignal);
 
     // Verify session
     const currentUrl = typeof page?.url === 'function' ? page.url() : '';
@@ -110,14 +115,16 @@ async function createPost(page, text, account, mediaPaths = []) {
     }
 
     await textarea.click();
-    await sleep(500);
+    await sleep(500, abortSignal);
 
     // Type post text with natural human jitter
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     logger.info(`✍️ [@${account.username || account.label}] Typing post content...`);
-    await humanType(textarea, trimmedText);
-    await sleep(1000);
+    await humanType(textarea, trimmedText, abortSignal, page);
+    await sleep(1000, abortSignal);
 
     // 3. Click Tweet Submit Button
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     const tweetButton = await page
       .waitForSelector(
         '[data-testid="tweetButton"], [data-testid="tweetButtonInline"], button[data-testid*="tweetButton"]',
@@ -134,9 +141,10 @@ async function createPost(page, text, account, mediaPaths = []) {
       throw new Error('Post button is disabled (character count may exceed 280 limits).');
     }
 
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     await tweetButton.click();
     logger.info(`⏳ [@${account.username || account.label}] Dispatching post to X network...`);
-    await sleep(4000);
+    await sleep(4000, abortSignal);
 
     if (capturedApiError) {
       throw new Error(`X API Error: ${capturedApiError}`);
@@ -173,6 +181,7 @@ async function createPost(page, text, account, mediaPaths = []) {
       action: 'POST',
       status: 'SUCCESS',
       details: trimmedText,
+      engine: options.engine,
     });
 
     notifier.notify('POST_PUBLISHED', {
@@ -183,6 +192,9 @@ async function createPost(page, text, account, mediaPaths = []) {
 
     return { success: true, status: 'SUCCESS', postText: trimmedText, tweetUrl: finalTweetUrl };
   } catch (err) {
+    if (err.message === 'TASK_ABORTED' || abortSignal?.aborted) {
+      throw new Error('TASK_ABORTED');
+    }
     logger.error(
       `❌ [@${account.username || account.label}] Failed to publish post: ${err.message}`
     );
@@ -193,6 +205,7 @@ async function createPost(page, text, account, mediaPaths = []) {
       action: 'POST',
       status: 'FAILED',
       message: err.message,
+      engine: options.engine,
     });
     return { success: false, message: err.message };
   } finally {

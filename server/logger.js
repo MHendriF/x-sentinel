@@ -10,9 +10,32 @@ class Logger extends EventEmitter {
 
     // Persistent file logging setup
     this.logsDir = path.join(__dirname, '..', 'data', 'logs');
-    this.logFile = path.join(this.logsDir, 'x-sentinel.log');
-    this.maxFileSizeBytes = 10 * 1024 * 1024; // 10MB auto-rotation limit
+    this.retentionDays = 30;
+    this.lastCleanupDate = null;
     this.ensureLogDir();
+  }
+
+  getDateString(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  get logFile() {
+    const todayFile = this.getLogFilePath();
+    if (!fs.existsSync(todayFile)) {
+      const legacyFile = path.join(this.logsDir, 'x-sentinel.log');
+      if (fs.existsSync(legacyFile)) {
+        return legacyFile;
+      }
+    }
+    return todayFile;
+  }
+
+  getLogFilePath(dateStr) {
+    const targetDate = dateStr || this.getDateString();
+    return path.join(this.logsDir, `x-sentinel-${targetDate}.log`);
   }
 
   ensureLogDir() {
@@ -25,9 +48,45 @@ class Logger extends EventEmitter {
     }
   }
 
+  cleanOldLogs(retentionDays = this.retentionDays) {
+    try {
+      if (!fs.existsSync(this.logsDir)) return;
+      const now = Date.now();
+      const maxAgeMs = retentionDays * 24 * 60 * 60 * 1000;
+      const files = fs.readdirSync(this.logsDir);
+
+      for (const file of files) {
+        // Only target daily pattern x-sentinel-YYYY-MM-DD.log
+        const match = file.match(/^x-sentinel-(\d{4}-\d{2}-\d{2})\.log$/);
+        if (match) {
+          const filePath = path.join(this.logsDir, file);
+          const stat = fs.statSync(filePath);
+          if (now - stat.mtimeMs > maxAgeMs) {
+            try {
+              fs.unlinkSync(filePath);
+            } catch {
+              // ignore deletion error
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore clean errors
+    }
+  }
+
   writeToFile(logEntry) {
     try {
       const now = new Date();
+      const todayStr = this.getDateString(now);
+      const currentLogFile = this.getLogFilePath(todayStr);
+
+      // Perform daily cleanup once per day
+      if (this.lastCleanupDate !== todayStr) {
+        this.lastCleanupDate = todayStr;
+        this.cleanOldLogs();
+      }
+
       const dateStr = now.toISOString().replace('T', ' ').slice(0, 23);
       const levelUpper = (logEntry.level || 'info').toUpperCase().padEnd(7);
 
@@ -41,23 +100,7 @@ class Logger extends EventEmitter {
       }
       line += '\n';
 
-      // Check for rotation if file exceeds 10MB
-      try {
-        if (fs.existsSync(this.logFile)) {
-          const stat = fs.statSync(this.logFile);
-          if (stat.size > this.maxFileSizeBytes) {
-            const oldFile = path.join(this.logsDir, 'x-sentinel.old.log');
-            if (fs.existsSync(oldFile)) {
-              fs.unlinkSync(oldFile);
-            }
-            fs.renameSync(this.logFile, oldFile);
-          }
-        }
-      } catch {
-        // ignore rotation errors
-      }
-
-      fs.appendFile(this.logFile, line, 'utf8', () => {});
+      fs.appendFile(currentLogFile, line, 'utf8', () => {});
     } catch {
       // Never let file logging interrupt runtime execution
     }
@@ -116,8 +159,24 @@ class Logger extends EventEmitter {
     return this.logs.slice(0, limit);
   }
 
-  getLogFilePath() {
-    return this.logFile;
+  getAvailableLogFiles() {
+    try {
+      if (!fs.existsSync(this.logsDir)) return [];
+      return fs
+        .readdirSync(this.logsDir)
+        .filter((f) => f.endsWith('.log'))
+        .map((name) => {
+          const stat = fs.statSync(path.join(this.logsDir, name));
+          return {
+            name,
+            sizeBytes: stat.size,
+            modifiedAt: stat.mtime,
+          };
+        })
+        .sort((a, b) => b.name.localeCompare(a.name));
+    } catch {
+      return [];
+    }
   }
 
   clear() {

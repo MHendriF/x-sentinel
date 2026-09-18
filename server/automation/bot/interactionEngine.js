@@ -571,18 +571,22 @@ async function findLikeButton(targetArticle, page) {
 /**
  * Like a tweet with multi-layer validation
  */
-async function likeTweet(page, tweetUrl, account) {
+async function likeTweet(page, tweetUrl, account, abortSignal = null, options = {}) {
+  if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
   const tweetId = extractTweetId(tweetUrl);
-  logger.action(`[@${account.username || account.label}] Dispatching Like: ${tweetUrl}`);
+  const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
+  logger.action(`[@${account.username || account.label}]${engineTag} Dispatching Like: ${tweetUrl}`);
 
   try {
     await dismissOverlays(page);
     await handlePageInterstitials(page);
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
 
     let targetArticle = await findTargetTweetArticle(page, tweetId);
     let likeBtn = null;
 
     for (let attempt = 1; attempt <= 3; attempt++) {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
       const alreadyLiked = await checkAlreadyLiked(targetArticle, page);
       if (alreadyLiked) {
         logger.info(`ℹ️ [@${account.username || account.label}] Post already liked previously.`);
@@ -594,6 +598,7 @@ async function likeTweet(page, tweetUrl, account) {
           action: 'LIKE',
           status: 'ALREADY_DONE',
           message: 'Already liked',
+          engine: options.engine,
         });
         return { success: true, status: 'ALREADY_DONE' };
       }
@@ -602,8 +607,9 @@ async function likeTweet(page, tweetUrl, account) {
       if (likeBtn) break;
 
       if (attempt < 3) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         await page.evaluate(() => window.scrollBy(0, 200)).catch(() => {});
-        await sleep(800);
+        await sleep(800, abortSignal);
         await dismissOverlays(page);
         targetArticle = await findTargetTweetArticle(page, tweetId);
       }
@@ -621,6 +627,7 @@ async function likeTweet(page, tweetUrl, account) {
           action: 'LIKE',
           status: 'FAILED',
           message: unavailMsg,
+          engine: options.engine,
         });
         return { success: false, status: 'UNAVAILABLE', message: unavailMsg };
       }
@@ -635,6 +642,7 @@ async function likeTweet(page, tweetUrl, account) {
         action: 'LIKE',
         status: 'FAILED',
         message: msg,
+        engine: options.engine,
       });
       return { success: false, message: msg };
     }
@@ -642,8 +650,8 @@ async function likeTweet(page, tweetUrl, account) {
     const tracker = createActionTracker(page, 'LIKE');
 
     try {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
       await safeClick(page, likeBtn);
-      await sleep(800);
 
       let isLiked = false;
       let failureReason = null;
@@ -653,6 +661,7 @@ async function likeTweet(page, tweetUrl, account) {
 
       const startTime = Date.now();
       while (Date.now() - startTime < 6000) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         // 1. Check API response
         const apiRes = tracker.getResult();
         if (apiRes) {
@@ -671,6 +680,7 @@ async function likeTweet(page, tweetUrl, account) {
               action: 'LIKE',
               status: 'ALREADY_DONE',
               message: 'Already liked',
+              engine: options.engine,
             });
             return { success: true, status: 'ALREADY_DONE' };
           } else {
@@ -697,7 +707,7 @@ async function likeTweet(page, tweetUrl, account) {
           isLiked = true;
           break;
         }
-        await sleep(400);
+        await sleep(400, abortSignal);
       }
 
       if (isLiked) {
@@ -711,6 +721,7 @@ async function likeTweet(page, tweetUrl, account) {
           tweetId,
           action: 'LIKE',
           status: 'SUCCESS',
+          engine: options.engine,
         });
         return { success: true, status: 'SUCCESS' };
       } else {
@@ -728,6 +739,7 @@ async function likeTweet(page, tweetUrl, account) {
             action: 'LIKE',
             status: 'FAILED',
             message: `Anti-Automation Block (${errorCode || 226}): ${errorMsg}`,
+            engine: options.engine,
           });
           return {
             success: false,
@@ -757,6 +769,7 @@ async function likeTweet(page, tweetUrl, account) {
             action: 'LIKE',
             status: 'FAILED',
             message: `Daily Limit Reached / Phone Required (${errorCode || 344}): ${errorMsg}`,
+            engine: options.engine,
           });
           return {
             success: false,
@@ -775,6 +788,7 @@ async function likeTweet(page, tweetUrl, account) {
           action: 'LIKE',
           status: 'FAILED',
           message: errorMsg,
+          engine: options.engine,
         });
         return { success: false, message: errorMsg };
       }
@@ -782,6 +796,9 @@ async function likeTweet(page, tweetUrl, account) {
       tracker.cleanup();
     }
   } catch (err) {
+    if (err.message === 'TASK_ABORTED' || abortSignal?.aborted) {
+      throw new Error('TASK_ABORTED');
+    }
     logger.error(`❌ [@${account.username || account.label}] Like failed: ${err.message}`);
     db.addHistory({
       accountId: account.id,
@@ -791,6 +808,7 @@ async function likeTweet(page, tweetUrl, account) {
       action: 'LIKE',
       status: 'FAILED',
       message: err.message,
+      engine: options.engine,
     });
     return { success: false, message: err.message };
   }
@@ -834,6 +852,14 @@ const RETWEET_SELECTOR_STR = [
   'button[aria-label*="retweet" i]:not([aria-label*="undo" i]):not([aria-label*="retweeted" i])',
   '[role="button"][aria-label*="posting ulang" i]:not([aria-label*="batal" i]):not([aria-label*="urung" i]):not([aria-label*="diposting" i])',
   'button[aria-label*="posting ulang" i]:not([aria-label*="batal" i]):not([aria-label*="urung" i]):not([aria-label*="diposting" i])',
+].join(', ');
+
+const CONFIRM_RETWEET_SELECTORS = [
+  '[data-testid="retweetConfirm"]',
+  '[role="menuitem"][data-testid="retweetConfirm"]',
+  '[role="menuitem"]:has-text("Repost")',
+  '[role="menuitem"]:has-text("Posting ulang")',
+  '[role="menuitem"]:has-text("Retweet")',
 ].join(', ');
 
 /**
@@ -959,18 +985,22 @@ async function findRetweetButton(targetArticle, page) {
 /**
  * Retweet / Repost a tweet
  */
-async function retweetTweet(page, tweetUrl, account) {
+async function retweetTweet(page, tweetUrl, account, abortSignal = null, options = {}) {
+  if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
   const tweetId = extractTweetId(tweetUrl);
-  logger.action(`[@${account.username || account.label}] Dispatching Retweet: ${tweetUrl}`);
+  const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
+  logger.action(`[@${account.username || account.label}]${engineTag} Dispatching Retweet: ${tweetUrl}`);
 
   try {
     await dismissOverlays(page);
     await handlePageInterstitials(page);
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
 
     let targetArticle = await findTargetTweetArticle(page, tweetId);
     let retweetBtn = null;
 
     for (let attempt = 1; attempt <= 3; attempt++) {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
       const unretweetBtn = await checkAlreadyRetweeted(targetArticle, page);
       if (unretweetBtn) {
         logger.info(`ℹ️ [@${account.username || account.label}] Post already reposted previously.`);
@@ -982,6 +1012,7 @@ async function retweetTweet(page, tweetUrl, account) {
           action: 'RETWEET',
           status: 'ALREADY_DONE',
           message: 'Already reposted',
+          engine: options.engine,
         });
         return { success: true, status: 'ALREADY_DONE' };
       }
@@ -990,8 +1021,9 @@ async function retweetTweet(page, tweetUrl, account) {
       if (retweetBtn) break;
 
       if (attempt < 3) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         await page.evaluate(() => window.scrollBy(0, 200)).catch(() => {});
-        await sleep(800);
+        await sleep(800, abortSignal);
         await dismissOverlays(page);
         targetArticle = await findTargetTweetArticle(page, tweetId);
       }
@@ -1020,6 +1052,7 @@ async function retweetTweet(page, tweetUrl, account) {
           action: 'RETWEET',
           status: 'FAILED',
           message: msg,
+          engine: options.engine,
         });
         return { success: false, status: 'RESTRICTED', message: msg };
       }
@@ -1034,31 +1067,7 @@ async function retweetTweet(page, tweetUrl, account) {
         action: 'RETWEET',
         status: 'FAILED',
         message: msg,
-      });
-      return { success: false, message: msg };
-    }
-
-    await safeClick(page, retweetBtn);
-    await sleep(800);
-
-    const confirmBtn = await page
-      .waitForSelector(
-        '[data-testid="retweetConfirm"], [role="menuitem"][data-testid="retweetConfirm"], [role="menuitem"]:has-text("Repost"), [role="menuitem"]:has-text("Posting ulang"), [role="menuitem"]:has-text("Retweet")',
-        { timeout: 6000 }
-      )
-      .catch(() => null);
-
-    if (!confirmBtn) {
-      const msg = 'Retweet confirmation modal did not appear';
-      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}`);
-      db.addHistory({
-        accountId: account.id,
-        accountName: account.username || account.label,
-        tweetUrl,
-        tweetId,
-        action: 'RETWEET',
-        status: 'FAILED',
-        message: msg,
+        engine: options.engine,
       });
       return { success: false, message: msg };
     }
@@ -1066,8 +1075,48 @@ async function retweetTweet(page, tweetUrl, account) {
     const tracker = createActionTracker(page, 'RETWEET');
 
     try {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+      await safeClick(page, retweetBtn);
+      await sleep(600, abortSignal);
+
+      const confirmBtn = await page
+        .waitForSelector(CONFIRM_RETWEET_SELECTORS, { timeout: 4000 })
+        .catch(() => null);
+
+      if (!confirmBtn) {
+        const alreadyActive = await checkAlreadyRetweeted(targetArticle, page);
+        if (alreadyActive) {
+          logger.info(`ℹ️ [@${account.username || account.label}] Post confirmed already reposted.`);
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl,
+            tweetId,
+            action: 'RETWEET',
+            status: 'ALREADY_DONE',
+            message: 'Already reposted',
+            engine: options.engine,
+          });
+          return { success: true, status: 'ALREADY_DONE' };
+        }
+
+        const msg = 'Retweet confirmation modal not found';
+        logger.warn(`⚠️ [@${account.username || account.label}] ${msg}.`);
+        db.addHistory({
+          accountId: account.id,
+          accountName: account.username || account.label,
+          tweetUrl,
+          tweetId,
+          action: 'RETWEET',
+          status: 'FAILED',
+          message: msg,
+          engine: options.engine,
+        });
+        return { success: false, message: msg };
+      }
+
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
       await safeClick(page, confirmBtn);
-      await sleep(1000);
 
       let isRetweeted = false;
       let failureReason = null;
@@ -1076,8 +1125,9 @@ async function retweetTweet(page, tweetUrl, account) {
       let errorCode = null;
 
       const startTime = Date.now();
-      while (Date.now() - startTime < 7000) {
-        // 1. Check API response from GraphQL interceptor
+      while (Date.now() - startTime < 6000) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+        // 1. Check API response
         const apiRes = tracker.getResult();
         if (apiRes) {
           if (apiRes.success) {
@@ -1085,7 +1135,7 @@ async function retweetTweet(page, tweetUrl, account) {
             break;
           } else if (apiRes.isAlreadyDone) {
             logger.info(
-              `ℹ️ [@${account.username || account.label}] API reported: Already reposted.`
+              `ℹ️ [@${account.username || account.label}] Post already reposted previously.`
             );
             db.addHistory({
               accountId: account.id,
@@ -1095,6 +1145,7 @@ async function retweetTweet(page, tweetUrl, account) {
               action: 'RETWEET',
               status: 'ALREADY_DONE',
               message: apiRes.message || 'Already reposted',
+              engine: options.engine,
             });
             return { success: true, status: 'ALREADY_DONE' };
           } else {
@@ -1122,7 +1173,7 @@ async function retweetTweet(page, tweetUrl, account) {
           break;
         }
 
-        await sleep(400);
+        await sleep(400, abortSignal);
       }
 
       await dismissOverlays(page);
@@ -1138,6 +1189,7 @@ async function retweetTweet(page, tweetUrl, account) {
           tweetId,
           action: 'RETWEET',
           status: 'SUCCESS',
+          engine: options.engine,
         });
         return { success: true, status: 'SUCCESS' };
       } else {
@@ -1155,6 +1207,7 @@ async function retweetTweet(page, tweetUrl, account) {
             action: 'RETWEET',
             status: 'FAILED',
             message: `Anti-Automation Block (${errorCode || 226}): ${errorMsg}`,
+            engine: options.engine,
           });
           return {
             success: false,
@@ -1184,6 +1237,7 @@ async function retweetTweet(page, tweetUrl, account) {
             action: 'RETWEET',
             status: 'FAILED',
             message: `Daily Limit Reached / Phone Required (${errorCode || 344}): ${errorMsg}`,
+            engine: options.engine,
           });
           return {
             success: false,
@@ -1202,6 +1256,7 @@ async function retweetTweet(page, tweetUrl, account) {
           action: 'RETWEET',
           status: 'FAILED',
           message: errorMsg,
+          engine: options.engine,
         });
         return { success: false, status: 'FAILED', message: errorMsg };
       }
@@ -1209,6 +1264,9 @@ async function retweetTweet(page, tweetUrl, account) {
       tracker.cleanup();
     }
   } catch (err) {
+    if (err.message === 'TASK_ABORTED' || abortSignal?.aborted) {
+      throw new Error('TASK_ABORTED');
+    }
     logger.error(`❌ [@${account.username || account.label}] Retweet failed: ${err.message}`);
     db.addHistory({
       accountId: account.id,
@@ -1218,11 +1276,11 @@ async function retweetTweet(page, tweetUrl, account) {
       action: 'RETWEET',
       status: 'FAILED',
       message: err.message,
+      engine: options.engine,
     });
     return { success: false, message: err.message };
   }
 }
-
 // ---------------------------------------------------------
 // COMMENT / REPLY VECTOR ENGINE
 // ---------------------------------------------------------
@@ -1335,13 +1393,16 @@ async function findReplyButtonInGroup(container) {
 /**
  * Comment on Tweet using Account's specific comments, spintax, or AI contextual engine
  */
-async function commentTweet(page, tweetUrl, account, customReplyText = null) {
+async function commentTweet(page, tweetUrl, account, customReplyText = null, abortSignal = null, options = {}) {
+  if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
   const tweetId = extractTweetId(tweetUrl);
-  logger.action(`[@${account.username || account.label}] Dispatching Reply: ${tweetUrl}`);
+  const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
+  logger.action(`[@${account.username || account.label}]${engineTag} Dispatching Reply: ${tweetUrl}`);
 
   try {
     await dismissOverlays(page);
     await handlePageInterstitials(page);
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
 
     // 1. Check if author restricted replies
     const isRestricted = await checkRepliesRestricted(page);
@@ -1356,6 +1417,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
         action: 'COMMENT',
         status: 'FAILED',
         message: msg,
+        engine: options.engine,
       });
       return { success: false, status: 'RESTRICTED', message: msg };
     }
@@ -1394,6 +1456,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
 
     // Retry loop with micro-scroll
     for (let attempt = 1; attempt <= 3; attempt++) {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
       // Step A: Check if textarea already active and visible
       textarea = await page.$(TEXTAREA_SELECTORS).catch(() => null);
       if (textarea) {
@@ -1406,8 +1469,9 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       if (inlinePlaceholder) {
         const isVisible = await inlinePlaceholder.isVisible().catch(() => false);
         if (isVisible) {
+          if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
           await safeClick(page, inlinePlaceholder);
-          await sleep(600);
+          await sleep(600, abortSignal);
           textarea = await page.$(TEXTAREA_SELECTORS).catch(() => null);
           if (textarea) break;
         }
@@ -1429,8 +1493,9 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       }
 
       if (replyIcon) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         await safeClick(page, replyIcon);
-        await sleep(800);
+        await sleep(800, abortSignal);
         textarea = await page
           .waitForSelector(TEXTAREA_SELECTORS, { timeout: 5000 })
           .catch(() => null);
@@ -1438,8 +1503,9 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       }
 
       if (attempt < 3) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         await page.evaluate(() => window.scrollBy(0, 200)).catch(() => {});
-        await sleep(800);
+        await sleep(800, abortSignal);
         await dismissOverlays(page);
         targetArticle = await findTargetTweetArticle(page, tweetId);
       }
@@ -1456,39 +1522,87 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
         action: 'COMMENT',
         status: 'FAILED',
         message: msg,
+        engine: options.engine,
       });
       return { success: false, message: msg };
     }
 
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     await safeClick(page, textarea);
     await textarea.focus().catch(() => {});
-    await sleep(300);
+    await sleep(300, abortSignal);
 
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     try {
-      await humanType(textarea, replyText);
+      await humanType(textarea, replyText, abortSignal, page);
     } catch (typeErr) {
+      if (typeErr.message === 'TASK_ABORTED' || abortSignal?.aborted) {
+        throw new Error('TASK_ABORTED');
+      }
       await page.keyboard.insertText(replyText).catch(() => {});
     }
-    await sleep(800);
+    await sleep(800, abortSignal);
 
-    const SUBMIT_BUTTON_SELECTORS = [
-      '[data-testid="tweetButtonInline"]',
-      '[data-testid="tweetButton"]',
-      'button[data-testid="tweetButtonInline"]',
-      'button[data-testid="tweetButton"]',
-      '[role="dialog"] [data-testid="tweetButton"]',
-      'button:has-text("Reply")',
-      'button:has-text("Balas")',
-      'button:has-text("Post")',
-      'button:has-text("Posting")',
-      'button:has-text("Responder")',
-    ].join(', ');
+    // Determine active container (Modal dialog vs inline reply container)
+    const isInsideDialog = await textarea
+      .evaluate((el) => Boolean(el.closest('[role="dialog"]')))
+      .catch(() => false);
 
-    const replyBtn = await page
-      .waitForSelector(SUBMIT_BUTTON_SELECTORS, {
-        timeout: 8000,
-      })
-      .catch(() => null);
+    let replyBtn = null;
+
+    if (isInsideDialog) {
+      const dialogContainer = await page.$('[role="dialog"]').catch(() => null);
+      if (dialogContainer) {
+        const dialogSelectors = [
+          '[data-testid="tweetButton"]',
+          'button[data-testid="tweetButton"]',
+          'button:has-text("Reply")',
+          'button:has-text("Balas")',
+          'button:has-text("Post")',
+          'button:has-text("Posting")',
+          'button:has-text("Responder")',
+        ];
+        for (const sel of dialogSelectors) {
+          const btn = await dialogContainer.$(sel).catch(() => null);
+          if (btn) {
+            const isVis = await btn.isVisible().catch(() => false);
+            if (isVis) {
+              replyBtn = btn;
+              break;
+            }
+          }
+        }
+      }
+    } else {
+      const inlineSelectors = [
+        '[data-testid="tweetButtonInline"]',
+        'button[data-testid="tweetButtonInline"]',
+        '[data-testid="inline_reply"] [data-testid="tweetButton"]',
+        '[data-testid="tweetButton"]',
+        'button:has-text("Reply")',
+        'button:has-text("Balas")',
+        'button:has-text("Post")',
+      ];
+      for (const sel of inlineSelectors) {
+        const btn = await page.$(sel).catch(() => null);
+        if (btn) {
+          const isVis = await btn.isVisible().catch(() => false);
+          if (isVis) {
+            replyBtn = btn;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!replyBtn) {
+      const fallbackSelector = isInsideDialog
+        ? '[role="dialog"] [data-testid="tweetButton"], [data-testid="tweetButton"]'
+        : '[data-testid="tweetButtonInline"], [data-testid="tweetButton"]';
+      replyBtn = await page
+        .waitForSelector(fallbackSelector, { timeout: 6000 })
+        .catch(() => null);
+    }
 
     if (!replyBtn) {
       const msg = 'Reply submit button not found';
@@ -1501,6 +1615,59 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
         action: 'COMMENT',
         status: 'FAILED',
         message: msg,
+        engine: options.engine,
+      });
+      return { success: false, message: msg };
+    }
+
+    // Check if the submit button is disabled (aria-disabled="true")
+    let isBtnDisabled = await replyBtn.getAttribute('aria-disabled').catch(() => null);
+
+    if (isBtnDisabled === 'true') {
+      // Lexical editor may need an event dispatch to trigger state re-calculation
+      await page.keyboard.press('Space').catch(() => {});
+      await sleep(100, abortSignal);
+      await page.keyboard.press('Backspace').catch(() => {});
+      await sleep(400, abortSignal);
+
+      const pollStart = Date.now();
+      while (Date.now() - pollStart < 3000) {
+        isBtnDisabled = await replyBtn.getAttribute('aria-disabled').catch(() => null);
+        if (isBtnDisabled !== 'true') break;
+        await sleep(300, abortSignal);
+      }
+    }
+
+    // Fallback: If still disabled, check if text was actually placed into editor
+    if (isBtnDisabled === 'true') {
+      const editorText = await textarea
+        .evaluate((el) => el.innerText || el.textContent || '')
+        .catch(() => '');
+      if (!editorText.trim()) {
+        logger.warn(
+          `⚠️ [@${account.username || account.label}] Lexical editor was empty. Re-injecting reply text via keyboard insertText...`
+        );
+        await safeClick(page, textarea);
+        await textarea.focus().catch(() => {});
+        await page.keyboard.insertText(replyText).catch(() => {});
+        await sleep(500, abortSignal);
+        isBtnDisabled = await replyBtn.getAttribute('aria-disabled').catch(() => null);
+      }
+    }
+
+    if (isBtnDisabled === 'true') {
+      const msg = 'Reply submit button is disabled (editor state empty or character limit exceeded)';
+      logger.warn(`⚠️ [@${account.username || account.label}] ${msg}.`);
+      db.addHistory({
+        accountId: account.id,
+        accountName: account.username || account.label,
+        tweetUrl,
+        tweetId,
+        action: 'COMMENT',
+        status: 'FAILED',
+        message: msg,
+        details: replyText,
+        engine: options.engine,
       });
       return { success: false, message: msg };
     }
@@ -1508,6 +1675,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
     const tracker = createActionTracker(page, 'REPLY');
 
     try {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
       await safeClick(page, replyBtn);
 
       let isReplySuccess = false;
@@ -1519,6 +1687,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
 
       const startTime = Date.now();
       while (Date.now() - startTime < 8000) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         // 1. Check API response from GraphQL interceptor
         const apiRes = tracker.getResult();
         if (apiRes) {
@@ -1551,7 +1720,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
           break;
         }
 
-        await sleep(400);
+        await sleep(400, abortSignal);
       }
 
       await dismissOverlays(page);
@@ -1569,6 +1738,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
           action: 'COMMENT',
           status: 'SUCCESS',
           details: replyText,
+          engine: options.engine,
         });
         return { success: true, status: 'SUCCESS', replyText, tweetId: capturedReplyId };
       } else {
@@ -1592,6 +1762,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
             status: 'FAILED',
             message: `Anti-Automation Block (${errorCode || 226}): ${errorMsg}`,
             details: replyText,
+            engine: options.engine,
           });
           return {
             success: false,
@@ -1622,6 +1793,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
             status: 'FAILED',
             message: `Daily Limit Reached / Phone Required (${errorCode || 344}): ${errorMsg}`,
             details: replyText,
+            engine: options.engine,
           });
           return {
             success: false,
@@ -1641,6 +1813,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
           status: 'FAILED',
           message: errorMsg,
           details: replyText,
+          engine: options.engine,
         });
         return { success: false, status: 'FAILED', message: errorMsg };
       }
@@ -1648,6 +1821,9 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       tracker.cleanup();
     }
   } catch (err) {
+    if (err.message === 'TASK_ABORTED' || abortSignal?.aborted) {
+      throw new Error('TASK_ABORTED');
+    }
     logger.error(`❌ [@${account.username || account.label}] Reply failed: ${err.message}`);
     db.addHistory({
       accountId: account.id,
@@ -1657,6 +1833,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       action: 'COMMENT',
       status: 'FAILED',
       message: err.message,
+      engine: options.engine,
     });
     return { success: false, message: err.message };
   }
@@ -1666,28 +1843,42 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
  * Process a single tweet URL with a specific account and vector flags
  */
 async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
-  const { like = true, retweet = true, comment = true, commentText = null } = options;
+  const {
+    like = true,
+    retweet = true,
+    comment = true,
+    commentText = null,
+    abortSignal = null,
+  } = options;
+
+  if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
 
   const targetUrl = normalizeTweetUrl(tweetUrl);
-  logger.info(`🌐 [@${account.username || account.label}] Navigating to: ${targetUrl}`);
+  const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
+  logger.info(`🌐 [@${account.username || account.label}]${engineTag} Navigating to: ${targetUrl}`);
   let navSuccess = false;
   let lastNavError = null;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     try {
       await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 35000 });
       navSuccess = true;
       break;
     } catch (e) {
+      if (e.message === 'TASK_ABORTED' || abortSignal?.aborted) throw new Error('TASK_ABORTED');
       lastNavError = e;
       if (attempt < 2) {
+        if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         logger.warn(
           `⚠️ [@${account.username || account.label}] Navigation attempt ${attempt} failed: ${e.message}. Retrying in 3s...`
         );
-        await sleep(3000);
+        await sleep(3000, abortSignal);
       }
     }
   }
+
+  if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
 
   if (!navSuccess) {
     throw new Error(
@@ -1701,10 +1892,12 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       { timeout: 15000 }
     )
     .catch(() => null);
-  await sleep(1500);
+  if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+  await sleep(1500, abortSignal);
 
   // Clean up any initial popups or modal overlays
   await dismissOverlays(page);
+  if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
 
   // Check login and checkpoint status
   const currentUrl = typeof page?.url === 'function' ? page.url() : '';
@@ -1719,6 +1912,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       action: 'SESSION',
       status: 'FAILED',
       message: 'Login session expired',
+      engine: options.engine,
     });
     return { success: false, message: 'Login session expired' };
   }
@@ -1737,6 +1931,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       action: 'SESSION',
       status: 'FAILED',
       message: chkMsg,
+      engine: options.engine,
     });
     return { success: false, message: chkMsg };
   }
@@ -1752,18 +1947,21 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       action: 'TASK',
       status: 'FAILED',
       message: unavailMsg,
+      engine: options.engine,
     });
     return { success: false, status: 'UNAVAILABLE', message: unavailMsg };
   }
 
   if (db.getSettings().scrollBeforeAction) {
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
     await humanScroll(page);
   }
 
   const results = { tweetUrl, accountId: account.id };
 
   if (like) {
-    results.like = await likeTweet(page, tweetUrl, account);
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+    results.like = await likeTweet(page, tweetUrl, account, abortSignal, options);
     if (
       results.like?.status === 'AUTOMATED_FLAG' ||
       results.like?.status === 'DAILY_LIMIT_EXCEEDED'
@@ -1773,11 +1971,15 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       );
       return results;
     }
-    if (retweet || comment) await sleep(2000 + Math.floor(Math.random() * 2000));
+    if (retweet || comment) {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+      await sleep(2000 + Math.floor(Math.random() * 2000), abortSignal);
+    }
   }
 
   if (retweet) {
-    results.retweet = await retweetTweet(page, tweetUrl, account);
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+    results.retweet = await retweetTweet(page, tweetUrl, account, abortSignal, options);
     if (
       results.retweet?.status === 'AUTOMATED_FLAG' ||
       results.retweet?.status === 'DAILY_LIMIT_EXCEEDED'
@@ -1787,11 +1989,15 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       );
       return results;
     }
-    if (comment) await sleep(2500 + Math.floor(Math.random() * 2000));
+    if (comment) {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+      await sleep(2500 + Math.floor(Math.random() * 2000), abortSignal);
+    }
   }
 
   if (comment) {
-    results.comment = await commentTweet(page, tweetUrl, account, commentText);
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+    results.comment = await commentTweet(page, tweetUrl, account, commentText, abortSignal, options);
     if (results.comment?.status === 'DAILY_LIMIT_EXCEEDED') {
       logger.warn(
         `🛑 [@${account.username || account.label}] Node reached X daily action limit or requires phone verification.`

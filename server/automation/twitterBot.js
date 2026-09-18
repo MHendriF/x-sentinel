@@ -79,9 +79,11 @@ class TwitterBot {
     await this.closeBrowser();
     this.currentAccount = account;
 
-    const { browser, context } = await launchAccountBrowser(account);
+    const { browser, context, engine, isPersistent } = await launchAccountBrowser(account);
     this.browser = browser;
     this.context = context;
+    this.currentEngine = engine;
+    this.isPersistent = Boolean(isPersistent);
 
     return { browser: this.browser, context: this.context };
   }
@@ -106,6 +108,8 @@ class TwitterBot {
     this.context = null;
     this.browser = null;
     this.currentAccount = null;
+    this.currentEngine = null;
+    this.isPersistent = false;
   }
 
   /**
@@ -160,25 +164,41 @@ class TwitterBot {
   }
 
   // Delegated Actions
-  async likeTweet(page, tweetUrl, account) {
-    return likeTweet(page, tweetUrl, account);
+  async likeTweet(page, tweetUrl, account, options = {}) {
+    return likeTweet(page, tweetUrl, account, this.abortController?.signal, {
+      ...options,
+      engine: this.currentEngine,
+    });
   }
 
-  async retweetTweet(page, tweetUrl, account) {
-    return retweetTweet(page, tweetUrl, account);
+  async retweetTweet(page, tweetUrl, account, options = {}) {
+    return retweetTweet(page, tweetUrl, account, this.abortController?.signal, {
+      ...options,
+      engine: this.currentEngine,
+    });
   }
 
-  async commentTweet(page, tweetUrl, account, customReplyText = null) {
-    return commentTweet(page, tweetUrl, account, customReplyText);
+  async commentTweet(page, tweetUrl, account, customReplyText = null, options = {}) {
+    return commentTweet(page, tweetUrl, account, customReplyText, this.abortController?.signal, {
+      ...options,
+      engine: this.currentEngine,
+    });
   }
 
   async processTweetWithAccount(tweetUrl, account, options = {}) {
     const page = await this.getOrCreatePageForAccount(account);
-    return processTweetWithAccount(page, tweetUrl, account, options);
+    return processTweetWithAccount(page, tweetUrl, account, {
+      ...options,
+      engine: this.currentEngine,
+      abortSignal: this.abortController?.signal,
+    });
   }
 
-  async createPost(page, postText, account, mediaPaths = []) {
-    return createPost(page, postText, account, mediaPaths);
+  async createPost(page, postText, account, mediaPaths = [], options = {}) {
+    return createPost(page, postText, account, mediaPaths, this.abortController?.signal, {
+      ...options,
+      engine: this.currentEngine,
+    });
   }
 
   async verifyAccount(account) {
@@ -257,26 +277,53 @@ class TwitterBot {
 
     try {
       for (let a = 0; a < targetAccounts.length; a++) {
-        if (this.abortController.signal.aborted) break;
+        if (this.abortController?.signal?.aborted) {
+          throw new Error('TASK_ABORTED');
+        }
         const account = targetAccounts[a];
         const postText = postList[a % postList.length];
 
+        await this.initAccountBrowser(account);
+        const engineTag = this.currentEngine
+          ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
+          : '';
+
         logger.action(
-          `👤 [Post ${a + 1}/${targetAccounts.length}] Node: ${account.label} (@${account.username || 'user'})`
+          `👤 [Post ${a + 1}/${targetAccounts.length}] Node: ${account.label} (@${account.username || 'user'})${engineTag}`
         );
 
         try {
           const page = await this.getOrCreatePageForAccount(account);
-          const result = await this.createPost(page, postText, account, mediaPaths);
+          const result = await this.createPost(page, postText, account, mediaPaths, {
+            engine: this.currentEngine,
+          });
+          if (this.abortController?.signal?.aborted) {
+            throw new Error('TASK_ABORTED');
+          }
           if (result.success) {
             this.currentTask.completed++;
           } else {
             this.currentTask.failed++;
           }
         } catch (err) {
-          if (err.message === 'TASK_ABORTED') throw err;
+          if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
+            throw new Error('TASK_ABORTED');
+          }
           logger.error(`❌ Post error on node ${account.label}: ${err.message}`);
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl: '-',
+            action: 'POST',
+            status: 'FAILED',
+            message: err.message,
+            engine: this.currentEngine,
+          });
           this.currentTask.failed++;
+        }
+
+        if (this.abortController?.signal?.aborted) {
+          throw new Error('TASK_ABORTED');
         }
 
         if (a < targetAccounts.length - 1) {
@@ -341,18 +388,26 @@ class TwitterBot {
 
     try {
       for (let u = 0; u < urls.length; u++) {
-        if (this.abortController.signal.aborted) break;
+        if (this.abortController?.signal?.aborted) {
+          throw new Error('TASK_ABORTED');
+        }
         const url = urls[u].trim();
         if (!url) continue;
 
         logger.action(`📌 [Target ${u + 1}/${urls.length}] Executing engagement rotation: ${url}`);
 
         for (let a = 0; a < targetAccounts.length; a++) {
-          if (this.abortController.signal.aborted) break;
+          if (this.abortController?.signal?.aborted) {
+            throw new Error('TASK_ABORTED');
+          }
           const account = targetAccounts[a];
+          await this.initAccountBrowser(account);
+          const engineTag = this.currentEngine
+            ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
+            : '';
 
           logger.info(
-            `👤 Engaging via Node [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`
+            `👤 Engaging via Node [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})${engineTag}`
           );
 
           let accountSpecificCommentText = options.commentText;
@@ -365,9 +420,14 @@ class TwitterBot {
               ...options,
               commentText: accountSpecificCommentText,
             });
+            if (this.abortController?.signal?.aborted) {
+              throw new Error('TASK_ABORTED');
+            }
             this.currentTask.completed++;
           } catch (err) {
-            if (err.message === 'TASK_ABORTED') throw err;
+            if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
+              throw new Error('TASK_ABORTED');
+            }
             logger.error(`❌ Error on node ${account.label}: ${err.message}`);
             db.addHistory({
               accountId: account.id,
@@ -377,8 +437,13 @@ class TwitterBot {
               action: 'TASK',
               status: 'FAILED',
               message: err.message,
+              engine: this.currentEngine,
             });
             this.currentTask.failed++;
+          }
+
+          if (this.abortController?.signal?.aborted) {
+            throw new Error('TASK_ABORTED');
           }
 
           if (a < targetAccounts.length - 1) {
@@ -386,6 +451,10 @@ class TwitterBot {
             logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
             await this.sleep(switchDelay * 1000);
           }
+        }
+
+        if (this.abortController?.signal?.aborted) {
+          throw new Error('TASK_ABORTED');
         }
 
         if (u < urls.length - 1) {
@@ -447,7 +516,7 @@ class TwitterBot {
       const maxScrolls = 15;
 
       while (collectedUrls.size < count && scrollAttempts < maxScrolls) {
-        if (this.abortController.signal.aborted) break;
+        if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
 
         const tweetLinks = await page.$$eval('article a[href*="/status/"]', (links) => {
           return links
@@ -468,10 +537,13 @@ class TwitterBot {
         });
 
         if (collectedUrls.size >= count) break;
+        if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
         await this.humanScroll(page);
         await this.sleep(2000);
         scrollAttempts++;
       }
+
+      if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
 
       const targetList = Array.from(collectedUrls).slice(0, count);
       logger.success(
@@ -481,17 +553,21 @@ class TwitterBot {
       const parsedReplies = this.parseCommentPayload(options.commentText);
 
       for (let i = 0; i < targetList.length; i++) {
-        if (this.abortController.signal.aborted) break;
+        if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
         const tweetUrl = targetList[i];
 
         logger.action(`📌 [Hunter ${i + 1}/${targetList.length}] Target: ${tweetUrl}`);
 
         for (let a = 0; a < targetAccounts.length; a++) {
-          if (this.abortController.signal.aborted) break;
+          if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
           const account = targetAccounts[a];
+          await this.initAccountBrowser(account);
+          const engineTag = this.currentEngine
+            ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
+            : '';
 
           logger.info(
-            `👤 Node Action [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})`
+            `👤 Node Action [${a + 1}/${targetAccounts.length}]: ${account.label} (@${account.username || 'user'})${engineTag}`
           );
 
           let accountSpecificCommentText = options.commentText;
@@ -504,9 +580,12 @@ class TwitterBot {
               ...options,
               commentText: accountSpecificCommentText,
             });
+            if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
             this.currentTask.completed++;
           } catch (err) {
-            if (err.message === 'TASK_ABORTED') throw err;
+            if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
+              throw new Error('TASK_ABORTED');
+            }
             logger.error(`❌ Engagement failed on node ${account.label}: ${err.message}`);
             db.addHistory({
               accountId: account.id,
@@ -516,14 +595,20 @@ class TwitterBot {
               action: 'TASK',
               status: 'FAILED',
               message: err.message,
+              engine: this.currentEngine,
             });
           }
 
+          if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
+
           if (a < targetAccounts.length - 1) {
             const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
+            logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
             await this.sleep(switchDelay * 1000);
           }
         }
+
+        if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
 
         if (i < targetList.length - 1) {
           await this.randomDelay(options.minDelay, options.maxDelay);
@@ -591,6 +676,9 @@ class TwitterBot {
     if (this.isRunning && this.abortController) {
       logger.warn(`⚠️ Sending abort signal to bot runner...`);
       this.abortController.abort();
+      if (this.page && !this.page.isClosed()) {
+        this.page.close().catch(() => {});
+      }
       return true;
     }
     return false;

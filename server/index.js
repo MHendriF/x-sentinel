@@ -70,17 +70,41 @@ app.get('/api/logs/stream', (req, res) => {
   });
 });
 
-// GET /api/logs/file - View or download raw runtime .log file
+// GET /api/logs/files - List available daily log files
+app.get('/api/logs/files', (req, res) => {
+  res.json({
+    success: true,
+    files: logger.getAvailableLogFiles(),
+    current: path.basename(logger.getLogFilePath()),
+  });
+});
+
+// GET /api/logs/file - View or download raw runtime .log file (supports ?date=YYYY-MM-DD)
 app.get('/api/logs/file', (req, res) => {
-  const logFile = logger.getLogFilePath();
+  const requestedDate = req.query.date;
+  let logFile = logger.getLogFilePath(requestedDate);
+  let downloadFilename = `x-sentinel-${requestedDate || logger.getDateString()}.log`;
+
+  // Fallback to legacy x-sentinel.log if requested today's file doesn't exist yet but legacy file does
+  if (!fs.existsSync(logFile) && !requestedDate) {
+    const legacyFile = path.join(logger.logsDir, 'x-sentinel.log');
+    if (fs.existsSync(legacyFile)) {
+      logFile = legacyFile;
+      downloadFilename = 'x-sentinel.log';
+    }
+  }
+
   if (fs.existsSync(logFile)) {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     if (req.query.download === 'true') {
-      res.setHeader('Content-Disposition', 'attachment; filename="x-sentinel.log"');
+      res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
     }
     fs.createReadStream(logFile).pipe(res);
   } else {
-    res.status(404).json({ success: false, message: 'Log file not found.' });
+    res.status(404).json({
+      success: false,
+      message: `Log file not found${requestedDate ? ` for date ${requestedDate}` : ''}.`,
+    });
   }
 });
 
