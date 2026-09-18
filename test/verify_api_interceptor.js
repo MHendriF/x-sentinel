@@ -139,6 +139,26 @@ console.log('\n2. Testing Reply / Comment (CreateTweet) GraphQL Response Parsing
   console.log('   ✅ [PASS] CreateTweet Error 385 (Restricted) parsed accurately');
 }
 
+// 2d. CreateTweet Error 344 (Daily Limit Reached / Phone Required)
+{
+  const url = 'https://x.com/i/api/graphql/67890/CreateTweet';
+  const json = {
+    errors: [
+      {
+        message:
+          'Authorization: You have reached your daily limit for sending Tweets and messages. Please try again later.',
+        code: 344,
+      },
+    ],
+  };
+  const parsed = parseGraphQLResponse(url, 200, json);
+  assert.strictEqual(parsed.actionType, 'TWEET');
+  assert.strictEqual(parsed.success, false);
+  assert.strictEqual(parsed.isDailyLimit, true);
+  assert.strictEqual(parsed.code, 344);
+  console.log('   ✅ [PASS] CreateTweet Error 344 flagged as isDailyLimit: true');
+}
+
 // -------------------------------------------------------------
 // 3. Testing parseGraphQLResponse for LIKE
 // -------------------------------------------------------------
@@ -310,6 +330,39 @@ console.log('\n4. Testing UI Toast Notification Detection:');
   const toast = await checkToastAlert(mockPage);
   assert.strictEqual(toast, null);
   console.log('   ✅ [PASS] Clean page with no toasts returns null');
+})();
+
+// 4e. Daily Limit & Phone Requirement Sheet Dialog / Modal
+(async () => {
+  const mockPage = {
+    async evaluate(fn) {
+      global.document = {
+        querySelectorAll: (sel) => {
+          if (sel.includes('[data-testid="sheetDialog"]')) {
+            return [
+              {
+                innerText:
+                  'You have reached your daily limit for this action. Please add a phone number to your account to continue.',
+              },
+            ];
+          }
+          return [];
+        },
+      };
+      try {
+        return fn();
+      } finally {
+        delete global.document;
+      }
+    },
+  };
+
+  const alert = await checkToastAlert(mockPage);
+  assert(alert !== null);
+  assert.strictEqual(alert.isDailyLimit, true);
+  assert.strictEqual(alert.isError, true);
+  assert(alert.text.includes('daily limit'));
+  console.log('   ✅ [PASS] Successfully detected "Daily limit / Add a phone" modal dialog');
 })();
 
 // -------------------------------------------------------------

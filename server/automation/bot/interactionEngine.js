@@ -162,6 +162,16 @@ function parseGraphQLResponse(url, status, json) {
       /diotomatiskan/i.test(message) ||
       /spam/i.test(message) ||
       /protect our users/i.test(message);
+    const isDailyLimit =
+      code === 344 ||
+      code === 185 ||
+      code === 88 ||
+      /daily limit/i.test(message) ||
+      /batas harian/i.test(message) ||
+      /add a phone/i.test(message) ||
+      /nomor telepon/i.test(message) ||
+      /over daily status update limit/i.test(message) ||
+      /sending tweets and messages/i.test(message);
     const isAlreadyDone =
       code === 327 ||
       code === 139 ||
@@ -172,6 +182,7 @@ function parseGraphQLResponse(url, status, json) {
       actionType,
       success: false,
       isAutomated,
+      isDailyLimit,
       isAlreadyDone,
       code,
       message,
@@ -183,10 +194,12 @@ function parseGraphQLResponse(url, status, json) {
   // Check for HTTP error status without structured errors
   if (status >= 400) {
     const isAutomated = status === 403;
+    const isDailyLimit = status === 429;
     return {
       actionType,
       success: false,
       isAutomated,
+      isDailyLimit,
       code: status,
       message: `HTTP ${status}`,
       status,
@@ -229,6 +242,9 @@ async function checkToastAlert(page) {
         'div[role="alert"]',
         '[data-testid="error-detail"]',
         '#layers [role="status"]',
+        '#layers [role="dialog"]',
+        '[data-testid="sheetDialog"]',
+        'div[role="dialog"][aria-modal="true"]',
       ];
       for (const sel of selectors) {
         const els = document.querySelectorAll(sel);
@@ -242,11 +258,20 @@ async function checkToastAlert(page) {
               lower.includes('diotomatiskan') ||
               lower.includes('spam and other malicious') ||
               lower.includes('protect our users');
+            const isDailyLimit =
+              lower.includes('daily limit') ||
+              lower.includes('batas harian') ||
+              lower.includes('add a phone') ||
+              lower.includes('nomor telepon') ||
+              lower.includes('sending tweets and messages') ||
+              lower.includes('try again later');
             return {
               text,
               isAutomated,
+              isDailyLimit,
               isError:
                 isAutomated ||
+                isDailyLimit ||
                 lower.includes('wrong') ||
                 lower.includes('error') ||
                 lower.includes('gagal') ||
@@ -623,6 +648,7 @@ async function likeTweet(page, tweetUrl, account) {
       let isLiked = false;
       let failureReason = null;
       let isAutomatedBlock = false;
+      let isDailyLimitBlock = false;
       let errorCode = null;
 
       const startTime = Date.now();
@@ -650,6 +676,7 @@ async function likeTweet(page, tweetUrl, account) {
           } else {
             failureReason = apiRes.message || 'Like rejected by X API';
             isAutomatedBlock = Boolean(apiRes.isAutomated);
+            isDailyLimitBlock = Boolean(apiRes.isDailyLimit);
             errorCode = apiRes.code;
             break;
           }
@@ -660,6 +687,7 @@ async function likeTweet(page, tweetUrl, account) {
         if (toast && toast.isError) {
           failureReason = toast.text;
           isAutomatedBlock = Boolean(toast.isAutomated);
+          isDailyLimitBlock = Boolean(toast.isDailyLimit);
           break;
         }
 
@@ -705,6 +733,35 @@ async function likeTweet(page, tweetUrl, account) {
             success: false,
             status: 'AUTOMATED_FLAG',
             code: errorCode || 226,
+            message: errorMsg,
+          };
+        }
+
+        if (
+          isDailyLimitBlock ||
+          /daily limit/i.test(errorMsg) ||
+          /batas harian/i.test(errorMsg) ||
+          /add a phone/i.test(errorMsg) ||
+          /nomor telepon/i.test(errorMsg) ||
+          errorCode === 344 ||
+          errorCode === 185
+        ) {
+          logger.error(
+            `🛑 [@${account.username || account.label}] Like BLOCKED by X Daily Limit / Phone Required: "${errorMsg}" (Code: ${errorCode || 344})`
+          );
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl,
+            tweetId,
+            action: 'LIKE',
+            status: 'FAILED',
+            message: `Daily Limit Reached / Phone Required (${errorCode || 344}): ${errorMsg}`,
+          });
+          return {
+            success: false,
+            status: 'DAILY_LIMIT_EXCEEDED',
+            code: errorCode || 344,
             message: errorMsg,
           };
         }
@@ -1015,6 +1072,7 @@ async function retweetTweet(page, tweetUrl, account) {
       let isRetweeted = false;
       let failureReason = null;
       let isAutomatedBlock = false;
+      let isDailyLimitBlock = false;
       let errorCode = null;
 
       const startTime = Date.now();
@@ -1042,6 +1100,7 @@ async function retweetTweet(page, tweetUrl, account) {
           } else {
             failureReason = apiRes.message || 'Retweet rejected by X API';
             isAutomatedBlock = Boolean(apiRes.isAutomated);
+            isDailyLimitBlock = Boolean(apiRes.isDailyLimit);
             errorCode = apiRes.code;
             break;
           }
@@ -1052,6 +1111,7 @@ async function retweetTweet(page, tweetUrl, account) {
         if (toast && toast.isError) {
           failureReason = toast.text;
           isAutomatedBlock = Boolean(toast.isAutomated);
+          isDailyLimitBlock = Boolean(toast.isDailyLimit);
           break;
         }
 
@@ -1100,6 +1160,35 @@ async function retweetTweet(page, tweetUrl, account) {
             success: false,
             status: 'AUTOMATED_FLAG',
             code: errorCode || 226,
+            message: errorMsg,
+          };
+        }
+
+        if (
+          isDailyLimitBlock ||
+          /daily limit/i.test(errorMsg) ||
+          /batas harian/i.test(errorMsg) ||
+          /add a phone/i.test(errorMsg) ||
+          /nomor telepon/i.test(errorMsg) ||
+          errorCode === 344 ||
+          errorCode === 185
+        ) {
+          logger.error(
+            `🛑 [@${account.username || account.label}] Retweet BLOCKED by X Daily Limit / Phone Required: "${errorMsg}" (Code: ${errorCode || 344})`
+          );
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl,
+            tweetId,
+            action: 'RETWEET',
+            status: 'FAILED',
+            message: `Daily Limit Reached / Phone Required (${errorCode || 344}): ${errorMsg}`,
+          });
+          return {
+            success: false,
+            status: 'DAILY_LIMIT_EXCEEDED',
+            code: errorCode || 344,
             message: errorMsg,
           };
         }
@@ -1424,6 +1513,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
       let isReplySuccess = false;
       let failureReason = null;
       let isAutomatedBlock = false;
+      let isDailyLimitBlock = false;
       let errorCode = null;
       let capturedReplyId = null;
 
@@ -1439,6 +1529,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
           } else {
             failureReason = apiRes.message || 'Reply rejected by X API';
             isAutomatedBlock = Boolean(apiRes.isAutomated);
+            isDailyLimitBlock = Boolean(apiRes.isDailyLimit);
             errorCode = apiRes.code;
             break;
           }
@@ -1449,6 +1540,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
         if (toast && toast.isError) {
           failureReason = toast.text;
           isAutomatedBlock = Boolean(toast.isAutomated);
+          isDailyLimitBlock = Boolean(toast.isDailyLimit);
           break;
         }
 
@@ -1505,6 +1597,36 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null) {
             success: false,
             status: 'AUTOMATED_FLAG',
             code: errorCode || 226,
+            message: errorMsg,
+          };
+        }
+
+        if (
+          isDailyLimitBlock ||
+          /daily limit/i.test(errorMsg) ||
+          /batas harian/i.test(errorMsg) ||
+          /add a phone/i.test(errorMsg) ||
+          /nomor telepon/i.test(errorMsg) ||
+          errorCode === 344 ||
+          errorCode === 185
+        ) {
+          logger.error(
+            `🛑 [@${account.username || account.label}] Reply BLOCKED by X Daily Limit / Phone Required: "${errorMsg}" (Code: ${errorCode || 344})`
+          );
+          db.addHistory({
+            accountId: account.id,
+            accountName: account.username || account.label,
+            tweetUrl,
+            tweetId,
+            action: 'COMMENT',
+            status: 'FAILED',
+            message: `Daily Limit Reached / Phone Required (${errorCode || 344}): ${errorMsg}`,
+            details: replyText,
+          });
+          return {
+            success: false,
+            status: 'DAILY_LIMIT_EXCEEDED',
+            code: errorCode || 344,
             message: errorMsg,
           };
         }
@@ -1642,9 +1764,12 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (like) {
     results.like = await likeTweet(page, tweetUrl, account);
-    if (results.like?.status === 'AUTOMATED_FLAG') {
+    if (
+      results.like?.status === 'AUTOMATED_FLAG' ||
+      results.like?.status === 'DAILY_LIMIT_EXCEEDED'
+    ) {
       logger.warn(
-        `🛡️ [@${account.username || account.label}] Anti-Automation flag detected on Like vector. Aborting subsequent vectors to safeguard account node.`
+        `🛡️ [@${account.username || account.label}] Safeguard trigger (${results.like?.status}) on Like vector. Aborting subsequent vectors to protect account node.`
       );
       return results;
     }
@@ -1653,9 +1778,12 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (retweet) {
     results.retweet = await retweetTweet(page, tweetUrl, account);
-    if (results.retweet?.status === 'AUTOMATED_FLAG') {
+    if (
+      results.retweet?.status === 'AUTOMATED_FLAG' ||
+      results.retweet?.status === 'DAILY_LIMIT_EXCEEDED'
+    ) {
       logger.warn(
-        `🛡️ [@${account.username || account.label}] Anti-Automation flag detected on Retweet vector. Aborting subsequent vectors to safeguard account node.`
+        `🛡️ [@${account.username || account.label}] Safeguard trigger (${results.retweet?.status}) on Retweet vector. Aborting subsequent vectors to protect account node.`
       );
       return results;
     }
@@ -1664,6 +1792,11 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (comment) {
     results.comment = await commentTweet(page, tweetUrl, account, commentText);
+    if (results.comment?.status === 'DAILY_LIMIT_EXCEEDED') {
+      logger.warn(
+        `🛑 [@${account.username || account.label}] Node reached X daily action limit or requires phone verification.`
+      );
+    }
   }
 
   return results;
