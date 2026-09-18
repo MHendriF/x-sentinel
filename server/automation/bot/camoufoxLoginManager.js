@@ -192,12 +192,25 @@ async function startCamoufoxLogin(account, options = {}) {
     });
 
     logger.info(
-      `🌐 [Camoufox Login] Navigating to X login flow... Please log in in the opened browser window.`
+      `🌐 [Camoufox Login] Navigating to https://x.com/... Please log in in the opened browser window.`
     );
-    await page.goto('https://x.com/i/flow/login', {
+    await page.goto('https://x.com/', {
       waitUntil: 'domcontentloaded',
       timeout: 45000,
-    }).catch(() => {});
+    }).catch((err) => {
+      logger.warn(`⚠️ [Camoufox Login] Navigation notice: ${err.message}`);
+    });
+
+    // Try clicking Sign in / Log in button if on landing page
+    try {
+      await sleep(1500);
+      const loginBtn = await page.$(
+        'a[href="/login"], [data-testid="loginButton"], a[href*="/i/flow/login"]'
+      );
+      if (loginBtn) {
+        await loginBtn.click().catch(() => {});
+      }
+    } catch {}
 
     const startTime = Date.now();
 
