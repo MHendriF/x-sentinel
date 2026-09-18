@@ -23,6 +23,7 @@ import {
   Flame,
   AlertTriangle,
   HeartPulse,
+  RotateCcw,
 } from 'lucide-react';
 
 interface NodeCardProps {
@@ -36,7 +37,13 @@ export const NodeCard: React.FC<NodeCardProps> = ({
   isSelected = false,
   onToggleSelect,
 }) => {
-  const { loadAccounts, openAccountModal, openCommentsModal, openDeleteModal } = useStore();
+  const {
+    loadAccounts,
+    openAccountModal,
+    openCommentsModal,
+    openDeleteModal,
+    openResetCamoufoxModal,
+  } = useStore();
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPingingProxy, setIsPingingProxy] = useState(false);
   const [isWarmingUp, setIsWarmingUp] = useState(false);
@@ -260,13 +267,24 @@ export const NodeCard: React.FC<NodeCardProps> = ({
             </div>
 
             {account.camoufoxProfile?.hasProfile ? (
-              <Badge
-                variant="outline"
-                className="shrink-0 gap-1 border-orange-500/30 bg-orange-500/10 px-1.5 py-0.5 font-mono text-[9.5px] font-semibold text-orange-300"
-                title={`Camoufox Native Profile Active (Last login: ${account.camoufoxProfile.lastLoginAt ? new Date(account.camoufoxProfile.lastLoginAt).toLocaleDateString() : 'Active'})`}
-              >
-                <span>🦊 Native</span>
-              </Badge>
+              <div className="flex items-center gap-1 shrink-0">
+                <Badge
+                  variant="outline"
+                  className="gap-1 border-orange-500/30 bg-orange-500/10 px-1.5 py-0.5 font-mono text-[9.5px] font-semibold text-orange-300"
+                  title={`Camoufox Native Profile Active (Last login: ${account.camoufoxProfile.lastLoginAt ? new Date(account.camoufoxProfile.lastLoginAt).toLocaleDateString() : 'Active'})`}
+                >
+                  <span>🦊 Native</span>
+                </Badge>
+                <button
+                  type="button"
+                  onClick={() => openResetCamoufoxModal(account)}
+                  className="inline-flex h-4 w-4 items-center justify-center rounded border border-orange-500/30 bg-orange-500/10 text-orange-400 hover:border-red-500/50 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+                  title="Hapus Sesi & Reset Profil Camoufox"
+                  aria-label="Hapus profil Camoufox untuk node ini"
+                >
+                  <RotateCcw className="h-2.5 w-2.5" />
+                </button>
+              </div>
             ) : (
               <Badge
                 variant="outline"

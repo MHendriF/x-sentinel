@@ -27,10 +27,18 @@ import {
   CheckCircle2,
   AlertTriangle,
   Sparkles,
+  Trash2,
+  RotateCcw,
 } from 'lucide-react';
 
 export const AccountModal: React.FC = () => {
-  const { isAccountModalOpen, editingAccount, closeAccountModal, loadAccounts } = useStore();
+  const {
+    isAccountModalOpen,
+    editingAccount,
+    closeAccountModal,
+    loadAccounts,
+    openResetCamoufoxModal,
+  } = useStore();
 
   const [label, setLabel] = useState('');
   const [authToken, setAuthToken] = useState('');
@@ -250,6 +258,42 @@ export const AccountModal: React.FC = () => {
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* Camoufox Persistent Profile Active Deck */}
+          {editingAccount?.camoufoxProfile?.hasProfile && (
+            <div className="flex items-center justify-between rounded-lg border border-orange-500/40 bg-gradient-to-r from-orange-500/10 via-obsidian-950 to-obsidian-950 p-3 shadow-inner">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-xl shrink-0">🦊</span>
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-heading text-xs font-bold text-orange-300">
+                      Camoufox Native Profile Aktif
+                    </span>
+                    <span className="rounded bg-orange-500/20 px-1.5 py-0.5 font-mono text-[9.5px] font-semibold text-orange-300 border border-orange-500/30">
+                      Gecko Storage
+                    </span>
+                  </div>
+                  <p className="truncate font-mono text-[10px] text-slate-400">
+                    Direktori: data/camoufox_profiles/{editingAccount.id}
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  closeAccountModal();
+                  openResetCamoufoxModal(editingAccount);
+                }}
+                className="h-7 shrink-0 gap-1.5 border border-red-500/40 bg-red-950/40 hover:bg-red-900/60 text-[11px] font-bold text-red-300 transition-all hover:text-white"
+                title="Hapus direktori profil & sesi Camoufox untuk akun ini"
+              >
+                <Trash2 className="h-3 w-3" />
+                Hapus Sesi
+              </Button>
+            </div>
+          )}
+
           {/* Smart Paste Header Bar */}
           <div className="flex items-center justify-between rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5">
             <div className="flex items-center gap-2 font-mono text-xs text-slate-300">

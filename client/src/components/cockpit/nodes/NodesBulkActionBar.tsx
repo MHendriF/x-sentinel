@@ -19,6 +19,7 @@ interface NodesBulkActionBarProps {
   onBatchActivate: () => void;
   onBatchPause: () => void;
   onBatchPingProxies: () => void;
+  onBatchResetCamoufox?: () => void;
   onBatchDelete: () => void;
   isLoading?: boolean;
 }
@@ -31,6 +32,7 @@ export const NodesBulkActionBar: React.FC<NodesBulkActionBarProps> = ({
   onBatchActivate,
   onBatchPause,
   onBatchPingProxies,
+  onBatchResetCamoufox,
   onBatchDelete,
   isLoading = false,
 }) => {
@@ -93,6 +95,20 @@ export const NodesBulkActionBar: React.FC<NodesBulkActionBarProps> = ({
             <Activity className="mr-1 h-3.5 w-3.5 text-purple-400" />
             Ping Proxies
           </Button>
+
+          {onBatchResetCamoufox && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onBatchResetCamoufox}
+              disabled={isLoading}
+              className="h-8 border-orange-500/40 bg-orange-950/30 text-orange-300 hover:bg-orange-900/40"
+              title="Hapus sesi persisten Camoufox untuk node terpilih"
+            >
+              <span className="mr-1">🦊</span>
+              Reset Camoufox
+            </Button>
+          )}
 
           <Button
             size="sm"

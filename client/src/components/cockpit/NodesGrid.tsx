@@ -284,6 +284,31 @@ export const NodesGrid: React.FC = () => {
     }
   };
 
+  const handleBatchResetCamoufox = async () => {
+    if (selectedIds.size === 0) return;
+    const count = selectedIds.size;
+    if (
+      !window.confirm(
+        `Reset profil & sesi Camoufox untuk ${count} node terpilih? Direktori browser persisten lokal akan dihapus.`
+      )
+    ) {
+      return;
+    }
+    setIsBulkOperating(true);
+    try {
+      const res = await apiClient.batchDeleteCamoufoxProfiles(Array.from(selectedIds));
+      if (res.success) {
+        toast.success(`Berhasil mereset profil Camoufox untuk ${res.deletedCount} node.`);
+        await loadAccounts();
+        handleClearSelection();
+      }
+    } catch (err: any) {
+      toast.error(`Gagal mereset profil Camoufox: ${err.message}`);
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
   // 1. Search Filter
   const searchFilteredAccounts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -683,6 +708,7 @@ export const NodesGrid: React.FC = () => {
         onBatchActivate={handleBatchActivate}
         onBatchPause={handleBatchPause}
         onBatchPingProxies={handleBatchPingProxies}
+        onBatchResetCamoufox={handleBatchResetCamoufox}
         onBatchDelete={handleBatchDelete}
         isLoading={isBulkOperating}
       />

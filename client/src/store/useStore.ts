@@ -67,6 +67,11 @@ interface AppState {
   openDeleteModal: (account: AccountNode) => void;
   closeDeleteModal: () => void;
 
+  isResetCamoufoxModalOpen: boolean;
+  resetCamoufoxAccount: AccountNode | null;
+  openResetCamoufoxModal: (account: AccountNode) => void;
+  closeResetCamoufoxModal: () => void;
+
   isBulkImportOpen: boolean;
   openBulkImportModal: () => void;
   closeBulkImportModal: () => void;
@@ -263,6 +268,13 @@ export const useStore = create<AppState>((set, get) => ({
   deletingAccount: null,
   openDeleteModal: (deletingAccount) => set({ isDeleteModalOpen: true, deletingAccount }),
   closeDeleteModal: () => set({ isDeleteModalOpen: false, deletingAccount: null }),
+
+  isResetCamoufoxModalOpen: false,
+  resetCamoufoxAccount: null,
+  openResetCamoufoxModal: (resetCamoufoxAccount) =>
+    set({ isResetCamoufoxModalOpen: true, resetCamoufoxAccount }),
+  closeResetCamoufoxModal: () =>
+    set({ isResetCamoufoxModalOpen: false, resetCamoufoxAccount: null }),
 
   isBulkImportOpen: false,
   openBulkImportModal: () => set({ isBulkImportOpen: true }),

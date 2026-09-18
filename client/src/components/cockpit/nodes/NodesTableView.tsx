@@ -42,7 +42,13 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
   onClearSelection,
   proxyResults = {},
 }) => {
-  const { loadAccounts, openAccountModal, openCommentsModal, openDeleteModal } = useStore();
+  const {
+    loadAccounts,
+    openAccountModal,
+    openCommentsModal,
+    openDeleteModal,
+    openResetCamoufoxModal,
+  } = useStore();
 
   const isAllSelected = accounts.length > 0 && accounts.every((a) => selectedIds.has(a.id));
 
@@ -245,6 +251,18 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                     >
                       <HeartPulse className="h-3 w-3 text-amber-400" />
                     </Button>
+
+                    {account.camoufoxProfile?.hasProfile && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 w-6 p-0 border-orange-500/40 bg-orange-950/30 text-orange-300 hover:bg-orange-900/40 hover:text-orange-200"
+                        onClick={() => openResetCamoufoxModal(account)}
+                        title="Hapus Sesi & Reset Profil Camoufox"
+                      >
+                        <span className="text-[10px]">🦊</span>
+                      </Button>
+                    )}
 
                     <Button
                       size="sm"

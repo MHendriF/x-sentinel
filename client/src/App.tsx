@@ -17,6 +17,7 @@ import { NotFoundDeck } from '@/components/cockpit/NotFoundDeck';
 import { AccountModal } from '@/components/cockpit/AccountModal';
 import { CommentsModal } from '@/components/cockpit/CommentsModal';
 import { DeleteNodeDialog } from '@/components/cockpit/DeleteNodeDialog';
+import { ResetCamoufoxDialog } from '@/components/cockpit/ResetCamoufoxDialog';
 import { BulkImportModal } from '@/components/cockpit/BulkImportModal';
 import { Toaster } from '@/components/ui/sonner';
 import { WifiOff } from 'lucide-react';
@@ -181,6 +182,7 @@ export const App: React.FC = () => {
       <AccountModal />
       <CommentsModal />
       <DeleteNodeDialog />
+      <ResetCamoufoxDialog />
       <BulkImportModal isOpen={isBulkImportOpen} onClose={closeBulkImportModal} />
       <Toaster position="bottom-right" richColors />
     </div>

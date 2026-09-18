@@ -295,6 +295,17 @@ export const apiClient = {
     return res.json();
   },
 
+  async batchDeleteCamoufoxProfiles(
+    ids: string[]
+  ): Promise<{ success: boolean; message: string; deletedCount: number }> {
+    const res = await fetch('/api/accounts/batch-delete-camoufox', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    });
+    return res.json();
+  },
+
   // Comments JSON per Account
   async getAccountComments(
     id: string

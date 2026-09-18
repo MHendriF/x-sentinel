@@ -439,5 +439,24 @@ router.delete('/:id/camoufox-profile', (req, res) => {
   res.json({ success: true, message: result.message });
 });
 
+// POST /api/accounts/batch-delete-camoufox - Bulk remove Camoufox persistent profiles
+router.post('/batch-delete-camoufox', validateBody(batchDeleteSchema), (req, res) => {
+  const { ids } = req.body;
+  let deletedCount = 0;
+  for (const id of ids) {
+    const account = db.getAccountById(id);
+    if (account) {
+      camoufoxLoginManager.deleteCamoufoxProfile(id);
+      deletedCount++;
+    }
+  }
+  logger.info(`🗑️ Bulk Camoufox profiles removed for ${deletedCount} node(s)`);
+  res.json({
+    success: true,
+    message: `Removed Camoufox profile for ${deletedCount} node(s).`,
+    deletedCount,
+  });
+});
+
 module.exports = router;
 
