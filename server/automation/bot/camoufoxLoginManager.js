@@ -140,8 +140,10 @@ async function startCamoufoxLogin(account, options = {}) {
     os: 'windows',
     humanize: 0.5,
     window: [1280, 850],
+    viewport: null, // Critical: prevent Juggler protocol schema error (isMobile) on persistent context
     block_webrtc: Boolean(account.proxy),
     data_dir: profileDir, // Isolated persistent profile for this account
+    geoip: false, // Avoid external GitHub MaxMind download failures ("fetch failed" / corrupted 0-byte mmdb)
     config: {
       'window.screenX': 50,
       'window.screenY': 50,
@@ -153,7 +155,6 @@ async function startCamoufoxLogin(account, options = {}) {
     const proxyLaunch = proxyHelper.getPlaywrightLaunchProxy(account.proxy);
     if (proxyLaunch) {
       camoufoxOptions.proxy = proxyLaunch;
-      camoufoxOptions.geoip = true;
       logger.info(
         `🌐 [Camoufox Login] Routing login via Proxy for @${account.username || account.label}: ${proxyLaunch.server}`
       );
