@@ -18,6 +18,7 @@ class LocalDB {
       templates: path.join(this.dataDir, 'templates.json'),
       stats: path.join(this.dataDir, 'stats.json'),
       schedules: path.join(this.dataDir, 'schedules.json'),
+      lastMission: path.join(this.dataDir, 'lastMission.json'),
     };
 
     this.cache = {};
@@ -84,6 +85,9 @@ class LocalDB {
 
     // Schedules
     this.cache.schedules = this.readFile(this.files.schedules, []);
+
+    // Last Mission
+    this.cache.lastMission = this.readFile(this.files.lastMission, null);
 
     // If accounts is empty, check if legacy auth exists and migrate
     const legacyAuth = this.readFile(this.files.auth, null);
@@ -598,6 +602,45 @@ class LocalDB {
   getStats() {
     this.checkAndResetDailyStats();
     return this.cache.stats;
+  }
+
+  getLastMission() {
+    if (this.cache.lastMission) return this.cache.lastMission;
+    // Fallback: reconstruct from most recent history entries if available
+    const history = this.cache.history || [];
+    if (history.length > 0) {
+      const recent = history.slice(-30);
+      const lastEntry = recent[recent.length - 1];
+      if (lastEntry && lastEntry.tweetUrl) {
+        const url = lastEntry.tweetUrl;
+        const matching = recent.filter((h) => h.tweetUrl === url);
+        if (matching.length > 0) {
+          const first = matching[0];
+          const last = matching[matching.length - 1];
+          const reconstructed = {
+            type: 'MULTI_BATCH',
+            urls: [url],
+            targetUrls: [url],
+            currentUrl: url,
+            total: matching.length,
+            completed: matching.filter((h) => h.status === 'SUCCESS').length,
+            failed: matching.filter((h) => h.status === 'FAILED').length,
+            startedAt: first.timestamp,
+            endedAt: last.timestamp,
+          };
+          this.cache.lastMission = reconstructed;
+          this.save('lastMission');
+          return reconstructed;
+        }
+      }
+    }
+    return null;
+  }
+
+  saveLastMission(mission) {
+    this.cache.lastMission = mission;
+    this.save('lastMission');
+    return mission;
   }
 
   // ==========================================

@@ -22,7 +22,12 @@ interface AppState {
 
   isRunning: boolean;
   currentTask: any | null;
+  lastMission: any | null;
   setIsRunning: (running: boolean, task?: any) => void;
+  setLastMission: (lastMission: any) => void;
+
+  workbenchUrls: string;
+  setWorkbenchUrls: (urls: string | ((prev: string) => string)) => void;
 
   /** False when the /api/status poller cannot reach the engine */
   apiOnline: boolean;
@@ -196,7 +201,26 @@ export const useStore = create<AppState>((set, get) => ({
 
   isRunning: false,
   currentTask: null,
+  lastMission: null,
   setIsRunning: (isRunning, currentTask = null) => set({ isRunning, currentTask }),
+  setLastMission: (lastMission) => set({ lastMission }),
+
+  workbenchUrls: (() => {
+    try {
+      return localStorage.getItem('x_sentinel_target_urls') || '';
+    } catch {
+      return '';
+    }
+  })(),
+  setWorkbenchUrls: (updater: string | ((prev: string) => string)) => {
+    set((state) => {
+      const next = typeof updater === 'function' ? updater(state.workbenchUrls) : updater;
+      try {
+        localStorage.setItem('x_sentinel_target_urls', next);
+      } catch {}
+      return { workbenchUrls: next };
+    });
+  },
 
   apiOnline: true,
   setApiOnline: (apiOnline) => set({ apiOnline }),

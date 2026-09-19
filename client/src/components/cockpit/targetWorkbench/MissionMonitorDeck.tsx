@@ -10,8 +10,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  ExternalLink,
-  Bot,
   Layers,
 } from 'lucide-react';
 import { HistoryItem } from '@/services/apiClient';
@@ -19,24 +17,121 @@ import { HistoryItem } from '@/services/apiClient';
 interface MissionMonitorDeckProps {
   isRunning: boolean;
   currentTask: any;
+  lastMission?: any;
   targetUrls: string[];
   recentHistory?: HistoryItem[];
+  missionStartedAt?: number | null;
 }
 
 export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
   isRunning,
   currentTask,
+  lastMission,
   targetUrls,
   recentHistory = [],
+  missionStartedAt = null,
 }) => {
-  const total = currentTask?.total || currentTask?.targetCount || targetUrls.length || 0;
-  const completed = currentTask?.completed || 0;
+  const taskSource = isRunning ? currentTask : (currentTask || lastMission);
+
+  const total = taskSource?.total || taskSource?.targetCount || targetUrls.length || 0;
+  const completed = taskSource?.completed || 0;
   const progressPct = total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
 
-  // Filter recent history for batch actions
-  const batchHistory = recentHistory.slice(0, 10);
-  const successCount = batchHistory.filter((h) => h.status === 'SUCCESS').length;
-  const failedCount = batchHistory.filter((h) => h.status === 'FAILED').length;
+  // Aggregate all candidate target URLs across props, currentTask, and lastMission
+  const allCandidateUrls = React.useMemo(() => {
+    const list: string[] = [...targetUrls];
+    if (currentTask?.urls && Array.isArray(currentTask.urls)) {
+      list.push(...currentTask.urls);
+    }
+    if (currentTask?.targetUrls && Array.isArray(currentTask.targetUrls)) {
+      list.push(...currentTask.targetUrls);
+    }
+    if (currentTask?.currentUrl) {
+      list.push(currentTask.currentUrl);
+    }
+    if (lastMission?.urls && Array.isArray(lastMission.urls)) {
+      list.push(...lastMission.urls);
+    }
+    if (lastMission?.targetUrls && Array.isArray(lastMission.targetUrls)) {
+      list.push(...lastMission.targetUrls);
+    }
+    if (lastMission?.currentUrl) {
+      list.push(lastMission.currentUrl);
+    }
+    return Array.from(new Set(list.filter(Boolean)));
+  }, [targetUrls, currentTask, lastMission]);
+
+  // Extract tweet IDs from target URLs for precise matching
+  const targetTweetIds = React.useMemo(() => {
+    return new Set(
+      allCandidateUrls
+        .map((u) => {
+          const match = u.match(/\/status(?:es)?\/(\d+)/i);
+          return match ? match[1] : null;
+        })
+        .filter(Boolean) as string[]
+    );
+  }, [allCandidateUrls]);
+
+  // Clean URLs for fallback matching
+  const cleanTargetUrls = React.useMemo(() => {
+    return allCandidateUrls.map((u) => u.split('?')[0].trim()).filter(Boolean);
+  }, [allCandidateUrls]);
+
+  // Resolve effective mission start time
+  const effectiveStartTime = React.useMemo(() => {
+    if (missionStartedAt) return missionStartedAt;
+    if (currentTask?.startedAt) {
+      const parsed = new Date(currentTask.startedAt).getTime();
+      if (!isNaN(parsed)) return parsed;
+    }
+    if (lastMission?.startedAt) {
+      const parsed = new Date(lastMission.startedAt).getTime();
+      if (!isNaN(parsed)) return parsed;
+    }
+    return null;
+  }, [missionStartedAt, currentTask?.startedAt, lastMission?.startedAt]);
+
+  // Filter recent history strictly for the current/last mission
+  const missionHistory = React.useMemo(() => {
+    if (targetTweetIds.size === 0 && cleanTargetUrls.length === 0) {
+      return [];
+    }
+    // If mission hasn't started yet, not running, and no lastMission, keep clean empty state
+    if (!effectiveStartTime && !isRunning && !lastMission) {
+      return [];
+    }
+
+    return (recentHistory || []).filter((h) => {
+      // 1. Target URL or tweet ID match
+      // For COMMENT actions, h.tweetId may be the reply tweet ID, so also inspect h.tweetUrl
+      const urlTweetId = (h.tweetUrl || '').match(/\/status(?:es)?\/(\d+)/i)?.[1];
+      const idMatch =
+        (h.tweetId && targetTweetIds.has(h.tweetId)) ||
+        (urlTweetId && targetTweetIds.has(urlTweetId));
+      const urlMatch = cleanTargetUrls.some(
+        (target) =>
+          h.tweetUrl &&
+          (h.tweetUrl.includes(target) || target.includes(h.tweetUrl.split('?')[0]))
+      );
+      if (!idMatch && !urlMatch) return false;
+
+      // 2. Mission timestamp constraint: actions executed during or after this mission started
+      // 30-second leeway to account for client/server clock skew or initialization lag
+      if (effectiveStartTime) {
+        const itemTime = new Date(h.timestamp).getTime();
+        if (!isNaN(itemTime) && itemTime < effectiveStartTime - 30000) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [recentHistory, targetTweetIds, cleanTargetUrls, effectiveStartTime, isRunning, lastMission]);
+
+  const batchHistory = missionHistory.slice(0, 30);
+  const successCount = missionHistory.filter((h) => h.status === 'SUCCESS').length;
+  const failedCount = missionHistory.filter((h) => h.status === 'FAILED').length;
 
   return (
     <Card className="flex h-full flex-col border-border/80 bg-obsidian-900 shadow-xl">
@@ -47,10 +142,10 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
             <span>Mission Telemetry &amp; Live Monitor</span>
           </CardTitle>
           <Badge
-            variant={isRunning ? 'success' : 'secondary'}
+            variant={isRunning ? 'success' : lastMission ? 'secondary' : 'outline'}
             className="font-mono text-[10px]"
           >
-            {isRunning ? '● ACTIVE STREAM' : '○ IDLE'}
+            {isRunning ? '● ACTIVE STREAM' : lastMission ? '✓ COMPLETED' : '○ IDLE'}
           </Badge>
         </div>
       </CardHeader>
@@ -62,7 +157,21 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
             <span className="flex items-center gap-1.5 text-slate-400">
               <Clock className="h-3.5 w-3.5 text-amber-400" />
               Progress: <strong className="text-white">{completed}</strong> of{' '}
-              <strong className="text-white">{total}</strong> targets
+              <strong className="text-white">{total}</strong> nodes
+              {isRunning && taskSource?.currentNode ? (
+                <span className="ml-2 text-emerald-400 truncate max-w-[220px]">
+                  • Active: <strong>@{taskSource.currentNode}</strong>
+                  {taskSource.currentAction && (
+                    <span className="ml-1 font-semibold text-amber-400">
+                      [{taskSource.currentAction}]
+                    </span>
+                  )}
+                </span>
+              ) : !isRunning && lastMission ? (
+                <span className="ml-2 text-slate-400 truncate max-w-[220px]">
+                  • Last Run: <span className="text-emerald-400 font-semibold">Finished</span>
+                </span>
+              ) : null}
             </span>
             <span className="font-bold text-emerald-400">{progressPct}%</span>
           </div>
@@ -95,7 +204,7 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
               <span>TOTAL ACTIONS</span>
             </div>
             <div className="mt-1 font-heading text-lg font-bold text-blue-400">
-              {batchHistory.length}
+              {missionHistory.length}
             </div>
           </div>
         </div>
@@ -114,6 +223,8 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
                 <p className="font-mono text-xs">
                   {isRunning
                     ? 'Engaging first target node...'
+                    : lastMission
+                    ? 'Mission concluded. No records matching current target filters.'
                     : 'No active mission. Configure parameters and launch.'}
                 </p>
               </div>

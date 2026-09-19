@@ -48,8 +48,10 @@ export const App: React.FC = () => {
     setActiveTab,
     loadAccounts,
     loadSettings,
+    loadHistory,
     setStats,
     setIsRunning,
+    setLastMission,
     setApiOnline,
     addLog,
     apiOnline,
@@ -108,6 +110,7 @@ export const App: React.FC = () => {
   useEffect(() => {
     loadAccounts();
     loadSettings();
+    loadHistory(100);
 
     // SSE Log Stream
     const eventSource = apiClient.subscribeLogs((log) => {
@@ -122,6 +125,12 @@ export const App: React.FC = () => {
         if (data.success) {
           if (data.stats) setStats(data.stats);
           setIsRunning(Boolean(data.isRunning), data.currentTask || null);
+          if (data.lastMission) {
+            setLastMission(data.lastMission);
+          }
+          if (data.isRunning) {
+            loadHistory(100);
+          }
         }
       } catch (err) {
         // Engine unreachable — surface a global offline banner instead of stale silence
@@ -136,7 +145,7 @@ export const App: React.FC = () => {
       eventSource.close();
       clearInterval(interval);
     };
-  }, [loadAccounts, setStats, setIsRunning, addLog, setApiOnline]);
+  }, [loadAccounts, loadSettings, loadHistory, setStats, setIsRunning, setLastMission, addLog, setApiOnline]);
 
   return (
     <div className="flex min-h-screen bg-obsidian-900 text-slate-100 selection:bg-amber-500/20 selection:text-amber-300">

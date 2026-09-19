@@ -9,6 +9,7 @@ const {
   checkAlreadyRetweeted,
   findRetweetButton,
   findRetweetInGroup,
+  clickRetweetConfirmOption,
   checkRepliesRestricted,
   findReplyButtonInGroup,
 } = require('../server/automation/bot/interactionEngine');
@@ -285,6 +286,101 @@ console.log('\n4. Testing Retweet / Repost Multi-Layer Selectors:');
   const btn = await findRetweetInGroup(mockArticle);
   assert(btn !== null, 'Should find retweet button in group via Twitter Retweet arrows SVG path signature (4.5 3.88)');
   console.log('   ✅ [PASS] Structural fallback: Found Retweet button via Twitter Retweet arrows SVG signature (4.5 3.88)');
+})();
+
+// Case 4e: Popover confirmation selects "Repost" and rejects "Quote"
+(async () => {
+  let clickedAction = null;
+  const mockQuoteBtn = {
+    getAttribute(a) { return a === 'data-testid' ? 'quote' : 'menuitem'; },
+    innerText: 'Quote Post',
+    click() { clickedAction = 'QUOTE'; },
+  };
+  const mockRepostBtn = {
+    getAttribute(a) { return a === 'data-testid' ? 'retweetConfirm' : 'menuitem'; },
+    innerText: 'Repost',
+    click() { clickedAction = 'REPOST'; },
+  };
+  const mockDropdown = {
+    getAttribute(a) { return a === 'data-testid' ? 'Dropdown' : null; },
+    querySelectorAll(_sel) { return [mockQuoteBtn, mockRepostBtn]; },
+  };
+
+  const mockPage = {
+    async evaluate(fn) {
+      global.document = {
+        querySelectorAll: (sel) => (sel.includes('Dropdown') ? [mockDropdown] : []),
+      };
+      try {
+        return fn();
+      } finally {
+        delete global.document;
+      }
+    },
+  };
+
+  const confirmed = await clickRetweetConfirmOption(mockPage, null, 1500);
+  assert.strictEqual(confirmed, true, 'Should confirm retweet via fallback menu evaluation');
+  assert.strictEqual(clickedAction, 'REPOST', 'Should strictly click Repost and reject Quote');
+  console.log('   ✅ [PASS] Retweet modal: Successfully clicked Repost (retweetConfirm) and rejected Quote');
+})();
+
+// Case 4f: Popover confirmation with Indonesian "Posting ulang"
+(async () => {
+  let clickedAction = null;
+  const mockQuoteBtn = {
+    getAttribute(a) { return a === 'data-testid' ? 'quote' : 'menuitem'; },
+    innerText: 'Kutip postingan',
+    click() { clickedAction = 'QUOTE'; },
+  };
+  const mockIndoRepostBtn = {
+    getAttribute(_a) { return null; },
+    innerText: 'Posting ulang',
+    click() { clickedAction = 'REPOST_INDO'; },
+  };
+  const mockMenu = {
+    getAttribute(a) { return a === 'role' ? 'menu' : null; },
+    querySelectorAll(_sel) { return [mockQuoteBtn, mockIndoRepostBtn]; },
+  };
+
+  const mockPage = {
+    async evaluate(fn) {
+      global.document = {
+        querySelectorAll: (sel) => (sel.includes('menu') ? [mockMenu] : []),
+      };
+      try {
+        return fn();
+      } finally {
+        delete global.document;
+      }
+    },
+  };
+
+  const confirmed = await clickRetweetConfirmOption(mockPage, null, 1500);
+  assert.strictEqual(confirmed, true, 'Should confirm retweet via Indonesian menu item');
+  assert.strictEqual(clickedAction, 'REPOST_INDO', 'Should click Indonesian Posting ulang');
+  console.log('   ✅ [PASS] Retweet modal: Successfully clicked Indonesian "Posting ulang"');
+})();
+
+// Case 4g: Sensitive content detection handles Indonesian div[role="button"]:has-text("Lihat")
+(async () => {
+  let clickedView = false;
+  const mockViewBtn = {
+    async isVisible() { return true; },
+    async click() { clickedView = true; },
+  };
+  const mockPage = {
+    async $(sel) {
+      if (sel.includes('Lihat')) return mockViewBtn;
+      return null;
+    },
+    async evaluate() { return false; },
+  };
+
+  const result = await handlePageInterstitials(mockPage);
+  assert.strictEqual(result.isUnavailable, false);
+  assert.strictEqual(clickedView, true, 'Should click Indonesian sensitive content "Lihat" button');
+  console.log('   ✅ [PASS] Successfully detected and clicked Indonesian sensitive content "Lihat" button');
 })();
 
 // 5. Reply / Comment Tests

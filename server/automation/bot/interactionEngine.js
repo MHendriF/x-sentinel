@@ -116,12 +116,26 @@ async function handlePageInterstitials(page) {
       };
     }
 
-    // 3. Check for sensitive media warning and click "View" / "Show"
-    const sensitiveViewBtn = await page
-      .$(
-        'article button:has-text("View"), article button:has-text("Show"), article button:has-text("Lihat"), article button:has-text("Tampilkan"), div[role="button"]:has-text("View")'
-      )
-      .catch(() => null);
+    // 3. Check for sensitive media warning and click "View" / "Show" / "Lihat" / "Tampilkan"
+    const sensitiveViewSelectors = [
+      'article button:has-text("View")',
+      'article button:has-text("Show")',
+      'article button:has-text("Lihat")',
+      'article button:has-text("Tampilkan")',
+      'article [role="button"]:has-text("View")',
+      'article [role="button"]:has-text("Show")',
+      'article [role="button"]:has-text("Lihat")',
+      'article [role="button"]:has-text("Tampilkan")',
+      'div[role="button"]:has-text("View")',
+      'div[role="button"]:has-text("Show")',
+      'div[role="button"]:has-text("Lihat")',
+      'div[role="button"]:has-text("Tampilkan")',
+      'button:has-text("Lihat")',
+      'button:has-text("Tampilkan")',
+      '[data-testid="empty_state_button_text"]',
+    ].join(', ');
+
+    const sensitiveViewBtn = await page.$(sensitiveViewSelectors).catch(() => null);
     if (sensitiveViewBtn) {
       const isVisible = await sensitiveViewBtn.isVisible().catch(() => false);
       if (isVisible) {
@@ -396,14 +410,18 @@ async function safeClick(page, element, options = {}) {
     if (
       err.message.includes('intercepts pointer events') ||
       err.message.includes('Timeout') ||
-      err.message.includes('not visible')
+      err.message.includes('not visible') ||
+      err.message.includes('not attached') ||
+      err.message.includes('Element is not attached')
     ) {
       await dismissOverlays(page);
       await sleep(300);
       try {
         await element.click({ force: true, timeout: 5000, ...options });
       } catch (forceErr) {
-        await page.evaluate((el) => el.click(), element).catch(() => {});
+        try {
+          await page.evaluate((el) => el && el.click(), element).catch(() => {});
+        } catch (_) {}
       }
     } else {
       throw err;
@@ -857,10 +875,84 @@ const RETWEET_SELECTOR_STR = [
 const CONFIRM_RETWEET_SELECTORS = [
   '[data-testid="retweetConfirm"]',
   '[role="menuitem"][data-testid="retweetConfirm"]',
-  '[role="menuitem"]:has-text("Repost")',
-  '[role="menuitem"]:has-text("Posting ulang")',
-  '[role="menuitem"]:has-text("Retweet")',
+  '[data-testid="Dropdown"] [data-testid="retweetConfirm"]',
+  'div[role="menu"] [data-testid="retweetConfirm"]',
 ].join(', ');
+
+/**
+ * Resiliently click the Repost confirmation option from the X dropdown/popover.
+ * Specifically targets data-testid="retweetConfirm" and strictly skips data-testid="quote".
+ * Immune to React DOM detachment / stale ElementHandle errors.
+ */
+async function clickRetweetConfirmOption(page, abortSignal = null, maxTimeoutMs = 5000) {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxTimeoutMs) {
+    if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+
+    // 1. Try Playwright locator click if available (auto-re-resolves detached DOM nodes)
+    try {
+      if (typeof page.locator === 'function') {
+        const confirmLoc = page.locator(CONFIRM_RETWEET_SELECTORS).first();
+        const isVisible = await confirmLoc.isVisible().catch(() => false);
+        if (isVisible) {
+          await confirmLoc.click({ timeout: 2000 });
+          return true;
+        }
+      }
+    } catch (_) {
+      // ignore locator detachment/timeout and proceed to next layer
+    }
+
+    // 2. Direct page.click with selector (auto-resolves fresh element in Playwright)
+    try {
+      await page.click(CONFIRM_RETWEET_SELECTORS, { timeout: 1000 });
+      return true;
+    } catch (_) {}
+
+    // 3. Fallback: inspect open menu/dropdown for menuitem text (explicitly skipping quote)
+    try {
+      const confirmedInMenu = await page
+        .evaluate(() => {
+          const menus = document.querySelectorAll(
+            '[data-testid="Dropdown"], div[role="menu"], #layers [role="menu"]'
+          );
+          for (const menu of menus) {
+            const items = menu.querySelectorAll(
+              '[role="menuitem"], div[role="button"], div[tabindex="0"]'
+            );
+            for (const item of items) {
+              const testid = (item.getAttribute('data-testid') || '').toLowerCase();
+              if (testid === 'quote') continue; // Explicitly avoid quote tweet
+
+              const text = (item.innerText || item.textContent || '').trim().toLowerCase();
+              if (
+                testid === 'retweetconfirm' ||
+                text === 'repost' ||
+                text === 'posting ulang' ||
+                text === 'retweet' ||
+                text.startsWith('repost') ||
+                text.startsWith('posting ulang')
+              ) {
+                item.click();
+                return true;
+              }
+            }
+          }
+          return false;
+        })
+        .catch(() => false);
+
+      if (confirmedInMenu) {
+        return true;
+      }
+    } catch (_) {}
+
+    await sleep(250, abortSignal);
+  }
+
+  return false;
+}
 
 /**
  * Check if the tweet is already retweeted (via testid, aria, or green color)
@@ -1022,8 +1114,18 @@ async function retweetTweet(page, tweetUrl, account, abortSignal = null, options
 
       if (attempt < 3) {
         if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
-        await page.evaluate(() => window.scrollBy(0, 200)).catch(() => {});
+        if (targetArticle) {
+          const actionGroup = await targetArticle.$('div[role="group"]').catch(() => null);
+          if (actionGroup) {
+            await actionGroup.scrollIntoViewIfNeeded().catch(() => {});
+          } else {
+            await targetArticle.scrollIntoViewIfNeeded().catch(() => {});
+          }
+        } else {
+          await page.evaluate(() => window.scrollBy(0, 200)).catch(() => {});
+        }
         await sleep(800, abortSignal);
+        await handlePageInterstitials(page);
         await dismissOverlays(page);
         targetArticle = await findTargetTweetArticle(page, tweetId);
       }
@@ -1077,13 +1179,31 @@ async function retweetTweet(page, tweetUrl, account, abortSignal = null, options
     try {
       if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
       await safeClick(page, retweetBtn);
-      await sleep(600, abortSignal);
+      await sleep(500, abortSignal);
 
-      const confirmBtn = await page
-        .waitForSelector(CONFIRM_RETWEET_SELECTORS, { timeout: 4000 })
-        .catch(() => null);
+      // Verify if dropdown/popover menu appeared, retry click if swallowed
+      const isMenuOpen = await page
+        .evaluate(() => {
+          return !!(
+            document.querySelector('[data-testid="retweetConfirm"]') ||
+            document.querySelector('[data-testid="Dropdown"]') ||
+            document.querySelector('div[role="menu"]')
+          );
+        })
+        .catch(() => false);
 
-      if (!confirmBtn) {
+      if (!isMenuOpen) {
+        const freshRetweetBtn = await findRetweetButton(targetArticle, page);
+        if (freshRetweetBtn) {
+          await safeClick(page, freshRetweetBtn);
+          await sleep(500, abortSignal);
+        }
+      }
+
+      // Resilient confirmation click: handles dropdown animation and ensures Repost (not Quote) is selected
+      const confirmed = await clickRetweetConfirmOption(page, abortSignal, 4500);
+
+      if (!confirmed) {
         const alreadyActive = await checkAlreadyRetweeted(targetArticle, page);
         if (alreadyActive) {
           logger.info(`ℹ️ [@${account.username || account.label}] Post confirmed already reposted.`);
@@ -1114,9 +1234,6 @@ async function retweetTweet(page, tweetUrl, account, abortSignal = null, options
         });
         return { success: false, message: msg };
       }
-
-      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
-      await safeClick(page, confirmBtn);
 
       let isRetweeted = false;
       let failureReason = null;
@@ -1961,6 +2078,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (like) {
     if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+    if (typeof options.onAction === 'function') options.onAction('LIKE');
     results.like = await likeTweet(page, tweetUrl, account, abortSignal, options);
     if (
       results.like?.status === 'AUTOMATED_FLAG' ||
@@ -1979,6 +2097,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (retweet) {
     if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+    if (typeof options.onAction === 'function') options.onAction('RETWEET');
     results.retweet = await retweetTweet(page, tweetUrl, account, abortSignal, options);
     if (
       results.retweet?.status === 'AUTOMATED_FLAG' ||
@@ -1997,6 +2116,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (comment) {
     if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+    if (typeof options.onAction === 'function') options.onAction('REPLY');
     results.comment = await commentTweet(page, tweetUrl, account, commentText, abortSignal, options);
     if (results.comment?.status === 'DAILY_LIMIT_EXCEEDED') {
       logger.warn(
@@ -2022,6 +2142,7 @@ module.exports = {
   findRetweetButton,
   findRetweetInGroup,
   retweetTweet,
+  clickRetweetConfirmOption,
   checkRepliesRestricted,
   findReplyButtonInGroup,
   commentTweet,

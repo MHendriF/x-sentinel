@@ -37,6 +37,7 @@ class TwitterBot {
     this.isRunning = false;
     this.abortController = null;
     this.currentTask = null;
+    this.lastMission = db.getLastMission ? db.getLastMission() : null;
   }
 
   // Delegated utilities
@@ -351,6 +352,15 @@ class TwitterBot {
     } finally {
       await this.closeBrowser();
       this.isRunning = false;
+      if (this.currentTask) {
+        this.lastMission = {
+          ...this.currentTask,
+          endedAt: new Date().toISOString(),
+        };
+        if (db.saveLastMission) {
+          db.saveLastMission(this.lastMission);
+        }
+      }
       this.currentTask = null;
       this.abortController = null;
     }
@@ -371,13 +381,20 @@ class TwitterBot {
 
     this.isRunning = true;
     this.abortController = new AbortController();
+    const startedAt = new Date().toISOString();
     this.currentTask = {
       type: 'MULTI_BATCH',
       accountsCount: targetAccounts.length,
       urlsCount: urls.length,
+      urls: [...urls],
+      targetUrls: [...urls],
       total: urls.length * targetAccounts.length,
       completed: 0,
       failed: 0,
+      startedAt,
+      currentNode: targetAccounts[0]?.username || targetAccounts[0]?.label || '',
+      currentAction: 'INITIALIZING',
+      currentUrl: urls[0]?.trim() || '',
     };
 
     const parsedReplies = this.parseCommentPayload(options.commentText);
@@ -401,6 +418,12 @@ class TwitterBot {
             throw new Error('TASK_ABORTED');
           }
           const account = targetAccounts[a];
+          if (this.currentTask) {
+            this.currentTask.currentNode = account.username || account.label;
+            this.currentTask.currentUrl = url;
+            this.currentTask.currentAction = 'CONNECTING';
+          }
+
           await this.initAccountBrowser(account, false, options);
           const engineTag = this.currentEngine
             ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
@@ -419,11 +442,19 @@ class TwitterBot {
             await this.processTweetWithAccount(url, account, {
               ...options,
               commentText: accountSpecificCommentText,
+              onAction: (act) => {
+                if (this.currentTask) {
+                  this.currentTask.currentAction = act;
+                }
+              },
             });
             if (this.abortController?.signal?.aborted) {
               throw new Error('TASK_ABORTED');
             }
             this.currentTask.completed++;
+            if (this.currentTask) {
+              this.currentTask.currentAction = 'SUCCESS';
+            }
           } catch (err) {
             if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
               throw new Error('TASK_ABORTED');
@@ -440,6 +471,9 @@ class TwitterBot {
               engine: this.currentEngine,
             });
             this.currentTask.failed++;
+            if (this.currentTask) {
+              this.currentTask.currentAction = 'FAILED';
+            }
           }
 
           if (this.abortController?.signal?.aborted) {
@@ -448,6 +482,9 @@ class TwitterBot {
 
           if (a < targetAccounts.length - 1) {
             const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
+            if (this.currentTask) {
+              this.currentTask.currentAction = `COOLDOWN (${switchDelay}s)`;
+            }
             logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
             await this.sleep(switchDelay * 1000);
           }
@@ -474,6 +511,15 @@ class TwitterBot {
     } finally {
       await this.closeBrowser();
       this.isRunning = false;
+      if (this.currentTask) {
+        this.lastMission = {
+          ...this.currentTask,
+          endedAt: new Date().toISOString(),
+        };
+        if (db.saveLastMission) {
+          db.saveLastMission(this.lastMission);
+        }
+      }
       this.currentTask = null;
       this.abortController = null;
     }
@@ -491,11 +537,16 @@ class TwitterBot {
     this.isRunning = true;
     this.abortController = new AbortController();
     this.currentTask = {
-      type: 'MULTI_HUNTER',
+      type: 'HUNTER',
       keyword,
       accountsCount: targetAccounts.length,
       targetCount: count,
+      total: count * targetAccounts.length,
       completed: 0,
+      failed: 0,
+      startedAt: new Date().toISOString(),
+      currentNode: targetAccounts[0]?.username || targetAccounts[0]?.label || '',
+      currentAction: 'SEARCHING',
     };
 
     logger.info(
@@ -546,6 +597,11 @@ class TwitterBot {
       if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
 
       const targetList = Array.from(collectedUrls).slice(0, count);
+      if (this.currentTask) {
+        this.currentTask.urls = [...targetList];
+        this.currentTask.targetUrls = [...targetList];
+        this.currentTask.total = targetList.length * targetAccounts.length;
+      }
       logger.success(
         `🎯 Harvested ${targetList.length} posts for engagement across ${targetAccounts.length} nodes.`
       );
@@ -625,6 +681,15 @@ class TwitterBot {
     } finally {
       await this.closeBrowser();
       this.isRunning = false;
+      if (this.currentTask) {
+        this.lastMission = {
+          ...this.currentTask,
+          endedAt: new Date().toISOString(),
+        };
+        if (db.saveLastMission) {
+          db.saveLastMission(this.lastMission);
+        }
+      }
       this.currentTask = null;
       this.abortController = null;
     }
@@ -688,6 +753,7 @@ class TwitterBot {
     return {
       isRunning: this.isRunning,
       currentTask: this.currentTask,
+      lastMission: this.lastMission || (db.getLastMission ? db.getLastMission() : null),
       accounts: db.getAccounts(),
       activeAccountsCount: db.getActiveAccounts().length,
       stats: db.getStats(),

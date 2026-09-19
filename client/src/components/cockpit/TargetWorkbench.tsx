@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
@@ -56,10 +56,29 @@ function parseSpintaxClient(text: string): string {
 }
 
 export const TargetWorkbench: React.FC = () => {
-  const { accounts, isRunning, currentTask, setIsRunning, settings, history, loadSchedules } =
-    useStore();
+  const {
+    accounts,
+    isRunning,
+    currentTask,
+    lastMission,
+    setIsRunning,
+    setLastMission,
+    setStats,
+    settings,
+    history,
+    loadHistory,
+    loadSchedules,
+    workbenchUrls: urlsText,
+    setWorkbenchUrls: setUrlsText,
+  } = useStore();
 
-  const [urlsText, setUrlsText] = useState('');
+  // Sync URLs from active task if workbench was opened with empty target input
+  useEffect(() => {
+    if (currentTask?.urls && Array.isArray(currentTask.urls) && currentTask.urls.length > 0 && !urlsText.trim()) {
+      setUrlsText(currentTask.urls.join('\n'));
+    }
+  }, [currentTask, urlsText, setUrlsText]);
+
   const [selectedAccountMode, setSelectedAccountMode] = useState<string>('all');
   const [customAccountIds, setCustomAccountIds] = useState<string[]>([]);
   const [like, setLike] = useState(true);
@@ -77,6 +96,33 @@ export const TargetWorkbench: React.FC = () => {
 
   // Right column active tab: 'console' | 'monitor'
   const [rightTab, setRightTab] = useState<'console' | 'monitor'>('console');
+
+  // Track mission start timestamp for current-mission filtering
+  const [missionStartTime, setMissionStartTime] = useState<number | null>(null);
+
+  // Load history on mount
+  useEffect(() => {
+    loadHistory(100);
+  }, [loadHistory]);
+
+  // Live polling of history and task status while task is running or when monitor tab is active
+  useEffect(() => {
+    if (!isRunning && rightTab !== 'monitor') return;
+    loadHistory(100);
+    const poll = async () => {
+      loadHistory(100);
+      try {
+        const data = await apiClient.getStatus();
+        if (data.success) {
+          if (data.stats) setStats(data.stats);
+          setIsRunning(Boolean(data.isRunning), data.currentTask || null);
+          if (data.lastMission) setLastMission(data.lastMission);
+        }
+      } catch {}
+    };
+    const interval = setInterval(poll, isRunning ? 2000 : 5000);
+    return () => clearInterval(interval);
+  }, [isRunning, rightTab, loadHistory, setIsRunning, setLastMission, setStats]);
 
   const activeAccounts = useMemo(() => {
     return accounts.filter((a) => a.enabled !== false);
@@ -217,7 +263,16 @@ export const TargetWorkbench: React.FC = () => {
       });
 
       if (res.success) {
-        setIsRunning(true, { total: urlAnalysis.validUrls.length, completed: 0 });
+        const now = Date.now();
+        setMissionStartTime(now);
+        const totalOps = urlAnalysis.validUrls.length * effectiveAccounts.length;
+        setIsRunning(true, {
+          total: totalOps,
+          completed: 0,
+          startedAt: new Date(now).toISOString(),
+          currentNode: effectiveAccounts[0]?.username || effectiveAccounts[0]?.label || '',
+          currentAction: 'INITIALIZING',
+        });
         toast.success(`Mission started for ${urlAnalysis.validUrls.length} target tweets!`);
       } else {
         toast.error(`Failed to start mission: ${res.message}`);
@@ -232,6 +287,7 @@ export const TargetWorkbench: React.FC = () => {
     try {
       await apiClient.stopTask();
       setIsRunning(false);
+      await loadHistory(100);
       toast.info('Task abort signal sent.');
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -388,6 +444,7 @@ export const TargetWorkbench: React.FC = () => {
                 </div>
 
                 <Textarea
+                  id="target-urls-input"
                   rows={5}
                   placeholder="https://x.com/username/status/189123456789&#10;https://x.com/another/status/189987654321"
                   value={urlsText}
@@ -399,6 +456,7 @@ export const TargetWorkbench: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-between gap-1.5 pt-0.5">
                   <div className="flex flex-wrap items-center gap-1 font-mono text-[10px]">
                     <Button
+                      id="btn-paste-clipboard"
                       type="button"
                       variant="outline"
                       size="sm"
@@ -410,6 +468,7 @@ export const TargetWorkbench: React.FC = () => {
                     </Button>
                     {urlAnalysis.duplicateCount > 0 && (
                       <Button
+                        id="btn-deduplicate"
                         type="button"
                         variant="outline"
                         size="sm"
@@ -422,6 +481,7 @@ export const TargetWorkbench: React.FC = () => {
                     )}
                     {urlAnalysis.validUrls.length === 0 && (
                       <Button
+                        id="btn-load-samples"
                         type="button"
                         variant="ghost"
                         size="sm"
@@ -827,6 +887,7 @@ export const TargetWorkbench: React.FC = () => {
           <div className="flex items-center justify-between border-b border-border/60 pb-2">
             <div className="flex items-center gap-2">
               <button
+                id="tab-btn-console"
                 type="button"
                 onClick={() => setRightTab('console')}
                 className={`cursor-pointer rounded-md px-3 py-1 font-mono text-xs font-semibold transition-all ${
@@ -838,6 +899,7 @@ export const TargetWorkbench: React.FC = () => {
                 🖥️ Live Terminal Console
               </button>
               <button
+                id="tab-btn-monitor"
                 type="button"
                 onClick={() => setRightTab('monitor')}
                 className={`cursor-pointer rounded-md px-3 py-1 font-mono text-xs font-semibold transition-all ${
@@ -865,8 +927,10 @@ export const TargetWorkbench: React.FC = () => {
               <MissionMonitorDeck
                 isRunning={isRunning}
                 currentTask={currentTask}
+                lastMission={lastMission}
                 targetUrls={urlAnalysis.validUrls}
                 recentHistory={history}
+                missionStartedAt={missionStartTime}
               />
             )}
           </div>

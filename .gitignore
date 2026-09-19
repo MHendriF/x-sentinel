@@ -14,6 +14,7 @@ data/history.json
 data/settings.json
 data/stats.json
 data/schedules.json
+data/lastMission.json
 data/media/
 data/comments/
 data/logs/
