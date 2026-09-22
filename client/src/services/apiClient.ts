@@ -480,6 +480,20 @@ export const apiClient = {
     return res.json();
   },
 
+  async pauseTask(reason?: string) {
+    const res = await fetch('/api/tasks/pause', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason }),
+    });
+    return res.json();
+  },
+
+  async resumeTask() {
+    const res = await fetch('/api/tasks/resume', { method: 'POST' });
+    return res.json();
+  },
+
   async stopTask() {
     const res = await fetch('/api/tasks/stop', { method: 'POST' });
     return res.json();

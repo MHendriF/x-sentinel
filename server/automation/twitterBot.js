@@ -36,9 +36,94 @@ class TwitterBot {
     this.page = null;
     this.currentAccount = null;
     this.isRunning = false;
+    this.isPaused = false;
+    this.pauseReason = null;
     this.abortController = null;
     this.currentTask = null;
     this.lastMission = db.getLastMission ? db.getLastMission() : null;
+  }
+
+  isNetworkConnectionError(err) {
+    if (!err || !err.message) return false;
+    const msg = (err.message + ' ' + (err.stack || '')).toLowerCase();
+    return (
+      msg.includes('ns_error_net_timeout') ||
+      msg.includes('ns_error_connection_refused') ||
+      msg.includes('ns_error_unknown_host') ||
+      msg.includes('ns_error_net_reset') ||
+      msg.includes('err_internet_disconnected') ||
+      msg.includes('err_connection_timed_out') ||
+      msg.includes('err_connection_refused') ||
+      msg.includes('err_connection_reset') ||
+      msg.includes('err_name_not_resolved') ||
+      msg.includes('err_proxy_connection_failed') ||
+      msg.includes('econnrefused') ||
+      msg.includes('enotfound') ||
+      msg.includes('etimedout') ||
+      msg.includes('econnreset') ||
+      msg.includes('fetch failed') ||
+      msg.includes('network is offline') ||
+      msg.includes('proxy unreachable') ||
+      msg.includes('net_error')
+    );
+  }
+
+  async checkPauseState() {
+    while (this.isPaused && !this.abortController?.signal?.aborted) {
+      await this.sleep(500);
+    }
+    if (this.abortController?.signal?.aborted) {
+      throw new Error('TASK_ABORTED');
+    }
+  }
+
+  async interruptibleSleep(ms) {
+    const slice = 250;
+    let remaining = ms;
+    while (remaining > 0) {
+      if (this.abortController?.signal?.aborted) {
+        throw new Error('TASK_ABORTED');
+      }
+      await this.checkPauseState();
+      const currentSlice = Math.min(remaining, slice);
+      await this.sleep(currentSlice);
+      remaining -= currentSlice;
+    }
+  }
+
+  pauseTask(reason = 'Manual pause by operator') {
+    if (!this.isRunning || this.isPaused) {
+      return false;
+    }
+    this.isPaused = true;
+    this.pauseReason = reason;
+    if (this.currentTask) {
+      this.currentTask.previousAction = this.currentTask.currentAction || 'RUNNING';
+      this.currentTask.currentAction = `PAUSED (${reason})`;
+      this.currentTask.isPaused = true;
+      this.currentTask.pauseReason = reason;
+    }
+    logger.warn(`⏸️ Automation task paused: ${reason}`);
+    notifier.notify('TASK_PAUSED', {
+      taskType: this.currentTask?.type || 'Automation Task',
+      reason,
+    });
+    return true;
+  }
+
+  resumeTask() {
+    if (!this.isRunning || !this.isPaused) {
+      return false;
+    }
+    this.isPaused = false;
+    this.pauseReason = null;
+    if (this.currentTask) {
+      this.currentTask.currentAction = this.currentTask.previousAction || 'RESUMED';
+      this.currentTask.isPaused = false;
+      this.currentTask.pauseReason = null;
+    }
+    logger.success(`▶️ Automation task resumed.`);
+    return true;
   }
 
   // Delegated utilities
@@ -292,6 +377,7 @@ class TwitterBot {
         if (this.abortController?.signal?.aborted) {
           throw new Error('TASK_ABORTED');
         }
+        await this.checkPauseState();
         const account = targetAccounts[a];
         const postText = postList[a % postList.length];
 
@@ -305,6 +391,7 @@ class TwitterBot {
         );
 
         try {
+          await this.checkPauseState();
           const page = await this.getOrCreatePageForAccount(account);
           const result = await this.createPost(page, postText, account, mediaPaths, {
             engine: this.currentEngine,
@@ -320,6 +407,15 @@ class TwitterBot {
         } catch (err) {
           if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
             throw new Error('TASK_ABORTED');
+          }
+          if (this.isNetworkConnectionError(err)) {
+            logger.warn(
+              `⚠️ Network connection error on node ${account.label}: ${err.message}. Auto-pausing post publishing...`
+            );
+            this.pauseTask(`Offline / Network Error: ${err.message}`);
+            a--;
+            await this.checkPauseState();
+            continue;
           }
           logger.error(`❌ Post error on node ${account.label}: ${err.message}`);
           db.addHistory({
@@ -341,7 +437,7 @@ class TwitterBot {
         if (a < targetAccounts.length - 1) {
           const switchDelay = options.delaySeconds || db.getSettings().accountSwitchDelaySec || 15;
           logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
-          await this.sleep(switchDelay * 1000);
+          await this.interruptibleSleep(switchDelay * 1000);
         }
       }
 
@@ -363,6 +459,8 @@ class TwitterBot {
     } finally {
       await this.closeBrowser();
       this.isRunning = false;
+      this.isPaused = false;
+      this.pauseReason = null;
       if (this.currentTask) {
         this.lastMission = {
           ...this.currentTask,
@@ -419,6 +517,7 @@ class TwitterBot {
         if (this.abortController?.signal?.aborted) {
           throw new Error('TASK_ABORTED');
         }
+        await this.checkPauseState();
         const url = urls[u].trim();
         if (!url) continue;
 
@@ -428,6 +527,7 @@ class TwitterBot {
           if (this.abortController?.signal?.aborted) {
             throw new Error('TASK_ABORTED');
           }
+          await this.checkPauseState();
           const account = targetAccounts[a];
           if (this.currentTask) {
             this.currentTask.currentNode = account.username || account.label;
@@ -450,6 +550,7 @@ class TwitterBot {
           }
 
           try {
+            await this.checkPauseState();
             await this.processTweetWithAccount(url, account, {
               ...options,
               commentText: accountSpecificCommentText,
@@ -469,6 +570,15 @@ class TwitterBot {
           } catch (err) {
             if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
               throw new Error('TASK_ABORTED');
+            }
+            if (this.isNetworkConnectionError(err)) {
+              logger.warn(
+                `⚠️ Network connection error on node ${account.label}: ${err.message}. Auto-pausing engagement batch...`
+              );
+              this.pauseTask(`Offline / Network Error: ${err.message}`);
+              a--;
+              await this.checkPauseState();
+              continue;
             }
             logger.error(`❌ Error on node ${account.label}: ${err.message}`);
             db.addHistory({
@@ -497,7 +607,7 @@ class TwitterBot {
               this.currentTask.currentAction = `COOLDOWN (${switchDelay}s)`;
             }
             logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
-            await this.sleep(switchDelay * 1000);
+            await this.interruptibleSleep(switchDelay * 1000);
           }
         }
 
@@ -506,6 +616,7 @@ class TwitterBot {
         }
 
         if (u < urls.length - 1) {
+          await this.checkPauseState();
           await this.randomDelay(options.minDelay, options.maxDelay);
         }
       }
@@ -522,6 +633,8 @@ class TwitterBot {
     } finally {
       await this.closeBrowser();
       this.isRunning = false;
+      this.isPaused = false;
+      this.pauseReason = null;
       if (this.currentTask) {
         this.lastMission = {
           ...this.currentTask,
@@ -627,6 +740,7 @@ class TwitterBot {
 
         for (let a = 0; a < targetAccounts.length; a++) {
           if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
+          await this.checkPauseState();
           const account = targetAccounts[a];
           await this.initAccountBrowser(account, false, options);
           const engineTag = this.currentEngine
@@ -643,6 +757,7 @@ class TwitterBot {
           }
 
           try {
+            await this.checkPauseState();
             await this.processTweetWithAccount(tweetUrl, account, {
               ...options,
               commentText: accountSpecificCommentText,
@@ -652,6 +767,15 @@ class TwitterBot {
           } catch (err) {
             if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
               throw new Error('TASK_ABORTED');
+            }
+            if (this.isNetworkConnectionError(err)) {
+              logger.warn(
+                `⚠️ Network connection error on node ${account.label}: ${err.message}. Auto-pausing hunter mission...`
+              );
+              this.pauseTask(`Offline / Network Error: ${err.message}`);
+              a--;
+              await this.checkPauseState();
+              continue;
             }
             logger.error(`❌ Engagement failed on node ${account.label}: ${err.message}`);
             db.addHistory({
@@ -671,13 +795,14 @@ class TwitterBot {
           if (a < targetAccounts.length - 1) {
             const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
             logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
-            await this.sleep(switchDelay * 1000);
+            await this.interruptibleSleep(switchDelay * 1000);
           }
         }
 
         if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
 
         if (i < targetList.length - 1) {
+          await this.checkPauseState();
           await this.randomDelay(options.minDelay, options.maxDelay);
         }
       }
@@ -692,6 +817,8 @@ class TwitterBot {
     } finally {
       await this.closeBrowser();
       this.isRunning = false;
+      this.isPaused = false;
+      this.pauseReason = null;
       if (this.currentTask) {
         this.lastMission = {
           ...this.currentTask,
@@ -763,6 +890,8 @@ class TwitterBot {
   getStatus() {
     return {
       isRunning: this.isRunning,
+      isPaused: this.isPaused,
+      pauseReason: this.pauseReason,
       currentTask: this.currentTask,
       lastMission: this.lastMission || (db.getLastMission ? db.getLastMission() : null),
       accounts: db.getAccounts(),

@@ -19,6 +19,9 @@ import {
   Repeat,
   MessageSquare,
   Flame,
+  Pause,
+  Play,
+  Square,
   Sparkles,
   Sliders,
   Layers,
@@ -62,8 +65,16 @@ function parseSpintaxClient(text: string): string {
 }
 
 export const FeedHunter: React.FC = () => {
-  const { accounts, isRunning, setIsRunning, settings, schedules, loadSchedules, history } =
-    useStore();
+  const {
+    accounts,
+    isRunning,
+    currentTask,
+    setIsRunning,
+    settings,
+    schedules,
+    loadSchedules,
+    history,
+  } = useStore();
 
   const [rawKeyword, setRawKeyword] = useState('');
   const [count, setCount] = useState(10);
@@ -189,6 +200,50 @@ export const FeedHunter: React.FC = () => {
         setRightTab('console');
       } else {
         toast.error(`Failed to deploy Feed Hunter: ${res.message}`);
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    }
+  };
+
+  // Pause Mission
+  const handlePause = async () => {
+    try {
+      const res = await apiClient.pauseTask('Manual pause by operator');
+      if (res.success) {
+        toast.warning('Radar mission paused by operator.');
+        if (currentTask) {
+          setIsRunning(true, {
+            ...currentTask,
+            isPaused: true,
+            pauseReason: 'Manual pause by operator',
+            currentAction: 'PAUSED',
+          });
+        }
+      } else {
+        toast.error(res.message || 'Failed to pause mission.');
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    }
+  };
+
+  // Resume Mission
+  const handleResume = async () => {
+    try {
+      const res = await apiClient.resumeTask();
+      if (res.success) {
+        toast.success('Radar mission resumed.');
+        if (currentTask) {
+          setIsRunning(true, {
+            ...currentTask,
+            isPaused: false,
+            pauseReason: null,
+            currentAction: 'RESUMING',
+          });
+        }
+      } else {
+        toast.error(res.message || 'Failed to resume mission.');
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
@@ -607,6 +662,22 @@ export const FeedHunter: React.FC = () => {
                 </div>
               </div>
 
+              {/* Paused Notification Banner */}
+              {isRunning && currentTask?.isPaused && (
+                <div className="animate-in fade-in slide-in-from-top-1 rounded-md border border-amber-500/60 bg-amber-950/40 p-3 font-mono text-xs text-amber-200 shadow-lg">
+                  <div className="flex items-center gap-2 font-bold text-amber-400">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                    </span>
+                    <span>⏸️ RADAR SWEEP PAUSED</span>
+                  </div>
+                  <p className="mt-1 font-sans text-xs text-amber-300/90">
+                    {currentTask?.pauseReason || 'Task is paused. Click Resume when ready to continue.'}
+                  </p>
+                </div>
+              )}
+
               {/* Action Buttons: Deploy Now vs Autopilot Recurring */}
               <div className="flex items-center gap-2 pt-1">
                 {!isRunning ? (
@@ -639,15 +710,39 @@ export const FeedHunter: React.FC = () => {
                     </Button>
                   </>
                 ) : (
-                  <Button
-                    variant="destructive"
-                    size="lg"
-                    onClick={handleStop}
-                    className="w-full font-heading text-sm font-bold"
-                  >
-                    <Flame className="h-4 w-4 fill-red-400 mr-1" />
-                    ABORT CURRENT RADAR SWEEP
-                  </Button>
+                  <div className="flex w-full items-center gap-2">
+                    {currentTask?.isPaused ? (
+                      <Button
+                        variant="default"
+                        size="lg"
+                        onClick={handleResume}
+                        className="flex-1 bg-emerald-600 font-heading text-sm font-bold text-white hover:bg-emerald-500 shadow-md transition-all active:scale-95"
+                      >
+                        <Play className="h-4 w-4 fill-white mr-1.5" />
+                        RESUME SWEEP
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={handlePause}
+                        className="flex-1 border-amber-500/50 bg-amber-500/15 font-heading text-sm font-bold text-amber-300 hover:bg-amber-500/25 hover:border-amber-400 shadow-md transition-all active:scale-95"
+                      >
+                        <Pause className="h-4 w-4 fill-amber-300 mr-1.5" />
+                        PAUSE SWEEP
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="lg"
+                      onClick={handleStop}
+                      className="font-heading text-sm font-bold shadow-md transition-all active:scale-95 px-4"
+                      title="Abort current radar sweep immediately"
+                    >
+                      <Square className="h-4 w-4 fill-red-400 mr-1.5" />
+                      ABORT
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardContent>

@@ -170,6 +170,27 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
   });
 });
 
+// POST /api/tasks/pause - Pause running task
+router.post('/pause', (req, res) => {
+  const { reason } = req.body || {};
+  const paused = twitterBot.pauseTask(reason || 'Operator manual pause');
+  if (paused) {
+    res.json({ success: true, message: 'Task paused successfully.', isPaused: true });
+  } else {
+    res.status(400).json({ success: false, message: 'No active running task to pause.' });
+  }
+});
+
+// POST /api/tasks/resume - Resume paused task
+router.post('/resume', (req, res) => {
+  const resumed = twitterBot.resumeTask();
+  if (resumed) {
+    res.json({ success: true, message: 'Task resumed successfully.', isPaused: false });
+  } else {
+    res.status(400).json({ success: false, message: 'No paused task to resume.' });
+  }
+});
+
 // POST /api/tasks/stop - Stop running task
 router.post('/stop', (req, res) => {
   const stopped = twitterBot.stopTask();

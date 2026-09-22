@@ -249,13 +249,17 @@
                   <button class="btn btn-hallmark-execute w-100" id="btnStartBatch">
                     <span id="btnBatchText">EXECUTE ENGAGEMENT SEQUENCE</span>
                   </button>
-                  <button
-                    class="btn btn-hallmark-danger mt-2 w-100"
-                    id="btnStopTask"
-                    style="display: none"
-                  >
-                    ABORT MISSION
-                  </button>
+                  <div class="d-flex gap-2 mt-2" id="runningTaskControls" style="display: none;">
+                    <button class="btn btn-hallmark-warning flex-fill" id="btnPauseTask">
+                      PAUSE MISSION
+                    </button>
+                    <button class="btn btn-hallmark-execute flex-fill" id="btnResumeTask" style="display: none;">
+                      RESUME MISSION
+                    </button>
+                    <button class="btn btn-hallmark-danger" id="btnStopTask">
+                      ABORT
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

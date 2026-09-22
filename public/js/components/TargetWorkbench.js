@@ -17,6 +17,9 @@ export class TargetWorkbench {
     this.customCommentInput = document.getElementById('customCommentInput');
     this.btnStart = document.getElementById('btnStartBatch');
     this.btnStop = document.getElementById('btnStopTask');
+    this.btnPause = document.getElementById('btnPauseTask');
+    this.btnResume = document.getElementById('btnResumeTask');
+    this.runningControls = document.getElementById('runningTaskControls');
     this.btnBatchText = document.getElementById('btnBatchText');
     this.taskStatusBadge = document.getElementById('taskStatusBadge');
     this.progressLabel = document.getElementById('progressLabel');
@@ -35,6 +38,12 @@ export class TargetWorkbench {
     }
     if (this.btnStop) {
       this.btnStop.addEventListener('click', () => this.stopMission());
+    }
+    if (this.btnPause) {
+      this.btnPause.addEventListener('click', () => this.pauseMission());
+    }
+    if (this.btnResume) {
+      this.btnResume.addEventListener('click', () => this.resumeMission());
     }
 
     store.on('accounts', (accounts) => this.updateAccountDropdown(accounts));
@@ -115,24 +124,56 @@ export class TargetWorkbench {
     }
   }
 
+  async pauseMission() {
+    try {
+      await api.pauseTask('Manual pause by operator');
+      const currentTask = store.get('currentTask') || {};
+      store.update({
+        currentTask: { ...currentTask, isPaused: true },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async resumeMission() {
+    try {
+      await api.resumeTask();
+      const currentTask = store.get('currentTask') || {};
+      store.update({
+        currentTask: { ...currentTask, isPaused: false },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   syncRunningState() {
     const isRunning = store.get('isRunning');
     const task = store.get('currentTask');
+    const isPaused = task && task.isPaused;
 
     if (isRunning) {
       if (this.taskStatusBadge) {
-        this.taskStatusBadge.className = 'status-indicator-badge status-running';
-        this.taskStatusBadge.innerText = 'EXECUTING';
+        if (isPaused) {
+          this.taskStatusBadge.className = 'status-indicator-badge status-warning';
+          this.taskStatusBadge.innerText = 'PAUSED';
+        } else {
+          this.taskStatusBadge.className = 'status-indicator-badge status-running';
+          this.taskStatusBadge.innerText = 'EXECUTING';
+        }
       }
       if (this.btnStart) this.btnStart.style.display = 'none';
-      if (this.btnStop) this.btnStop.style.display = 'block';
+      if (this.runningControls) this.runningControls.style.display = 'flex';
+      if (this.btnPause) this.btnPause.style.display = isPaused ? 'none' : 'block';
+      if (this.btnResume) this.btnResume.style.display = isPaused ? 'block' : 'none';
 
       if (task) {
         const total = task.total || task.targetCount || 1;
         const current = task.completed || 0;
         const pct = Math.min(100, Math.round((current / total) * 100));
         if (this.progressLabel)
-          this.progressLabel.innerText = `PIPELINE: ${current}/${total} ACTIONS (${task.accountsCount || 1} NODES)`;
+          this.progressLabel.innerText = `PIPELINE: ${current}/${total} ACTIONS (${task.accountsCount || 1} NODES)${isPaused ? ' [PAUSED]' : ''}`;
         if (this.progressPercent) this.progressPercent.innerText = `${pct}%`;
         if (this.progressBarFill) this.progressBarFill.style.width = `${pct}%`;
       }
@@ -142,7 +183,7 @@ export class TargetWorkbench {
         this.taskStatusBadge.innerText = 'STANDBY';
       }
       if (this.btnStart) this.btnStart.style.display = 'block';
-      if (this.btnStop) this.btnStop.style.display = 'none';
+      if (this.runningControls) this.runningControls.style.display = 'none';
     }
   }
 }
