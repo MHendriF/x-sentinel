@@ -250,6 +250,28 @@ async function launchAccountBrowser(account, options = {}) {
 }
 
 /**
+ * Obtain primary active page from browser context, reusing initial persistent page if available
+ * and pruning any lingering secondary pages.
+ */
+async function getContextPrimaryPage(context, defaultTimeoutMs = 35000) {
+  if (!context) return null;
+  const pages = typeof context.pages === 'function' ? context.pages() : [];
+  let page = null;
+  if (pages.length > 0) {
+    page = pages[0];
+    for (let i = 1; i < pages.length; i++) {
+      await pages[i].close().catch(() => {});
+    }
+  } else {
+    page = await context.newPage();
+  }
+  if (page && typeof page.setDefaultTimeout === 'function') {
+    page.setDefaultTimeout(defaultTimeoutMs);
+  }
+  return page;
+}
+
+/**
  * Safely teardown browser resources with timeout watchdog to prevent hanging zombie processes
  */
 async function closeBrowserResources(browser, context, page) {
@@ -362,6 +384,7 @@ module.exports = {
   launchChromiumBrowser,
   launchCamoufoxBrowser,
   launchAccountBrowser,
+  getContextPrimaryPage,
   closeBrowserResources,
   testBrowserLaunch,
 };

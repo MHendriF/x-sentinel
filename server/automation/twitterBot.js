@@ -13,6 +13,7 @@ const {
   launchAccountBrowser,
   closeBrowserResources,
   applyStealthScripts,
+  getContextPrimaryPage,
 } = require('./bot/browserFactory');
 const { createPost } = require('./bot/tweetComposer');
 const {
@@ -86,6 +87,17 @@ class TwitterBot {
     this.currentEngine = engine;
     this.isPersistent = Boolean(isPersistent);
 
+    const pages = typeof this.context?.pages === 'function' ? this.context.pages() : [];
+    if (pages.length > 0) {
+      this.page = pages[0];
+      for (let i = 1; i < pages.length; i++) {
+        await pages[i].close().catch(() => {});
+      }
+      this.page.setDefaultTimeout(35000);
+    } else {
+      this.page = null;
+    }
+
     return { browser: this.browser, context: this.context };
   }
 
@@ -97,8 +109,7 @@ class TwitterBot {
   async getOrCreatePageForAccount(account, options = {}) {
     await this.initAccountBrowser(account, false, options);
     if (!this.page || this.page.isClosed()) {
-      this.page = await this.context.newPage();
-      this.page.setDefaultTimeout(35000);
+      this.page = await getContextPrimaryPage(this.context, 35000);
     }
     return this.page;
   }

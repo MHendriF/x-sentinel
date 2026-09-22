@@ -3,7 +3,11 @@ const logger = require('../../logger');
 const proxyHelper = require('../proxyHelper');
 const cookieManager = require('../cookieManager');
 const notifier = require('../notifier');
-const { launchAccountBrowser, closeBrowserResources } = require('./browserFactory');
+const {
+  launchAccountBrowser,
+  closeBrowserResources,
+  getContextPrimaryPage,
+} = require('./browserFactory');
 const { sleep } = require('./humanCadence');
 
 /**
@@ -25,8 +29,7 @@ async function verifyAccount(account) {
     tempBrowser = launchRes.browser;
     tempContext = launchRes.context;
 
-    page = await tempContext.newPage();
-    page.setDefaultTimeout(30000);
+    page = await getContextPrimaryPage(tempContext, 30000);
 
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(4000);
@@ -143,7 +146,7 @@ async function checkAccountHealth(account) {
     const launchRes = await launchAccountBrowser(account, { headless: true });
     browser = launchRes.browser;
     context = launchRes.context;
-    const page = await context.newPage();
+    const page = await getContextPrimaryPage(context, 25000);
 
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 25000 });
     await page.waitForTimeout(3000);
@@ -277,7 +280,7 @@ async function executeWarmupProtocol(account, abortSignal = null) {
     const launchRes = await launchAccountBrowser(account);
     browser = launchRes.browser;
     context = launchRes.context;
-    const page = await context.newPage();
+    const page = await getContextPrimaryPage(context, 30000);
 
     await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(4000);
