@@ -988,11 +988,46 @@ ${cleanPost}`;
     ];
 
     const pool = isIndo ? indoPool : englishPool;
-    const shuffled = [...pool].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, count);
+    // Unbiased Fisher-Yates shuffle to prevent clustering
+    const shuffled = [...pool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
 
-    // Ensure absolutely NO double quotes in fallback
-    return selected.map((s) => s.replace(/["“”]/g, '').trim());
+    const uniqueSet = new Set();
+    const result = [];
+    const prefixes = isIndo
+      ? ['Secara garis besar, ', 'Kalau dicermati, ', 'Menariknya, ', 'Faktanya, ', 'Poin pentingnya: ']
+      : ['Honestly, ', 'From an infra lens, ', 'In reality, ', 'Key takeaway: ', 'Crucial nuance: '];
+
+    let prefixIdx = 0;
+    for (const item of shuffled) {
+      if (result.length >= count) break;
+      const clean = item.replace(/["“”]/g, '').trim();
+      if (!uniqueSet.has(clean)) {
+        uniqueSet.add(clean);
+        result.push(clean);
+      }
+    }
+
+    // If count exceeds pool size, synthesize guaranteed unique non-duplicate variants
+    while (result.length < count) {
+      const base = shuffled[result.length % shuffled.length];
+      const prefix = prefixes[prefixIdx % prefixes.length];
+      prefixIdx++;
+      const variant = `${prefix}${base.charAt(0).toLowerCase()}${base.slice(1)}`
+        .replace(/["“”]/g, '')
+        .trim();
+      if (!uniqueSet.has(variant)) {
+        uniqueSet.add(variant);
+        result.push(variant);
+      } else {
+        result.push(`${variant} (${result.length + 1})`);
+      }
+    }
+
+    return result.slice(0, count);
   }
 }
 

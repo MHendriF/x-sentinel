@@ -141,7 +141,7 @@ async function handlePageInterstitials(page) {
       if (isVisible) {
         logger.info('👁️ Clicking sensitive content "View" button to reveal tweet payload...');
         await sensitiveViewBtn.click({ timeout: 2000 }).catch(() => {});
-        await sleep(400);
+        await sleep(800);
       }
     }
   } catch (e) {
@@ -627,7 +627,8 @@ async function likeTweet(page, tweetUrl, account, abortSignal = null, options = 
       if (attempt < 3) {
         if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
         await page.evaluate(() => window.scrollBy(0, 200)).catch(() => {});
-        await sleep(800, abortSignal);
+        const retryWait = !targetArticle ? 1500 : 800;
+        await sleep(retryWait, abortSignal);
         await dismissOverlays(page);
         targetArticle = await findTargetTweetArticle(page, tweetId);
       }
@@ -1124,7 +1125,8 @@ async function retweetTweet(page, tweetUrl, account, abortSignal = null, options
         } else {
           await page.evaluate(() => window.scrollBy(0, 200)).catch(() => {});
         }
-        await sleep(800, abortSignal);
+        const retryWait = !targetArticle ? 1500 : 800;
+        await sleep(retryWait, abortSignal);
         await handlePageInterstitials(page);
         await dismissOverlays(page);
         targetArticle = await findTargetTweetArticle(page, tweetId);
@@ -2003,12 +2005,33 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
     );
   }
 
-  await page
-    .waitForSelector(
-      '[data-testid="tweet"], article, [data-testid="like"], [data-testid="unlike"]',
-      { timeout: 15000 }
-    )
+  // Resilient hydration readiness check for slow proxies
+  const tweetId = extractTweetId(targetUrl);
+  const tweetSelectors = [
+    tweetId ? `article:has(a[href*="${tweetId}"])` : null,
+    tweetId ? `[data-testid="tweet"]:has(a[href*="${tweetId}"])` : null,
+    '[data-testid="primaryColumn"] article[data-testid="tweet"]',
+    'article[data-testid="tweet"]',
+    '[data-testid="tweet"]',
+    'article',
+    '[data-testid="like"]',
+    '[data-testid="unlike"]',
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  let tweetReady = await page
+    .waitForSelector(tweetSelectors, { timeout: 20000 })
     .catch(() => null);
+
+  // If slow proxy hasn't rendered tweet article after 20s, micro-scroll to force React lazy hydration
+  if (!tweetReady) {
+    await page.evaluate(() => window.scrollBy(0, 150)).catch(() => {});
+    tweetReady = await page
+      .waitForSelector(tweetSelectors, { timeout: 10000 })
+      .catch(() => null);
+  }
+
   if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
   await sleep(1500, abortSignal);
 

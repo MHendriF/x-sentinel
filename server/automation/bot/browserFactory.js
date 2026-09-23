@@ -219,19 +219,11 @@ async function launchAccountBrowser(account, options = {}) {
   const settings = db.getSettings() || {};
   const isHeadless = options.headless !== undefined ? options.headless : Boolean(settings.headless);
 
-  // Smart Engine Routing: Automatically prioritize Camoufox if account has an active persistent profile
-  const profileDir = config.CAMOUFOX_PROFILES_DIR
-    ? path.join(config.CAMOUFOX_PROFILES_DIR, account.id)
-    : null;
-  const hasCamoufoxProfile = Boolean(
-    account.camoufoxProfile?.hasProfile || (profileDir && fs.existsSync(profileDir))
-  );
-
+  // Smart Engine Routing: Strictly prioritize Chromium unless explicitly overridden by options, account, or settings
   const requestedEngine = (
     options.engine ||
     account.browserEngine ||
     settings.browserEngine ||
-    (hasCamoufoxProfile ? 'camoufox' : null) ||
     'chromium'
   ).toLowerCase();
 
