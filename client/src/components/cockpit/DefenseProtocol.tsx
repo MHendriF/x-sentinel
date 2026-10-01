@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { DefenseProfilePresets, DefenseProfile, DEFENSE_PROFILES } from './defense/DefenseProfilePresets';
 import { DefensePostureHUD } from './defense/DefensePostureHUD';
+import { CockpitAccessSecurityCard } from './defense/CockpitAccessSecurityCard';
 
 export const DefenseProtocol: React.FC = () => {
   const { settings, setSettings, loadSettings, setActiveTab } = useStore();
@@ -348,6 +349,9 @@ export const DefenseProtocol: React.FC = () => {
         scrollAction={scrollAction}
         typingDelay={typingDelay}
       />
+
+      {/* 2.5 Cockpit Access, Credentials & 2FA Security Protocol */}
+      <CockpitAccessSecurityCard />
 
       {/* 3. Action Timing & Rate Limit Protection Card */}
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">

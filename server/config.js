@@ -56,6 +56,14 @@ module.exports = {
   USER_DATA_DIR,
   CAMOUFOX_PROFILES_DIR,
 
+  // Authentication & Security Session Configuration
+  AUTH_ENABLED: process.env.AUTH_ENABLED !== 'false',
+  ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'sentinel123',
+  SESSION_SECRET: process.env.SESSION_SECRET || 'x-sentinel-vault-key-change-in-env',
+  SESSION_COOKIE_NAME: 'x_sentinel_session',
+  SESSION_DURATION_MS: 7 * 24 * 60 * 60 * 1000, // 7 days
+
   // Default Anti-Ban & Rate Limits
   DEFAULTS: {
     minDelaySeconds: 15,

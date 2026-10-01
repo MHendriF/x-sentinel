@@ -180,7 +180,145 @@ export interface ProxyTestResult {
   message?: string;
 }
 
+export interface AuthSessionResponse {
+  success: boolean;
+  authenticated: boolean;
+  authEnabled?: boolean;
+  username?: string;
+  totpEnabled?: boolean;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  token?: string;
+  username?: string;
+  requireTotp?: boolean;
+  message?: string;
+  error?: string;
+}
+
+export interface TotpSetupResponse {
+  success: boolean;
+  secret: string;
+  otpauthUrl: string;
+  issuer: string;
+  username: string;
+}
+
+type UnauthorizedListener = () => void;
+const unauthorizedListeners = new Set<UnauthorizedListener>();
+
+export const onUnauthorized = (cb: UnauthorizedListener) => {
+  unauthorizedListeners.add(cb);
+  return () => {
+    unauthorizedListeners.delete(cb);
+  };
+};
+
+export const notifyUnauthorized = () => {
+  unauthorizedListeners.forEach((cb) => {
+    try {
+      cb();
+    } catch (e) {
+      console.error('Error in onUnauthorized listener:', e);
+    }
+  });
+};
+
+// Global 401 interceptor for any API call
+if (typeof window !== 'undefined' && !(window as any).__SENTINEL_FETCH_INTERCEPTOR__) {
+  (window as any).__SENTINEL_FETCH_INTERCEPTOR__ = true;
+  const originalFetch = window.fetch;
+  window.fetch = async (...args) => {
+    const res = await originalFetch(...args);
+    if (res.status === 401) {
+      const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request)?.url || '';
+      if (!url.includes('/api/auth/')) {
+        notifyUnauthorized();
+      }
+    }
+    return res;
+  };
+}
+
 export const apiClient = {
+  // Authentication
+  async login(password: string, username?: string, totpCode?: string): Promise<LoginResponse> {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, username, totpCode }),
+    });
+    return res.json();
+  },
+
+  async logout(): Promise<{ success: boolean; message: string }> {
+    const res = await fetch('/api/auth/logout', {
+      method: 'POST',
+    });
+    return res.json();
+  },
+
+  async getSessionStatus(): Promise<AuthSessionResponse> {
+    const res = await fetch('/api/auth/session');
+    return res.json();
+  },
+
+  async updateCredentials(
+    currentPassword: string,
+    newUsername?: string,
+    newPassword?: string
+  ): Promise<{ success: boolean; message?: string; error?: string; username?: string }> {
+    const res = await fetch('/api/auth/credentials', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newUsername, newPassword }),
+    });
+    return res.json();
+  },
+
+  async revokeAllSessions(): Promise<{ success: boolean; message?: string }> {
+    const res = await fetch('/api/auth/revoke-all', {
+      method: 'POST',
+    });
+    return res.json();
+  },
+
+  async get2faStatus(): Promise<{ success: boolean; enabled: boolean }> {
+    const res = await fetch('/api/auth/2fa/status');
+    return res.json();
+  },
+
+  async setup2fa(): Promise<TotpSetupResponse> {
+    const res = await fetch('/api/auth/2fa/setup', {
+      method: 'POST',
+    });
+    return res.json();
+  },
+
+  async enable2fa(
+    secret: string,
+    code: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
+    const res = await fetch('/api/auth/2fa/enable', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret, code }),
+    });
+    return res.json();
+  },
+
+  async disable2fa(
+    password: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
+    const res = await fetch('/api/auth/2fa/disable', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    return res.json();
+  },
+
   // Proxy Testing
   async testProxy(proxy: string): Promise<ProxyTestResult> {
     const res = await fetch('/api/proxy/test', {

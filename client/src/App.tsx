@@ -19,6 +19,7 @@ import { CommentsModal } from '@/components/cockpit/CommentsModal';
 import { DeleteNodeDialog } from '@/components/cockpit/DeleteNodeDialog';
 import { ResetCamoufoxDialog } from '@/components/cockpit/ResetCamoufoxDialog';
 import { BulkImportModal } from '@/components/cockpit/BulkImportModal';
+import { LoginDeck } from '@/components/cockpit/LoginDeck';
 import { Toaster } from '@/components/ui/sonner';
 import { WifiOff } from 'lucide-react';
 
@@ -46,6 +47,9 @@ export const App: React.FC = () => {
   const {
     activeTab,
     setActiveTab,
+    isAuthenticated,
+    isAuthChecking,
+    checkAuthSession,
     loadAccounts,
     loadSettings,
     loadHistory,
@@ -58,6 +62,11 @@ export const App: React.FC = () => {
     isBulkImportOpen,
     closeBulkImportModal,
   } = useStore();
+
+  // Initial Session Verification
+  useEffect(() => {
+    checkAuthSession();
+  }, [checkAuthSession]);
 
   // URL Path & Hash Synchronizer for Browser Navigation (Back/Forward & 404 Routing)
   useEffect(() => {
@@ -106,8 +115,10 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleShortcuts);
   }, [setActiveTab]);
 
-  // Initial Data Load & SSE Subscription
+  // Authenticated Data Load & SSE Subscription
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     loadAccounts();
     loadSettings();
     loadHistory(100);
@@ -132,7 +143,7 @@ export const App: React.FC = () => {
             loadHistory(100);
           }
         }
-      } catch (err) {
+      } catch {
         // Engine unreachable — surface a global offline banner instead of stale silence
         setApiOnline(false);
       }
@@ -145,7 +156,41 @@ export const App: React.FC = () => {
       eventSource.close();
       clearInterval(interval);
     };
-  }, [loadAccounts, loadSettings, loadHistory, setStats, setIsRunning, setLastMission, addLog, setApiOnline]);
+  }, [
+    isAuthenticated,
+    loadAccounts,
+    loadSettings,
+    loadHistory,
+    setStats,
+    setIsRunning,
+    setLastMission,
+    addLog,
+    setApiOnline,
+  ]);
+
+  // 1. Initial Handshake / Auth Checking Screen
+  if (isAuthChecking) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-obsidian-950 font-mono text-slate-400">
+        <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-800 bg-obsidian-900 shadow-2xl">
+          <div className="h-7 w-7 animate-spin rounded-full border-2 border-flame border-t-transparent" />
+        </div>
+        <div className="text-xs font-semibold tracking-widest text-slate-300">
+          INITIALIZING X-SENTINEL CLEARANCE...
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated Gate — Render Cyberpunk Cockpit Login
+  if (!isAuthenticated) {
+    return (
+      <>
+        <LoginDeck />
+        <Toaster position="bottom-right" richColors />
+      </>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-obsidian-900 text-slate-100 selection:bg-amber-500/20 selection:text-amber-300">

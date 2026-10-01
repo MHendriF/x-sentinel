@@ -7,6 +7,7 @@ import {
   LogEntry,
   ScheduleItem,
   apiClient,
+  onUnauthorized,
 } from '../services/apiClient';
 
 interface AppState {
@@ -16,6 +17,23 @@ interface AppState {
   accounts: AccountNode[];
   setAccounts: (accounts: AccountNode[]) => void;
   loadAccounts: () => Promise<void>;
+
+  // Authentication State
+  isAuthenticated: boolean;
+  isAuthChecking: boolean;
+  authError: string | null;
+  authUsername: string;
+  totpEnabled: boolean;
+  checkAuthSession: () => Promise<boolean>;
+  login: (
+    password: string,
+    username?: string,
+    totpCode?: string
+  ) => Promise<{ success: boolean; requireTotp?: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  setAuthenticated: (authenticated: boolean) => void;
+  autoLockMinutes: number;
+  setAutoLockMinutes: (minutes: number) => void;
 
   stats: Stats;
   setStats: (stats: Stats) => void;
@@ -196,6 +214,81 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
+  // Authentication State & Actions
+  isAuthenticated: false,
+  isAuthChecking: true,
+  authError: null,
+  authUsername: 'admin',
+  totpEnabled: false,
+  setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
+  checkAuthSession: async () => {
+    try {
+      set({ isAuthChecking: true, authError: null });
+      const res = await apiClient.getSessionStatus();
+      const authed = Boolean(res.success && res.authenticated);
+      set({
+        isAuthenticated: authed,
+        isAuthChecking: false,
+        authUsername: res.username || 'admin',
+        totpEnabled: Boolean(res.totpEnabled),
+      });
+      return authed;
+    } catch {
+      set({ isAuthenticated: false, isAuthChecking: false });
+      return false;
+    }
+  },
+  login: async (password: string, username?: string, totpCode?: string) => {
+    try {
+      set({ authError: null });
+      const res = await apiClient.login(password, username, totpCode);
+      if (res.success) {
+        set({
+          isAuthenticated: true,
+          authError: null,
+          authUsername: res.username || username || 'admin',
+        });
+        return { success: true };
+      }
+      if (res.requireTotp) {
+        return { success: false, requireTotp: true, error: res.message };
+      }
+      const errMsg = res.message || res.error || 'Authentication failed';
+      set({ authError: errMsg });
+      return { success: false, error: errMsg };
+    } catch (err: any) {
+      const errMsg = err?.message || 'Network error during login';
+      set({ authError: errMsg });
+      return { success: false, error: errMsg };
+    }
+  },
+  logout: async () => {
+    try {
+      await apiClient.logout();
+    } catch {
+      // ignore
+    } finally {
+      set({ isAuthenticated: false });
+    }
+  },
+
+  autoLockMinutes: (() => {
+    try {
+      const stored = localStorage.getItem('x_sentinel_auto_lock_minutes');
+      return stored !== null ? Number(stored) : 15;
+    } catch {
+      return 15;
+    }
+  })(),
+  setAutoLockMinutes: (autoLockMinutes: number) => {
+    try {
+      localStorage.setItem('x_sentinel_auto_lock_minutes', String(autoLockMinutes));
+    } catch {
+      // ignore
+    }
+    set({ autoLockMinutes });
+  },
+
   stats: { totalLikes: 0, totalRetweets: 0, totalComments: 0 },
   setStats: (stats) => set({ stats }),
 
@@ -308,3 +401,42 @@ export const useStore = create<AppState>((set, get) => ({
   isMobileDrawerOpen: false,
   setIsMobileDrawerOpen: (isMobileDrawerOpen) => set({ isMobileDrawerOpen }),
 }));
+
+// Automatically revoke authentication if any API call returns 401 Unauthorized
+onUnauthorized(() => {
+  useStore.getState().setAuthenticated(false);
+});
+
+// Configurable Inactivity Auto-Lock Protocol
+if (typeof window !== 'undefined') {
+  let lastActivityTime = Date.now();
+
+  const registerUserActivity = () => {
+    lastActivityTime = Date.now();
+  };
+
+  window.addEventListener('mousemove', registerUserActivity, { passive: true });
+  window.addEventListener('keydown', registerUserActivity, { passive: true });
+  window.addEventListener('click', registerUserActivity, { passive: true });
+  window.addEventListener('scroll', registerUserActivity, { passive: true });
+
+  setInterval(() => {
+    const state = useStore.getState();
+    const minutes = Number(state.autoLockMinutes ?? 15);
+    // 0 or negative means auto-lock is disabled
+    if (minutes <= 0) return;
+
+    const timeoutMs = minutes * 60 * 1000;
+    if (state.isAuthenticated && Date.now() - lastActivityTime > timeoutMs) {
+      console.warn(`X-SENTINEL: Inactivity timeout reached (${minutes}m). Auto-locking cockpit.`);
+      state.setAuthenticated(false);
+      state.addLog({
+        timestamp: new Date().toLocaleTimeString(),
+        level: 'warn',
+        message: `🔒 Cockpit security auto-lock engaged after ${minutes} minutes of inactivity.`,
+      });
+    }
+  }, 10000);
+}
+
+

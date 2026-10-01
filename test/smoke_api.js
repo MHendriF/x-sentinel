@@ -50,6 +50,16 @@ async function main() {
   assert.strictEqual(rebindingStatus, 403, 'Foreign Host header must get 403 (rebinding)');
   console.log('✅ 1. Origin/Host guard blocks cross-origin & DNS-rebinding requests');
 
+  // Authenticate session before accessing protected endpoints
+  const loginRes = await fetch(`${BASE}/api/auth/login`, {
+    ...post({ password: config.ADMIN_PASSWORD }, sameOrigin.headers),
+  });
+  assert.strictEqual(loginRes.status, 200, 'Login must succeed in smoke test');
+  const setCookie = loginRes.headers.get('set-cookie');
+  if (setCookie) {
+    sameOrigin.headers.Cookie = setCookie.split(';')[0];
+  }
+
   // 2. Same-origin & curl-style (no Origin) requests pass
   const status = await fetch(`${BASE}/api/status`, sameOrigin);
   assert.strictEqual(status.status, 200);

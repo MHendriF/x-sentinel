@@ -14,6 +14,7 @@ import {
   Radio,
   Bot,
   Sparkles,
+  LogOut,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -81,6 +82,7 @@ export const NavDeck: React.FC = () => {
     apiOnline,
     isMobileDrawerOpen,
     setIsMobileDrawerOpen,
+    logout,
   } = useStore();
 
   const totalAccounts = accounts.length;
@@ -210,12 +212,28 @@ export const NavDeck: React.FC = () => {
         </nav>
 
         {/* Deck Footer */}
-        <div className="flex items-center justify-between border-t border-border/60 pt-3 font-mono text-[11px] text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Radio className="h-3.5 w-3.5 animate-pulse text-blue-400" />
-            <span>HTTP/2 Stealth</span>
+        <div className="flex flex-col gap-2 border-t border-border/60 pt-3 font-mono text-[11px] text-muted-foreground">
+          <button
+            id="sentinel-logout-btn"
+            type="button"
+            onClick={() => logout()}
+            className="group flex w-full items-center justify-between rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-slate-400 transition-all hover:border-red-500/40 hover:bg-red-950/20 hover:text-red-300"
+            title="Terminate session and lock cockpit"
+          >
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider">
+              <LogOut className="h-3.5 w-3.5 text-slate-500 transition-colors group-hover:text-red-400" />
+              LOCK COCKPIT
+            </span>
+            <span className="text-[9px] text-slate-600 transition-colors group-hover:text-red-400/80">DISCONNECT</span>
+          </button>
+
+          <div className="flex items-center justify-between pt-0.5 text-[10px]">
+            <div className="flex items-center gap-1.5">
+              <Radio className="h-3 w-3 animate-pulse text-blue-400" />
+              <span>HTTP/2 Stealth</span>
+            </div>
+            <span className="text-slate-500">v{__APP_VERSION__}</span>
           </div>
-          <span className="text-slate-500">v{__APP_VERSION__}</span>
         </div>
       </aside>
     </>

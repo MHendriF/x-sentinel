@@ -5,6 +5,8 @@ const fs = require('fs');
 const config = require('./config');
 const logger = require('./logger');
 const { originGuard, addAllowedPort } = require('./security');
+const { requireAuth } = require('./auth');
+const authRouter = require('./routes/authRouter');
 const apiRoutes = require('./routes/api');
 
 const app = express();
@@ -46,6 +48,12 @@ const clientDist = path.join(config.ROOT_DIR, 'client', 'dist');
 const staticDir = fs.existsSync(clientDist) ? clientDist : path.join(config.ROOT_DIR, 'public');
 
 app.use(express.static(staticDir));
+
+// Public Authentication Endpoints
+app.use('/api/auth', authRouter);
+
+// Gate all protected /api routes (REST + SSE) behind valid session authentication
+app.use('/api', requireAuth);
 
 // Server-Sent Events (SSE) for Realtime Log Streaming
 app.get('/api/logs/stream', (req, res) => {
