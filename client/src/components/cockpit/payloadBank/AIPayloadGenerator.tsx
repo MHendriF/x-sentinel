@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { apiClient } from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,27 +19,11 @@ import {
   FileCode,
   Check,
   ShieldCheck,
+  Link2,
+  Loader2,
+  CheckCircle2,
 } from 'lucide-react';
 import { SavePayloadModal } from './SavePayloadModal';
-
-export const SAMPLE_POSTS = [
-  {
-    label: '🤖 AI Model Inflection',
-    text: 'Open-source models are closing the frontier gap faster than incumbents expected. The bottleneck is no longer the foundational model, it is proprietary data pipelines, agentic harness, and distribution velocity.',
-  },
-  {
-    label: '⚡ Solana / High TPS',
-    text: 'Solana DEX volume outpacing Ethereum mainnet for three consecutive weeks is not a glitch. When execution throughput matches user experience, capital stays onchain instead of bridging back.',
-  },
-  {
-    label: '🛠️ SaaS / Indie Hacker',
-    text: 'Bootstrapped to $25k MRR in 6 months by doing the unscalable thing: DMing 50 active users every single week and shipping their exact feature requests within 48 hours. Velocity beats polish every single time.',
-  },
-  {
-    label: '🇮🇩 Indo Web3 Community',
-    text: 'Fenomena airdrop hunter di Indonesia makin selektif. Komunitas lokal sekarang lebih paham analisis on-chain dan tokenomics daripada sekadar asal klik task bot telegram. Edukasi mulai berbuah hasil.',
-  },
-];
 
 export const TONE_OPTIONS = [
   {
@@ -87,7 +71,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
   onSavedSuccess,
 }) => {
   // Generator form states
-  const [postText, setPostText] = useState(SAMPLE_POSTS[0].text);
+  const [postText, setPostText] = useState('');
   const [replyCount, setReplyCount] = useState<number>(15);
   const [selectedTone, setSelectedTone] = useState<string>('peer_native');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('auto');
@@ -95,6 +79,15 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
     'Create 15 reply from this post without any double quotes, make not see like AI Slop then save in json file.'
   );
   const [isCustomInstructionOpen, setIsCustomInstructionOpen] = useState(false);
+
+  // Tweet Link & Extraction States
+  const [isFetchingTweet, setIsFetchingTweet] = useState(false);
+  const [fetchedTweetMeta, setFetchedTweetMeta] = useState<{
+    author?: string;
+    authorName?: string;
+    tweetId?: string;
+    provider?: string;
+  } | null>(null);
 
   // Execution states
   const [isGenerating, setIsGenerating] = useState(false);
@@ -109,6 +102,18 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
   // Save Modal
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
+  // Reactive detection for Twitter / X status URLs
+  const isTweetLink = useMemo(() => {
+    if (!postText) return false;
+    const trimmed = postText.trim();
+    return (
+      /https?:\/\/(?:(?:www|mobile)\.)?(?:twitter\.com|x\.com)\/(?:#!\/)?[a-zA-Z0-9_]+\/status\/\d+/i.test(
+        trimmed
+      ) ||
+      /https?:\/\/(?:(?:www|mobile)\.)?(?:twitter\.com|x\.com)\/i\/status\/\d+/i.test(trimmed)
+    );
+  }, [postText]);
+
   const handleCountChange = (count: number) => {
     setReplyCount(count);
     setCustomInstruction(
@@ -116,16 +121,67 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
     );
   };
 
+  // Fetch tweet text from X / Twitter URL
+  const handleFetchTweet = async () => {
+    const trimmed = postText.trim();
+    if (!trimmed) {
+      toast.error('Please enter a Twitter / X status URL.');
+      return;
+    }
+
+    setIsFetchingTweet(true);
+    try {
+      const res = await apiClient.fetchTweetContent(trimmed);
+      if (res.success && res.text) {
+        setPostText(res.text);
+        setFetchedTweetMeta({
+          author: res.author,
+          authorName: res.authorName,
+          tweetId: res.tweetId,
+          provider: res.provider,
+        });
+        toast.success('Target tweet extracted successfully!', {
+          description: res.author ? `Author: @${res.author}` : `Tweet ID: ${res.tweetId}`,
+        });
+      } else {
+        toast.error(res.message || 'Failed to extract tweet content from link.');
+      }
+    } catch (err: any) {
+      toast.error(`Fetch failed: ${err.message}`);
+    } finally {
+      setIsFetchingTweet(false);
+    }
+  };
+
   const handleGenerateReplies = async () => {
-    if (!postText.trim()) {
-      toast.error('Please enter the target post content first.');
+    const trimmed = postText.trim();
+    if (!trimmed) {
+      toast.error('Please enter the target post content or a Twitter / X link first.');
       return;
     }
 
     setIsGenerating(true);
     try {
+      let contentToSend = trimmed;
+
+      // Auto-resolve link if operator presses generate directly without manual fetch
+      if (isTweetLink) {
+        toast.info('Resolving tweet link content...');
+        const fetchRes = await apiClient.fetchTweetContent(trimmed);
+        if (fetchRes.success && fetchRes.text) {
+          contentToSend = fetchRes.text;
+          setPostText(fetchRes.text);
+          setFetchedTweetMeta({
+            author: fetchRes.author,
+            authorName: fetchRes.authorName,
+            tweetId: fetchRes.tweetId,
+            provider: fetchRes.provider,
+          });
+        }
+      }
+
       const res = await apiClient.generatePayloadReplies({
-        postText: postText.trim(),
+        postText: contentToSend,
         count: replyCount,
         tone: selectedTone,
         language: selectedLanguage,
@@ -289,47 +345,93 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
               </div>
               <CardTitle className="text-base">Target Tweet / Focal Post</CardTitle>
               <CardDescription>
-                Enter target post content to guide fleet node reply generation.
+                Enter target post content or paste a Twitter / X status link to guide fleet node reply generation.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Quick sample pills */}
-              <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold tracking-wider text-slate-400">
-                  QUICK SAMPLES:
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {SAMPLE_POSTS.map((sample, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setPostText(sample.text)}
-                      className="rounded border border-slate-800 bg-obsidian-950 px-2 py-1 font-mono text-[10px] text-slate-300 transition-colors hover:border-flame/50 hover:bg-flame/10 hover:text-white"
-                    >
-                      {sample.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Post Textarea */}
+              {/* Post Content / Tweet Link Input */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="font-mono text-xs font-bold text-slate-200">
-                    POST CONTENT
-                  </label>
-                  <span className="font-mono text-[10px] text-slate-500">
-                    {postText.length} chars
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <label className="font-mono text-xs font-bold text-slate-200">
+                      POST CONTENT / TWEET LINK
+                    </label>
+                    {isTweetLink && (
+                      <Badge
+                        variant="outline"
+                        className="animate-pulse border-sky-500/50 bg-sky-950/60 font-mono text-[9px] text-sky-300"
+                      >
+                        <Link2 className="mr-1 h-2.5 w-2.5" />
+                        X LINK DETECTED
+                      </Badge>
+                    )}
+                    {fetchedTweetMeta && !isTweetLink && (
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/50 bg-emerald-950/60 font-mono text-[9px] text-emerald-300"
+                      >
+                        <CheckCircle2 className="mr-1 h-2.5 w-2.5" />
+                        {fetchedTweetMeta.author ? `@${fetchedTweetMeta.author}` : 'TWEET LOADED'}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-500">
+                    <span>{postText.length} chars</span>
+                    {postText.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPostText('');
+                          setFetchedTweetMeta(null);
+                        }}
+                        className="text-slate-400 transition-colors hover:text-red-400"
+                        title="Clear input"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
+
                 <Textarea
                   rows={5}
                   value={postText}
-                  onChange={(e) => setPostText(e.target.value)}
-                  placeholder="Paste tweet text or topic here... Post: ..."
+                  onChange={(e) => {
+                    setPostText(e.target.value);
+                    if (fetchedTweetMeta) setFetchedTweetMeta(null);
+                  }}
+                  placeholder="Paste tweet text directly, OR paste an X / Twitter link (e.g. https://x.com/username/status/123456...)"
                   className="border-slate-800 bg-obsidian-950 font-mono text-xs leading-relaxed text-slate-200 focus-visible:border-flame/50"
                 />
+
+                {/* Quick Action when Link is Detected */}
+                {isTweetLink && (
+                  <div className="flex items-center justify-between rounded border border-sky-900/60 bg-sky-950/40 p-2">
+                    <span className="font-mono text-[11px] text-sky-300">
+                      Twitter / X status link detected.
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleFetchTweet}
+                      disabled={isFetchingTweet}
+                      className="h-7 border border-sky-500/40 bg-sky-600/30 px-3 font-mono text-[11px] text-sky-200 hover:bg-sky-600 hover:text-white"
+                    >
+                      {isFetchingTweet ? (
+                        <>
+                          <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                          Extracting...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="mr-1.5 h-3 w-3" />
+                          Ambil Konten Tweet
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Reply Count Selector */}

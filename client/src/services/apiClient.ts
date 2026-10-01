@@ -537,6 +537,24 @@ export const apiClient = {
     return res.json();
   },
 
+  // Fetch tweet text from Twitter / X status URL
+  async fetchTweetContent(url: string): Promise<{
+    success: boolean;
+    tweetId?: string;
+    text?: string;
+    author?: string;
+    authorName?: string;
+    provider?: string;
+    message?: string;
+  }> {
+    const res = await fetch('/api/ai/fetch-tweet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    return res.json();
+  },
+
   // AI Reply Payload Generator from Focal Post
   async generatePayloadReplies(payload: {
     postText: string;

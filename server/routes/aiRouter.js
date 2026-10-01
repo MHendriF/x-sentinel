@@ -3,6 +3,7 @@ const fs = require('fs');
 const express = require('express');
 const { z } = require('zod');
 const aiService = require('../automation/aiService');
+const tweetExtractor = require('../automation/tweetExtractor');
 const db = require('../db');
 const logger = require('../logger');
 const { validateBody, httpError } = require('../utils/http');
@@ -19,7 +20,7 @@ const generatePostSchema = z.object({
 });
 
 const generatePayloadRepliesSchema = z.object({
-  postText: z.string().min(1, 'Target post text is required.').max(4000),
+  postText: z.string().min(1, 'Target post text or tweet URL is required.').max(4000),
   count: z.number().int().min(1).max(50).optional(),
   tone: z.string().max(50).optional(),
   language: z.string().max(10).optional(),
@@ -27,11 +28,35 @@ const generatePayloadRepliesSchema = z.object({
   customOverrides: z.any().optional(),
 });
 
+const fetchTweetSchema = z.object({
+  url: z.string().min(1, 'Tweet URL is required.').max(1000),
+});
+
 const savePayloadFileSchema = z.object({
   fileName: z.string().min(1, 'File name is required.').max(100),
   replies: z.array(z.string()).min(1, 'Reply list cannot be empty.'),
   targetAccountId: z.string().optional(),
   saveToTemplates: z.boolean().optional(),
+});
+
+// POST /api/ai/fetch-tweet - Extract content from Twitter / X tweet link
+router.post('/fetch-tweet', validateBody(fetchTweetSchema), async (req, res) => {
+  const { url } = req.body;
+  const result = await tweetExtractor.fetchTweetContent(url);
+  if (!result.success) {
+    return res.status(400).json({
+      success: false,
+      message: result.error || 'Failed to extract tweet content from link.',
+    });
+  }
+  res.json({
+    success: true,
+    tweetId: result.tweetId,
+    text: result.text,
+    author: result.author,
+    authorName: result.authorName,
+    provider: result.provider,
+  });
 });
 
 // POST /api/ai/generate-post - Generate high-engagement tweet drafts
@@ -69,8 +94,20 @@ router.post(
   async (req, res) => {
     const { postText, count, tone, language, customInstruction, customOverrides } = req.body;
 
+    let resolvedPostText = postText.trim();
+    if (tweetExtractor.isTweetUrl(resolvedPostText)) {
+      const tweetRes = await tweetExtractor.fetchTweetContent(resolvedPostText);
+      if (!tweetRes.success) {
+        return res.status(400).json({
+          success: false,
+          message: tweetRes.error || 'Failed to extract tweet text from URL.',
+        });
+      }
+      resolvedPostText = tweetRes.text;
+    }
+
     const result = await aiService.generatePayloadRepliesFromPost({
-      postText: postText.trim(),
+      postText: resolvedPostText,
       count: Math.min(Math.max(Number(count) || 15, 1), 50),
       tone: tone || 'peer_native',
       language: language || 'auto',
