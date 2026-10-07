@@ -127,7 +127,7 @@ export const NavDeck: React.FC = () => {
               <div className="animate-in fade-in duration-200">
                 <div className="flex items-center gap-1.5 font-heading text-base font-bold tracking-tight text-white">
                   X-SENTINEL
-                  <span className="rounded border border-flame/30 bg-flame/20 px-1.5 py-0.5 font-mono text-[9px] text-flame">
+                  <span className="font-mono text-[10px] font-normal tracking-wide text-slate-500">
                     v{__APP_VERSION__}
                   </span>
                 </div>

@@ -393,7 +393,6 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                     )}
                   </div>
                   <div className="flex items-center gap-2 font-mono text-[10px] text-slate-500">
-                    <span>{postText.length} chars</span>
                     {postText.length > 0 && (
                       <button
                         type="button"
@@ -424,6 +423,12 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                   placeholder="Paste tweet text directly, OR paste an X / Twitter link (e.g. https://x.com/username/status/123456...)"
                   className="border-slate-800 bg-obsidian-950 font-mono text-xs leading-relaxed text-slate-200 focus-visible:border-flame/50"
                 />
+
+                {postText.length > 0 && (
+                  <div className="flex justify-end font-mono text-[10px] text-slate-400 pr-1">
+                    <span>{postText.length.toLocaleString()} chars</span>
+                  </div>
+                )}
 
                 {/* Quick Action when Link is Detected */}
                 {isTweetLink && (

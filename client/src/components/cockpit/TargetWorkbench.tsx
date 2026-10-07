@@ -717,7 +717,7 @@ export const TargetWorkbench: React.FC = () => {
                     </div>
                   )}
 
-                  <div className="relative">
+                  <div className="space-y-1">
                     <Textarea
                       rows={6}
                       placeholder={`💡 LEAVE this field empty for automatic contextual AI replies...\n\nOr enter manual text / Spintax / Multi-Node JSON:\n{\n  "topic": "Topic Title",\n  "replies": [\n    "custom reply for node 1",\n    "custom reply for node 2"\n  ]\n}`}
@@ -729,8 +729,8 @@ export const TargetWorkbench: React.FC = () => {
                       className="min-h-[140px] resize-y border-blue-500/30 bg-obsidian-950/90 font-mono text-xs font-medium leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-blue-400"
                     />
                     {customComment.length > 0 && (
-                      <div className="absolute bottom-2 right-2.5 font-mono text-[10px] text-slate-400">
-                        {customComment.length.toLocaleString()} chars
+                      <div className="flex justify-end font-mono text-[10px] text-slate-400 pr-1">
+                        <span>{customComment.length.toLocaleString()} chars</span>
                       </div>
                     )}
                   </div>
