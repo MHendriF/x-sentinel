@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useStore, resolveTabFromUrl } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
+import { cn } from '@/lib/utils';
 import { NavDeck } from '@/components/cockpit/NavDeck';
 import { TelemetryRibbon } from '@/components/cockpit/TelemetryRibbon';
 import { NodesGrid } from '@/components/cockpit/NodesGrid';
@@ -61,6 +62,8 @@ export const App: React.FC = () => {
     apiOnline,
     isBulkImportOpen,
     closeBulkImportModal,
+    isSidebarCollapsed,
+    toggleSidebarCollapsed,
   } = useStore();
 
   // Initial Session Verification
@@ -102,6 +105,12 @@ export const App: React.FC = () => {
       if (e.key === '/') {
         e.preventDefault();
         document.getElementById('node-search')?.focus();
+        return;
+      }
+
+      if (e.key === '[' || (e.ctrlKey && e.key.toLowerCase() === 'b')) {
+        e.preventDefault();
+        toggleSidebarCollapsed();
         return;
       }
 
@@ -198,7 +207,12 @@ export const App: React.FC = () => {
       <NavDeck />
 
       {/* Main Workspace (Right Content) */}
-      <main className="flex w-full max-w-7xl flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <main
+        className={cn(
+          'flex w-full flex-1 flex-col overflow-y-auto p-4 transition-all duration-300 sm:p-6 lg:p-8',
+          isSidebarCollapsed ? 'max-w-[1600px]' : 'max-w-7xl'
+        )}
+      >
         {/* Engine Offline Banner */}
         {!apiOnline && (
           <div

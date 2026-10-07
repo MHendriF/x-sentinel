@@ -579,7 +579,6 @@ export const TargetWorkbench: React.FC = () => {
                   >
                     <Heart className={`mb-1 h-5 w-5 ${like ? 'fill-red-400/20 text-red-400' : ''}`} />
                     <div className="font-heading text-xs font-semibold">Like Post</div>
-                    <div className="font-mono text-[9px] text-muted-foreground">Vector #1</div>
                   </div>
 
                   {/* Retweet Vector */}
@@ -603,7 +602,6 @@ export const TargetWorkbench: React.FC = () => {
                   >
                     <Repeat className={`mb-1 h-5 w-5 ${retweet ? 'text-emerald-400' : ''}`} />
                     <div className="font-heading text-xs font-semibold">Repost / RT</div>
-                    <div className="font-mono text-[9px] text-muted-foreground">Vector #2</div>
                   </div>
 
                   {/* Comment Vector */}
@@ -627,7 +625,6 @@ export const TargetWorkbench: React.FC = () => {
                   >
                     <MessageSquare className={`mb-1 h-5 w-5 ${comment ? 'text-blue-400' : ''}`} />
                     <div className="font-heading text-xs font-semibold">Reply Payload</div>
-                    <div className="font-mono text-[9px] text-muted-foreground">Vector #3</div>
                   </div>
                 </div>
               </div>
@@ -733,18 +730,7 @@ export const TargetWorkbench: React.FC = () => {
                     />
                     {customComment.length > 0 && (
                       <div className="absolute bottom-2 right-2.5 font-mono text-[10px] text-slate-400">
-                        <span
-                          className={
-                            customComment.length > 280
-                              ? 'text-red-400 font-bold'
-                              : customComment.length > 240
-                                ? 'text-amber-400'
-                                : 'text-slate-400'
-                          }
-                        >
-                          {customComment.length}
-                        </span>{' '}
-                        / 280 chars
+                        {customComment.length.toLocaleString()} chars
                       </div>
                     )}
                   </div>

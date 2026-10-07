@@ -24,6 +24,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { SavePayloadModal } from './SavePayloadModal';
+import { useStore } from '@/store/useStore';
 
 export const TONE_OPTIONS = [
   {
@@ -71,6 +72,8 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
   onSavedSuccess,
 }) => {
   // Generator form states
+  const setWorkbenchUrls = useStore((state) => state.setWorkbenchUrls);
+  const [sourceTweetUrl, setSourceTweetUrl] = useState<string | null>(null);
   const [postText, setPostText] = useState('');
   const [replyCount, setReplyCount] = useState<number>(15);
   const [selectedTone, setSelectedTone] = useState<string>('peer_native');
@@ -134,14 +137,16 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
       const res = await apiClient.fetchTweetContent(trimmed);
       if (res.success && res.text) {
         setPostText(res.text);
+        setSourceTweetUrl(trimmed);
+        setWorkbenchUrls(trimmed);
         setFetchedTweetMeta({
           author: res.author,
           authorName: res.authorName,
           tweetId: res.tweetId,
           provider: res.provider,
         });
-        toast.success('Target tweet extracted successfully!', {
-          description: res.author ? `Author: @${res.author}` : `Tweet ID: ${res.tweetId}`,
+        toast.success('Target tweet extracted & synced to Workbench!', {
+          description: `Workbench target updated to: ${trimmed}`,
         });
       } else {
         toast.error(res.message || 'Failed to extract tweet content from link.');
@@ -171,6 +176,8 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
         if (fetchRes.success && fetchRes.text) {
           contentToSend = fetchRes.text;
           setPostText(fetchRes.text);
+          setSourceTweetUrl(trimmed);
+          setWorkbenchUrls(trimmed);
           setFetchedTweetMeta({
             author: fetchRes.author,
             authorName: fetchRes.authorName,
@@ -375,6 +382,15 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                         {fetchedTweetMeta.author ? `@${fetchedTweetMeta.author}` : 'TWEET LOADED'}
                       </Badge>
                     )}
+                    {sourceTweetUrl && !isTweetLink && (
+                      <Badge
+                        variant="outline"
+                        className="border-sky-500/40 bg-sky-950/60 font-mono text-[9px] text-sky-300"
+                      >
+                        <Link2 className="mr-1 h-2.5 w-2.5" />
+                        WORKBENCH SYNCED
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 font-mono text-[10px] text-slate-500">
                     <span>{postText.length} chars</span>
@@ -384,6 +400,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                         onClick={() => {
                           setPostText('');
                           setFetchedTweetMeta(null);
+                          setSourceTweetUrl(null);
                         }}
                         className="text-slate-400 transition-colors hover:text-red-400"
                         title="Clear input"
@@ -399,7 +416,10 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                   value={postText}
                   onChange={(e) => {
                     setPostText(e.target.value);
-                    if (fetchedTweetMeta) setFetchedTweetMeta(null);
+                    if (!e.target.value.trim()) {
+                      setFetchedTweetMeta(null);
+                      setSourceTweetUrl(null);
+                    }
                   }}
                   placeholder="Paste tweet text directly, OR paste an X / Twitter link (e.g. https://x.com/username/status/123456...)"
                   className="border-slate-800 bg-obsidian-950 font-mono text-xs leading-relaxed text-slate-200 focus-visible:border-flame/50"

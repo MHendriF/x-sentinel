@@ -99,9 +99,12 @@ interface AppState {
   openBulkImportModal: () => void;
   closeBulkImportModal: () => void;
 
-  // Mobile Drawer
+  // Mobile Drawer & Sidebar Collapse
   isMobileDrawerOpen: boolean;
   setIsMobileDrawerOpen: (open: boolean) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (collapsed: boolean | ((prev: boolean) => boolean)) => void;
+  toggleSidebarCollapsed: () => void;
 }
 
 // Helper to match sector aliases
@@ -397,9 +400,34 @@ export const useStore = create<AppState>((set, get) => ({
   openBulkImportModal: () => set({ isBulkImportOpen: true }),
   closeBulkImportModal: () => set({ isBulkImportOpen: false }),
 
-  // Mobile Drawer
+  // Mobile Drawer & Sidebar Collapse
   isMobileDrawerOpen: false,
   setIsMobileDrawerOpen: (isMobileDrawerOpen) => set({ isMobileDrawerOpen }),
+  isSidebarCollapsed: (() => {
+    try {
+      return localStorage.getItem('x_sentinel_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  })(),
+  setIsSidebarCollapsed: (updater: boolean | ((prev: boolean) => boolean)) => {
+    set((state) => {
+      const next = typeof updater === 'function' ? updater(state.isSidebarCollapsed) : updater;
+      try {
+        localStorage.setItem('x_sentinel_sidebar_collapsed', String(next));
+      } catch {}
+      return { isSidebarCollapsed: next };
+    });
+  },
+  toggleSidebarCollapsed: () => {
+    set((state) => {
+      const next = !state.isSidebarCollapsed;
+      try {
+        localStorage.setItem('x_sentinel_sidebar_collapsed', String(next));
+      } catch {}
+      return { isSidebarCollapsed: next };
+    });
+  },
 }));
 
 // Automatically revoke authentication if any API call returns 401 Unauthorized

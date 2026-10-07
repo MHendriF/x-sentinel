@@ -31,7 +31,23 @@ export class TargetWorkbench {
 
   init() {
     if (this.targetUrls) {
-      this.targetUrls.addEventListener('input', () => this.updateCounter());
+      const savedUrls = localStorage.getItem('x_sentinel_target_urls');
+      if (savedUrls && !this.targetUrls.value) {
+        this.targetUrls.value = savedUrls;
+        this.updateCounter();
+      }
+      this.targetUrls.addEventListener('input', () => {
+        this.updateCounter();
+        try {
+          localStorage.setItem('x_sentinel_target_urls', this.targetUrls.value);
+        } catch {}
+      });
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'x_sentinel_target_urls' && e.newValue !== null) {
+          this.targetUrls.value = e.newValue;
+          this.updateCounter();
+        }
+      });
     }
     if (this.btnStart) {
       this.btnStart.addEventListener('click', () => this.startMission());
