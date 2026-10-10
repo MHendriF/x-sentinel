@@ -8,6 +8,8 @@
 [![Runtime](https://img.shields.io/badge/runtime-Bun%20%7C%20Node.js%2018%2B-blue.svg)](https://bun.sh)
 [![Frontend](https://img.shields.io/badge/frontend-React%2019%20%2B%20Vite-purple.svg)](https://react.dev)
 
+![X-SENTINEL Cockpit — Autonomous Multi-Node Fleet & Telemetry](docs/assets/cockpit-overview.png)
+
 ---
 
 ## ⚡ Core Feature Matrix
@@ -88,6 +90,8 @@ bun run format:check
 
 ### 1. ✨ AI Post Studio, Drafts Stash & Fleet Dispatcher
 
+![AI Post Studio & Fleet Publisher](docs/assets/ai-post-studio.png)
+
 - **5 Ready-to-Use Post Personas**: _🔥 Viral Hook_, _💡 Alpha Insight_, _📊 Mini Value-Drop_, _🛠️ Founder Story_, and _🌐 Global Tech Community_.
 - **Persistent Drafts Stash Drawer**: Store unlimited post drafts in `localStorage` with topic tags and instant search filtering.
 - **⚡ 4 Quick Polishers**: Polish drafts with 1 click: _Hook Booster_, _Punchline Polish_, _Formalize_, or _Slop Purge_.
@@ -114,6 +118,8 @@ bun run format:check
 
 ### 4. 🦊 Resilient Interaction Engine & Anti-Automation Guard
 
+![Target Engagement Workbench & Live Telemetry Stream](docs/assets/target-workbench.png)
+
 - **Lexical Single-Focus Keyboard Typing**: Uses `page.keyboard` paired with element focus in `humanType` to eliminate cursor desynchronization and typing loss within X's Lexical rich text editor.
 - **Context-Scoped Reply Submission**: Reply submission buttons are strictly scoped to active modal dialogs or thread inline containers, preventing misfired clicks against background feed buttons.
 - **Rate Limit & Challenge Interception**: Automatically intercepts GraphQL error codes `344` and `185` (daily tweet limits) and detects "Add a phone / Daily limit" modal dialogs to safely abort tasks before triggering account flags.
@@ -132,6 +138,8 @@ bun run format:check
 
 ### 6. 📜 Forensic Audit Ledger, Daily Rotating Logs & Maintenance
 
+![Forensic Audit Ledger & Telemetry History](docs/assets/forensic-audit-ledger.png)
+
 - **GraphQL Tweet URL Interceptor**: Captures newly published tweet URLs accurately from network response payloads (`https://x.com/[user]/status/[id]`).
 - **RFC-4180 Escaped CSV Export**: Cleanly exports audit history to CSV format with full quotation escaping for multiline comments.
 - **Daily Rotating Logs**: Production-grade daily rotating log files (`data/logs/x-sentinel-YYYY-MM-DD.log`) with automated 30-day retention and log file browser endpoints (`GET /api/logs/files`, `GET /api/logs/file?date=YYYY-MM-DD`).
@@ -143,7 +151,7 @@ bun run format:check
 
 ## 📁 Modular Architecture Structure
 
-```
+```text
 x-sentinel/
 ├── client/src/                     # Frontend Cockpit (React 19, TypeScript, Tailwind CSS, shadcn/ui)
 │   ├── components/cockpit/         # Modular Cockpit Surfaces
