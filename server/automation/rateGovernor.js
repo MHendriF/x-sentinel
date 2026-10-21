@@ -128,10 +128,13 @@ class RateGovernor {
     const dailyUsageRatio = Math.min(1, s.dayCount / Math.max(1, dailyQuota));
     score += Math.round(hourlyUsageRatio * 10 + dailyUsageRatio * 10);
 
-    // 4. Warmup penalty for immature nodes (Day 1-2: +10 pts)
-    const day = Number(account.warmupDay) || 1;
-    if (day <= 2) {
-      score += 10;
+    // 4. Warmup penalty for immature nodes (Day 1-2: +10 pts, only if warmup gate enforced)
+    const enforceWarmup = settings.enforceWarmupGate !== false;
+    if (enforceWarmup) {
+      const day = Number(account.warmupDay) || 1;
+      if (day <= 2) {
+        score += 10;
+      }
     }
 
     return Math.min(100, Math.max(0, score));
@@ -185,11 +188,17 @@ class RateGovernor {
       return { allowed: false, reason: 'DAILY_QUOTA' };
     }
 
-    const warmupDay = Number(account.warmupDay) || 1;
-    if (warmupDay <= 7 && DEFAULT_QUOTA.warmup[warmupDay]) {
-      const cap = DEFAULT_QUOTA.warmup[warmupDay][action] ?? 0;
-      if ((s.dayByAction[action] || 0) >= cap) {
-        return { allowed: false, reason: `WARMUP_DAY_${warmupDay}_${action}_CAP` };
+    const enforceWarmupGate =
+      options.enforceWarmupGate !== undefined
+        ? options.enforceWarmupGate
+        : settings.enforceWarmupGate !== false;
+    if (enforceWarmupGate) {
+      const warmupDay = Number(account.warmupDay) || 1;
+      if (warmupDay <= 7 && DEFAULT_QUOTA.warmup[warmupDay]) {
+        const cap = DEFAULT_QUOTA.warmup[warmupDay][action] ?? 0;
+        if ((s.dayByAction[action] || 0) >= cap) {
+          return { allowed: false, reason: `WARMUP_DAY_${warmupDay}_${action}_CAP` };
+        }
       }
     }
 

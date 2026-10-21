@@ -9,18 +9,20 @@ const day1Acc = { id: 'test_acc_1', warmupDay: 1, enabled: true };
 const day2Acc = { id: 'test_acc_2', warmupDay: 2, enabled: true };
 const day3Acc = { id: 'test_acc_3', warmupDay: 3, enabled: true };
 
-assert.strictEqual(gov.canAct(day1Acc, 'LIKE').allowed, false, 'Day 1 should disallow LIKE');
-assert.strictEqual(gov.canAct(day2Acc, 'LIKE').allowed, false, 'Day 2 should disallow LIKE');
-assert.strictEqual(gov.canAct(day3Acc, 'LIKE').allowed, true, 'Day 3 should allow initial LIKE');
-assert.strictEqual(gov.canAct(day3Acc, 'RETWEET').allowed, false, 'Day 3 should disallow RETWEET');
-assert.strictEqual(gov.canAct(day3Acc, 'REPLY').allowed, false, 'Day 3 should disallow REPLY');
+const opts = { enforceWarmupGate: true, ignoreQuietHours: true };
+
+assert.strictEqual(gov.canAct(day1Acc, 'LIKE', opts).allowed, false, 'Day 1 should disallow LIKE');
+assert.strictEqual(gov.canAct(day2Acc, 'LIKE', opts).allowed, false, 'Day 2 should disallow LIKE');
+assert.strictEqual(gov.canAct(day3Acc, 'LIKE', opts).allowed, true, 'Day 3 should allow initial LIKE');
+assert.strictEqual(gov.canAct(day3Acc, 'RETWEET', opts).allowed, false, 'Day 3 should disallow RETWEET');
+assert.strictEqual(gov.canAct(day3Acc, 'REPLY', opts).allowed, false, 'Day 3 should disallow REPLY');
 console.log('   Warmup gate check: PASSED ✅');
 
 // Register 3 likes for day 3 account to hit day cap
 for (let i = 0; i < 3; i++) {
   gov.registerAction(day3Acc, 'LIKE');
 }
-assert.strictEqual(gov.canAct(day3Acc, 'LIKE').allowed, false, 'Day 3 LIKE cap (3) reached');
+assert.strictEqual(gov.canAct(day3Acc, 'LIKE', opts).allowed, false, 'Day 3 LIKE cap (3) reached');
 console.log('   Warmup cap enforcement check: PASSED ✅');
 
 // 2. Hourly Quota Test

@@ -74,6 +74,7 @@ module.exports = {
     browserEngine: 'chromium', // 'chromium' (Default) or 'camoufox' (Anti-Detect Firefox)
     humanTypingDelayMs: 65,
     scrollBeforeAction: true,
+    enforceWarmupGate: false,
   },
 
   // Desktop Chrome User Agent for maximum realism

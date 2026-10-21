@@ -55,6 +55,7 @@ class LocalDB {
       headless: config.DEFAULTS.headless,
       humanTypingDelayMs: config.DEFAULTS.humanTypingDelayMs,
       scrollBeforeAction: config.DEFAULTS.scrollBeforeAction,
+      enforceWarmupGate: config.DEFAULTS.enforceWarmupGate !== undefined ? config.DEFAULTS.enforceWarmupGate : false,
       browserEngine: config.DEFAULTS.browserEngine || 'chromium',
       aiProvider: 'none',
       aiApiKey: '',

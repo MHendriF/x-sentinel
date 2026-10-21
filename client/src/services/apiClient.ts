@@ -53,6 +53,7 @@ export interface Settings {
   dailyLimit: number;
   headless: boolean;
   scrollBeforeAction: boolean;
+  enforceWarmupGate?: boolean;
   browserEngine?: 'chromium' | 'camoufox';
   humanTypingDelayMs?: number;
   aiProvider?: string;

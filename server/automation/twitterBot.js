@@ -267,12 +267,16 @@ class TwitterBot {
         );
         return false;
       }
-      const day = Number(acc.warmupDay) || 1;
-      if (day <= 2) {
-        logger.info(
-          `🐣 [@${acc.username || acc.label}] Masih warmup Day ${day}/7 (0 aksi diizinkan). Dilewati dari task batch.`
-        );
-        return false;
+      const settings = typeof db.getSettings === 'function' ? db.getSettings() : {};
+      const enforceWarmup = settings.enforceWarmupGate !== false;
+      if (enforceWarmup) {
+        const day = Number(acc.warmupDay) || 1;
+        if (day <= 2) {
+          logger.info(
+            `🐣 [@${acc.username || acc.label}] Masih warmup Day ${day}/7 (0 aksi diizinkan). Dilewati dari task batch.`
+          );
+          return false;
+        }
       }
       return true;
     });
