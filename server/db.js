@@ -295,6 +295,15 @@ class LocalDB {
         accountData.camoufoxProfile !== undefined
           ? accountData.camoufoxProfile
           : existing.camoufoxProfile || null,
+      state: accountData.state !== undefined ? accountData.state : existing.state || {},
+      disabledUntil:
+        accountData.disabledUntil !== undefined
+          ? accountData.disabledUntil
+          : existing.disabledUntil || null,
+      disabledReason:
+        accountData.disabledReason !== undefined
+          ? accountData.disabledReason
+          : existing.disabledReason || null,
     };
 
     if (existingIndex >= 0) {

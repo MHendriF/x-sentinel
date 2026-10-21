@@ -191,6 +191,7 @@ class ProxyHelper {
           ip: data.query,
           country: data.country,
           countryCode: data.countryCode,
+          timezone: data.timezone,
           city: data.city,
           isp: data.isp || data.org,
           status: 'ALIVE',
@@ -224,13 +225,50 @@ class ProxyHelper {
       } else if (msg.includes('ENOTFOUND')) {
         msg = 'Host Not Found: Invalid proxy domain or IP.';
       }
-      return {
-        success: false,
-        latency,
-        message: msg,
-        status: 'DEAD',
-      };
+        return {
+          success: false,
+          latency,
+          message: msg,
+          status: 'DEAD',
+        };
+      }
     }
+
+  /**
+   * Get cached or freshly probed Geo information for an account proxy (TTL: 24h)
+   */
+  async getAccountGeo(account) {
+    if (!account || !account.proxy) return null;
+    if (!this.geoCache) this.geoCache = new Map();
+
+    const cacheKey = String(account.proxy).trim();
+    const cached = this.geoCache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < 24 * 60 * 60 * 1000) {
+      return cached.data;
+    }
+
+    try {
+      const res = await this.testProxy(account.proxy);
+      if (res && res.success && res.timezone) {
+        const geoData = {
+          timezone: res.timezone,
+          country: res.country,
+          countryCode: res.countryCode,
+          city: res.city,
+          locale: res.countryCode
+            ? `${res.countryCode.toLowerCase()}-${res.countryCode.toUpperCase()}`
+            : 'en-US',
+          languages: res.countryCode
+            ? [`${res.countryCode.toLowerCase()}-${res.countryCode.toUpperCase()}`, res.countryCode.toLowerCase(), 'en-US', 'en']
+            : ['en-US', 'en'],
+        };
+        this.geoCache.set(cacheKey, { data: geoData, ts: Date.now() });
+        return geoData;
+      }
+    } catch {
+      // Ignore proxy lookup failures and allow graceful fallback
+    }
+    return null;
   }
 }
 

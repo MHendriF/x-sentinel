@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
@@ -11,22 +12,120 @@ const { patchPlaywright } = require('./patchPlaywright');
 // Hotfix: Ensure Playwright driver handles undefined location in Firefox/Camoufox
 patchPlaywright();
 
+function detectHostOs() {
+  if (process.platform === 'win32') return 'win';
+  if (process.platform === 'darwin') return 'mac';
+  return 'linux';
+}
+
+function seeded(seedStr) {
+  const h = crypto.createHash('sha256').update(String(seedStr)).digest();
+  return (n) => h[n % h.length];
+}
+
+const RENDERERS = [
+  'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)',
+  'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Direct3D11 vs_5_0 ps_5_0, D3D11)',
+  'ANGLE (AMD, AMD Radeon RX 6600 Direct3D11 vs_5_0 ps_5_0, D3D11)',
+  'ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0, D3D11)',
+  'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER Direct3D11 vs_5_0 ps_5_0, D3D11)',
+];
+
+const VIEWPORTS = [
+  { width: 1280, height: 850 },
+  { width: 1366, height: 768 },
+  { width: 1440, height: 900 },
+  { width: 1536, height: 864 },
+  { width: 1600, height: 900 },
+];
+
+/**
+ * Build a consistent, deterministic identity per account node.
+ * Prevents contradictory Client Hints and identical fleet hardware clustering.
+ */
+function buildIdentity(account = {}, egressGeo = null) {
+  const accId = account?.id || account?.username || account?.label || 'default_node';
+  const os = detectHostOs();
+  const ver = 126 + (seeded(accId + ':ver')(2) % 6); // 126..131
+
+  const profiles = {
+    win: {
+      ua: (v) =>
+        `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${v}.0.0.0 Safari/537.36`,
+      platform: 'Win32',
+      uaPlatform: 'Windows',
+      uaPlatformVersion: '15.0.0',
+    },
+    mac: {
+      ua: (v) =>
+        `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${v}.0.0.0 Safari/537.36`,
+      platform: 'MacIntel',
+      uaPlatform: 'macOS',
+      uaPlatformVersion: '14.5.0',
+    },
+    linux: {
+      ua: (v) =>
+        `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${v}.0.0.0 Safari/537.36`,
+      platform: 'Linux x86_64',
+      uaPlatform: 'Linux',
+      uaPlatformVersion: '',
+    },
+  };
+
+  const core = profiles[os] || profiles.win;
+
+  let hostTimezone = 'Asia/Jakarta';
+  try {
+    hostTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta';
+  } catch {}
+
+  const timezoneId = egressGeo?.timezone || hostTimezone;
+  const locale = egressGeo?.locale || 'en-US';
+  const languages =
+    egressGeo?.languages ||
+    (locale !== 'en-US' ? [locale, 'en-US', 'en'] : ['en-US', 'en']);
+
+  const cores = [4, 6, 8, 12, 16][seeded(accId + ':cores')(0) % 5];
+  const memory = [4, 8, 16, 32][seeded(accId + ':mem')(1) % 4];
+  const gpuRenderer = RENDERERS[seeded(accId + ':gpu')(3) % RENDERERS.length];
+  const viewport = VIEWPORTS[seeded(accId + ':vp')(4) % VIEWPORTS.length];
+
+  return {
+    ua: core.ua(ver),
+    chromeVersion: ver,
+    platform: core.platform,
+    uaFullVersion: `${ver}.0.0.0`,
+    uaPlatform: core.uaPlatform,
+    uaPlatformVersion: core.uaPlatformVersion,
+    secChUa: `"Chromium";v="${ver}", "Not.A/Brand";v="24", "Google Chrome";v="${ver}"`,
+    secChUaMobile: '?0',
+    secChUaPlatform: `"${core.uaPlatform}"`,
+    timezoneId,
+    locale,
+    languages,
+    cores,
+    memory,
+    gpuVendor: 'Google Inc. (NVIDIA)',
+    gpuRenderer,
+    viewport,
+  };
+}
+
 /**
  * Apply stealth evasion scripts to Chromium context
  */
-async function applyStealthScripts(context) {
-  await context.addInitScript(() => {
+async function applyStealthScripts(context, identity = null) {
+  const id = identity || buildIdentity({ id: 'ephemeral' });
+  await context.addInitScript((ident) => {
     // 1. Mask navigator.webdriver
     Object.defineProperty(navigator, 'webdriver', {
       get: () => undefined,
       configurable: true,
     });
 
-    // 2. Mock window.chrome runtime
+    // 2. Clean modern window.chrome (without deprecated loadTimes/csi)
     window.chrome = {
       runtime: {},
-      loadTimes: function () {},
-      csi: function () {},
       app: {},
     };
 
@@ -48,28 +147,72 @@ async function applyStealthScripts(context) {
       configurable: true,
     });
 
-    // 4. Mock languages
-    Object.defineProperty(navigator, 'languages', {
-      get: () => ['en-US', 'en', 'id'],
+    // 4. Mock platform & languages
+    Object.defineProperty(navigator, 'platform', {
+      get: () => ident.platform,
       configurable: true,
     });
 
-    // 5. Mock realistic hardware concurrency & memory
-    Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8, configurable: true });
-    Object.defineProperty(navigator, 'deviceMemory', { get: () => 8, configurable: true });
+    Object.defineProperty(navigator, 'languages', {
+      get: () => ident.languages,
+      configurable: true,
+    });
 
-    // 6. Mock WebGL Vendor & Renderer (Spoof to hardware GPU)
+    // 5. Seeded realistic hardware concurrency & memory
+    Object.defineProperty(navigator, 'hardwareConcurrency', {
+      get: () => ident.cores,
+      configurable: true,
+    });
+    Object.defineProperty(navigator, 'deviceMemory', {
+      get: () => ident.memory,
+      configurable: true,
+    });
+
+    // 6. Modern userAgentData & Client Hints spoofing
+    if (navigator.userAgentData) {
+      Object.defineProperty(navigator, 'userAgentData', {
+        get: () => ({
+          brands: [
+            { brand: 'Chromium', version: String(ident.chromeVersion) },
+            { brand: 'Not.A/Brand', version: '24' },
+            { brand: 'Google Chrome', version: String(ident.chromeVersion) },
+          ],
+          mobile: false,
+          platform: ident.uaPlatform,
+          getHighEntropyValues: async () => ({
+            platform: ident.uaPlatform,
+            platformVersion: ident.uaPlatformVersion,
+            uaFullVersion: ident.uaFullVersion,
+            architecture: 'x86',
+            bitness: '64',
+            model: '',
+          }),
+        }),
+        configurable: true,
+      });
+    }
+
+    // 7. Mock WebGL Vendor & Renderer with seeded GPU
     try {
-      const getParameterProto = WebGLRenderingContext.prototype.getParameter;
-      WebGLRenderingContext.prototype.getParameter = function (parameter) {
-        if (parameter === 37445) return 'Google Inc. (NVIDIA)';
-        if (parameter === 37446)
-          return 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)';
-        return getParameterProto.apply(this, arguments);
-      };
+      if (typeof window.WebGLRenderingContext !== 'undefined') {
+        const getParameterProto = window.WebGLRenderingContext.prototype.getParameter;
+        window.WebGLRenderingContext.prototype.getParameter = function (parameter) {
+          if (parameter === 37445) return ident.gpuVendor;
+          if (parameter === 37446) return ident.gpuRenderer;
+          return getParameterProto.apply(this, arguments);
+        };
+      }
+      if (typeof window.WebGL2RenderingContext !== 'undefined') {
+        const getParameterProto2 = window.WebGL2RenderingContext.prototype.getParameter;
+        window.WebGL2RenderingContext.prototype.getParameter = function (parameter) {
+          if (parameter === 37445) return ident.gpuVendor;
+          if (parameter === 37446) return ident.gpuRenderer;
+          return getParameterProto2.apply(this, arguments);
+        };
+      }
     } catch (e) {}
 
-    // 7. Mock Notification Permissions
+    // 8. Mock Notification Permissions
     if (window.navigator.permissions) {
       const originalQuery = window.navigator.permissions.query;
       window.navigator.permissions.query = (parameters) =>
@@ -77,7 +220,7 @@ async function applyStealthScripts(context) {
           ? Promise.resolve({ state: Notification.permission })
           : originalQuery(parameters);
     }
-  });
+  }, id);
 }
 
 /**
@@ -112,14 +255,22 @@ async function launchChromiumBrowser(account, _options = {}, isHeadless = false)
   );
   const browser = await chromium.launch(launchOptions);
 
+  const egressGeo = account.proxy ? await proxyHelper.getAccountGeo(account) : null;
+  const identity = buildIdentity(account, egressGeo);
+
   const context = await browser.newContext({
-    userAgent: config.USER_AGENT,
-    viewport: { width: 1280, height: 850 },
-    locale: 'en-US',
-    timezoneId: 'Asia/Jakarta',
+    userAgent: identity.ua,
+    viewport: identity.viewport,
+    locale: identity.locale,
+    timezoneId: identity.timezoneId,
+    extraHTTPHeaders: {
+      'sec-ch-ua': identity.secChUa,
+      'sec-ch-ua-mobile': identity.secChUaMobile,
+      'sec-ch-ua-platform': identity.secChUaPlatform,
+    },
   });
 
-  await applyStealthScripts(context);
+  await applyStealthScripts(context, identity);
 
   if (account.auth_token) {
     await cookieManager.applyCookies(context, account.auth_token, account.ct0);
@@ -372,6 +523,7 @@ async function testBrowserLaunch(engine = 'chromium') {
 }
 
 module.exports = {
+  buildIdentity,
   applyStealthScripts,
   launchChromiumBrowser,
   launchCamoufoxBrowser,

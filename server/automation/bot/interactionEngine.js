@@ -1,5 +1,7 @@
 const db = require('../../db');
 const logger = require('../../logger');
+const gov = require('../rateGovernor');
+const notifier = require('../notifier');
 const spintax = require('../spintax');
 const aiService = require('../aiService');
 const { sleep, humanType, humanScroll, extractTweetId } = require('./humanCadence');
@@ -306,11 +308,13 @@ async function checkToastAlert(page) {
  */
 function createActionTracker(page, targetAction) {
   let captured = null;
+  let rateState = { limit: null, remaining: null, reset: null, retryAfter: null };
 
   if (!page || typeof page.on !== 'function') {
     return {
       cleanup: () => {},
       getResult: () => null,
+      getRateState: () => rateState,
       waitForResult: async () => null,
     };
   }
@@ -319,6 +323,31 @@ function createActionTracker(page, targetAction) {
     try {
       const url = typeof response?.url === 'function' ? response.url() : '';
       if (!url || !url.includes('/graphql/')) return;
+
+      // Extract official rate limit headers from X GraphQL response
+      const h = typeof response.headers === 'function' ? response.headers() : {};
+      if (h['x-rate-limit-remaining'] !== undefined || h['retry-after'] !== undefined) {
+        rateState = {
+          limit: h['x-rate-limit-limit'] !== undefined ? Number(h['x-rate-limit-limit']) : null,
+          remaining:
+            h['x-rate-limit-remaining'] !== undefined ? Number(h['x-rate-limit-remaining']) : null,
+          reset: h['x-rate-limit-reset'] !== undefined ? Number(h['x-rate-limit-reset']) : null,
+          retryAfter: h['retry-after'] !== undefined ? Number(h['retry-after']) : null,
+        };
+        if (rateState.remaining === 0) {
+          logger.warn(
+            `🛑 [ActionTracker] X rate limit HABIS (remaining: 0). Reset epoch: ${rateState.reset}.`
+          );
+        } else if (
+          rateState.limit &&
+          rateState.remaining !== null &&
+          rateState.remaining / rateState.limit < 0.2
+        ) {
+          logger.warn(
+            `⚠️ [ActionTracker] X rate limit menipis: ${rateState.remaining}/${rateState.limit}. Pacing adaptif diaktifkan.`
+          );
+        }
+      }
 
       const status = typeof response.status === 'function' ? response.status() : 200;
       const json = await response.json().catch(() => null);
@@ -351,6 +380,7 @@ function createActionTracker(page, targetAction) {
       } catch (e) {}
     },
     getResult: () => captured,
+    getRateState: () => rateState,
     waitForResult: async (timeoutMs = 6000) => {
       const start = Date.now();
       while (Date.now() - start < timeoutMs) {
@@ -591,6 +621,11 @@ async function findLikeButton(targetArticle, page) {
  */
 async function likeTweet(page, tweetUrl, account, abortSignal = null, options = {}) {
   if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+  const gate = gov.canAct(account, 'LIKE');
+  if (!gate.allowed) {
+    logger.warn(`⏸️ [@${account.username || account.label}] Aksi Like ditahan Rate Governor: ${gate.reason}`);
+    return { success: false, status: 'QUOTA_BLOCKED', message: gate.reason };
+  }
   const tweetId = extractTweetId(tweetUrl);
   const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
   logger.action(`[@${account.username || account.label}]${engineTag} Dispatching Like: ${tweetUrl}`);
@@ -730,6 +765,7 @@ async function likeTweet(page, tweetUrl, account, abortSignal = null, options = 
       }
 
       if (isLiked) {
+        gov.registerAction(account, 'LIKE');
         logger.success(
           `❤️ [@${account.username || account.label}] Successfully Liked: ${tweetUrl}`
         );
@@ -742,11 +778,14 @@ async function likeTweet(page, tweetUrl, account, abortSignal = null, options = 
           status: 'SUCCESS',
           engine: options.engine,
         });
-        return { success: true, status: 'SUCCESS' };
+        const rateState = tracker.getRateState();
+        gov.handleRateLimitHeaders(account, rateState);
+        return { success: true, status: 'SUCCESS', rateState };
       } else {
         const errorMsg =
           failureReason || 'Like verification failed (status did not change to unlike)';
         if (isAutomatedBlock || /automated/i.test(errorMsg) || /otomatis/i.test(errorMsg)) {
+          gov.registerFlag(account, errorCode || 226);
           logger.error(
             `🛡️ [@${account.username || account.label}] Like BLOCKED by X Anti-Automation: "${errorMsg}" (Code: ${errorCode || 226})`
           );
@@ -777,6 +816,7 @@ async function likeTweet(page, tweetUrl, account, abortSignal = null, options = 
           errorCode === 344 ||
           errorCode === 185
         ) {
+          gov.registerFlag(account, errorCode || 344);
           logger.error(
             `🛑 [@${account.username || account.label}] Like BLOCKED by X Daily Limit / Phone Required: "${errorMsg}" (Code: ${errorCode || 344})`
           );
@@ -1080,6 +1120,11 @@ async function findRetweetButton(targetArticle, page) {
  */
 async function retweetTweet(page, tweetUrl, account, abortSignal = null, options = {}) {
   if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+  const gate = gov.canAct(account, 'RETWEET');
+  if (!gate.allowed) {
+    logger.warn(`⏸️ [@${account.username || account.label}] Aksi Retweet ditahan Rate Governor: ${gate.reason}`);
+    return { success: false, status: 'QUOTA_BLOCKED', message: gate.reason };
+  }
   const tweetId = extractTweetId(tweetUrl);
   const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
   logger.action(`[@${account.username || account.label}]${engineTag} Dispatching Retweet: ${tweetUrl}`);
@@ -1298,6 +1343,7 @@ async function retweetTweet(page, tweetUrl, account, abortSignal = null, options
       await dismissOverlays(page);
 
       if (isRetweeted) {
+        gov.registerAction(account, 'RETWEET');
         logger.success(
           `🔁 [@${account.username || account.label}] Successfully Retweeted: ${tweetUrl}`
         );
@@ -1310,11 +1356,14 @@ async function retweetTweet(page, tweetUrl, account, abortSignal = null, options
           status: 'SUCCESS',
           engine: options.engine,
         });
-        return { success: true, status: 'SUCCESS' };
+        const rateState = tracker.getRateState();
+        gov.handleRateLimitHeaders(account, rateState);
+        return { success: true, status: 'SUCCESS', rateState };
       } else {
         const errorMsg =
           failureReason || 'Retweet verification failed (no state change or API confirmation)';
         if (isAutomatedBlock || /automated/i.test(errorMsg) || /otomatis/i.test(errorMsg)) {
+          gov.registerFlag(account, errorCode || 226);
           logger.error(
             `🛡️ [@${account.username || account.label}] Retweet BLOCKED by X Anti-Automation: "${errorMsg}" (Code: ${errorCode || 226})`
           );
@@ -1345,6 +1394,7 @@ async function retweetTweet(page, tweetUrl, account, abortSignal = null, options
           errorCode === 344 ||
           errorCode === 185
         ) {
+          gov.registerFlag(account, errorCode || 344);
           logger.error(
             `🛑 [@${account.username || account.label}] Retweet BLOCKED by X Daily Limit / Phone Required: "${errorMsg}" (Code: ${errorCode || 344})`
           );
@@ -1514,6 +1564,11 @@ async function findReplyButtonInGroup(container) {
  */
 async function commentTweet(page, tweetUrl, account, customReplyText = null, abortSignal = null, options = {}) {
   if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+  const gate = gov.canAct(account, 'REPLY');
+  if (!gate.allowed) {
+    logger.warn(`⏸️ [@${account.username || account.label}] Aksi Reply ditahan Rate Governor: ${gate.reason}`);
+    return { success: false, status: 'QUOTA_BLOCKED', message: gate.reason };
+  }
   const tweetId = extractTweetId(tweetUrl);
   const engineTag = options.engine ? ` [Engine: ${options.engine.toUpperCase()}]` : '';
   logger.action(`[@${account.username || account.label}]${engineTag} Dispatching Reply: ${tweetUrl}`);
@@ -1845,6 +1900,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null, abo
       await dismissOverlays(page);
 
       if (isReplySuccess) {
+        gov.registerAction(account, 'REPLY');
         const idTag = capturedReplyId ? ` (Tweet ID: ${capturedReplyId})` : '';
         logger.success(
           `💬 [@${account.username || account.label}] Reply verified & published successfully${idTag}: "${replyText}"`
@@ -1859,7 +1915,9 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null, abo
           details: replyText,
           engine: options.engine,
         });
-        return { success: true, status: 'SUCCESS', replyText, tweetId: capturedReplyId };
+        const rateState = tracker.getRateState();
+        gov.handleRateLimitHeaders(account, rateState);
+        return { success: true, status: 'SUCCESS', replyText, tweetId: capturedReplyId, rateState };
       } else {
         const stillOpen = await textarea.isVisible().catch(() => false);
         const errorMsg =
@@ -1869,6 +1927,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null, abo
             : 'Reply verification failed');
 
         if (isAutomatedBlock || /automated/i.test(errorMsg) || /otomatis/i.test(errorMsg)) {
+          gov.registerFlag(account, errorCode || 226);
           logger.error(
             `🛡️ [@${account.username || account.label}] Reply BLOCKED by X Anti-Automation: "${errorMsg}" (Code: ${errorCode || 226})`
           );
@@ -1900,6 +1959,7 @@ async function commentTweet(page, tweetUrl, account, customReplyText = null, abo
           errorCode === 344 ||
           errorCode === 185
         ) {
+          gov.registerFlag(account, errorCode || 344);
           logger.error(
             `🛑 [@${account.username || account.label}] Reply BLOCKED by X Daily Limit / Phone Required: "${errorMsg}" (Code: ${errorCode || 344})`
           );
@@ -2057,13 +2117,42 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
     return { success: false, message: 'Login session expired' };
   }
 
+  let restrictionDetected = false;
+  let chkMsg = '';
+
   if (
     currentUrl.includes('/account/access') ||
     currentUrl.includes('/i/flow/consent_flow') ||
     currentUrl.includes('/account/suspended')
   ) {
-    const chkMsg = 'Account checkpoint or verification challenge encountered on X';
-    logger.error(`❌ [@${account.username || account.label}] ${chkMsg}.`);
+    restrictionDetected = true;
+    chkMsg = 'Account checkpoint or verification challenge encountered on X';
+  } else {
+    // Scan page body for explicit restriction/limitation notice
+    try {
+      const pageText = await page.evaluate(() => (document.body ? document.body.innerText : ''));
+      if (
+        pageText.includes('temporarily restricted') ||
+        pageText.includes('dibatasi sementara') ||
+        pageText.includes('temporarily limited') ||
+        pageText.includes('membatasi sementara akun Anda')
+      ) {
+        restrictionDetected = true;
+        chkMsg = 'Account is temporarily restricted or limited by X';
+      }
+    } catch {}
+  }
+
+  if (restrictionDetected) {
+    logger.error(`❌ [@${account.username || account.label}] ${chkMsg}. Node quarantined.`);
+    gov.registerFlag(account, 326);
+    try {
+      notifier.notify('TASK_FAILED', {
+        taskType: 'Node Quarantined (326)',
+        accountName: account.username || account.label,
+        error: chkMsg,
+      });
+    } catch {}
     db.addHistory({
       accountId: account.id,
       accountName: account.username || account.label,
@@ -2073,7 +2162,12 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       message: chkMsg,
       engine: options.engine,
     });
-    return { success: false, message: chkMsg };
+    return {
+      success: false,
+      status: 'AUTOMATED_FLAG',
+      code: 326,
+      message: chkMsg,
+    };
   }
 
   // Handle reload prompts or deleted post notices
@@ -2112,9 +2206,25 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       );
       return results;
     }
+    const getPacingMultiplier = (rateState) => {
+      if (rateState && rateState.limit && typeof rateState.remaining === 'number') {
+        const ratio = rateState.remaining / rateState.limit;
+        if (ratio < 0.2) return 3;
+        if (ratio < 0.4) return 1.8;
+      }
+      return 1;
+    };
+
+    let pacingMultiplier = getPacingMultiplier(results.like?.rateState);
+
     if (retweet || comment) {
       if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
-      await sleep(2000 + Math.floor(Math.random() * 2000), abortSignal);
+      const delayMs = gov.interVectorDelay(pacingMultiplier);
+      const multTag = pacingMultiplier > 1 ? ` [Adaptive ${pacingMultiplier}x]` : '';
+      logger.info(
+        `⏳ [@${account.username || account.label}] Inter-vector pacing: ${(delayMs / 1000).toFixed(1)}s${multTag}`
+      );
+      await sleep(delayMs, abortSignal);
     }
   }
 
@@ -2131,9 +2241,26 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       );
       return results;
     }
+
+    const getPacingMultiplier = (rateState) => {
+      if (rateState && rateState.limit && typeof rateState.remaining === 'number') {
+        const ratio = rateState.remaining / rateState.limit;
+        if (ratio < 0.2) return 3;
+        if (ratio < 0.4) return 1.8;
+      }
+      return 1;
+    };
+
+    let pacingMultiplier = getPacingMultiplier(results.retweet?.rateState);
+
     if (comment) {
       if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
-      await sleep(2500 + Math.floor(Math.random() * 2000), abortSignal);
+      const delayMs = gov.interVectorDelay(pacingMultiplier);
+      const multTag = pacingMultiplier > 1 ? ` [Adaptive ${pacingMultiplier}x]` : '';
+      logger.info(
+        `⏳ [@${account.username || account.label}] Inter-vector pacing: ${(delayMs / 1000).toFixed(1)}s${multTag}`
+      );
+      await sleep(delayMs, abortSignal);
     }
   }
 

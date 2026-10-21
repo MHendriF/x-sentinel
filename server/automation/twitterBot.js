@@ -1,5 +1,7 @@
 const db = require('../db');
 const logger = require('../logger');
+const gov = require('./rateGovernor');
+const targetLock = require('./targetLock');
 const notifier = require('./notifier');
 
 const {
@@ -238,6 +240,31 @@ class TwitterBot {
     return [single];
   }
 
+  /**
+   * Filter eligible accounts based on cooldown and warmup protocol
+   */
+  filterEligibleAccounts(accounts) {
+    if (!Array.isArray(accounts)) return [];
+    return accounts.filter((acc) => {
+      if (acc.enabled === false) return false;
+      const snap = gov.snapshot(acc);
+      if (snap.coolingDown) {
+        logger.warn(
+          `⏸️ [@${acc.username || acc.label}] Sedang cooldown/karantina hingga ${new Date(snap.cooldownUntil).toLocaleTimeString()}. Dilewati dari batch.`
+        );
+        return false;
+      }
+      const day = Number(acc.warmupDay) || 1;
+      if (day <= 2) {
+        logger.info(
+          `🐣 [@${acc.username || acc.label}] Masih warmup Day ${day}/7 (0 aksi diizinkan). Dilewati dari task batch.`
+        );
+        return false;
+      }
+      return true;
+    });
+  }
+
   parseCommentPayload(rawPayload) {
     if (!rawPayload || typeof rawPayload !== 'string') return [];
     const trimmed = rawPayload.trim();
@@ -435,9 +462,10 @@ class TwitterBot {
         }
 
         if (a < targetAccounts.length - 1) {
-          const switchDelay = options.delaySeconds || db.getSettings().accountSwitchDelaySec || 15;
-          logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
-          await this.interruptibleSleep(switchDelay * 1000);
+          const switchDelayMs = gov.accountSwitchDelay();
+          const switchDelaySec = Math.round(switchDelayMs / 1000);
+          logger.info(`⏳ Node rotation cooldown: ${switchDelaySec}s...`);
+          await this.interruptibleSleep(switchDelayMs);
         }
       }
 
@@ -483,7 +511,11 @@ class TwitterBot {
       throw new Error('An automation process is already active.');
     }
 
-    const targetAccounts = this.resolveTaskAccounts(accountIds);
+    const rawAccounts = this.resolveTaskAccounts(accountIds);
+    const targetAccounts = this.filterEligibleAccounts(rawAccounts);
+    if (targetAccounts.length === 0) {
+      throw new Error('Semua akun yang dipilih sedang dalam cooldown/karantina atau warmup Day 1-2.');
+    }
     if (!urls || urls.length === 0) {
       throw new Error('Target tweet URL list cannot be empty.');
     }
@@ -500,6 +532,7 @@ class TwitterBot {
       total: urls.length * targetAccounts.length,
       completed: 0,
       failed: 0,
+      quarantined: [],
       startedAt,
       currentNode: targetAccounts[0]?.username || targetAccounts[0]?.label || '',
       currentAction: 'INITIALIZING',
@@ -507,6 +540,7 @@ class TwitterBot {
     };
 
     const parsedReplies = this.parseCommentPayload(options.commentText);
+    const networkRetries = new Map();
 
     logger.info(
       `🚀 Launching Fleet Engagement Batch (${targetAccounts.length} Nodes, ${urls.length} Posts)...`
@@ -521,6 +555,7 @@ class TwitterBot {
         const url = urls[u].trim();
         if (!url) continue;
 
+        const tweetId = this.extractTweetId(url);
         logger.action(`📌 [Target ${u + 1}/${urls.length}] Executing engagement rotation: ${url}`);
 
         for (let a = 0; a < targetAccounts.length; a++) {
@@ -529,6 +564,29 @@ class TwitterBot {
           }
           await this.checkPauseState();
           const account = targetAccounts[a];
+
+          if (this.currentTask?.quarantined?.includes(account.id)) {
+            continue;
+          }
+          if (gov.snapshot(account).coolingDown) {
+            logger.warn(`⏸️ [@${account.username || account.label}] Sedang cooldown. Dilewati untuk URL ini.`);
+            continue;
+          }
+
+          // Target Lock: Cegah benturan multi-node pada target yang sama dalam jendela waktu
+          if (tweetId) {
+            const lockKind = options.comment ? 'REPLY' : 'ENGAGE';
+            const ttlMs = lockKind === 'REPLY' ? 90 * 60 * 1000 : 20 * 60 * 1000;
+            const lockDecision = targetLock.acquire(tweetId, account.id, { kind: lockKind, ttlMs });
+            if (!lockDecision.ok) {
+              const freeInMin = Math.ceil((lockDecision.freeInMs || 0) / 60000);
+              logger.info(
+                `🔒 [@${account.username || account.label}] Target ${tweetId} masih terkunci (${lockDecision.reason}, bebas ~${freeInMin}m). Skip target untuk node ini.`
+              );
+              continue;
+            }
+          }
+
           if (this.currentTask) {
             this.currentTask.currentNode = account.username || account.label;
             this.currentTask.currentUrl = url;
@@ -551,7 +609,7 @@ class TwitterBot {
 
           try {
             await this.checkPauseState();
-            await this.processTweetWithAccount(url, account, {
+            const res = await this.processTweetWithAccount(url, account, {
               ...options,
               commentText: accountSpecificCommentText,
               onAction: (act) => {
@@ -563,6 +621,31 @@ class TwitterBot {
             if (this.abortController?.signal?.aborted) {
               throw new Error('TASK_ABORTED');
             }
+
+            const flagged =
+              ['AUTOMATED_FLAG', 'DAILY_LIMIT_EXCEEDED'].includes(res?.like?.status) ||
+              ['AUTOMATED_FLAG', 'DAILY_LIMIT_EXCEEDED'].includes(res?.retweet?.status) ||
+              ['AUTOMATED_FLAG', 'DAILY_LIMIT_EXCEEDED'].includes(res?.comment?.status);
+
+            if (flagged) {
+              const code = res?.like?.code || res?.retweet?.code || res?.comment?.code || 226;
+              gov.registerFlag(account, code);
+              this.currentTask.quarantined = this.currentTask.quarantined || [];
+              if (!this.currentTask.quarantined.includes(account.id)) {
+                this.currentTask.quarantined.push(account.id);
+              }
+              notifier.notify('TASK_FAILED', {
+                taskType: 'Node Quarantined',
+                accountName: account.username || account.label,
+                error: `Security flag / limit encountered (${code}). Node dikarantina dari sisa antrean.`,
+              });
+              logger.warn(
+                `🛡️ [@${account.username || account.label}] Safeguard flag (${code}). Node dikarantina dari misi ini.`
+              );
+              continue;
+            }
+
+            networkRetries.delete(account.id);
             this.currentTask.completed++;
             if (this.currentTask) {
               this.currentTask.currentAction = 'SUCCESS';
@@ -572,11 +655,25 @@ class TwitterBot {
               throw new Error('TASK_ABORTED');
             }
             if (this.isNetworkConnectionError(err)) {
+              const retries = (networkRetries.get(account.id) || 0) + 1;
+              networkRetries.set(account.id, retries);
+
+              if (retries > 3) {
+                logger.error(
+                  `❌ Node @${account.username || account.label} mengalami kendala jaringan ${retries}x berturut-turut. Node dikeluarkan dari sisa misi.`
+                );
+                this.currentTask.quarantined = this.currentTask.quarantined || [];
+                this.currentTask.quarantined.push(account.id);
+                continue;
+              }
+
+              const backoffMs = Math.min(300000, 2000 * Math.pow(2, retries - 1));
               logger.warn(
-                `⚠️ Network connection error on node ${account.label}: ${err.message}. Auto-pausing engagement batch...`
+                `⚠️ Kendala koneksi jaringan pada node ${account.label}: ${err.message}. Percobaan ${retries}/3, backoff ${(backoffMs / 1000).toFixed(0)}s...`
               );
               this.pauseTask(`Offline / Network Error: ${err.message}`);
               a--;
+              await this.interruptibleSleep(backoffMs);
               await this.checkPauseState();
               continue;
             }
@@ -602,12 +699,13 @@ class TwitterBot {
           }
 
           if (a < targetAccounts.length - 1) {
-            const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
+            const switchDelayMs = gov.accountSwitchDelay();
+            const switchDelaySec = Math.round(switchDelayMs / 1000);
             if (this.currentTask) {
-              this.currentTask.currentAction = `COOLDOWN (${switchDelay}s)`;
+              this.currentTask.currentAction = `COOLDOWN (${switchDelaySec}s)`;
             }
-            logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
-            await this.interruptibleSleep(switchDelay * 1000);
+            logger.info(`⏳ Node rotation cooldown: ${switchDelaySec}s...`);
+            await this.interruptibleSleep(switchDelayMs);
           }
         }
 
@@ -657,7 +755,12 @@ class TwitterBot {
       throw new Error('An automation process is already active.');
     }
 
-    const targetAccounts = this.resolveTaskAccounts(accountIds);
+    const rawAccounts = this.resolveTaskAccounts(accountIds);
+    const targetAccounts = this.filterEligibleAccounts(rawAccounts);
+    if (targetAccounts.length === 0) {
+      throw new Error('Semua akun yang dipilih sedang dalam cooldown/karantina atau warmup Day 1-2.');
+    }
+
     this.isRunning = true;
     this.abortController = new AbortController();
     this.currentTask = {
@@ -668,10 +771,13 @@ class TwitterBot {
       total: count * targetAccounts.length,
       completed: 0,
       failed: 0,
+      quarantined: [],
       startedAt: new Date().toISOString(),
       currentNode: targetAccounts[0]?.username || targetAccounts[0]?.label || '',
       currentAction: 'SEARCHING',
     };
+
+    const hunterRetries = new Map();
 
     logger.info(
       `🔍 Launching Fleet Auto Hunter for "${keyword}" (${targetAccounts.length} Nodes)...`
@@ -735,6 +841,7 @@ class TwitterBot {
       for (let i = 0; i < targetList.length; i++) {
         if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
         const tweetUrl = targetList[i];
+        const tweetId = this.extractTweetId(tweetUrl);
 
         logger.action(`📌 [Hunter ${i + 1}/${targetList.length}] Target: ${tweetUrl}`);
 
@@ -742,6 +849,29 @@ class TwitterBot {
           if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
           await this.checkPauseState();
           const account = targetAccounts[a];
+
+          if (this.currentTask?.quarantined?.includes(account.id)) {
+            continue;
+          }
+          if (gov.snapshot(account).coolingDown) {
+            logger.warn(`⏸️ [@${account.username || account.label}] Sedang cooldown. Dilewati untuk target ini.`);
+            continue;
+          }
+
+          // Target Lock: Cegah benturan multi-node pada target yang sama dalam jendela waktu
+          if (tweetId) {
+            const lockKind = options.comment ? 'REPLY' : 'ENGAGE';
+            const ttlMs = lockKind === 'REPLY' ? 90 * 60 * 1000 : 20 * 60 * 1000;
+            const lockDecision = targetLock.acquire(tweetId, account.id, { kind: lockKind, ttlMs });
+            if (!lockDecision.ok) {
+              const freeInMin = Math.ceil((lockDecision.freeInMs || 0) / 60000);
+              logger.info(
+                `🔒 [@${account.username || account.label}] Target ${tweetId} masih terkunci (${lockDecision.reason}, bebas ~${freeInMin}m). Skip target untuk node ini.`
+              );
+              continue;
+            }
+          }
+
           await this.initAccountBrowser(account, false, options);
           const engineTag = this.currentEngine
             ? ` [Engine: ${this.currentEngine.toUpperCase()}${this.isPersistent ? ' (Persistent Profile)' : ''}]`
@@ -758,22 +888,61 @@ class TwitterBot {
 
           try {
             await this.checkPauseState();
-            await this.processTweetWithAccount(tweetUrl, account, {
+            const res = await this.processTweetWithAccount(tweetUrl, account, {
               ...options,
               commentText: accountSpecificCommentText,
             });
             if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
+
+            const flagged =
+              ['AUTOMATED_FLAG', 'DAILY_LIMIT_EXCEEDED'].includes(res?.like?.status) ||
+              ['AUTOMATED_FLAG', 'DAILY_LIMIT_EXCEEDED'].includes(res?.retweet?.status) ||
+              ['AUTOMATED_FLAG', 'DAILY_LIMIT_EXCEEDED'].includes(res?.comment?.status);
+
+            if (flagged) {
+              const code = res?.like?.code || res?.retweet?.code || res?.comment?.code || 226;
+              gov.registerFlag(account, code);
+              this.currentTask.quarantined = this.currentTask.quarantined || [];
+              if (!this.currentTask.quarantined.includes(account.id)) {
+                this.currentTask.quarantined.push(account.id);
+              }
+              notifier.notify('TASK_FAILED', {
+                taskType: 'Node Quarantined',
+                accountName: account.username || account.label,
+                error: `Security flag / limit encountered (${code}). Node dikarantina dari sisa hunter mission.`,
+              });
+              logger.warn(
+                `🛡️ [@${account.username || account.label}] Flag (${code}) terdeteksi. Node dikarantina dari antrean hunter.`
+              );
+              continue;
+            }
+
+            hunterRetries.delete(account.id);
             this.currentTask.completed++;
           } catch (err) {
             if (err.message === 'TASK_ABORTED' || this.abortController?.signal?.aborted) {
               throw new Error('TASK_ABORTED');
             }
             if (this.isNetworkConnectionError(err)) {
+              const retries = (hunterRetries.get(account.id) || 0) + 1;
+              hunterRetries.set(account.id, retries);
+
+              if (retries > 3) {
+                logger.error(
+                  `❌ Node @${account.username || account.label} gagal koneksi jaringan ${retries}x. Node diskip dari sisa hunter mission.`
+                );
+                this.currentTask.quarantined = this.currentTask.quarantined || [];
+                this.currentTask.quarantined.push(account.id);
+                continue;
+              }
+
+              const backoffMs = Math.min(300000, 2000 * Math.pow(2, retries - 1));
               logger.warn(
-                `⚠️ Network connection error on node ${account.label}: ${err.message}. Auto-pausing hunter mission...`
+                `⚠️ Kendala koneksi jaringan pada node ${account.label}: ${err.message}. Percobaan ${retries}/3, backoff ${(backoffMs / 1000).toFixed(0)}s...`
               );
               this.pauseTask(`Offline / Network Error: ${err.message}`);
               a--;
+              await this.interruptibleSleep(backoffMs);
               await this.checkPauseState();
               continue;
             }
@@ -793,9 +962,10 @@ class TwitterBot {
           if (this.abortController?.signal?.aborted) throw new Error('TASK_ABORTED');
 
           if (a < targetAccounts.length - 1) {
-            const switchDelay = db.getSettings().accountSwitchDelaySec || 10;
-            logger.info(`⏳ Node rotation cooldown: ${switchDelay}s...`);
-            await this.interruptibleSleep(switchDelay * 1000);
+            const switchDelayMs = gov.accountSwitchDelay();
+            const switchDelaySec = Math.round(switchDelayMs / 1000);
+            logger.info(`⏳ Node rotation cooldown: ${switchDelaySec}s...`);
+            await this.interruptibleSleep(switchDelayMs);
           }
         }
 

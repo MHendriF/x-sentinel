@@ -12,7 +12,7 @@
     "lint": "eslint server test eslint.config.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node test/verify.js",
+    "test": "node test/verify.js && node test/test_rate_governor.js && node test/test_phase2.js && node test/test_phase3_phase4.js",
     "smoke": "node test/smoke_api.js",
     "postinstall": "node server/automation/bot/patchPlaywright.js"
   },

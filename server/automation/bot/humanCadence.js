@@ -32,14 +32,24 @@ async function sleep(ms, abortSignal = null) {
 }
 
 /**
- * Random delay between min and max seconds
+ * Humanized delay with Gaussian jitter between min and max seconds.
+ * Clustered around median to emulate realistic human browsing pauses.
  */
 async function randomDelay(minSec, maxSec, abortSignal = null) {
   const settings = db.getSettings() || {};
-  const min = minSec || settings.minDelaySeconds || 15;
-  const max = maxSec || settings.maxDelaySeconds || 35;
-  const delayMs = Math.floor((Math.random() * (max - min + 1) + min) * 1000);
-  logger.info(`⏳ Humanized delay cooldown: ${(delayMs / 1000).toFixed(1)}s...`);
+  const min = Math.max(1, minSec || settings.minDelaySeconds || 15);
+  const max = Math.max(min, maxSec || settings.maxDelaySeconds || 40);
+
+  // Gaussian calculation centered on median
+  const median = (min + max) / 2;
+  const sd = (max - min) / 4;
+  const u = 1 - Math.random();
+  const v = Math.random();
+  const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  const sampleSec = Math.min(max, Math.max(min, Math.round((median + z * sd) * 10) / 10));
+  const delayMs = Math.round(sampleSec * 1000);
+
+  logger.info(`⏳ Humanized delay cooldown: ${sampleSec.toFixed(1)}s (Gaussian jitter)...`);
   await sleep(delayMs, abortSignal);
 }
 
