@@ -4,7 +4,7 @@ const gov = require('../rateGovernor');
 const notifier = require('../notifier');
 const spintax = require('../spintax');
 const aiService = require('../aiService');
-const { sleep, humanType, humanScroll, extractTweetId } = require('./humanCadence');
+const { sleep, humanType, performOrganicFiller, extractTweetId } = require('./humanCadence');
 
 /**
  * Normalizes any X/Twitter tweet URL into canonical https://x.com/i/status/${tweetId}
@@ -2188,7 +2188,7 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
 
   if (db.getSettings().scrollBeforeAction) {
     if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
-    await humanScroll(page);
+    await performOrganicFiller(page, abortSignal);
   }
 
   const results = { tweetUrl, accountId: account.id };
@@ -2224,7 +2224,14 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       logger.info(
         `⏳ [@${account.username || account.label}] Inter-vector pacing: ${(delayMs / 1000).toFixed(1)}s${multTag}`
       );
-      await sleep(delayMs, abortSignal);
+      // Perform subtle reading/browsing filler during long pauses (§4.5)
+      if (delayMs > 8000) {
+        await performOrganicFiller(page, abortSignal);
+        const rem = Math.max(1000, delayMs - 4000);
+        await sleep(rem, abortSignal);
+      } else {
+        await sleep(delayMs, abortSignal);
+      }
     }
   }
 
@@ -2260,7 +2267,14 @@ async function processTweetWithAccount(page, tweetUrl, account, options = {}) {
       logger.info(
         `⏳ [@${account.username || account.label}] Inter-vector pacing: ${(delayMs / 1000).toFixed(1)}s${multTag}`
       );
-      await sleep(delayMs, abortSignal);
+      // Perform subtle reading/browsing filler during long pauses (§4.5)
+      if (delayMs > 8000) {
+        await performOrganicFiller(page, abortSignal);
+        const rem = Math.max(1000, delayMs - 4000);
+        await sleep(rem, abortSignal);
+      } else {
+        await sleep(delayMs, abortSignal);
+      }
     }
   }
 

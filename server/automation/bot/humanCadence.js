@@ -106,6 +106,32 @@ async function humanScroll(page) {
 }
 
 /**
+ * Organic filler routine to emulate natural non-action browsing (reading/skimming)
+ * Implements 1 action : 4 non-action browsing ratio (§4.5)
+ */
+async function performOrganicFiller(page, abortSignal = null) {
+  if (!page || typeof page.mouse?.wheel !== 'function') return;
+  try {
+    const pulses = Math.floor(Math.random() * 3) + 1;
+    for (let p = 0; p < pulses; p++) {
+      if (abortSignal?.aborted) throw new Error('TASK_ABORTED');
+      const down = Math.floor(Math.random() * 320) + 180;
+      await page.mouse.wheel(0, down);
+      // Realistic reading pause
+      const readPause = Math.floor(1800 + Math.random() * 2500);
+      await sleep(readPause, abortSignal);
+      // 30% chance of small scroll up (re-reading)
+      if (Math.random() < 0.3) {
+        await page.mouse.wheel(0, -(Math.floor(Math.random() * 120) + 60));
+        await sleep(Math.floor(800 + Math.random() * 1000), abortSignal);
+      }
+    }
+  } catch (e) {
+    if (e.message === 'TASK_ABORTED') throw e;
+  }
+}
+
+/**
  * Extract Tweet ID from URL string
  */
 function extractTweetId(url) {
@@ -119,5 +145,6 @@ module.exports = {
   randomDelay,
   humanType,
   humanScroll,
+  performOrganicFiller,
   extractTweetId,
 };

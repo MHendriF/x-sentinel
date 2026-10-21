@@ -254,6 +254,19 @@ class TwitterBot {
         );
         return false;
       }
+      if (snap.riskScore >= 80) {
+        logger.warn(
+          `⚠️ [@${acc.username || acc.label}] Skor risiko restriksi terlalu tinggi (${snap.riskScore}/100). Node diistirahatkan dari batch.`
+        );
+        return false;
+      }
+      const quiet = snap.quietHour || gov.isQuietHour(acc);
+      if (quiet.isQuiet) {
+        logger.info(
+          `🌙 [@${acc.username || acc.label}] Jam lokal node menunjukkan waktu istirahat (${quiet.localHour}:00 di ${quiet.timezone}). Dilewati dari batch.`
+        );
+        return false;
+      }
       const day = Number(acc.warmupDay) || 1;
       if (day <= 2) {
         logger.info(
@@ -263,6 +276,37 @@ class TwitterBot {
       }
       return true;
     });
+  }
+
+  /**
+   * Pre-flight standing probe (§4.2)
+   * Evaluates account standing, risk score, and active session before burning actions.
+   */
+  async performPreflightProbe(account, page = null) {
+    if (!account) return { ok: false, reason: 'INVALID_ACCOUNT' };
+    const snap = gov.snapshot(account);
+    if (snap.coolingDown) {
+      return { ok: false, reason: 'COOLDOWN', detail: snap.cooldownUntil };
+    }
+    if (snap.riskScore >= 80) {
+      return { ok: false, reason: 'HIGH_RISK_SCORE', detail: snap.riskScore };
+    }
+    if (snap.quietHour?.isQuiet) {
+      return { ok: false, reason: 'QUIET_HOURS', detail: snap.quietHour };
+    }
+    if (page && typeof page.url === 'function') {
+      try {
+        const currentUrl = page.url();
+        if (
+          currentUrl.includes('/login') ||
+          currentUrl.includes('/account/suspended') ||
+          currentUrl.includes('/account/access')
+        ) {
+          return { ok: false, reason: 'SESSION_RESTRICTED', detail: currentUrl };
+        }
+      } catch {}
+    }
+    return { ok: true };
   }
 
   parseCommentPayload(rawPayload) {
@@ -568,8 +612,9 @@ class TwitterBot {
           if (this.currentTask?.quarantined?.includes(account.id)) {
             continue;
           }
-          if (gov.snapshot(account).coolingDown) {
-            logger.warn(`⏸️ [@${account.username || account.label}] Sedang cooldown. Dilewati untuk URL ini.`);
+          const probe = await this.performPreflightProbe(account);
+          if (!probe.ok) {
+            logger.warn(`⏸️ [@${account.username || account.label}] Pre-flight probe ditolak (${probe.reason}). Dilewati untuk URL ini.`);
             continue;
           }
 
@@ -853,8 +898,9 @@ class TwitterBot {
           if (this.currentTask?.quarantined?.includes(account.id)) {
             continue;
           }
-          if (gov.snapshot(account).coolingDown) {
-            logger.warn(`⏸️ [@${account.username || account.label}] Sedang cooldown. Dilewati untuk target ini.`);
+          const probe = await this.performPreflightProbe(account);
+          if (!probe.ok) {
+            logger.warn(`⏸️ [@${account.username || account.label}] Pre-flight probe ditolak (${probe.reason}). Dilewati untuk target ini.`);
             continue;
           }
 

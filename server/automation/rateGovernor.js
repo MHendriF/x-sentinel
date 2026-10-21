@@ -80,10 +80,68 @@ class RateGovernor {
   }
 
   /**
+   * Determine if the account is currently within its biological sleep / quiet window.
+   * Default quiet window: 23:00 to 07:00 (11 PM - 7 AM local time).
+   */
+  isQuietHour(account, date = new Date()) {
+    const tz = account?.state?.timezoneId || account?.timezone || 'Asia/Jakarta';
+    try {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        hourCycle: 'h23',
+        timeZone: tz,
+      });
+      const localHour = Number(formatter.format(date));
+      const isQuiet = localHour >= 23 || localHour < 7;
+      return { isQuiet, localHour, timezone: tz };
+    } catch {
+      const localHour = date.getHours();
+      return { isQuiet: localHour >= 23 || localHour < 7, localHour, timezone: 'UTC' };
+    }
+  }
+
+  /**
+   * Calculate a composite Restriction Risk Score (0-100) for an account node.
+   * Combines strikes, cooldown status, quota saturation, and warmup maturity.
+   */
+  calculateRiskScore(account) {
+    if (!account) return 100;
+    const s = this.prune(account);
+    const now = Date.now();
+    let score = 0;
+
+    // 1. Strikes weight (up to 60 pts)
+    const strikes = s.strikes || 0;
+    score += Math.min(60, strikes * 25);
+
+    // 2. Active Cooldown / Quarantine (20 pts)
+    if (s.cooldownUntil && s.cooldownUntil > now) {
+      score += 20;
+    }
+
+    // 3. Quota Saturation (up to 20 pts)
+    const settings = typeof db.getSettings === 'function' ? db.getSettings() : {};
+    const hourlyQuota = Math.min(settings.hourlyLimit || DEFAULT_QUOTA.hourly, DEFAULT_QUOTA.hourly);
+    const dailyQuota = Math.min(settings.dailyLimit || DEFAULT_QUOTA.daily, DEFAULT_QUOTA.daily);
+
+    const hourlyUsageRatio = Math.min(1, s.windowHourly.length / Math.max(1, hourlyQuota));
+    const dailyUsageRatio = Math.min(1, s.dayCount / Math.max(1, dailyQuota));
+    score += Math.round(hourlyUsageRatio * 10 + dailyUsageRatio * 10);
+
+    // 4. Warmup penalty for immature nodes (Day 1-2: +10 pts)
+    const day = Number(account.warmupDay) || 1;
+    if (day <= 2) {
+      score += 10;
+    }
+
+    return Math.min(100, Math.max(0, score));
+  }
+
+  /**
    * Gate. Dipanggil SEBELUM setiap aksi.
    * @returns {{allowed: boolean, reason?: string, retryInMs?: number}}
    */
-  canAct(account, action) {
+  canAct(account, action, options = {}) {
     if (!account || account.enabled === false) {
       return { allowed: false, reason: 'NODE_DISABLED' };
     }
@@ -96,6 +154,18 @@ class RateGovernor {
         reason: 'COOLDOWN',
         retryInMs: s.cooldownUntil - now,
       };
+    }
+
+    if (!options.ignoreQuietHours) {
+      const quiet = this.isQuietHour(account);
+      if (quiet.isQuiet) {
+        return {
+          allowed: false,
+          reason: 'QUIET_HOURS',
+          localHour: quiet.localHour,
+          timezone: quiet.timezone,
+        };
+      }
     }
 
     const settings = typeof db.getSettings === 'function' ? db.getSettings() : {};
@@ -179,6 +249,8 @@ class RateGovernor {
     const settings = typeof db.getSettings === 'function' ? db.getSettings() : {};
     const hourlyQuota = Math.min(settings.hourlyLimit || DEFAULT_QUOTA.hourly, DEFAULT_QUOTA.hourly);
     const dailyQuota = Math.min(settings.dailyLimit || DEFAULT_QUOTA.daily, DEFAULT_QUOTA.daily);
+    const riskScore = this.calculateRiskScore(account);
+    const quietHour = this.isQuietHour(account);
 
     return {
       strikes: s.strikes,
@@ -188,6 +260,8 @@ class RateGovernor {
       usedToday: s.dayCount,
       hourlyQuota,
       dailyQuota,
+      riskScore,
+      quietHour,
       dayByAction: { ...s.dayByAction },
     };
   }
