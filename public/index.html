@@ -245,6 +245,17 @@
                   ></textarea>
                 </div>
 
+                <div class="mt-3">
+                  <label class="vector-card">
+                    <input type="checkbox" id="workbenchCrossNodeLock" checked />
+                    <div class="vector-content">
+                      <span class="vector-symbol">🔒</span>
+                      <span class="vector-title">Cross-Node Target Lock</span>
+                      <span class="vector-sub">Prevent multiple nodes from engaging the same tweet (anti-collision)</span>
+                    </div>
+                  </label>
+                </div>
+
                 <div class="control-actions mt-4">
                   <button class="btn btn-hallmark-execute w-100" id="btnStartBatch">
                     <span id="btnBatchText">EXECUTE ENGAGEMENT SEQUENCE</span>
@@ -271,7 +282,12 @@
                   <span class="panel-tag">REALTIME TELEMETRY</span>
                   <h2>Mission Status & Stream</h2>
                 </div>
-                <span class="status-indicator-badge status-idle" id="taskStatusBadge">STANDBY</span>
+                <div class="d-flex align-items-center gap-2">
+                  <button class="btn btn-hallmark-secondary btn-sm" id="btnClearTargetLocks" title="Release all active target locks immediately">
+                    🔓 Unlock Targets
+                  </button>
+                  <span class="status-indicator-badge status-idle" id="taskStatusBadge">STANDBY</span>
+                </div>
               </div>
 
               <div class="panel-body">
@@ -510,7 +526,7 @@
                 </div>
               </div>
 
-              <div class="module-divider mt-4"><span>BROWSER EMULATION FLAGS</span></div>
+              <div class="module-divider mt-4"><span>DEFENSE FLAGS & TARGET COORDINATION</span></div>
 
               <div class="cockpit-grid-2">
                 <label class="vector-card">
@@ -530,11 +546,23 @@
                     <span class="vector-sub">Simulate viewport scroll before engagement</span>
                   </div>
                 </label>
+
+                <label class="vector-card">
+                  <input type="checkbox" id="checkCrossNodeLock" checked />
+                  <div class="vector-content">
+                    <span class="vector-symbol">🔒</span>
+                    <span class="vector-title">Cross-Node Target Lock</span>
+                    <span class="vector-sub">Prevent fleet collisions on the same target tweet</span>
+                  </div>
+                </label>
               </div>
 
-              <div class="control-actions mt-4">
+              <div class="control-actions mt-4 d-flex gap-2 flex-wrap">
                 <button class="btn btn-hallmark-primary" id="btnSaveSafetySettings">
                   Save Defense Settings
+                </button>
+                <button class="btn btn-hallmark-secondary" id="btnClearSafetyTargetLocks">
+                  🔓 Clear Active Target Locks
                 </button>
               </div>
             </div>

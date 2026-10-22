@@ -243,6 +243,12 @@ class LocalDB {
         'meta-llama/llama-3.3-70b-instruct',
       ];
     }
+    if (this.cache.settings.crossNodeTargetLock === undefined) {
+      this.cache.settings.crossNodeTargetLock =
+        config.DEFAULTS && typeof config.DEFAULTS.crossNodeTargetLock === 'boolean'
+          ? config.DEFAULTS.crossNodeTargetLock
+          : true;
+    }
     return this.cache.settings;
   }
   saveSettings(newSettings) {

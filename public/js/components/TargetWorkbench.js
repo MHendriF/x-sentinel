@@ -14,11 +14,13 @@ export class TargetWorkbench {
     this.checkLike = document.getElementById('checkLike');
     this.checkRetweet = document.getElementById('checkRetweet');
     this.checkComment = document.getElementById('checkComment');
+    this.checkCrossNodeLock = document.getElementById('workbenchCrossNodeLock');
     this.customCommentInput = document.getElementById('customCommentInput');
     this.btnStart = document.getElementById('btnStartBatch');
     this.btnStop = document.getElementById('btnStopTask');
     this.btnPause = document.getElementById('btnPauseTask');
     this.btnResume = document.getElementById('btnResumeTask');
+    this.btnClearTargetLocks = document.getElementById('btnClearTargetLocks');
     this.runningControls = document.getElementById('runningTaskControls');
     this.btnBatchText = document.getElementById('btnBatchText');
     this.taskStatusBadge = document.getElementById('taskStatusBadge');
@@ -61,8 +63,16 @@ export class TargetWorkbench {
     if (this.btnResume) {
       this.btnResume.addEventListener('click', () => this.resumeMission());
     }
+    if (this.btnClearTargetLocks) {
+      this.btnClearTargetLocks.addEventListener('click', () => this.clearTargetLocks());
+    }
 
     store.on('accounts', (accounts) => this.updateAccountDropdown(accounts));
+    store.on('settings', (settings) => {
+      if (this.checkCrossNodeLock && settings) {
+        this.checkCrossNodeLock.checked = settings.crossNodeTargetLock !== false;
+      }
+    });
     store.on('change', () => this.syncRunningState());
   }
 
@@ -103,6 +113,7 @@ export class TargetWorkbench {
     const retweet = this.checkRetweet.checked;
     const comment = this.checkComment.checked;
     const commentText = this.customCommentInput.value.trim();
+    const crossNodeTargetLock = this.checkCrossNodeLock ? this.checkCrossNodeLock.checked : undefined;
 
     if (!like && !retweet && !comment) {
       alert('Select at least one interaction vector.');
@@ -117,6 +128,7 @@ export class TargetWorkbench {
         retweet,
         comment,
         commentText,
+        crossNodeTargetLock,
       });
       if (data.success) {
         store.update({
@@ -137,6 +149,19 @@ export class TargetWorkbench {
       store.update({ isRunning: false });
     } catch (err) {
       console.error(err);
+    }
+  }
+
+  async clearTargetLocks() {
+    try {
+      const data = await api.clearTargetLocks();
+      if (data.success) {
+        alert(data.message || 'All target locks cleared.');
+      } else {
+        alert(data.message || 'Failed to clear target locks.');
+      }
+    } catch (err) {
+      alert(`Error: ${err.message}`);
     }
   }
 

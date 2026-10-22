@@ -33,6 +33,7 @@ import {
   Sliders,
   ShieldCheck,
   Zap,
+  RefreshCw,
 } from 'lucide-react';
 import { DeckHeader } from './DeckHeader';
 import { ScheduleBatchModal } from './targetWorkbench/ScheduleBatchModal';
@@ -100,6 +101,18 @@ export const TargetWorkbench: React.FC = () => {
 
   // Track mission start timestamp for current-mission filtering
   const [missionStartTime, setMissionStartTime] = useState<number | null>(null);
+
+  // Target lock toggle & clear lock state
+  const [crossNodeTargetLock, setCrossNodeTargetLock] = useState<boolean>(
+    settings?.crossNodeTargetLock ?? false
+  );
+  const [isClearingLocks, setIsClearingLocks] = useState(false);
+
+  useEffect(() => {
+    if (settings?.crossNodeTargetLock !== undefined) {
+      setCrossNodeTargetLock(Boolean(settings.crossNodeTargetLock));
+    }
+  }, [settings?.crossNodeTargetLock]);
 
   // Load history on mount
   useEffect(() => {
@@ -261,6 +274,7 @@ export const TargetWorkbench: React.FC = () => {
         retweet,
         comment,
         commentText: customComment.trim() || undefined,
+        crossNodeTargetLock,
       });
 
       if (res.success) {
@@ -280,6 +294,23 @@ export const TargetWorkbench: React.FC = () => {
       }
     } catch (err: any) {
       toast.error(`Error: ${err.message}`);
+    }
+  };
+
+  // Clear Target Locks handler
+  const handleClearLocks = async () => {
+    setIsClearingLocks(true);
+    try {
+      const res = await apiClient.clearTargetLocks();
+      if (res.success) {
+        toast.success(res.message || 'All target locks cleared successfully!');
+      } else {
+        toast.error(res.message || 'Failed to clear target locks');
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsClearingLocks(false);
     }
   };
 
@@ -881,6 +912,69 @@ export const TargetWorkbench: React.FC = () => {
                 </div>
               )}
 
+              {/* Target Collision Protection Toggle */}
+              <div
+                onClick={() => setCrossNodeTargetLock(!crossNodeTargetLock)}
+                role="switch"
+                aria-checked={crossNodeTargetLock}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setCrossNodeTargetLock(!crossNodeTargetLock);
+                  }
+                }}
+                className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-all ${
+                  crossNodeTargetLock
+                    ? 'border-emerald-500/50 bg-emerald-500/10'
+                    : 'border-slate-800 bg-obsidian-950/60 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`rounded p-1.5 ${
+                      crossNodeTargetLock
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="font-heading text-xs font-semibold text-white flex items-center gap-1.5">
+                      Cross-Node Target Lock
+                      {crossNodeTargetLock ? (
+                        <span className="font-mono text-[9px] text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">
+                          ON (Anti-Collision)
+                        </span>
+                      ) : (
+                        <span className="font-mono text-[9px] text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded">
+                          OFF (Multi-Node Raid)
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-slate-400">
+                      {crossNodeTargetLock
+                        ? 'Cegah node lain menargetkan tweet yang sama dalam jendela waktu (Safety)'
+                        : 'Seluruh armada bebas menargetkan tweet yang sama (Raid/Engagement Pod)'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div
+                    className={`h-5 w-9 rounded-full transition-colors relative flex items-center px-0.5 ${
+                      crossNodeTargetLock ? 'bg-emerald-600' : 'bg-slate-700'
+                    }`}
+                  >
+                    <div
+                      className={`h-4 w-4 rounded-full bg-white transition-transform ${
+                        crossNodeTargetLock ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Dual Launch Actions: Execute Now or Schedule for Later */}
               <div className="flex items-center gap-2 pt-1">
                 {!isRunning ? (
@@ -910,6 +1004,18 @@ export const TargetWorkbench: React.FC = () => {
                     >
                       <Calendar className="h-4 w-4 mr-1 text-amber-400" />
                       Schedule
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      type="button"
+                      onClick={handleClearLocks}
+                      disabled={isClearingLocks}
+                      title="Release all active cross-node target locks immediately"
+                      className="border-cyan-500/40 bg-cyan-950/20 font-mono text-xs text-cyan-300 hover:bg-cyan-950/40 hover:border-cyan-400"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-1 text-cyan-400 ${isClearingLocks ? 'animate-spin' : ''}`} />
+                      Unlock Targets
                     </Button>
                   </>
                 ) : (
@@ -983,17 +1089,30 @@ export const TargetWorkbench: React.FC = () => {
               </button>
             </div>
 
-            {isRunning && (
-              currentTask?.isPaused ? (
-                <Badge variant="outline" className="border-amber-500/60 bg-amber-500/20 text-amber-300 font-mono text-[9px] animate-pulse">
-                  ⏸ PAUSED
-                </Badge>
-              ) : (
-                <Badge variant="success" className="animate-pulse font-mono text-[9px]">
-                  ● STREAMING
-                </Badge>
-              )
-            )}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearLocks}
+                disabled={isClearingLocks}
+                className="h-7 border-amber-500/40 bg-amber-500/10 px-2.5 font-mono text-xs text-amber-300 hover:bg-amber-500/20"
+                title="Bebaskan semua target tweet yang terkunci saat ini"
+              >
+                <RefreshCw className={`h-3 w-3 mr-1 text-amber-400 ${isClearingLocks ? 'animate-spin' : ''}`} />
+                🔓 Unlock Targets
+              </Button>
+              {isRunning && (
+                currentTask?.isPaused ? (
+                  <Badge variant="outline" className="border-amber-500/60 bg-amber-500/20 text-amber-300 font-mono text-[9px] animate-pulse">
+                    ⏸ PAUSED
+                  </Badge>
+                ) : (
+                  <Badge variant="success" className="animate-pulse font-mono text-[9px]">
+                    ● STREAMING
+                  </Badge>
+                )
+              )}
+            </div>
           </div>
 
           {/* Active Tab Content */}

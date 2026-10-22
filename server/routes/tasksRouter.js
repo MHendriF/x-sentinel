@@ -4,6 +4,7 @@ const { z } = require('zod');
 const config = require('../config');
 const logger = require('../logger');
 const twitterBot = require('../automation/twitterBot');
+const targetLock = require('../automation/targetLock');
 const { validateBody, httpError } = require('../utils/http');
 
 const router = express.Router();
@@ -54,6 +55,7 @@ const batchTaskSchema = z.object({
   minDelay: z.number().min(0).max(3600).optional(),
   maxDelay: z.number().min(0).max(7200).optional(),
   engine: engineSchema,
+  crossNodeTargetLock: z.boolean().optional(),
 });
 
 const hunterTaskSchema = z.object({
@@ -67,6 +69,7 @@ const hunterTaskSchema = z.object({
   minDelay: z.number().min(0).max(3600).optional(),
   maxDelay: z.number().min(0).max(7200).optional(),
   engine: engineSchema,
+  crossNodeTargetLock: z.boolean().optional(),
 });
 
 // POST /api/tasks/post - Broadcast / publish new tweets
@@ -105,6 +108,7 @@ router.post('/batch', validateBody(batchTaskSchema), (req, res) => {
     minDelay,
     maxDelay,
     engine,
+    crossNodeTargetLock,
   } = req.body;
 
   if (twitterBot.isRunning) {
@@ -120,6 +124,7 @@ router.post('/batch', validateBody(batchTaskSchema), (req, res) => {
       minDelay,
       maxDelay,
       engine,
+      crossNodeTargetLock,
     })
     .catch((err) => {
       logger.error(`❌ Background task error: ${err.message}`);
@@ -144,6 +149,7 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
     minDelay,
     maxDelay,
     engine,
+    crossNodeTargetLock,
   } = req.body;
 
   if (twitterBot.isRunning) {
@@ -159,6 +165,7 @@ router.post('/hunter', validateBody(hunterTaskSchema), (req, res) => {
       minDelay,
       maxDelay,
       engine,
+      crossNodeTargetLock,
     })
     .catch((err) => {
       logger.error(`❌ Background hunter error: ${err.message}`);
@@ -199,6 +206,23 @@ router.post('/stop', (req, res) => {
   } else {
     res.json({ success: false, message: 'No active tasks currently running.' });
   }
+});
+
+// POST /api/tasks/clear-locks - Release all target locks
+router.post('/clear-locks', (req, res) => {
+  const countBefore = targetLock.snapshot().totalLocks;
+  targetLock.clear();
+  logger.info(`🔓 All target locks cleared by operator (${countBefore} lock(s) released).`);
+  res.json({
+    success: true,
+    message: `All target locks released (${countBefore} lock(s) cleared).`,
+    clearedCount: countBefore,
+  });
+});
+
+// GET /api/tasks/locks - Get current locks snapshot
+router.get('/locks', (req, res) => {
+  res.json({ success: true, ...targetLock.snapshot() });
 });
 
 module.exports = router;

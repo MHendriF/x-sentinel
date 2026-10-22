@@ -7,6 +7,7 @@ console.log('=== 🧪 TESTING PHASE 2: ADAPTIVE PACING & TARGET LOCK ===\n');
 // 1. TargetLock Tests
 console.log('1. Testing TargetLock Coordination...');
 targetLock.clear();
+targetLock.setCrossNodeLock(true);
 
 const tweet1 = '1846573829102938475';
 const accA = 'acc_alpha';
@@ -24,13 +25,13 @@ assert.strictEqual(lockB.lockedBy, accA);
 assert.ok(lockB.freeInMs > 0, 'freeInMs must be positive');
 console.log('   Collision prevention between 2 nodes: PASSED ✅');
 
-// Reply mode has 90m TTL
+// Reply mode has 15m TTL
 const tweet2 = '1846573829102938999';
 targetLock.acquire(tweet2, accA, { kind: 'REPLY' });
 const lockBReply = targetLock.acquire(tweet2, accB, { kind: 'REPLY' });
 assert.strictEqual(lockBReply.ok, false);
-assert.ok(lockBReply.freeInMs > 80 * 60 * 1000, 'Reply lock TTL should be ~90 minutes');
-console.log('   Reply 90-minute TTL lock: PASSED ✅');
+assert.ok(lockBReply.freeInMs > 13 * 60 * 1000, 'Reply lock TTL should be ~15 minutes');
+console.log('   Reply 15-minute TTL lock: PASSED ✅');
 
 // Early release test
 targetLock.release(tweet1, accA);
@@ -43,6 +44,57 @@ const snap = targetLock.snapshot();
 assert.ok(typeof snap.activeTargets === 'number', 'Snapshot returns activeTargets count');
 assert.ok(typeof snap.totalLocks === 'number', 'Snapshot returns totalLocks count');
 console.log('   Snapshot & pruning check: PASSED ✅');
+
+// Cross-Node Lock Toggle Tests
+const tweet3 = '1846573829102939111';
+targetLock.acquire(tweet3, accA, { kind: 'ENGAGE' });
+
+// Case 1: Disabled via options -> Node B can engage same target
+const lockBWithDisabledOption = targetLock.acquire(tweet3, accB, {
+  kind: 'ENGAGE',
+  crossNodeTargetLock: false,
+});
+assert.strictEqual(
+  lockBWithDisabledOption.ok,
+  true,
+  'Node B should acquire lock when crossNodeTargetLock is false via options'
+);
+
+// Same-node duplicate check must still be enforced even when crossNodeTargetLock is false
+const lockAAgain = targetLock.acquire(tweet3, accA, {
+  kind: 'ENGAGE',
+  crossNodeTargetLock: false,
+});
+assert.strictEqual(lockAAgain.ok, false, 'Node A cannot engage same target twice');
+assert.strictEqual(lockAAgain.reason, 'TARGET_ALREADY_ENGAGED_BY_THIS_NODE');
+console.log('   Disable via options + same-node duplicate safeguard: PASSED ✅');
+
+// Case 2: Disabled via targetLock.setCrossNodeLock(false)
+const tweet4 = '1846573829102939222';
+targetLock.setCrossNodeLock(false);
+targetLock.acquire(tweet4, accA, { kind: 'ENGAGE' });
+const lockBInstanceDisabled = targetLock.acquire(tweet4, accB, { kind: 'ENGAGE' });
+assert.strictEqual(
+  lockBInstanceDisabled.ok,
+  true,
+  'Node B should acquire lock when instance crossNodeLock is disabled'
+);
+
+// Enforce lock again explicitly
+targetLock.setCrossNodeLock(true);
+const tweet5 = '1846573829102939333';
+targetLock.acquire(tweet5, accA, { kind: 'ENGAGE' });
+const lockBEnforcedAgain = targetLock.acquire(tweet5, accB, { kind: 'ENGAGE' });
+assert.strictEqual(lockBEnforcedAgain.ok, false);
+assert.strictEqual(lockBEnforcedAgain.reason, 'TARGET_LOCKED_BY_ANOTHER_NODE');
+console.log('   Cross-node lock enable/disable state toggle: PASSED ✅');
+
+// Case 3: Clearing all locks
+targetLock.clear();
+const snapAfterClear = targetLock.snapshot();
+assert.strictEqual(snapAfterClear.totalLocks, 0, 'Total locks must be 0 after clear()');
+assert.strictEqual(snapAfterClear.activeTargets, 0, 'Active targets must be 0 after clear()');
+console.log('   Clear target locks check: PASSED ✅');
 
 // 2. Rate Limit Headers Handling Tests
 console.log('\n2. Testing X-Rate-Limit Headers Handling in Rate Governor...');

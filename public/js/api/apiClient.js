@@ -102,6 +102,16 @@ export const api = {
     return res.json();
   },
 
+  async clearTargetLocks() {
+    const res = await fetch('/api/tasks/clear-locks', { method: 'POST' });
+    return res.json();
+  },
+
+  async getTargetLocks() {
+    const res = await fetch('/api/tasks/locks');
+    return res.json();
+  },
+
   // Global Templates & Spintax
   async getTemplates() {
     const res = await fetch('/api/templates');

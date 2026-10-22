@@ -625,8 +625,10 @@ class TwitterBot {
           // Target Lock: Cegah benturan multi-node pada target yang sama dalam jendela waktu
           if (tweetId) {
             const lockKind = options.comment ? 'REPLY' : 'ENGAGE';
-            const ttlMs = lockKind === 'REPLY' ? 90 * 60 * 1000 : 20 * 60 * 1000;
-            const lockDecision = targetLock.acquire(tweetId, account.id, { kind: lockKind, ttlMs });
+            const lockDecision = targetLock.acquire(tweetId, account.id, {
+              kind: lockKind,
+              crossNodeTargetLock: options.crossNodeTargetLock,
+            });
             if (!lockDecision.ok) {
               const freeInMin = Math.ceil((lockDecision.freeInMs || 0) / 60000);
               logger.info(
@@ -911,8 +913,10 @@ class TwitterBot {
           // Target Lock: Cegah benturan multi-node pada target yang sama dalam jendela waktu
           if (tweetId) {
             const lockKind = options.comment ? 'REPLY' : 'ENGAGE';
-            const ttlMs = lockKind === 'REPLY' ? 90 * 60 * 1000 : 20 * 60 * 1000;
-            const lockDecision = targetLock.acquire(tweetId, account.id, { kind: lockKind, ttlMs });
+            const lockDecision = targetLock.acquire(tweetId, account.id, {
+              kind: lockKind,
+              crossNodeTargetLock: options.crossNodeTargetLock,
+            });
             if (!lockDecision.ok) {
               const freeInMin = Math.ceil((lockDecision.freeInMs || 0) / 60000);
               logger.info(

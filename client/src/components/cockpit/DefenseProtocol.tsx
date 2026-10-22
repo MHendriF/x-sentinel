@@ -42,6 +42,10 @@ export const DefenseProtocol: React.FC = () => {
   const [typingDelay, setTypingDelay] = useState(settings?.humanTypingDelayMs ?? 65);
   const [headless, setHeadless] = useState(Boolean(settings?.headless));
   const [scrollAction, setScrollAction] = useState(settings ? Boolean(settings.scrollBeforeAction) : true);
+  const [crossNodeTargetLock, setCrossNodeTargetLock] = useState(
+    settings?.crossNodeTargetLock ?? false
+  );
+  const [isClearingLocks, setIsClearingLocks] = useState(false);
   const [browserEngine, setBrowserEngine] = useState<'chromium' | 'camoufox'>(
     (settings?.browserEngine as 'chromium' | 'camoufox') || 'chromium'
   );
@@ -118,6 +122,7 @@ export const DefenseProtocol: React.FC = () => {
       setTypingDelay(settings.humanTypingDelayMs ?? 65);
       setHeadless(Boolean(settings.headless));
       setScrollAction(Boolean(settings.scrollBeforeAction));
+      setCrossNodeTargetLock(Boolean(settings.crossNodeTargetLock));
       setBrowserEngine((settings.browserEngine as 'chromium' | 'camoufox') || 'chromium');
       setTelegramEnabled(Boolean(settings.telegramEnabled));
       setTelegramBotToken(settings.telegramBotToken || '');
@@ -142,6 +147,7 @@ export const DefenseProtocol: React.FC = () => {
       typingDelay !== (settings.humanTypingDelayMs ?? 65) ||
       headless !== Boolean(settings.headless) ||
       scrollAction !== Boolean(settings.scrollBeforeAction) ||
+      crossNodeTargetLock !== Boolean(settings.crossNodeTargetLock) ||
       browserEngine !== ((settings.browserEngine as 'chromium' | 'camoufox') || 'chromium') ||
       telegramEnabled !== Boolean(settings.telegramEnabled) ||
       telegramBotToken !== (settings.telegramBotToken || '') ||
@@ -198,6 +204,7 @@ export const DefenseProtocol: React.FC = () => {
       humanTypingDelayMs: Number(typingDelay),
       headless,
       scrollBeforeAction: scrollAction,
+      crossNodeTargetLock,
       browserEngine,
       telegramEnabled,
       telegramBotToken: telegramBotToken.trim(),
@@ -219,6 +226,22 @@ export const DefenseProtocol: React.FC = () => {
       toast.error(`Failed to save: ${err.message}`);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleClearLocks = async () => {
+    setIsClearingLocks(true);
+    try {
+      const res = await apiClient.clearTargetLocks();
+      if (res.success) {
+        toast.success(res.message || 'All target locks cleared successfully!');
+      } else {
+        toast.error(res.message || 'Failed to clear target locks');
+      }
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsClearingLocks(false);
     }
   };
 
@@ -539,6 +562,26 @@ export const DefenseProtocol: React.FC = () => {
                 className="checkbox-flame"
               />
             </label>
+
+            <label className="flex cursor-pointer items-center justify-between rounded-md border border-border/80 bg-obsidian-950 p-3 hover:border-slate-700">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-4 w-4 text-amber-400" />
+                <div>
+                  <div className="text-xs font-semibold text-white">
+                    Cross-Node Target Lock (Anti-Collision)
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Cegah benturan antar node pada target tweet yang sama dalam jendela waktu. Matikan jika ingin multi-node raid/engagement pod.
+                  </div>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={crossNodeTargetLock}
+                onChange={(e) => setCrossNodeTargetLock(e.target.checked)}
+                className="checkbox-flame"
+              />
+            </label>
           </div>
         </CardContent>
       </Card>
@@ -843,20 +886,35 @@ export const DefenseProtocol: React.FC = () => {
           </div>
 
           {/* Bottom Save Action */}
-          <Button
-            variant="default"
-            size="lg"
-            onClick={handleSave}
-            disabled={isSaving || !isDirty}
-            className={`mt-4 w-full font-heading text-sm font-bold transition-all ${
-              isDirty
-                ? 'bg-flame text-white shadow-xl shadow-flame/20 hover:bg-flame/90'
-                : 'border border-border/80 bg-obsidian-850 text-slate-400'
-            }`}
-          >
-            <Save className={`mr-1.5 h-4 w-4 ${isSaving ? 'animate-spin' : ''}`} />
-            {isSaving ? 'Saving Protocol Changes...' : isDirty ? 'Save All Protocol & Webhook Settings' : 'Settings Saved (Up to Date)'}
-          </Button>
+          <div className="mt-4 flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="default"
+              size="lg"
+              onClick={handleSave}
+              disabled={isSaving || !isDirty}
+              className={`flex-1 font-heading text-sm font-bold transition-all ${
+                isDirty
+                  ? 'bg-flame text-white shadow-xl shadow-flame/20 hover:bg-flame/90'
+                  : 'border border-border/80 bg-obsidian-850 text-slate-400'
+              }`}
+            >
+              <Save className={`mr-1.5 h-4 w-4 ${isSaving ? 'animate-spin' : ''}`} />
+              {isSaving ? 'Saving Protocol Changes...' : isDirty ? 'Save All Protocol & Webhook Settings' : 'Settings Saved (Up to Date)'}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              type="button"
+              onClick={handleClearLocks}
+              disabled={isClearingLocks}
+              className="border-amber-500/40 bg-amber-500/10 font-mono text-xs text-amber-300 hover:bg-amber-500/20"
+              title="Bebaskan semua target tweet yang terkunci saat ini"
+            >
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isClearingLocks ? 'animate-spin' : ''}`} />
+              🔓 Clear Active Target Locks
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

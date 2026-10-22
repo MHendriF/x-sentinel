@@ -14,7 +14,9 @@ export class DefenseProtocol {
     this.dailyLimit = document.getElementById('dailyLimit');
     this.checkHeadless = document.getElementById('checkHeadless');
     this.checkScrollAction = document.getElementById('checkScrollAction');
+    this.checkCrossNodeLock = document.getElementById('checkCrossNodeLock');
     this.btnSave = document.getElementById('btnSaveSafetySettings');
+    this.btnClearSafetyLocks = document.getElementById('btnClearSafetyTargetLocks');
 
     this.init();
   }
@@ -22,6 +24,9 @@ export class DefenseProtocol {
   init() {
     if (this.btnSave) {
       this.btnSave.addEventListener('click', () => this.saveSettings());
+    }
+    if (this.btnClearSafetyLocks) {
+      this.btnClearSafetyLocks.addEventListener('click', () => this.clearTargetLocks());
     }
     this.loadSettings();
   }
@@ -37,6 +42,9 @@ export class DefenseProtocol {
         this.dailyLimit.value = data.settings.dailyLimit || 150;
         this.checkHeadless.checked = Boolean(data.settings.headless);
         this.checkScrollAction.checked = Boolean(data.settings.scrollBeforeAction);
+        if (this.checkCrossNodeLock) {
+          this.checkCrossNodeLock.checked = data.settings.crossNodeTargetLock !== false;
+        }
       }
     } catch (err) {
       console.error('Error loading settings:', err);
@@ -51,6 +59,7 @@ export class DefenseProtocol {
       dailyLimit: parseInt(this.dailyLimit.value, 10) || 150,
       headless: this.checkHeadless.checked,
       scrollBeforeAction: this.checkScrollAction.checked,
+      crossNodeTargetLock: this.checkCrossNodeLock ? this.checkCrossNodeLock.checked : true,
     };
 
     try {
@@ -61,6 +70,19 @@ export class DefenseProtocol {
       }
     } catch (err) {
       alert(`Error saving settings: ${err.message}`);
+    }
+  }
+
+  async clearTargetLocks() {
+    try {
+      const data = await api.clearTargetLocks();
+      if (data.success) {
+        alert(data.message || 'All target locks cleared.');
+      } else {
+        alert(data.message || 'Failed to clear target locks.');
+      }
+    } catch (err) {
+      alert(`Error: ${err.message}`);
     }
   }
 }

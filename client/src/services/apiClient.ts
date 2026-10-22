@@ -54,6 +54,7 @@ export interface Settings {
   headless: boolean;
   scrollBeforeAction: boolean;
   enforceWarmupGate?: boolean;
+  crossNodeTargetLock?: boolean;
   browserEngine?: 'chromium' | 'camoufox';
   humanTypingDelayMs?: number;
   aiProvider?: string;
@@ -470,6 +471,7 @@ export const apiClient = {
     retweet: boolean;
     comment: boolean;
     commentText?: string;
+    crossNodeTargetLock?: boolean;
   }) {
     const res = await fetch('/api/tasks/batch', {
       method: 'POST',
@@ -653,6 +655,16 @@ export const apiClient = {
 
   async stopTask() {
     const res = await fetch('/api/tasks/stop', { method: 'POST' });
+    return res.json();
+  },
+
+  async clearTargetLocks(): Promise<{ success: boolean; message: string; clearedCount?: number }> {
+    const res = await fetch('/api/tasks/clear-locks', { method: 'POST' });
+    return res.json();
+  },
+
+  async getTargetLocks(): Promise<{ success: boolean; activeTargets: number; totalLocks: number }> {
+    const res = await fetch('/api/tasks/locks');
     return res.json();
   },
 

@@ -58,6 +58,7 @@ const settingsSchema = z.object({
   humanTypingDelayMs: z.number().int().min(10).max(1000).optional(),
   scrollBeforeAction: z.boolean().optional(),
   enforceWarmupGate: z.boolean().optional(),
+  crossNodeTargetLock: z.boolean().optional(),
   aiProvider: z.string().max(50).optional(),
   aiApiKey: z.string().max(500).optional(),
   aiModel: z.string().max(200).optional(),

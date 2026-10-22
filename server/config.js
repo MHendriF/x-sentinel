@@ -75,6 +75,7 @@ module.exports = {
     humanTypingDelayMs: 65,
     scrollBeforeAction: true,
     enforceWarmupGate: false,
+    crossNodeTargetLock: false,
   },
 
   // Desktop Chrome User Agent for maximum realism
