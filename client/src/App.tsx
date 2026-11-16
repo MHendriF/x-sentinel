@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { MotionProvider, MotionTabStage, TACTICAL_EASE } from '@/components/ui/motion';
 import { useStore, resolveTabFromUrl } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
 import { cn } from '@/lib/utils';
@@ -180,79 +182,96 @@ export const App: React.FC = () => {
   // 1. Initial Handshake / Auth Checking Screen
   if (isAuthChecking) {
     return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-obsidian-950 font-mono text-slate-400">
-        <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-800 bg-obsidian-900 shadow-2xl">
-          <div className="h-7 w-7 animate-spin rounded-full border-2 border-flame border-t-transparent" />
+      <MotionProvider>
+        <div className="flex min-h-screen w-full flex-col items-center justify-center bg-obsidian-950 font-mono text-slate-400">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25, ease: TACTICAL_EASE }}
+            className="flex flex-col items-center"
+          >
+            <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] border-t-white/[0.15] bg-obsidian-900 shadow-2xl">
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-flame border-t-transparent" />
+            </div>
+            <div className="text-xs font-semibold tracking-widest text-slate-300">
+              INITIALIZING X-SENTINEL CLEARANCE...
+            </div>
+          </motion.div>
         </div>
-        <div className="text-xs font-semibold tracking-widest text-slate-300">
-          INITIALIZING X-SENTINEL CLEARANCE...
-        </div>
-      </div>
+      </MotionProvider>
     );
   }
 
-  // 2. Unauthenticated Gate — Render Cyberpunk Cockpit Login
+  // 2. Unauthenticated Gate — Render Tactical Cockpit Login
   if (!isAuthenticated) {
     return (
-      <>
+      <MotionProvider>
         <LoginDeck />
         <Toaster position="bottom-right" richColors />
-      </>
+      </MotionProvider>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-obsidian-900 text-slate-100 selection:bg-amber-500/20 selection:text-amber-300">
-      {/* Navigation Deck (Left Aside) */}
-      <NavDeck />
+    <MotionProvider>
+      <div className="flex min-h-screen bg-obsidian-950 text-slate-100 selection:bg-amber-500/20 selection:text-amber-300">
+        {/* Navigation Deck (Left Aside) */}
+        <NavDeck />
 
-      {/* Main Workspace (Right Content) */}
-      <main
-        className={cn(
-          'flex w-full flex-1 flex-col overflow-y-auto p-4 transition-all duration-300 sm:p-6 lg:p-8',
-          isSidebarCollapsed ? 'max-w-[1600px]' : 'max-w-7xl'
-        )}
-      >
-        {/* Engine Offline Banner */}
-        {!apiOnline && (
-          <div
-            role="alert"
-            className="mb-4 flex items-center gap-2.5 rounded-md border border-red-500/40 bg-red-950/40 px-3.5 py-2.5 text-xs text-red-200"
-          >
-            <WifiOff className="h-4 w-4 shrink-0 text-red-400" />
-            <span>
-              Unable to connect to X-SENTINEL engine. Displaying latest cached telemetry state.
-            </span>
-          </div>
-        )}
+        {/* Main Workspace (Right Content) */}
+        <main
+          className={cn(
+            'flex w-full flex-1 flex-col overflow-y-auto p-4 transition-all duration-300 sm:p-6 lg:p-8',
+            isSidebarCollapsed ? 'max-w-[1600px]' : 'max-w-7xl'
+          )}
+        >
+          {/* Engine Offline Banner */}
+          <AnimatePresence>
+            {!apiOnline && (
+              <motion.div
+                role="alert"
+                initial={{ opacity: 0, y: -8, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, y: -8, height: 0 }}
+                transition={{ duration: 0.2, ease: TACTICAL_EASE }}
+                className="mb-4 flex items-center gap-2.5 overflow-hidden rounded-lg border border-red-500/40 bg-red-950/40 px-3.5 py-2.5 text-xs text-red-200"
+              >
+                <WifiOff className="h-4 w-4 shrink-0 text-red-400" />
+                <span>
+                  Unable to connect to X-SENTINEL engine. Displaying latest cached telemetry state.
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {/* Top Telemetry Ribbon */}
-        <TelemetryRibbon />
+          {/* Top Telemetry Ribbon */}
+          <TelemetryRibbon />
 
-        {/* Dynamic Tab Surfaces */}
-        <div className="flex-1">
-          {activeTab === 'tab-accounts' && <NodesGrid />}
-          {activeTab === 'tab-composer' && <PostStudio />}
-          {activeTab === 'tab-batch' && <TargetWorkbench />}
-          {activeTab === 'tab-hunter' && <FeedHunter />}
-          {activeTab === 'tab-analytics' && <AnalyticsDeck />}
-          {activeTab === 'tab-ai' && <AISettingsDeck />}
-          {activeTab === 'tab-spintax' && <PayloadBank />}
-          {activeTab === 'tab-safety' && <DefenseProtocol />}
-          {activeTab === 'tab-history' && <AuditLedger />}
-          {activeTab === 'tab-about' && <AboutDeck />}
-          {activeTab === 'tab-404' && <NotFoundDeck />}
-          {![...VALID_TABS, 'tab-404'].includes(activeTab) && <NotFoundDeck />}
-        </div>
-      </main>
+          {/* Dynamic Animated Tab Surfaces */}
+          <MotionTabStage tabKey={activeTab}>
+            {activeTab === 'tab-accounts' && <NodesGrid />}
+            {activeTab === 'tab-composer' && <PostStudio />}
+            {activeTab === 'tab-batch' && <TargetWorkbench />}
+            {activeTab === 'tab-hunter' && <FeedHunter />}
+            {activeTab === 'tab-analytics' && <AnalyticsDeck />}
+            {activeTab === 'tab-ai' && <AISettingsDeck />}
+            {activeTab === 'tab-spintax' && <PayloadBank />}
+            {activeTab === 'tab-safety' && <DefenseProtocol />}
+            {activeTab === 'tab-history' && <AuditLedger />}
+            {activeTab === 'tab-about' && <AboutDeck />}
+            {activeTab === 'tab-404' && <NotFoundDeck />}
+            {![...VALID_TABS, 'tab-404'].includes(activeTab) && <NotFoundDeck />}
+          </MotionTabStage>
+        </main>
 
-      {/* Global Modals & Notifications */}
-      <AccountModal />
-      <CommentsModal />
-      <DeleteNodeDialog />
-      <ResetCamoufoxDialog />
-      <BulkImportModal isOpen={isBulkImportOpen} onClose={closeBulkImportModal} />
-      <Toaster position="bottom-right" richColors />
-    </div>
+        {/* Global Modals & Notifications */}
+        <AccountModal />
+        <CommentsModal />
+        <DeleteNodeDialog />
+        <ResetCamoufoxDialog />
+        <BulkImportModal isOpen={isBulkImportOpen} onClose={closeBulkImportModal} />
+        <Toaster position="bottom-right" richColors />
+      </div>
+    </MotionProvider>
   );
 };

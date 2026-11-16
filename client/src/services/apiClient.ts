@@ -124,7 +124,9 @@ export interface LogEntry {
 export interface SystemHealthData {
   success: boolean;
   uptime: number;
-  nodeVersion: string;
+  runtime?: string;
+  rustVersion?: string;
+  nodeVersion: string | null;
   platform: string;
   arch: string;
   pid: number;

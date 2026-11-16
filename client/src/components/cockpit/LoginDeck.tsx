@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { TACTICAL_EASE, SPRING_SNAPPY } from '@/components/ui/motion';
 import { useStore } from '@/store/useStore';
 import {
   Shield,
@@ -67,11 +69,16 @@ export const LoginDeck: React.FC = () => {
       />
 
       {/* Cockpit Login Portal Card */}
-      <div className="relative z-10 w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
+      <motion.div
+        initial={{ opacity: 0, y: 18, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.35, ease: TACTICAL_EASE }}
+        className="relative z-10 w-full max-w-md"
+      >
         {/* Outer Glow Halo */}
-        <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-flame/30 via-slate-800/40 to-slate-900/10 blur-xl opacity-75" />
+        <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-flame/25 via-slate-800/35 to-slate-900/10 blur-xl opacity-75" />
 
-        <div className="relative rounded-2xl border border-slate-800/80 bg-obsidian-900/95 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+        <div className="relative rounded-2xl border border-white/[0.09] border-t-white/[0.16] bg-obsidian-900/95 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           {/* Top Telemetry Header */}
           <div className="mb-6 flex items-center justify-between border-b border-slate-800/60 pb-4 font-mono text-[11px]">
             <div className="flex items-center gap-2">
@@ -79,21 +86,26 @@ export const LoginDeck: React.FC = () => {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-flame opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-flame" />
               </span>
-              <span className="font-bold tracking-wider text-slate-300">SENTINEL-DEFENSE // V1.3.5</span>
+              <span className="font-bold tracking-wider text-slate-300">SENTINEL-DEFENSE // V{__APP_VERSION__}</span>
             </div>
-            <span className="rounded bg-slate-800/80 px-2 py-0.5 font-semibold text-flame">
-              RESTRICTED NODE
+            <span className="rounded border border-flame/25 bg-flame/10 px-2 py-0.5 font-semibold text-flame">
+              RUST ENGINE
             </span>
           </div>
 
           {/* Radar Shield Visual */}
           <div className="mb-6 flex flex-col items-center text-center">
-            <div className="relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-flame/30 bg-flame/10 shadow-inner">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.08, ...SPRING_SNAPPY }}
+              className="relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-flame/35 bg-flame/10 shadow-[inset_0_1px_0_rgba(251,191,36,0.25)]"
+            >
               <Shield className="h-7 w-7 text-flame" />
               <div className="absolute -right-1 -top-1 rounded-full border border-slate-900 bg-emerald px-1 font-mono text-[9px] font-bold text-obsidian-950">
                 AUTH
               </div>
-            </div>
+            </motion.div>
             <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
               X-SENTINEL Cockpit
             </h1>
@@ -103,15 +115,21 @@ export const LoginDeck: React.FC = () => {
           </div>
 
           {/* Error Banner */}
-          {localError && (
-            <div
-              role="alert"
-              className="mb-5 flex items-start gap-2.5 rounded-lg border border-red-500/40 bg-red-950/40 p-3 text-xs text-red-200 animate-in fade-in duration-200"
-            >
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-              <div className="flex-1 font-mono">{localError}</div>
-            </div>
-          )}
+          <AnimatePresence>
+            {localError && (
+              <motion.div
+                role="alert"
+                initial={{ opacity: 0, y: -6, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, y: -6, height: 0 }}
+                transition={{ duration: 0.2, ease: TACTICAL_EASE }}
+                className="mb-5 flex items-start gap-2.5 overflow-hidden rounded-lg border border-red-500/40 bg-red-950/40 p-3 text-xs text-red-200"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                <div className="flex-1 font-mono">{localError}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Credentials Entry Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -180,42 +198,53 @@ export const LoginDeck: React.FC = () => {
             </div>
 
             {/* Optional 2FA TOTP Input Field */}
-            {requireTotpStep && (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label
-                  htmlFor="sentinel-totp-input"
-                  className="mb-1.5 flex items-center justify-between font-mono text-xs font-semibold text-emerald"
+            <AnimatePresence>
+              {requireTotpStep && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  transition={{ duration: 0.22, ease: TACTICAL_EASE }}
+                  className="overflow-hidden"
                 >
-                  <span className="flex items-center gap-1.5">
-                    <Smartphone className="h-3.5 w-3.5 text-emerald" />
-                    2FA AUTHENTICATOR CODE (6-DIGIT)
-                  </span>
-                  <span className="text-[10px] text-emerald/80">REQUIRED</span>
-                </label>
-                <input
-                  id="sentinel-totp-input"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]{6}"
-                  maxLength={6}
-                  value={totpCode}
-                  onChange={(e) => {
-                    setTotpCode(e.target.value);
-                    if (localError) setLocalError(null);
-                  }}
-                  autoFocus
-                  required
-                  placeholder="e.g. 123456"
-                  className="w-full tracking-widest text-center font-mono text-lg font-bold rounded-lg border border-emerald/50 bg-obsidian-950 px-3.5 py-2.5 text-emerald placeholder-slate-600 transition-colors focus:border-emerald focus:outline-none focus:ring-1 focus:ring-emerald"
-                />
-              </div>
-            )}
+                  <label
+                    htmlFor="sentinel-totp-input"
+                    className="mb-1.5 flex items-center justify-between font-mono text-xs font-semibold text-emerald"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Smartphone className="h-3.5 w-3.5 text-emerald" />
+                      2FA AUTHENTICATOR CODE (6-DIGIT)
+                    </span>
+                    <span className="text-[10px] text-emerald/80">REQUIRED</span>
+                  </label>
+                  <input
+                    id="sentinel-totp-input"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    value={totpCode}
+                    onChange={(e) => {
+                      setTotpCode(e.target.value);
+                      if (localError) setLocalError(null);
+                    }}
+                    autoFocus
+                    required
+                    placeholder="e.g. 123456"
+                    className="w-full tracking-widest text-center font-mono text-lg font-bold rounded-lg border border-emerald/50 bg-obsidian-950 px-3.5 py-2.5 text-emerald placeholder-slate-600 transition-colors focus:border-emerald focus:outline-none focus:ring-1 focus:ring-emerald"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <button
+            <motion.button
               id="sentinel-login-submit"
               type="submit"
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.985 }}
+              transition={{ duration: 0.14 }}
               disabled={isSubmitting || !password.trim()}
-              className="group relative flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-flame to-flame-light px-4 py-2.5 font-mono text-xs font-bold text-obsidian-950 shadow-lg shadow-flame/10 transition-all hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+              className="group relative flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-flame to-flame-light px-4 py-2.5 font-mono text-xs font-bold text-obsidian-950 shadow-lg shadow-flame/15 transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
@@ -229,7 +258,7 @@ export const LoginDeck: React.FC = () => {
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
-            </button>
+            </motion.button>
           </form>
 
           {/* Security Assurance Footer */}
@@ -243,7 +272,7 @@ export const LoginDeck: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

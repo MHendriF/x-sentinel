@@ -1,4 +1,6 @@
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { SPRING_SNAPPY, TACTICAL_EASE } from '@/components/ui/motion';
 import { useStore } from '@/store/useStore';
 import { cn } from '@/lib/utils';
 import {
@@ -102,17 +104,23 @@ export const NavDeck: React.FC = () => {
   return (
     <>
       {/* Mobile Drawer Backdrop */}
-      {isMobileDrawerOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm transition-opacity lg:hidden"
-          onClick={() => setIsMobileDrawerOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: TACTICAL_EASE }}
+            className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden"
+            onClick={() => setIsMobileDrawerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Navigation Deck Aside */}
       <aside
         className={cn(
-          'fixed bottom-0 left-0 top-0 z-50 flex shrink-0 select-none flex-col gap-4 border-r border-border/80 bg-obsidian-850 shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 lg:shadow-none',
+          'fixed bottom-0 left-0 top-0 z-50 flex shrink-0 select-none flex-col gap-4 border-r border-white/[0.08] bg-obsidian-900/95 backdrop-blur-md shadow-2xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 lg:shadow-none',
           isSidebarCollapsed ? 'w-20 p-3' : 'w-72 p-5',
           isMobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -244,24 +252,32 @@ export const NavDeck: React.FC = () => {
                   title={item.label}
                   aria-label={item.label}
                   className={cn(
-                    'group flex items-center rounded-md text-xs font-medium transition-all',
+                    'group relative flex items-center rounded-lg text-xs font-medium transition-colors',
                     isSidebarCollapsed
                       ? 'justify-center p-2.5'
                       : 'gap-3 px-3 py-2.5 text-left',
                     isActive
-                      ? isSidebarCollapsed
-                        ? 'border border-flame/50 bg-obsidian-800 text-white shadow-sm'
-                        : 'border-l-2 border-flame bg-obsidian-800 font-semibold text-white shadow-sm'
-                      : 'text-slate-400 hover:bg-obsidian-800/50 hover:text-slate-100'
+                      ? 'font-semibold text-white'
+                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-100'
                   )}
                 >
+                  {isActive && (
+                    <motion.span
+                      layoutId="cockpit-nav-pill"
+                      transition={SPRING_SNAPPY}
+                      className={cn(
+                        'pointer-events-none absolute inset-0 rounded-lg border border-white/[0.08] bg-gradient-to-r from-flame/15 via-obsidian-800/90 to-obsidian-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
+                        !isSidebarCollapsed && 'border-l-2 border-l-flame'
+                      )}
+                    />
+                  )}
                   <Icon
                     className={cn(
-                      'h-4 w-4 shrink-0 transition-colors',
+                      'relative z-10 h-4 w-4 shrink-0 transition-colors',
                       isActive ? 'text-flame' : 'text-slate-500 group-hover:text-slate-300'
                     )}
                   />
-                  {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
+                  {!isSidebarCollapsed && <span className="relative z-10 truncate">{item.label}</span>}
                 </button>
               </React.Fragment>
             );
@@ -297,7 +313,7 @@ export const NavDeck: React.FC = () => {
             <div className="flex items-center justify-between pt-0.5 text-[10px]">
               <div className="flex items-center gap-1.5">
                 <Radio className="h-3 w-3 animate-pulse text-blue-400" />
-                <span>HTTP/2 Stealth</span>
+                <span>Rust · Axum</span>
               </div>
               <span className="text-slate-500">v{__APP_VERSION__}</span>
             </div>

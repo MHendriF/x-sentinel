@@ -151,7 +151,9 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
               </Badge>
             </div>
             <div className="font-mono text-base font-bold text-white">
-              {health.nodeVersion}
+              {health.runtime === 'rust-axum'
+                ? `Rust · Axum v${health.rustVersion || '1.3.5'}`
+                : health.nodeVersion || 'Engine Active'}
             </div>
             <div className="font-mono text-[10px] text-slate-500">
               {platformLabel} ({health.arch})

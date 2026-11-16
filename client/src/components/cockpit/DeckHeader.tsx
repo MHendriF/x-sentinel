@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { TACTICAL_EASE } from '@/components/ui/motion';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -327,26 +329,37 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
 
   if (variant === 'flat') {
     return (
-      <div className={cn('group flex flex-col gap-4 border-b border-border/70 pb-4', className)}>
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: TACTICAL_EASE }}
+        className={cn('group flex flex-col gap-4 border-b border-border/70 pb-4', className)}
+      >
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           {headerContent}
         </div>
         {children}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <Card className={cn('group', accentClass, className)}>
-      <CardHeader
-        className={cn(
-          'flex flex-col items-start justify-between gap-4 md:flex-row md:items-center',
-          children ? 'pb-3' : 'pb-4'
-        )}
-      >
-        {headerContent}
-      </CardHeader>
-      {children && <CardContent className="pt-0">{children}</CardContent>}
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: TACTICAL_EASE }}
+    >
+      <Card className={cn('group', accentClass, className)}>
+        <CardHeader
+          className={cn(
+            'flex flex-col items-start justify-between gap-4 md:flex-row md:items-center',
+            children ? 'pb-3' : 'pb-4'
+          )}
+        >
+          {headerContent}
+        </CardHeader>
+        {children && <CardContent className="pt-0">{children}</CardContent>}
+      </Card>
+    </motion.div>
   );
 };

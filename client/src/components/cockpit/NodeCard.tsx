@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { TACTICAL_EASE } from '@/components/ui/motion';
 import {
   AccountNode,
   apiClient,
@@ -146,12 +148,17 @@ export const NodeCard: React.FC<NodeCardProps> = ({
   const cleanProxy = extractProxyHostPort(account.proxy);
 
   return (
-    <div
-      className={`group relative flex flex-col justify-between gap-2.5 rounded-xl border p-3 shadow-md transition-all duration-200 overflow-hidden ${
+    <motion.div
+      layout="position"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: account.enabled === false ? 0.65 : 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.18, ease: TACTICAL_EASE }}
+      className={`group relative flex flex-col justify-between gap-2.5 rounded-xl border p-3.5 shadow-[0_10px_28px_-12px_rgba(0,0,0,0.6)] transition-colors duration-200 overflow-hidden ${
         isSelected
           ? 'border-cyan-500/80 bg-cyan-950/20 ring-1 ring-cyan-500/40 shadow-cyan-950/50'
-          : 'border-slate-800/80 bg-obsidian-850 hover:border-slate-700/80 hover:shadow-lg hover:shadow-black/30'
-      } ${account.enabled === false ? 'opacity-65' : ''}`}
+          : 'border-white/[0.08] border-t-white/[0.14] bg-obsidian-850/95 hover:border-white/[0.18]'
+      }`}
     >
       {/* Top Header */}
       <div>
@@ -429,6 +436,6 @@ export const NodeCard: React.FC<NodeCardProps> = ({
           </Button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

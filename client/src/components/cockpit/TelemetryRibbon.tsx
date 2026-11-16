@@ -1,4 +1,6 @@
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { TACTICAL_EASE } from '@/components/ui/motion';
 import { useStore } from '@/store/useStore';
 import { Heart, Repeat, MessageSquare, Sparkles, Menu, Loader2 } from 'lucide-react';
 
@@ -80,7 +82,7 @@ export const TelemetryRibbon: React.FC = () => {
     progressTotal > 0 ? Math.min(100, Math.round((progressDone / progressTotal) * 100)) : 0;
 
   return (
-    <header className="mb-6 flex flex-col flex-wrap justify-between gap-4 border-b border-border/80 pb-6 lg:flex-row lg:items-center">
+    <header className="mb-6 flex flex-col flex-wrap justify-between gap-4 rounded-xl border border-white/[0.08] border-t-white/[0.12] bg-obsidian-850/80 px-5 py-4 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md lg:flex-row lg:items-center">
       {/* Title & Mobile Toggle */}
       <div className="flex items-center gap-3">
         <button
@@ -123,103 +125,129 @@ export const TelemetryRibbon: React.FC = () => {
 
       {/* Metrics Chips */}
       <div className="grid grid-cols-2 gap-2.5 sm:flex sm:grid-cols-4 sm:items-center">
-        <div className="flex items-center gap-3 rounded-md border border-border/80 bg-obsidian-850 px-3 py-2 shadow-sm">
+        <motion.div
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.16, ease: TACTICAL_EASE }}
+          className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-obsidian-900/90 px-3 py-2 shadow-sm hover:border-white/[0.14]"
+        >
           <div className="rounded bg-red-500/10 p-1.5 text-red-400">
             <Heart className="h-4 w-4 fill-red-400/20" />
           </div>
           <div>
-            <div className="font-mono text-sm font-bold leading-none text-white lg:text-base">
+            <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalLikes ?? 0}
             </div>
             <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
               LIKES
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex items-center gap-3 rounded-md border border-border/80 bg-obsidian-850 px-3 py-2 shadow-sm">
+        <motion.div
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.16, ease: TACTICAL_EASE }}
+          className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-obsidian-900/90 px-3 py-2 shadow-sm hover:border-white/[0.14]"
+        >
           <div className="rounded bg-emerald-500/10 p-1.5 text-emerald-400">
             <Repeat className="h-4 w-4" />
           </div>
           <div>
-            <div className="font-mono text-sm font-bold leading-none text-white lg:text-base">
+            <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalRetweets ?? 0}
             </div>
             <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
               REPOSTS
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex items-center gap-3 rounded-md border border-border/80 bg-obsidian-850 px-3 py-2 shadow-sm">
+        <motion.div
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.16, ease: TACTICAL_EASE }}
+          className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-obsidian-900/90 px-3 py-2 shadow-sm hover:border-white/[0.14]"
+        >
           <div className="rounded bg-blue-500/10 p-1.5 text-blue-400">
             <MessageSquare className="h-4 w-4" />
           </div>
           <div>
-            <div className="font-mono text-sm font-bold leading-none text-white lg:text-base">
+            <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalComments ?? 0}
             </div>
             <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
               REPLIES
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex items-center gap-3 rounded-md border border-border/80 bg-obsidian-850 px-3 py-2 shadow-sm">
+        <motion.div
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.16, ease: TACTICAL_EASE }}
+          className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-obsidian-900/90 px-3 py-2 shadow-sm hover:border-white/[0.14]"
+        >
           <div className="rounded bg-amber-500/10 p-1.5 text-amber-400">
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <div className="font-mono text-sm font-bold leading-none text-white lg:text-base">
+            <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalPosts ?? 0}
             </div>
             <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
               POSTS
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Running Task Progress Strip (visible from every tab, click opens the log stream) */}
-      {isRunning && (
-        <button
-          type="button"
-          onClick={() => setActiveTab('tab-batch')}
-          title="Click to open Live Telemetry Stream"
-          className="w-full rounded-md border border-flame/40 bg-flame/5 px-3.5 py-2.5 text-left transition-colors hover:bg-flame/10"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <span
-              className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wide text-flame"
-              aria-live="polite"
-            >
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              {taskLabel} IN PROGRESS
-            </span>
-            {progressTotal > 0 && (
-              <span className="font-mono text-[11px] text-slate-300">
-                {progressDone}/{progressTotal} completed
-                {progressFailed > 0 ? ` · ${progressFailed} failed` : ''}
-              </span>
-            )}
-          </div>
-          <div
-            className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-obsidian-800"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={progressPercent}
-            aria-label={`${taskLabel} progress`}
+      {/* Running Task Progress Strip */}
+      <AnimatePresence>
+        {isRunning && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: TACTICAL_EASE }}
+            onClick={() => setActiveTab('tab-batch')}
+            title="Click to open Live Telemetry Stream"
+            className="w-full overflow-hidden rounded-lg border border-flame/40 bg-flame/5 px-3.5 py-2.5 text-left transition-colors hover:bg-flame/10"
           >
+            <div className="flex items-center justify-between gap-3">
+              <span
+                className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wide text-flame"
+                aria-live="polite"
+              >
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {taskLabel} IN PROGRESS
+              </span>
+              {progressTotal > 0 && (
+                <span className="font-mono text-[11px] text-slate-300 tabular-nums">
+                  {progressDone}/{progressTotal} completed
+                  {progressFailed > 0 ? ` · ${progressFailed} failed` : ''}
+                </span>
+              )}
+            </div>
             <div
-              className={`h-full rounded-full bg-gradient-to-r from-flame to-flame-light transition-all duration-500 ${
-                progressTotal === 0 ? 'w-1/3 animate-pulse' : ''
-              }`}
-              style={progressTotal > 0 ? { width: `${Math.max(progressPercent, 4)}%` } : undefined}
-            />
-          </div>
-        </button>
-      )}
+              className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-obsidian-800"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPercent}
+              aria-label={`${taskLabel} progress`}
+            >
+              <motion.div
+                initial={{ width: 0 }}
+                animate={
+                  progressTotal > 0 ? { width: `${Math.max(progressPercent, 4)}%` } : undefined
+                }
+                transition={{ duration: 0.35, ease: TACTICAL_EASE }}
+                className={`h-full rounded-full bg-gradient-to-r from-flame to-flame-light ${
+                  progressTotal === 0 ? 'w-1/3 animate-pulse' : ''
+                }`}
+              />
+            </div>
+          </motion.button>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

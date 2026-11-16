@@ -42,10 +42,10 @@ export const AboutDeck: React.FC = () => {
       <DeckHeader
         tag="SYSTEM INTELLIGENCE & SPECS"
         tagColor="flame"
-        badge="CORE v1.3.4"
+        badge={`CORE v${__APP_VERSION__}`}
         icon={<Info className="h-5 w-5 text-flame" />}
-        title="About &amp; System Intelligence Deck"
-        description="Autonomous multi-node fleet architecture, live telemetry runtime metrics, and engineering documentation."
+        title="About & System Intelligence Deck"
+        description="Rust + Axum backend orchestrator, live telemetry runtime metrics, and browser worker architecture."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-obsidian-950/80 p-1">

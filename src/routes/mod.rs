@@ -9,7 +9,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post, put};
 use serde_json::json;
 use std::sync::Arc;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 
 use crate::security::origin_guard_middleware;
 use crate::state::AppState;
@@ -47,7 +47,7 @@ async fn security_headers_middleware(req: Request, next: Next) -> Response {
     headers.insert(
         header::CONTENT_SECURITY_POLICY,
         HeaderValue::from_static(
-            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:*; frame-ancestors 'none';",
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; frame-ancestors 'none';",
         ),
     );
     resp
@@ -297,15 +297,27 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         ));
 
     let static_dir = state.config.root_dir.join("static");
+    let client_dist_dir = state.config.root_dir.join("client").join("dist");
+    let client_index = client_dist_dir.join("index.html");
 
-    Router::new()
+    let base_router = Router::new()
         .route("/healthz", get(ui::healthz))
-        .route("/login", get(ui::login_page))
-        .merge(protected_ui_pages)
-        .nest("/partials", partials_router)
         .nest("/api", api_router)
-        .nest_service("/static", ServeDir::new(static_dir))
-        .fallback(ui::fallback_not_found)
+        .nest_service("/static", ServeDir::new(static_dir));
+
+    let app_router = if client_index.exists() {
+        let spa_service =
+            ServeDir::new(&client_dist_dir).not_found_service(ServeFile::new(client_index));
+        base_router.fallback_service(spa_service)
+    } else {
+        base_router
+            .route("/login", get(ui::login_page))
+            .merge(protected_ui_pages)
+            .nest("/partials", partials_router)
+            .fallback(ui::fallback_not_found)
+    };
+
+    app_router
         .layer(middleware::from_fn(origin_guard_middleware))
         .layer(middleware::from_fn(security_headers_middleware))
         .with_state(state)
