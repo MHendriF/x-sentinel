@@ -50,7 +50,7 @@ export const TerminalConsole: React.FC = () => {
             size="sm"
             variant="ghost"
             onClick={handleCopy}
-            className="h-6 px-2 font-mono text-[10px] text-slate-400 hover:text-white"
+            className="h-6 px-2 font-mono text-xs text-slate-400 hover:text-white"
           >
             <Copy className="mr-1 h-3 w-3" />
             Copy
@@ -59,7 +59,7 @@ export const TerminalConsole: React.FC = () => {
             size="sm"
             variant="ghost"
             onClick={clearLogs}
-            className="h-6 px-2 font-mono text-[10px] text-slate-400 hover:text-red-400"
+            className="h-6 px-2 font-mono text-xs text-slate-400 hover:text-red-400"
           >
             <Trash2 className="mr-1 h-3 w-3" />
             Clear
@@ -81,7 +81,7 @@ export const TerminalConsole: React.FC = () => {
               key={idx}
               className="flex items-start gap-2 break-all rounded px-1 py-0.5 hover:bg-slate-900/40"
             >
-              <span className="shrink-0 select-none text-[10px] text-slate-600">
+              <span className="shrink-0 select-none text-xs text-slate-600">
                 [{log.timestamp || 'LOG'}]
               </span>
               <span className={getLevelColor(log.level)}>{log.message}</span>

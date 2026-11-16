@@ -62,7 +62,7 @@ export const ActiveRadarStations: React.FC<ActiveRadarStationsProps> = ({
             <Radar className="h-4 w-4 text-cyan-400 animate-spin-slow" />
             <span>Active Autopilot Radar Stations</span>
           </CardTitle>
-          <Badge variant="outline" className="border-cyan-500/40 font-mono text-[10px] text-cyan-300">
+          <Badge variant="outline" className="border-cyan-500/40 font-mono text-xs text-cyan-300">
             {radarSchedules.length} STATIONS
           </Badge>
         </div>
@@ -111,12 +111,12 @@ export const ActiveRadarStations: React.FC<ActiveRadarStationsProps> = ({
                         </span>
                         <Badge
                           variant={radar.enabled ? 'success' : 'secondary'}
-                          className="font-mono text-[9px]"
+                          className="font-mono text-xs"
                         >
                           {radar.enabled ? 'ONLINE' : 'PAUSED'}
                         </Badge>
                       </div>
-                      <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-cyan-300">
+                      <div className="mt-1 flex items-center gap-2 font-mono text-xs text-cyan-300">
                         <span className="rounded border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5">
                           "{keyword}"
                         </span>
@@ -154,7 +154,7 @@ export const ActiveRadarStations: React.FC<ActiveRadarStationsProps> = ({
                   </div>
 
                   {/* Telemetry Footer */}
-                  <div className="flex items-center justify-between border-t border-border/40 pt-2 font-mono text-[10px] text-slate-400">
+                  <div className="flex items-center justify-between border-t border-border/40 pt-2 font-mono text-xs text-slate-400">
                     <div className="flex items-center gap-2">
                       <span>Quota: Top {radar.maxTweets || 3}</span>
                       <span className="flex items-center gap-1 text-slate-300">

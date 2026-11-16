@@ -40,11 +40,11 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
       title="Cumulative Vector Total"
       titleBadges={
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded border border-flame/30 bg-flame/10 px-2 py-0.5 font-mono text-[10px] font-bold text-flame">
+          <span className="rounded border border-flame/30 bg-flame/10 px-2 py-0.5 font-mono text-xs font-bold text-flame">
             {totalActions.toLocaleString()} TOTAL
           </span>
           {todayStats && todayStats.todayTotal > 0 && (
-            <span className="rounded border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400">
+            <span className="rounded border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 font-mono text-xs font-bold text-emerald-400">
               +{todayStats.todayTotal.toLocaleString()} today
             </span>
           )}
@@ -67,8 +67,8 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
               <X className="h-3 w-3 text-slate-400" />
             </button>
           )}
-          <div className="flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-950/30 px-3 py-1.5 font-mono text-xs text-purple-300">
-            <CheckCircle className="h-3.5 w-3.5 text-purple-400" />
+          <div className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/30 px-3 py-1.5 font-mono text-xs text-cyan-300">
+            <CheckCircle className="h-3.5 w-3.5 text-cyan-400" />
             <span>Success Rate:</span>
             <span className="font-bold text-white">{successRate}%</span>
           </div>
@@ -84,7 +84,7 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
             {totalLikes.toLocaleString()}
           </span>
           {todayStats && todayStats.todayLikes > 0 && (
-            <span className="font-mono text-[10px] text-red-300/80">
+            <span className="font-mono text-xs text-red-300/80">
               (+{todayStats.todayLikes})
             </span>
           )}
@@ -98,7 +98,7 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
             {totalRetweets.toLocaleString()}
           </span>
           {todayStats && todayStats.todayRetweets > 0 && (
-            <span className="font-mono text-[10px] text-emerald-300/80">
+            <span className="font-mono text-xs text-emerald-300/80">
               (+{todayStats.todayRetweets})
             </span>
           )}
@@ -112,7 +112,7 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
             {totalComments.toLocaleString()}
           </span>
           {todayStats && todayStats.todayComments > 0 && (
-            <span className="font-mono text-[10px] text-blue-300/80">
+            <span className="font-mono text-xs text-blue-300/80">
               (+{todayStats.todayComments})
             </span>
           )}
@@ -126,7 +126,7 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
             {totalPosts.toLocaleString()}
           </span>
           {todayStats && todayStats.todayPosts > 0 && (
-            <span className="font-mono text-[10px] text-amber-300/80">
+            <span className="font-mono text-xs text-amber-300/80">
               (+{todayStats.todayPosts})
             </span>
           )}
@@ -140,17 +140,17 @@ export const CumulativeBadges: React.FC<CumulativeBadgesProps> = ({
             {totalActions.toLocaleString()}
           </span>
           {todayStats && todayStats.todayTotal > 0 && (
-            <span className="font-mono text-[10px] font-bold text-flame/90">
+            <span className="font-mono text-xs font-bold text-flame/90">
               (+{todayStats.todayTotal})
             </span>
           )}
         </div>
 
         {/* Success Rate Tag */}
-        <div className="flex items-center gap-2 rounded-lg border border-purple-500/30 bg-purple-950/20 px-3.5 py-2">
-          <CheckCircle className="h-4 w-4 text-purple-400" />
+        <div className="flex items-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-950/20 px-3.5 py-2">
+          <CheckCircle className="h-4 w-4 text-cyan-400" />
           <span className="font-mono text-xs text-slate-300">Success:</span>
-          <span className="font-mono text-sm font-bold text-purple-400">{successRate}%</span>
+          <span className="font-mono text-sm font-bold text-cyan-400">{successRate}%</span>
         </div>
       </div>
     </DeckHeader>

@@ -66,12 +66,12 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
               <span className="text-xs font-bold text-white">
                 {selectedAccount?.name || selectedAccount?.label || 'Node User'}
               </span>
-              <span className="font-mono text-[11px] text-slate-500">
+              <span className="font-mono text-xs text-slate-500">
                 @{selectedAccount?.username || 'handle'}
               </span>
-              <span className="text-[10px] text-slate-600">· now</span>
+              <span className="text-xs text-slate-600">· now</span>
             </div>
-            <span className="rounded border border-border/40 bg-obsidian-800 px-2 py-0.5 font-mono text-[10px] text-slate-400">
+            <span className="rounded border border-border/40 bg-obsidian-800 px-2 py-0.5 font-mono text-xs text-slate-400">
               Live Preview
             </span>
           </div>
@@ -106,7 +106,7 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
-                  <span className="absolute bottom-1 left-1.5 rounded bg-obsidian-950/70 px-1.5 py-0.5 font-mono text-[9px] text-slate-300">
+                  <span className="absolute bottom-1 left-1.5 rounded bg-obsidian-950/70 px-1.5 py-0.5 font-mono text-xs text-slate-300">
                     {media.sizeKb} KB
                   </span>
                 </div>
@@ -115,7 +115,7 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
           )}
 
           {/* Character Counter & Action Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-[11px]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-mono text-xs">
             <div className="flex flex-wrap items-center gap-1.5">
               <input
                 type="file"

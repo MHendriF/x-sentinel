@@ -102,7 +102,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-2.5">
         {/* Status Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <span className="flex items-center gap-1 font-mono text-[11px] text-slate-400 mr-1">
+          <span className="flex items-center gap-1 font-mono text-xs text-slate-400 mr-1">
             <Filter className="h-3 w-3 text-flame" />
             Status:
           </span>
@@ -111,14 +111,14 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             type="button"
             onClick={() => setStatusFilter('ALL')}
             className={cn(
-              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] transition-all',
+              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs transition-all',
               statusFilter === 'ALL'
                 ? 'border-slate-500 bg-slate-800 text-white font-bold'
                 : 'border-border/80 bg-obsidian-900 text-slate-400 hover:text-slate-200'
             )}
           >
             <span>ALL</span>
-            <span className="rounded-full bg-obsidian-950 px-1.5 py-0.2 text-[9px] text-slate-400">
+            <span className="rounded-full bg-obsidian-950 px-1.5 py-0.2 text-xs text-slate-400">
               {statusCounts.ALL}
             </span>
           </button>
@@ -127,7 +127,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             type="button"
             onClick={() => setStatusFilter('SUCCESS')}
             className={cn(
-              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] transition-all',
+              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs transition-all',
               statusFilter === 'SUCCESS'
                 ? 'border-emerald-500 bg-emerald-950/60 text-emerald-300 font-bold'
                 : 'border-border/80 bg-obsidian-900 text-slate-400 hover:text-emerald-300'
@@ -137,7 +137,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               SUCCESS
             </span>
-            <span className="rounded-full bg-obsidian-950 px-1.5 py-0.2 text-[9px] text-emerald-400">
+            <span className="rounded-full bg-obsidian-950 px-1.5 py-0.2 text-xs text-emerald-400">
               {statusCounts.SUCCESS}
             </span>
           </button>
@@ -146,7 +146,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             type="button"
             onClick={() => setStatusFilter('FAILED')}
             className={cn(
-              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] transition-all',
+              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs transition-all',
               statusFilter === 'FAILED'
                 ? 'border-rose-500 bg-rose-950/60 text-rose-200 font-bold'
                 : statusCounts.FAILED > 0
@@ -155,17 +155,12 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             )}
           >
             <span className="flex items-center gap-1">
-              <span
-                className={cn(
-                  'h-1.5 w-1.5 rounded-full bg-rose-500',
-                  statusCounts.FAILED > 0 && 'animate-ping'
-                )}
-              />
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
               FAILED
             </span>
             <span
               className={cn(
-                'rounded-full px-1.5 py-0.2 text-[9px] font-bold',
+                'rounded-full px-1.5 py-0.2 text-xs font-bold',
                 statusCounts.FAILED > 0 ? 'bg-rose-900/60 text-rose-300' : 'bg-obsidian-950 text-slate-400'
               )}
             >
@@ -177,14 +172,14 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             type="button"
             onClick={() => setStatusFilter('ALREADY_DONE')}
             className={cn(
-              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] transition-all',
+              'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs transition-all',
               statusFilter === 'ALREADY_DONE'
                 ? 'border-amber-500 bg-amber-950/60 text-amber-300 font-bold'
                 : 'border-border/80 bg-obsidian-900 text-slate-400 hover:text-amber-300'
             )}
           >
             <span>ALREADY DONE</span>
-            <span className="rounded-full bg-obsidian-950 px-1.5 py-0.2 text-[9px] text-amber-400">
+            <span className="rounded-full bg-obsidian-950 px-1.5 py-0.2 text-xs text-amber-400">
               {statusCounts.ALREADY_DONE}
             </span>
           </button>
@@ -214,7 +209,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             <button
               type="button"
               onClick={onResetAll}
-              className="flex items-center gap-1 rounded border border-rose-500/40 bg-rose-950/20 px-2 py-1 font-mono text-[10px] font-semibold text-rose-300 transition-colors hover:bg-rose-950/40 hover:text-rose-200"
+              className="flex items-center gap-1 rounded border border-rose-500/40 bg-rose-950/20 px-2 py-1 font-mono text-xs font-semibold text-rose-300 transition-colors hover:bg-rose-950/40 hover:text-rose-200"
               title="Reset all active search, action, status, account, and date filters"
             >
               <RotateCcw className="h-3 w-3" />
@@ -254,7 +249,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             <button
               type="button"
               onClick={onClearDate}
-              className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 font-mono text-[10px] text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+              className="flex items-center gap-1 rounded bg-slate-800 px-2 py-1 font-mono text-xs text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
               title="Clear Date Filter"
             >
               <X className="h-3 w-3" />
@@ -269,7 +264,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
             type="button"
             onClick={() => onSetPreset('today')}
             className={cn(
-              'rounded border px-2.5 py-1 font-mono text-[11px] transition-colors',
+              'rounded border px-2.5 py-1 font-mono text-xs transition-colors',
               startDate && endDate && startDate === endDate
                 ? 'border-flame/60 bg-flame/15 text-flame font-bold'
                 : 'border-border/80 bg-obsidian-900 text-slate-300 hover:border-slate-600 hover:text-white'
@@ -280,14 +275,14 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
           <button
             type="button"
             onClick={() => onSetPreset('7days')}
-            className="rounded border border-border/80 bg-obsidian-900 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
+            className="rounded border border-border/80 bg-obsidian-900 px-2.5 py-1 font-mono text-xs text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
           >
             7 Days
           </button>
           <button
             type="button"
             onClick={() => onSetPreset('30days')}
-            className="rounded border border-border/80 bg-obsidian-900 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
+            className="rounded border border-border/80 bg-obsidian-900 px-2.5 py-1 font-mono text-xs text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
           >
             30 Days
           </button>

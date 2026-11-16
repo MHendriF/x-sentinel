@@ -414,22 +414,19 @@ export const AuditLedger: React.FC = () => {
               {totalItems} {totalItems === 1 ? 'Record' : 'Records'}
             </span>
             {hasActiveFilters && totalItems !== history.length && (
-              <span className="rounded-md border border-flame/30 bg-flame/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-flame">
+              <span className="rounded-md border border-flame/30 bg-flame/10 px-2 py-0.5 font-mono text-xs font-semibold text-flame">
                 Filtered from {history.length}
               </span>
             )}
             {pollInterval > 0 && (
-              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/50 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-300 shadow-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                </span>
+              <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-950/50 px-2.5 py-0.5 font-mono text-xs font-semibold text-emerald-300 shadow-sm">
+                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 LIVE ({pollInterval / 1000}s)
               </span>
             )}
           </div>
         }
-        description="Comprehensive node interaction log, forensic delivery statuses, and telemetry execution timestamps."
+        description="Account activity ledger, delivery status, and execution timestamps."
         actions={
           <div className="flex shrink-0 items-center gap-2">
             {/* 1. Telemetry Stream & Scope Capsule */}
@@ -444,7 +441,7 @@ export const AuditLedger: React.FC = () => {
                       : 'text-slate-500'
                   )}
                 />
-                <span className="text-[10px] uppercase tracking-wider text-slate-400">Stream:</span>
+                <span className="text-xs uppercase tracking-wider text-slate-400">Stream:</span>
                 <select
                   value={pollInterval}
                   onChange={(e) => {
@@ -474,7 +471,7 @@ export const AuditLedger: React.FC = () => {
               {/* History Scope Limit */}
               <div className="flex items-center gap-1.5 px-2 font-mono text-xs">
                 <SlidersHorizontal className="h-3 w-3 text-flame" />
-                <span className="text-[10px] uppercase tracking-wider text-slate-400">Scope:</span>
+                <span className="text-xs uppercase tracking-wider text-slate-400">Scope:</span>
                 <select
                   value={historyLimit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}

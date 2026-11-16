@@ -203,7 +203,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-xs font-bold ${
                 is2faEnabled
                   ? 'border border-emerald/40 bg-emerald/10 text-emerald'
                   : 'border border-slate-700 bg-obsidian-950 text-slate-400'
@@ -230,7 +230,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
 
             <form onSubmit={handleUpdateCredentials} className="space-y-3 font-mono text-xs">
               <div>
-                <label className="mb-1 block text-[11px] font-medium text-slate-400">
+                <label className="mb-1 block text-xs font-medium text-slate-400">
                   CURRENT PASSWORD <span className="text-flame">*</span>
                 </label>
                 <Input
@@ -245,7 +245,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-400">
+                  <label className="mb-1 block text-xs font-medium text-slate-400">
                     NEW USERNAME (OPTIONAL)
                   </label>
                   <Input
@@ -257,7 +257,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[11px] font-medium text-slate-400">
+                  <label className="mb-1 block text-xs font-medium text-slate-400">
                     NEW PASSWORD (OPTIONAL)
                   </label>
                   <Input
@@ -311,7 +311,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                       <div className="font-mono text-xs font-semibold text-white">
                         {is2faEnabled ? 'Authenticator Enforced' : 'Authenticator Disabled'}
                       </div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-xs text-slate-400">
                         {is2faEnabled
                           ? 'Login requires your password AND 6-digit TOTP code.'
                           : 'Login requires username and master passcode only.'}
@@ -323,7 +323,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                         onClick={() => setShowDisableDialog(true)}
                         variant="destructive"
                         size="sm"
-                        className="font-mono text-[11px]"
+                        className="font-mono text-xs"
                       >
                         DEACTIVATE
                       </Button>
@@ -333,7 +333,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                         onClick={handleStart2faSetup}
                         disabled={isLoading2fa}
                         size="sm"
-                        className="border border-emerald/40 bg-emerald/10 font-mono text-[11px] text-emerald hover:bg-emerald hover:text-obsidian-950"
+                        className="border border-emerald/40 bg-emerald/10 font-mono text-xs text-emerald hover:bg-emerald hover:text-obsidian-950"
                       >
                         {isLoading2fa ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'CONFIGURE 2FA'}
                       </Button>
@@ -348,7 +348,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                   onSubmit={handleConfirm2fa}
                   className="rounded-md border border-emerald/40 bg-obsidian-900 p-3.5 space-y-3 font-mono text-xs"
                 >
-                  <div className="text-[11px] text-emerald font-semibold">
+                  <div className="text-xs text-emerald font-semibold">
                     1. Scan or manually enter secret in Google Authenticator:
                   </div>
 
@@ -367,7 +367,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-[11px] text-slate-400">
+                    <label className="mb-1 block text-xs text-slate-400">
                       2. Enter 6-digit code from app to verify:
                     </label>
                     <Input
@@ -409,7 +409,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                   onSubmit={handleDisable2fa}
                   className="rounded-md border border-red-500/30 bg-obsidian-900 p-3.5 space-y-3 font-mono text-xs"
                 >
-                  <div className="text-[11px] text-red-300 font-semibold">
+                  <div className="text-xs text-red-300 font-semibold">
                     Confirm your master password to deactivate 2FA:
                   </div>
                   <Input
@@ -455,7 +455,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                     <Clock className="h-3.5 w-3.5 text-blue-400" />
                     <span>Inactivity Screen Auto-Lock</span>
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-xs text-slate-400">
                     Automatically lock cockpit when idle (select 0 to disable).
                   </div>
                 </div>
@@ -490,7 +490,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                   <div className="font-mono text-xs font-semibold text-slate-200">
                     Emergency Session Revocation
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-xs text-slate-400">
                     Bumps session epoch to instantly disconnect all other devices.
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export const CockpitAccessSecurityCard: React.FC = () => {
                   disabled={isRevoking}
                   variant="outline"
                   size="sm"
-                  className="border-red-500/40 bg-red-950/20 font-mono text-[11px] text-red-300 hover:border-red-500 hover:bg-red-900/40"
+                  className="border-red-500/40 bg-red-950/20 font-mono text-xs text-red-300 hover:border-red-500 hover:bg-red-900/40"
                 >
                   {isRevoking ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

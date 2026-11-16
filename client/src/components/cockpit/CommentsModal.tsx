@@ -142,7 +142,7 @@ export const CommentsModal: React.FC = () => {
     <Dialog open={isCommentsModalOpen} onOpenChange={(open) => !open && closeCommentsModal()}>
       <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col">
         <DialogHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
             <MessageSquare className="h-3.5 w-3.5" />
             NODE PAYLOAD STORAGE
           </div>
@@ -163,7 +163,7 @@ export const CommentsModal: React.FC = () => {
                 <div className="text-xs font-semibold text-white">
                   Import Comments from .JSON File
                 </div>
-                <div className="font-mono text-[10px] text-muted-foreground">
+                <div className="font-mono text-xs text-muted-foreground">
                   Format: [&quot;Awesome insight!&quot;, &quot;&#123;Option 1|Option 2&#125;&quot;]
                 </div>
               </div>
@@ -180,7 +180,7 @@ export const CommentsModal: React.FC = () => {
 
           {/* AI Reply Generator from Post */}
           <div className="space-y-2 rounded-md border border-flame/30 bg-flame/5 p-3">
-            <div className="flex items-center justify-between font-mono text-[11px] font-bold text-flame">
+            <div className="flex items-center justify-between font-mono text-xs font-bold text-flame">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-flame" />
                 AI REPLY GENERATOR (FROM POST)
@@ -188,7 +188,7 @@ export const CommentsModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAiOpen(!isAiOpen)}
-                className="text-[10px] text-slate-400 hover:text-white"
+                className="text-xs text-slate-400 hover:text-white"
               >
                 {isAiOpen ? 'Close Panel' : 'Open Generator'}
               </button>
@@ -239,7 +239,7 @@ export const CommentsModal: React.FC = () => {
 
           {/* Niche Presets Quick-Loader */}
           <div className="space-y-1.5 rounded-md border border-amber-500/20 bg-amber-500/5 p-3">
-            <div className="flex items-center justify-between font-mono text-[11px] font-bold text-amber-300">
+            <div className="flex items-center justify-between font-mono text-xs font-bold text-amber-300">
               <span className="flex items-center gap-1">
                 <Layers className="h-3.5 w-3.5 text-amber-400" />
                 LOAD FROM CURATED PRESET LIBRARY
@@ -254,7 +254,7 @@ export const CommentsModal: React.FC = () => {
                     setComments([...preset.templates]);
                     toast.success(`Loaded ${preset.templates.length} templates from "${preset.name}"!`);
                   }}
-                  className="cursor-pointer rounded border border-slate-700 bg-obsidian-950 px-2.5 py-1 font-mono text-[10px] font-medium text-slate-200 transition-all hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-300"
+                  className="cursor-pointer rounded border border-slate-700 bg-obsidian-950 px-2.5 py-1 font-mono text-xs font-medium text-slate-200 transition-all hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-300"
                 >
                   {preset.name}
                 </button>

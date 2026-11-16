@@ -75,9 +75,6 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
     <div className="animate-in fade-in flex min-h-[70vh] flex-col items-center justify-center space-y-6 py-8 duration-300">
       {/* 404 Hero Card */}
       <Card className="relative w-full max-w-3xl overflow-hidden border-rose-500/40 bg-gradient-to-b from-obsidian-850 via-obsidian-900 to-obsidian-950 p-6 text-center shadow-2xl sm:p-10">
-        <div className="pointer-events-none absolute right-0 top-0 -mr-16 -mt-16 h-72 w-72 rounded-full bg-rose-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-0 -mb-16 -ml-16 h-72 w-72 rounded-full bg-flame/10 blur-3xl" />
-
         <CardContent className="relative z-10 flex flex-col items-center space-y-5 p-0">
           {/* Badge indicator */}
           <div className="flex items-center gap-2">
@@ -90,11 +87,10 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
             </Badge>
           </div>
 
-          {/* Holographic Radar Icon */}
+          {/* Radar Icon */}
           <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-rose-500/30 bg-obsidian-950 shadow-inner">
-            <Compass className="h-10 w-10 animate-pulse text-rose-400" />
+            <Compass className="h-10 w-10 text-rose-400" />
             <span className="absolute -right-1 -top-1 flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500"></span>
             </span>
           </div>
@@ -159,7 +155,7 @@ export const NotFoundDeck: React.FC<NotFoundDeckProps> = ({ currentPath }) => {
                   <div className="font-heading text-xs font-bold text-white group-hover:text-amber-300">
                     {sector.title}
                   </div>
-                  <div className="text-[11px] leading-tight text-slate-400">{sector.desc}</div>
+                  <div className="text-xs leading-tight text-slate-400">{sector.desc}</div>
                 </div>
               </button>
             );

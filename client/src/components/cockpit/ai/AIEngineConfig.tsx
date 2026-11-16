@@ -55,7 +55,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-800/80 text-slate-400">
             <Bot className="h-6 w-6" />
           </div>
-          <h4 className="font-heading text-base font-bold text-white">AI Engine Disabled</h4>
+          <h3 className="font-heading text-base font-bold text-white">AI Engine Disabled</h3>
           <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-slate-400">
             Automated replies will exclusively use Spintax templates and the JSON fallback pool.
             Select an active provider (such as <strong>9router</strong>, <strong>OpenRouter</strong>,
@@ -121,10 +121,10 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
     <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] font-bold tracking-wider text-purple-400 uppercase">
+          <div className="font-mono text-xs font-bold tracking-wider text-blue-400 uppercase">
             CREDENTIALS &amp; UNIVERSAL REGISTRY
           </div>
-          <Badge variant="outline" className="border-purple-500/40 bg-purple-500/10 font-mono text-[10px] text-purple-300">
+          <Badge variant="outline" className="border-blue-500/40 bg-blue-500/10 font-mono text-xs text-blue-300">
             {providerInfo.name}
           </Badge>
         </div>
@@ -142,7 +142,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
               <button
                 type="button"
                 onClick={() => setShowApiKey(!showApiKey)}
-                className="flex cursor-pointer items-center gap-1 text-[10px] text-slate-400 hover:text-white"
+                className="flex cursor-pointer items-center gap-1 text-xs text-slate-400 hover:text-white"
               >
                 {showApiKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                 {showApiKey ? 'Hide' : 'Show'}
@@ -162,14 +162,14 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-300">
-              <Globe className="h-3.5 w-3.5 text-purple-400" />
+              <Globe className="h-3.5 w-3.5 text-blue-400" />
               BASE URL ENDPOINT (API GATEWAY)
             </label>
             {providerInfo.defaultBaseUrl && baseUrl !== providerInfo.defaultBaseUrl && (
               <button
                 type="button"
                 onClick={() => setBaseUrl(providerInfo.defaultBaseUrl)}
-                className="text-[10px] text-purple-400 hover:underline"
+                className="text-xs text-blue-400 hover:underline"
               >
                 Reset to default
               </button>
@@ -185,18 +185,18 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
         </div>
 
         {/* Universal Multi-Model Registry Deck */}
-        <div className="space-y-4 rounded-xl border border-purple-500/30 bg-obsidian-950/70 p-4 shadow-inner">
+        <div className="space-y-4 rounded-xl border border-blue-500/30 bg-obsidian-950/70 p-4 shadow-inner">
           {/* Header */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20 pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-500/20 pb-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-300">
                 <Layers className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-purple-200">
+                <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-blue-200">
                   {provider.toUpperCase()} Multi-Model Registry
                 </h4>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-xs text-slate-400">
                   Store custom models and switch the active dispatched model with 1-click.
                 </p>
               </div>
@@ -206,7 +206,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
               variant="outline"
               size="sm"
               onClick={handleResetToDefaults}
-              className="h-7 cursor-pointer gap-1 border-slate-800 bg-obsidian-900 px-2.5 font-mono text-[10px] text-slate-400 hover:border-slate-700 hover:text-slate-200"
+              className="h-7 cursor-pointer gap-1 border-slate-800 bg-obsidian-900 px-2.5 font-mono text-xs text-slate-400 hover:border-slate-700 hover:text-slate-200"
               title="Reset registry to recommended defaults"
             >
               <RotateCcw className="h-3 w-3" />
@@ -218,17 +218,16 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 via-obsidian-900 to-obsidian-950 p-3 shadow-md">
             <div className="flex items-center gap-3">
               <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/20 opacity-75" />
                 <Radio className="h-4 w-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+                  <span className="font-mono text-xs font-bold uppercase tracking-widest text-emerald-400">
                     ACTIVE MODEL (DISPATCHED)
                   </span>
                   <Badge
                     variant="outline"
-                    className="border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0 font-mono text-[9px] text-emerald-300"
+                    className="border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0 font-mono text-xs text-emerald-300"
                   >
                     ONLINE
                   </Badge>
@@ -239,7 +238,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
               </div>
             </div>
 
-            <div className="text-right font-mono text-[10px] text-slate-400">
+            <div className="text-right font-mono text-xs text-slate-400">
               {modelsRegistry.length} models stored in registry
             </div>
           </div>
@@ -250,7 +249,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
               <label className="font-mono text-xs font-bold text-slate-300">
                 SAVED MODELS ({modelsRegistry.length}) · CLICK TO SET ACTIVE
               </label>
-              <span className="text-[10px] text-slate-500">1-Click Dispatch Switch</span>
+              <span className="text-xs text-slate-500">1-Click Dispatch Switch</span>
             </div>
 
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -262,7 +261,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
                     className={`group flex items-center justify-between gap-2 rounded-lg border p-2.5 transition-all ${
                       isActive
                         ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100 shadow-sm shadow-emerald-950/50'
-                        : 'border-slate-800/80 bg-obsidian-900/60 text-slate-300 hover:border-purple-500/40 hover:bg-obsidian-900'
+                        : 'border-slate-800/80 bg-obsidian-900/60 text-slate-300 hover:border-blue-500/40 hover:bg-obsidian-900'
                     }`}
                   >
                     <button
@@ -274,14 +273,14 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
                           isActive
                             ? 'border-emerald-400 bg-emerald-500 text-obsidian-950'
-                            : 'border-slate-700 bg-obsidian-950 text-transparent group-hover:border-purple-400'
+                            : 'border-slate-700 bg-obsidian-950 text-transparent group-hover:border-blue-400'
                         }`}
                       >
                         <Check className="h-3 w-3 stroke-[3]" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-mono text-xs font-medium">{modelName}</div>
-                        <div className="font-mono text-[9px]">
+                        <div className="font-mono text-xs">
                           {isActive ? (
                             <span className="font-bold text-emerald-400">● ACTIVE</span>
                           ) : (
@@ -311,7 +310,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
           </div>
 
           {/* Add Custom Model Input */}
-          <div className="space-y-1.5 border-t border-purple-500/20 pt-3">
+          <div className="space-y-1.5 border-t border-blue-500/20 pt-3">
             <label className="font-mono text-xs font-bold text-slate-300">
               ADD NEW MODEL TO REGISTRY
             </label>
@@ -332,7 +331,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
               <Button
                 type="button"
                 onClick={handleAddModel}
-                className="shrink-0 cursor-pointer gap-1.5 bg-purple-600 font-mono text-xs font-bold text-white hover:bg-purple-700"
+                className="shrink-0 cursor-pointer gap-1.5 bg-blue-600 font-mono text-xs font-bold text-white hover:bg-blue-700"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Add Model
@@ -343,7 +342,7 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
           {/* Recommended Presets */}
           {providerInfo.recommendedModels.length > 0 && (
             <div className="space-y-1.5 pt-1">
-              <span className="font-mono text-[10px] font-bold tracking-wider text-slate-400">
+              <span className="font-mono text-xs font-bold tracking-wider text-slate-400">
                 RECOMMENDED PRESETS FOR {provider.toUpperCase()}:
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -361,17 +360,17 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
                         setActiveModel(preset);
                         toast.success(`Active model switched to ${preset}`);
                       }}
-                      className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 font-mono text-[10px] transition-colors ${
+                      className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 font-mono text-xs transition-colors ${
                         isActive
                           ? 'border-emerald-500 bg-emerald-500/20 font-bold text-emerald-200'
                           : isStored
-                            ? 'border-purple-500/50 bg-purple-500/10 text-purple-200 hover:border-purple-400'
+                            ? 'border-blue-500/50 bg-blue-500/10 text-blue-200 hover:border-blue-400'
                             : 'border-slate-800 bg-obsidian-950 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                       }`}
                     >
                       {isActive && <Check className="h-2.5 w-2.5 stroke-[3]" />}
                       {preset}
-                      {!isStored && <span className="text-[9px] text-purple-400">+add</span>}
+                      {!isStored && <span className="text-xs text-blue-400">+add</span>}
                     </button>
                   );
                 })}
@@ -380,12 +379,12 @@ export const AIEngineConfig: React.FC<AIEngineConfigProps> = ({
           )}
 
           {/* Direct Model Override */}
-          <div className="space-y-1 border-t border-purple-500/10 pt-2.5">
+          <div className="space-y-1 border-t border-blue-500/10 pt-2.5">
             <div className="flex items-center justify-between">
-              <label className="font-mono text-[11px] font-bold text-slate-400">
+              <label className="font-mono text-xs font-bold text-slate-400">
                 DIRECT MODEL IDENTIFIER OVERRIDE
               </label>
-              <span className="text-[10px] text-slate-500">Manual String</span>
+              <span className="text-xs text-slate-500">Manual String</span>
             </div>
             <Input
               type="text"

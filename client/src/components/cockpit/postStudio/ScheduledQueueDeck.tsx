@@ -51,7 +51,7 @@ export const ScheduledQueueDeck: React.FC<ScheduledQueueDeckProps> = ({
           <Calendar className="h-4 w-4 text-amber-400" />
           <span>Automated Execution Queue ({schedules.length})</span>
         </div>
-        <span className="font-mono text-[10px] text-slate-400">Background Cron Active</span>
+        <span className="font-mono text-xs text-slate-400">Background Cron Active</span>
       </div>
 
       <div className="space-y-2">
@@ -70,7 +70,7 @@ export const ScheduledQueueDeck: React.FC<ScheduledQueueDeckProps> = ({
                   <span className="text-xs font-bold text-white">{item.title}</span>
                   {getStatusBadge(item.status, item.enabled)}
                 </div>
-                <div className="font-mono text-[11px] text-slate-400">
+                <div className="font-mono text-xs text-slate-400">
                   <span>Scheduled: </span>
                   <strong className="text-slate-200">{dateStr}</strong>
                   {item.posts && item.posts.length > 0 && (

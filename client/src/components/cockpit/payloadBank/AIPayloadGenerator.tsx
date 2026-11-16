@@ -340,12 +340,12 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
           <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
+                <div className="font-mono text-xs font-bold tracking-wider text-flame">
                   FOCAL POST INPUT
                 </div>
                 <Badge
                   variant="outline"
-                  className="border-slate-700 bg-obsidian-950 font-mono text-[9px] text-slate-300"
+                  className="border-slate-700 bg-obsidian-950 font-mono text-xs text-slate-300"
                 >
                   ANTI-AI-SLOP v2
                 </Badge>
@@ -367,7 +367,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                     {isTweetLink && (
                       <Badge
                         variant="outline"
-                        className="animate-pulse border-sky-500/50 bg-sky-950/60 font-mono text-[9px] text-sky-300"
+                        className="border-sky-500/50 bg-sky-950/60 font-mono text-xs text-sky-300"
                       >
                         <Link2 className="mr-1 h-2.5 w-2.5" />
                         X LINK DETECTED
@@ -376,7 +376,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                     {fetchedTweetMeta && !isTweetLink && (
                       <Badge
                         variant="outline"
-                        className="border-emerald-500/50 bg-emerald-950/60 font-mono text-[9px] text-emerald-300"
+                        className="border-emerald-500/50 bg-emerald-950/60 font-mono text-xs text-emerald-300"
                       >
                         <CheckCircle2 className="mr-1 h-2.5 w-2.5" />
                         {fetchedTweetMeta.author ? `@${fetchedTweetMeta.author}` : 'TWEET LOADED'}
@@ -385,14 +385,14 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                     {sourceTweetUrl && !isTweetLink && (
                       <Badge
                         variant="outline"
-                        className="border-sky-500/40 bg-sky-950/60 font-mono text-[9px] text-sky-300"
+                        className="border-sky-500/40 bg-sky-950/60 font-mono text-xs text-sky-300"
                       >
                         <Link2 className="mr-1 h-2.5 w-2.5" />
                         WORKBENCH SYNCED
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-[10px] text-slate-500">
+                  <div className="flex items-center gap-2 font-mono text-xs text-slate-500">
                     {postText.length > 0 && (
                       <button
                         type="button"
@@ -425,7 +425,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                 />
 
                 {postText.length > 0 && (
-                  <div className="flex justify-end font-mono text-[10px] text-slate-400 pr-1">
+                  <div className="flex justify-end font-mono text-xs text-slate-400 pr-1">
                     <span>{postText.length.toLocaleString()} chars</span>
                   </div>
                 )}
@@ -433,7 +433,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                 {/* Quick Action when Link is Detected */}
                 {isTweetLink && (
                   <div className="flex items-center justify-between rounded border border-sky-900/60 bg-sky-950/40 p-2">
-                    <span className="font-mono text-[11px] text-sky-300">
+                    <span className="font-mono text-xs text-sky-300">
                       Twitter / X status link detected.
                     </span>
                     <Button
@@ -441,7 +441,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                       size="sm"
                       onClick={handleFetchTweet}
                       disabled={isFetchingTweet}
-                      className="h-7 border border-sky-500/40 bg-sky-600/30 px-3 font-mono text-[11px] text-sky-200 hover:bg-sky-600 hover:text-white"
+                      className="h-7 border border-sky-500/40 bg-sky-600/30 px-3 font-mono text-xs text-sky-200 hover:bg-sky-600 hover:text-white"
                     >
                       {isFetchingTweet ? (
                         <>
@@ -511,7 +511,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-white">{t.label}</div>
-                        <div className="text-[10px] text-slate-400">{t.desc}</div>
+                        <div className="text-xs text-slate-400">{t.desc}</div>
                       </div>
                     </label>
                   ))}
@@ -550,13 +550,13 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsCustomInstructionOpen(!isCustomInstructionOpen)}
-                  className="flex w-full items-center justify-between text-left font-mono text-[11px] font-bold text-slate-300"
+                  className="flex w-full items-center justify-between text-left font-mono text-xs font-bold text-slate-300"
                 >
                   <span className="flex items-center gap-1.5">
                     <Bot className="h-3.5 w-3.5 text-amber-400" />
                     AI Prompt Instruction Pattern
                   </span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-xs text-slate-500">
                     {isCustomInstructionOpen ? 'Close' : 'Customize'}
                   </span>
                 </button>
@@ -567,10 +567,10 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                       rows={2}
                       value={customInstruction}
                       onChange={(e) => setCustomInstruction(e.target.value)}
-                      className="border-slate-800 bg-obsidian-900 font-mono text-[11px] text-slate-200"
+                      className="border-slate-800 bg-obsidian-900 font-mono text-xs text-slate-200"
                       placeholder="Create 15 reply from this post without any double quotes, make not see like AI Slop then save in json file."
                     />
-                    <p className="font-mono text-[9px] text-slate-500">
+                    <p className="font-mono text-xs text-slate-500">
                       System instruction passed to LLM. Quotes and sycophantic greetings will be stripped.
                     </p>
                   </div>
@@ -605,7 +605,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
           <Card className="flex h-full flex-col border-border/80 bg-obsidian-900/90 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <div>
-                <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+                <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
                   <FileJson className="h-3.5 w-3.5" />
                   GENERATED PAYLOAD WORKBENCH
                 </div>
@@ -697,7 +697,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                           key={idx}
                           className="group flex items-start gap-2 rounded-md border border-slate-800 bg-obsidian-950/90 p-2.5 transition-colors hover:border-slate-700"
                         >
-                          <span className="flex h-5 w-5 shrink-0 select-none items-center justify-center rounded bg-slate-800 font-mono text-[10px] font-bold text-amber-400">
+                          <span className="flex h-5 w-5 shrink-0 select-none items-center justify-center rounded bg-slate-800 font-mono text-xs font-bold text-amber-400">
                             {idx + 1}
                           </span>
 
@@ -708,7 +708,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                               onChange={(e) => handleUpdateGeneratedReply(idx, e.target.value)}
                               className="border-0 bg-transparent p-0 font-mono text-xs leading-relaxed text-slate-200 focus-visible:ring-0"
                             />
-                            <div className="flex items-center justify-between font-mono text-[9px]">
+                            <div className="flex items-center justify-between font-mono text-xs">
                               <span
                                 className={`font-semibold ${
                                   isOverLimit
@@ -816,7 +816,7 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                         onClick={() => setShowRawJson(!showRawJson)}
                         className="gap-1.5 border-slate-700 font-mono text-xs text-slate-300 hover:border-slate-600 hover:bg-slate-800"
                       >
-                        <FileCode className="h-3.5 w-3.5 text-purple-400" />
+                        <FileCode className="h-3.5 w-3.5 text-blue-400" />
                         {showRawJson ? 'Hide Code' : 'Raw JSON'}
                       </Button>
                     </div>
@@ -858,11 +858,11 @@ export const AIPayloadGenerator: React.FC<AIPayloadGeneratorProps> = ({
                     {/* Raw JSON Code view */}
                     {showRawJson && (
                       <div className="space-y-1 rounded-md border border-slate-800 bg-obsidian-950 p-3">
-                        <div className="flex items-center justify-between font-mono text-[10px] text-slate-400">
+                        <div className="flex items-center justify-between font-mono text-xs text-slate-400">
                           <span>RAW JSON ARRAY OUTPUT</span>
                           <span className="text-emerald-400">application/json</span>
                         </div>
-                        <pre className="max-h-48 overflow-x-auto overflow-y-auto rounded bg-obsidian-900 p-2.5 font-mono text-[11px] text-amber-200">
+                        <pre className="max-h-48 overflow-x-auto overflow-y-auto rounded bg-obsidian-900 p-2.5 font-mono text-xs text-amber-200">
                           {JSON.stringify(generatedReplies, null, 2)}
                         </pre>
                       </div>

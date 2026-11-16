@@ -61,8 +61,8 @@ export const DEFENSE_PROFILES: DefenseProfile[] = [
     id: 'ghost',
     title: 'Ghost Ultra-Stealth',
     badge: 'MAX EVASION',
-    badgeColor: 'border-purple-500/40 bg-purple-950/40 text-purple-400',
-    icon: <Ghost className="h-4 w-4 text-purple-400" />,
+    badgeColor: 'border-cyan-500/40 bg-cyan-950/40 text-cyan-300',
+    icon: <Ghost className="h-4 w-4 text-cyan-400" />,
     description: 'Evasion maksimal untuk akun bernilai tinggi. Memanfaatkan Camoufox C++ dan jeda acak panjang.',
     settings: {
       minDelay: 30,
@@ -110,7 +110,7 @@ export const DefenseProfilePresets: React.FC<DefenseProfilePresetsProps> = ({
         <label className="font-mono text-xs font-bold text-slate-300">
           ⚡ QUICK EVASION &amp; DEFENSE PROFILES
         </label>
-        <span className="font-mono text-[10px] text-slate-400">
+        <span className="font-mono text-xs text-slate-400">
           1-Klik menerapkan kombinasi delay, kuota, dan engine optimal
         </span>
       </div>
@@ -137,24 +137,24 @@ export const DefenseProfilePresets: React.FC<DefenseProfilePresetsProps> = ({
                     <span className="text-xs font-bold text-white">{prof.title}</span>
                   </div>
                   {isActive ? (
-                    <span className="flex items-center rounded bg-flame/20 px-1.5 py-0.5 font-mono text-[9px] font-bold text-flame">
+                    <span className="flex items-center rounded bg-flame/20 px-1.5 py-0.5 font-mono text-xs font-bold text-flame">
                       <Check className="mr-0.5 h-2.5 w-2.5" /> ACTIVE
                     </span>
                   ) : (
                     <span
-                      className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-semibold ${prof.badgeColor}`}
+                      className={`rounded border px-1.5 py-0.5 font-mono text-xs font-semibold ${prof.badgeColor}`}
                     >
                       {prof.badge}
                     </span>
                   )}
                 </div>
 
-                <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
                   {prof.description}
                 </p>
               </div>
 
-              <div className="mt-3 border-t border-border/50 pt-2 font-mono text-[10px] text-slate-400">
+              <div className="mt-3 border-t border-border/50 pt-2 font-mono text-xs text-slate-400">
                 <div className="flex justify-between">
                   <span>Delay:</span>
                   <span className="text-slate-200">

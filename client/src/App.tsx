@@ -206,6 +206,12 @@ export const App: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <MotionProvider>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-flame focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-obsidian-950"
+        >
+          Skip to main content
+        </a>
         <LoginDeck />
         <Toaster position="bottom-right" richColors />
       </MotionProvider>
@@ -214,12 +220,19 @@ export const App: React.FC = () => {
 
   return (
     <MotionProvider>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-flame focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-obsidian-950"
+      >
+        Skip to main content
+      </a>
       <div className="flex min-h-screen bg-obsidian-950 text-slate-100 selection:bg-amber-500/20 selection:text-amber-300">
         {/* Navigation Deck (Left Aside) */}
         <NavDeck />
 
         {/* Main Workspace (Right Content) */}
         <main
+          id="main-content"
           className={cn(
             'flex w-full flex-1 flex-col overflow-y-auto p-4 transition-all duration-300 sm:p-6 lg:p-8',
             isSidebarCollapsed ? 'max-w-[1600px]' : 'max-w-7xl'

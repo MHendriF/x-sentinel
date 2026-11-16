@@ -55,7 +55,7 @@ export const FleetReadinessRibbon: React.FC<FleetReadinessRibbonProps> = ({
                 FLEET READINESS INDEX
               </span>
               <span
-                className={`rounded border px-1.5 py-0.2 font-mono text-[9.5px] font-bold ${
+                className={`rounded border px-1.5 py-0.2 font-mono text-xs font-bold ${
                   isHighReadiness
                     ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-400'
                     : isModerateReadiness
@@ -67,14 +67,14 @@ export const FleetReadinessRibbon: React.FC<FleetReadinessRibbonProps> = ({
               </span>
             </div>
 
-            <div className="mt-0.5 text-[11px] text-slate-400">
+            <div className="mt-0.5 text-xs text-slate-400">
               {healthyCount} of {total} nodes verified healthy and ready for autonomous mission dispatch.
             </div>
           </div>
         </div>
 
         {/* Quick Filter Badges */}
-        <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+        <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
           {healthyCount > 0 && onFilterHealthy && (
             <button
               type="button"

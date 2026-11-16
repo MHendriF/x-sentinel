@@ -236,14 +236,14 @@ export const AccountModal: React.FC = () => {
       <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
+            <div className="font-mono text-xs font-bold tracking-wider text-flame">
               NODE REGISTRATION DECK
             </div>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setShowGuide(!showGuide)}
-              className="h-6 gap-1 px-2 font-mono text-[11px] text-flame hover:bg-flame/10"
+              className="h-6 gap-1 px-2 font-mono text-xs text-flame hover:bg-flame/10"
             >
               <HelpCircle className="h-3.5 w-3.5" />
               {showGuide ? 'Close Guide' : 'How to Extract Cookies'}
@@ -268,11 +268,11 @@ export const AccountModal: React.FC = () => {
                     <span className="font-heading text-xs font-bold text-orange-300">
                       Camoufox Native Profile Aktif
                     </span>
-                    <span className="rounded bg-orange-500/20 px-1.5 py-0.5 font-mono text-[9.5px] font-semibold text-orange-300 border border-orange-500/30">
+                    <span className="rounded bg-orange-500/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-orange-300 border border-orange-500/30">
                       Gecko Storage
                     </span>
                   </div>
-                  <p className="truncate font-mono text-[10px] text-slate-400">
+                  <p className="truncate font-mono text-xs text-slate-400">
                     Direktori: data/camoufox_profiles/{editingAccount.id}
                   </p>
                 </div>
@@ -285,7 +285,7 @@ export const AccountModal: React.FC = () => {
                   closeAccountModal();
                   openResetCamoufoxModal(editingAccount);
                 }}
-                className="h-7 shrink-0 gap-1.5 border border-red-500/40 bg-red-950/40 hover:bg-red-900/60 text-[11px] font-bold text-red-300 transition-all hover:text-white"
+                className="h-7 shrink-0 gap-1.5 border border-red-500/40 bg-red-950/40 hover:bg-red-900/60 text-xs font-bold text-red-300 transition-all hover:text-white"
                 title="Hapus direktori profil & sesi Camoufox untuk akun ini"
               >
                 <Trash2 className="h-3 w-3" />
@@ -350,7 +350,7 @@ export const AccountModal: React.FC = () => {
                 <HelpCircle className="h-4 w-4 text-flame" />
                 COOKIE EXTRACTION GUIDE (HTTPONLY X.COM):
               </div>
-              <div className="space-y-2 text-[11px] leading-relaxed text-slate-300">
+              <div className="space-y-2 text-xs leading-relaxed text-slate-300">
                 <p className="text-amber-400">
                   ⚠️{' '}
                   <em>
@@ -423,7 +423,7 @@ export const AccountModal: React.FC = () => {
                 <Key className="h-3.5 w-3.5 text-flame" />
                 COOKIE: AUTH_TOKEN <span className="text-flame">*</span>
               </label>
-              <span className="font-mono text-[10px] text-muted-foreground">40 hex characters</span>
+              <span className="font-mono text-xs text-muted-foreground">40 hex characters</span>
             </div>
             <div className="relative">
               <Input
@@ -442,12 +442,12 @@ export const AccountModal: React.FC = () => {
               </button>
             </div>
             {editingAccount && (
-              <p className="font-mono text-[10px] text-slate-500">
+              <p className="font-mono text-xs text-slate-500">
                 Stored (masked): {editingAccount.auth_token} — leave as is to preserve, or paste a new cookie to replace.
               </p>
             )}
             {authTokenChanged && (
-              <p className="font-mono text-[10px] font-bold text-amber-400">
+              <p className="font-mono text-xs font-bold text-amber-400">
                 ● New value detected — auth_token cookie will be REPLACED upon save.
               </p>
             )}
@@ -460,7 +460,7 @@ export const AccountModal: React.FC = () => {
                 <Shield className="h-3.5 w-3.5 text-blue-400" />
                 COOKIE: CT0 (CSRF TOKEN)
               </label>
-              <span className="font-mono text-[10px] text-muted-foreground">160 hex characters</span>
+              <span className="font-mono text-xs text-muted-foreground">160 hex characters</span>
             </div>
             <div className="relative">
               <Input
@@ -479,12 +479,12 @@ export const AccountModal: React.FC = () => {
               </button>
             </div>
             {editingAccount && editingAccount.ct0 && (
-              <p className="font-mono text-[10px] text-slate-500">
+              <p className="font-mono text-xs text-slate-500">
                 Stored (masked): {editingAccount.ct0} — leave as is to preserve, or paste new ct0 to replace.
               </p>
             )}
             {ct0Changed && (
-              <p className="font-mono text-[10px] font-bold text-amber-400">
+              <p className="font-mono text-xs font-bold text-amber-400">
                 ● New value detected — ct0 cookie will be REPLACED upon save.
               </p>
             )}
@@ -494,10 +494,10 @@ export const AccountModal: React.FC = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-300">
-                <Globe className="h-3.5 w-3.5 text-purple-400" />
+                <Globe className="h-3.5 w-3.5 text-blue-400" />
                 DEDICATED PROXY TUNNEL
               </label>
-              <span className="font-mono text-[10px] text-muted-foreground">HTTP/SOCKS5</span>
+              <span className="font-mono text-xs text-muted-foreground">HTTP/SOCKS5</span>
             </div>
             <div className="flex items-center gap-2">
               <Input
@@ -515,22 +515,22 @@ export const AccountModal: React.FC = () => {
                 className="h-9 shrink-0 gap-1 px-3 font-mono text-xs"
               >
                 <Activity
-                  className={`h-3.5 w-3.5 ${isTestingProxy ? 'animate-spin text-flame' : 'text-purple-400'}`}
+                  className={`h-3.5 w-3.5 ${isTestingProxy ? 'animate-spin text-flame' : 'text-blue-400'}`}
                 />
                 {isTestingProxy ? 'Ping...' : 'Test'}
               </Button>
             </div>
             {editingAccount && editingAccount.proxy && (
-              <p className="font-mono text-[10px] text-slate-500">
+              <p className="font-mono text-xs text-slate-500">
                 Stored (masked): {editingAccount.proxy} — leave as is to preserve, or enter new proxy to replace. Test uses stored credentials.
               </p>
             )}
             {proxyChanged && (
-              <p className="font-mono text-[10px] font-bold text-amber-400">
+              <p className="font-mono text-xs font-bold text-amber-400">
                 ● New value detected — proxy tunnel will be REPLACED upon save.
               </p>
             )}
-            {proxyError && <p className="font-mono text-[10px] text-red-400">✕ {proxyError}</p>}
+            {proxyError && <p className="font-mono text-xs text-red-400">✕ {proxyError}</p>}
 
             {/* Proxy Test Result Badge */}
             {proxyResult && (

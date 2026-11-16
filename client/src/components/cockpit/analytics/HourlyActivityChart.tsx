@@ -25,13 +25,13 @@ export const HourlyActivityChart: React.FC<HourlyActivityChartProps> = ({ data, 
     <Card className="border-border/80 bg-obsidian-850">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-cyan-400">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-cyan-400">
             <Clock className="h-3.5 w-3.5" />
             24-HOUR ACTIVITY DENSITY
           </div>
 
           {peakHour.count > 0 && (
-            <div className="flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 px-2.5 py-0.5 font-mono text-[11px] text-cyan-300">
+            <div className="flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 px-2.5 py-0.5 font-mono text-xs text-cyan-300">
               <Zap className="h-3 w-3 text-cyan-400" />
               <span>Peak:</span>
               <span className="font-bold text-white">{peakHour.hour}</span>
@@ -62,7 +62,7 @@ export const HourlyActivityChart: React.FC<HourlyActivityChartProps> = ({ data, 
                 <XAxis
                   dataKey="hour"
                   stroke="#94a3b8"
-                  fontSize={10}
+                  fontSize={11}
                   tickLine={false}
                   interval={2}
                 />

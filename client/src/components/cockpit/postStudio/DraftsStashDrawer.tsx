@@ -67,7 +67,7 @@ export const DraftsStashDrawer: React.FC<DraftsStashDrawerProps> = ({
               size="sm"
               variant="outline"
               onClick={onClearStash}
-              className="h-8 border-rose-500/30 font-mono text-[11px] text-rose-400 hover:bg-rose-950/20"
+              className="h-8 border-rose-500/30 font-mono text-xs text-rose-400 hover:bg-rose-950/20"
             >
               Clear All
             </Button>
@@ -81,7 +81,7 @@ export const DraftsStashDrawer: React.FC<DraftsStashDrawerProps> = ({
           <div className="mt-2 font-heading text-xs font-semibold text-slate-300">
             {stashedDrafts.length === 0 ? 'Drafts Stash is Empty' : 'No stashed drafts match filter'}
           </div>
-          <p className="mt-1 font-mono text-[11px] text-slate-500">
+          <p className="mt-1 font-mono text-xs text-slate-500">
             Click the ⭐ Star icon on any generated draft to save it here for future reuse.
           </p>
         </div>
@@ -100,7 +100,7 @@ export const DraftsStashDrawer: React.FC<DraftsStashDrawerProps> = ({
                 key={item.id}
                 className="group flex flex-col justify-between gap-2.5 rounded-lg border border-slate-800 bg-obsidian-950 p-3 transition-colors hover:border-slate-700"
               >
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
+                <div className="flex items-center justify-between text-xs font-mono text-slate-500">
                   <div className="flex items-center gap-2">
                     {item.keyword && (
                       <span className="rounded bg-slate-800 px-1.5 py-0.5 font-bold text-amber-300">
@@ -118,7 +118,7 @@ export const DraftsStashDrawer: React.FC<DraftsStashDrawerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCopy(item.id, item.text)}
-                    className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-1 font-mono text-[10px] text-slate-400 hover:bg-slate-800 hover:text-white"
+                    className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-1 font-mono text-xs text-slate-400 hover:bg-slate-800 hover:text-white"
                   >
                     {copiedId === item.id ? (
                       <Check className="h-3 w-3 text-emerald-400" />
@@ -131,7 +131,7 @@ export const DraftsStashDrawer: React.FC<DraftsStashDrawerProps> = ({
                   <button
                     type="button"
                     onClick={() => onRemoveDraft(item.id)}
-                    className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-1 font-mono text-[10px] text-slate-400 hover:bg-rose-950/40 hover:text-rose-400"
+                    className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-1 font-mono text-xs text-slate-400 hover:bg-rose-950/40 hover:text-rose-400"
                   >
                     <Trash2 className="h-3 w-3" />
                     Remove
@@ -143,7 +143,7 @@ export const DraftsStashDrawer: React.FC<DraftsStashDrawerProps> = ({
                       onLoadDraft(item.text);
                       toast.info('Draft loaded into Live Editor!');
                     }}
-                    className="flex items-center gap-1 rounded bg-flame px-2.5 py-1 font-mono text-[10px] font-bold text-obsidian-950 shadow-sm hover:brightness-110"
+                    className="flex items-center gap-1 rounded bg-flame px-2.5 py-1 font-mono text-xs font-bold text-obsidian-950 shadow-sm hover:brightness-110"
                   >
                     <span>Load to Editor</span>
                     <ArrowRight className="h-3 w-3" />

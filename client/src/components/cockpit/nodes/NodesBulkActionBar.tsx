@@ -43,7 +43,7 @@ export const NodesBulkActionBar: React.FC<NodesBulkActionBarProps> = ({
       <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-cyan-500/50 bg-obsidian-950/95 px-4 py-2.5 shadow-2xl shadow-cyan-950/80 backdrop-blur-md">
         {/* Selection Count Pill */}
         <div className="flex items-center gap-2 border-r border-slate-700 pr-3 font-mono text-xs">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-obsidian-950 font-bold text-[11px]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-obsidian-950 font-bold text-xs">
             {selectedCount}
           </span>
           <span className="font-semibold text-white">
@@ -52,12 +52,12 @@ export const NodesBulkActionBar: React.FC<NodesBulkActionBarProps> = ({
           {selectedCount < totalCount ? (
             <button
               onClick={onSelectAll}
-              className="text-[10px] text-cyan-400 hover:text-cyan-200 underline"
+              className="text-xs text-cyan-400 hover:text-cyan-200 underline"
             >
               Select all ({totalCount})
             </button>
           ) : (
-            <span className="text-[10px] text-emerald-400 font-bold">All selected</span>
+            <span className="text-xs text-emerald-400 font-bold">All selected</span>
           )}
         </div>
 
@@ -90,9 +90,9 @@ export const NodesBulkActionBar: React.FC<NodesBulkActionBarProps> = ({
             variant="outline"
             onClick={onBatchPingProxies}
             disabled={isLoading}
-            className="h-8 border-purple-500/40 bg-purple-950/30 text-purple-300 hover:bg-purple-900/40"
+            className="h-8 border-blue-500/40 bg-blue-950/30 text-blue-300 hover:bg-blue-900/40"
           >
-            <Activity className="mr-1 h-3.5 w-3.5 text-purple-400" />
+            <Activity className="mr-1 h-3.5 w-3.5 text-blue-400" />
             Ping Proxies
           </Button>
 

@@ -76,7 +76,7 @@ export const AboutDeck: React.FC = () => {
               >
                 <Activity className="h-3.5 w-3.5" />
                 Live Telemetry
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               </button>
 
               <button

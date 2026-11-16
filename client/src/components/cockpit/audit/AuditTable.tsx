@@ -100,7 +100,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({
               e.stopPropagation();
               onFilterStatus?.('SUCCESS');
             }}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-300 transition-colors hover:bg-emerald-900/50"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 font-mono text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-900/50"
             title="Click to filter SUCCESS logs"
           >
             <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
@@ -114,7 +114,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({
               e.stopPropagation();
               onFilterStatus?.('ALREADY_DONE');
             }}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/30 px-2 py-0.5 font-mono text-[10px] font-semibold text-amber-400 transition-colors hover:bg-amber-900/40"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/30 px-2 py-0.5 font-mono text-xs font-semibold text-amber-400 transition-colors hover:bg-amber-900/40"
             title="Click to filter ALREADY DONE logs"
           >
             ALREADY DONE
@@ -127,10 +127,10 @@ export const AuditTable: React.FC<AuditTableProps> = ({
               e.stopPropagation();
               onFilterStatus?.('FAILED');
             }}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-rose-500/50 bg-rose-950/50 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-300 transition-colors hover:bg-rose-900/60"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-rose-500/50 bg-rose-950/50 px-2 py-0.5 font-mono text-xs font-bold text-rose-300 transition-colors hover:bg-rose-900/60"
             title="Click to filter FAILED logs"
           >
-            <AlertTriangle className="h-2.5 w-2.5 text-rose-400 animate-pulse" />
+            <AlertTriangle className="h-3 w-3 text-rose-400" />
             FAILED
           </span>
         );
@@ -181,7 +181,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({
   return (
     <div className="overflow-x-auto rounded-lg border border-border/80 bg-obsidian-950/40">
       <table className="w-full text-left text-xs">
-        <thead className="border-b border-border/80 bg-obsidian-950 font-mono text-[10px] uppercase text-muted-foreground">
+        <thead className="border-b border-border/80 bg-obsidian-950 font-mono text-xs uppercase text-muted-foreground">
           <tr>
             <th className="px-4 py-3">
               <SortHeader column="timestamp" label={sortableMap.timestamp} />
@@ -206,7 +206,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({
               <td colSpan={7} className="py-12 text-center text-slate-500">
                 <div className="flex flex-col items-center justify-center gap-1">
                   <span className="font-mono text-sm text-slate-400">No interaction records found</span>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-xs text-slate-500">
                     Try loosening your search terms, date range, or status filters.
                   </span>
                 </div>
@@ -235,7 +235,7 @@ export const AuditTable: React.FC<AuditTableProps> = ({
                   <td className="whitespace-nowrap px-4 py-3 text-slate-300">
                     <div className="flex flex-col">
                       <span className="font-semibold text-slate-200">{date}</span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-xs text-slate-400">
                         {time}
                         {timeAgo(item.timestamp) && ` · ${timeAgo(item.timestamp)}`}
                       </span>

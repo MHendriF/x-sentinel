@@ -224,15 +224,15 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
   const isAnyLoading = isTestingPing || isGeneratingSingle || isGeneratingMulti;
 
   return (
-    <Card className="border-purple-500/30 bg-obsidian-900/90 shadow-xl">
+    <Card className="border-blue-500/30 bg-obsidian-900/90 shadow-xl">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-amber-400 uppercase">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-amber-400 uppercase">
             <Sparkles className="h-3.5 w-3.5" />
             INTERACTIVE AI SANDBOX &amp; DIAGNOSTICS
           </div>
           {testLatency && (
-            <Badge variant="outline" className="border-emerald-500/40 font-mono text-[10px] text-emerald-300">
+            <Badge variant="outline" className="border-emerald-500/40 font-mono text-xs text-emerald-300">
               <Clock className="mr-1 h-3 w-3 inline" />
               {testLatency}ms LATENCY
             </Badge>
@@ -259,7 +259,7 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
                   setTweetInput(sc.text);
                   toast.info(`Populated: "${sc.name}"`);
                 }}
-                className={`rounded border px-2.5 py-1 font-mono text-[11px] transition-colors ${
+                className={`rounded border px-2.5 py-1 font-mono text-xs transition-colors ${
                   tweetInput === sc.text
                     ? 'border-amber-500/60 bg-amber-500/15 text-amber-300 font-bold'
                     : 'border-slate-800 bg-obsidian-950 text-slate-300 hover:border-slate-700 hover:text-white'
@@ -277,7 +277,7 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
             <label className="font-mono text-xs font-bold text-slate-300">
               TARGET TWEET TEXT FOR INFERENCE
             </label>
-            <span className="font-mono text-[10px] text-slate-400">
+            <span className="font-mono text-xs text-slate-400">
               {tweetInput.length} characters
             </span>
           </div>
@@ -299,9 +299,9 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
               variant="outline"
               onClick={handleTestPing}
               disabled={isAnyLoading || provider === 'none'}
-              className="gap-1.5 border-purple-500/40 font-mono text-xs text-purple-300 hover:bg-purple-500/10"
+              className="gap-1.5 border-blue-500/40 font-mono text-xs text-blue-300 hover:bg-blue-500/10"
             >
-              <Zap className="h-3.5 w-3.5 text-purple-400" />
+              <Zap className="h-3.5 w-3.5 text-blue-400" />
               <span>{isTestingPing ? 'Pinging Gateway...' : '⚡ Ping Connection'}</span>
             </Button>
 
@@ -349,7 +349,7 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
                 : 'border-rose-500/30 bg-rose-500/5 text-rose-300'
             }`}
           >
-            <div className="flex items-center justify-between text-[11px] font-bold">
+            <div className="flex items-center justify-between text-xs font-bold">
               <span className="flex items-center gap-1.5">
                 {testResult.success ? (
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
@@ -364,7 +364,7 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
                 <button
                   type="button"
                   onClick={() => handleCopy(testResult.sampleOutput, 'single')}
-                  className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-white"
+                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-white"
                 >
                   {copiedIndex === 'single' ? (
                     <Check className="h-3 w-3 text-emerald-400" />
@@ -389,7 +389,7 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
                 <Layers className="h-4 w-4" />
                 SIDE-BY-SIDE VARIATION COMPARISON ({multiVariations.length} VARIATIONS)
               </span>
-              <span className="text-[10px] text-slate-400">{model}</span>
+              <span className="text-xs text-slate-400">{model}</span>
             </div>
 
             <div className="space-y-2">
@@ -399,7 +399,7 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
                   className="flex items-start justify-between gap-3 rounded-lg border border-slate-800 bg-obsidian-950 p-3 font-mono text-xs hover:border-slate-700 transition-colors"
                 >
                   <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold">
                       #{idx + 1}
                     </span>
                     <p className="select-all text-slate-200 leading-relaxed break-words">
@@ -409,7 +409,7 @@ export const AISandboxTester: React.FC<AISandboxTesterProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCopy(v, idx)}
-                    className="flex shrink-0 items-center gap-1 text-[10px] text-slate-400 hover:text-white"
+                    className="flex shrink-0 items-center gap-1 text-xs text-slate-400 hover:text-white"
                     title="Copy this variation"
                   >
                     {copiedIndex === idx ? (

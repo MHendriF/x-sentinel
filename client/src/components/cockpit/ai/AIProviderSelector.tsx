@@ -130,11 +130,11 @@ export const AIProviderSelector: React.FC<AIProviderSelectorProps> = ({
     <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] font-bold tracking-wider text-purple-400 uppercase">
+          <div className="font-mono text-xs font-bold tracking-wider text-blue-400 uppercase">
             ENGINE DISPATCHER
           </div>
-          <span className="flex items-center gap-1 font-mono text-[10px] text-slate-400">
-            <Sparkles className="h-3 w-3 text-purple-400" />
+          <span className="flex items-center gap-1 font-mono text-xs text-slate-400">
+            <Sparkles className="h-3 w-3 text-blue-400" />
             {AI_PROVIDERS.length} Supported Engines
           </span>
         </div>
@@ -154,7 +154,7 @@ export const AIProviderSelector: React.FC<AIProviderSelectorProps> = ({
               className={cn(
                 'group relative flex cursor-pointer flex-col gap-1.5 rounded-lg border p-3 transition-all',
                 isSelected
-                  ? 'border-purple-500 bg-purple-500/10 text-white shadow-md shadow-purple-950/40'
+                  ? 'border-blue-500 bg-blue-500/10 text-white shadow-md shadow-blue-950/40'
                   : 'border-slate-800 bg-obsidian-950/80 text-slate-300 hover:border-slate-700 hover:bg-obsidian-950'
               )}
             >
@@ -164,7 +164,7 @@ export const AIProviderSelector: React.FC<AIProviderSelectorProps> = ({
                     className={cn(
                       'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors',
                       isSelected
-                        ? 'border-purple-400 bg-purple-500 text-white'
+                        ? 'border-blue-400 bg-blue-500 text-white'
                         : 'border-slate-700 bg-obsidian-950 text-transparent group-hover:border-slate-600'
                     )}
                   >
@@ -175,16 +175,16 @@ export const AIProviderSelector: React.FC<AIProviderSelectorProps> = ({
                 <Badge
                   variant="outline"
                   className={cn(
-                    'px-1.5 py-0 font-mono text-[9px]',
+                    'px-1.5 py-0 font-mono text-xs',
                     isSelected
-                      ? 'border-purple-400 text-purple-300 bg-purple-500/10'
+                      ? 'border-blue-400 text-blue-300 bg-blue-500/10'
                       : 'text-slate-400 border-slate-800'
                   )}
                 >
                   {provider.badge}
                 </Badge>
               </div>
-              <p className="line-clamp-2 pl-6 text-[11px] leading-snug text-slate-400">
+              <p className="line-clamp-2 pl-6 text-xs leading-snug text-slate-400">
                 {provider.description}
               </p>
             </div>

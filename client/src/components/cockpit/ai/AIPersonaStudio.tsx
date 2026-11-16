@@ -160,12 +160,12 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-purple-400 uppercase">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-blue-400 uppercase">
               <Sparkles className="h-3.5 w-3.5" />
               SYSTEM PERSONA &amp; REPLY PROMPT
             </div>
-            <Badge variant="outline" className="border-purple-500/40 bg-purple-500/10 font-mono text-[10px] text-purple-300">
-              ANTI-AI SLOP ENGINE
+            <Badge variant="outline" className="border-blue-500/40 bg-blue-500/10 font-mono text-xs text-blue-300">
+              HUMAN VOICE GUARDRAILS
             </Badge>
           </div>
           <CardTitle className="text-base font-heading">Persona Studio</CardTitle>
@@ -181,7 +181,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               <label className="font-mono text-xs font-bold text-slate-300">
                 RECOMMENDED PERSONAS · 1-CLICK APPLY:
               </label>
-              <span className="text-[10px] text-slate-400">Click to apply instructions</span>
+              <span className="text-xs text-slate-400">Click to apply instructions</span>
             </div>
 
             <div className="flex flex-wrap gap-1.5">
@@ -197,8 +197,8 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
                     }}
                     className={`cursor-pointer rounded border px-2.5 py-1 font-mono text-xs transition-colors ${
                       isSelected
-                        ? 'border-purple-500 bg-purple-500/20 font-bold text-purple-200 shadow-sm'
-                        : 'border-slate-800 bg-obsidian-950 text-slate-300 hover:border-purple-500/50 hover:text-white'
+                        ? 'border-blue-500 bg-blue-500/20 font-bold text-blue-200 shadow-sm'
+                        : 'border-slate-800 bg-obsidian-950 text-slate-300 hover:border-blue-500/50 hover:text-white'
                     }`}
                   >
                     {preset.name}
@@ -212,11 +212,11 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
           {customPersonas.length > 0 && (
             <div className="space-y-2 border-t border-border/60 pt-3">
               <div className="flex items-center justify-between">
-                <label className="flex items-center gap-1 font-mono text-xs font-bold text-purple-300">
+                <label className="flex items-center gap-1 font-mono text-xs font-bold text-blue-300">
                   <Bookmark className="h-3.5 w-3.5" />
                   SAVED CUSTOM PERSONAS ({customPersonas.length}):
                 </label>
-                <span className="text-[10px] text-slate-400">Local Browser Storage</span>
+                <span className="text-xs text-slate-400">Local Browser Storage</span>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -227,7 +227,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
                       key={cp.id}
                       className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 font-mono text-xs transition-all ${
                         isSelected
-                          ? 'border-purple-500 bg-purple-500/20 text-purple-200'
+                          ? 'border-blue-500 bg-blue-500/20 text-blue-200'
                           : 'border-slate-800 bg-obsidian-950 text-slate-300 hover:border-slate-700'
                       }`}
                     >
@@ -262,7 +262,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               <label className="font-mono text-xs font-bold text-slate-300">
                 ACTIVE SYSTEM PROMPT
               </label>
-              <div className="flex items-center gap-3 font-mono text-[10px] text-slate-400">
+              <div className="flex items-center gap-3 font-mono text-xs text-slate-400">
                 <span>{wordCount} words</span>
                 <span>{prompt.length} chars</span>
               </div>
@@ -283,7 +283,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               <button
                 type="button"
                 onClick={() => setIsSavingCustom(true)}
-                className="flex items-center gap-1.5 text-xs font-mono text-purple-400 hover:text-purple-300"
+                className="flex items-center gap-1.5 text-xs font-mono text-blue-400 hover:text-blue-300"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Save this prompt as custom persona</span>
@@ -300,7 +300,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
                 <Button
                   size="sm"
                   onClick={handleSaveCustomPersona}
-                  className="h-7 px-2.5 font-mono text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white"
+                  className="h-7 px-2.5 font-mono text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Save
                 </Button>
@@ -324,11 +324,11 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-emerald-400 uppercase">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-emerald-400 uppercase">
               <ShieldCheck className="h-3.5 w-3.5" />
               HUMAN-PASSING DEFENSE
             </div>
-            <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 font-mono text-[10px] text-emerald-300">
+            <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 font-mono text-xs text-emerald-300">
               ACTIVE FILTER
             </Badge>
           </div>
@@ -360,7 +360,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               </div>
               <div>
                 <div className="font-bold text-white">Strictly No Hashtags (#)</div>
-                <div className="text-[10px] text-slate-400 leading-snug">
+                <div className="text-xs text-slate-400 leading-snug">
                   Never include hashtags in comment replies.
                 </div>
               </div>
@@ -386,7 +386,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               </div>
               <div>
                 <div className="font-bold text-white">No Quotation Marks ("...")</div>
-                <div className="text-[10px] text-slate-400 leading-snug">
+                <div className="text-xs text-slate-400 leading-snug">
                   Prevent quotes around the reply payload.
                 </div>
               </div>
@@ -412,7 +412,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               </div>
               <div>
                 <div className="font-bold text-white">Ban Generic Praise</div>
-                <div className="text-[10px] text-slate-400 leading-snug">
+                <div className="text-xs text-slate-400 leading-snug">
                   Disallow "Great point!", "Totally agree!", "Nice share!".
                 </div>
               </div>
@@ -438,7 +438,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               </div>
               <div>
                 <div className="font-bold text-white">Ban AI Hallmarks / Buzzwords</div>
-                <div className="text-[10px] text-slate-400 leading-snug">
+                <div className="text-xs text-slate-400 leading-snug">
                   Ban "delve", "tapestry", "beacon", "testament to".
                 </div>
               </div>
@@ -464,7 +464,7 @@ export const AIPersonaStudio: React.FC<AIPersonaStudioProps> = ({
               </div>
               <div>
                 <div className="font-bold text-white">Strict 1-2 Sentences Limit</div>
-                <div className="text-[10px] text-slate-400 leading-snug">
+                <div className="text-xs text-slate-400 leading-snug">
                   Keep under 25 words for authentic native replies.
                 </div>
               </div>

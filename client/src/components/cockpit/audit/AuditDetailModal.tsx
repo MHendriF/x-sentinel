@@ -70,20 +70,20 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
     switch (status) {
       case 'SUCCESS':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-emerald-300">
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2.5 py-0.5 font-mono text-xs font-semibold text-emerald-300">
             <CheckCircle2 className="h-3 w-3 text-emerald-400" />
             SUCCESS
           </span>
         );
       case 'ALREADY_DONE':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/40 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-amber-300">
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/40 px-2.5 py-0.5 font-mono text-xs font-semibold text-amber-300">
             ALREADY DONE
           </span>
         );
       case 'FAILED':
         return (
-          <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-950/40 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-rose-300">
+          <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-950/40 px-2.5 py-0.5 font-mono text-xs font-semibold text-rose-300">
             <AlertTriangle className="h-3 w-3 text-rose-400" />
             FAILED
           </span>
@@ -154,7 +154,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
                 {getActionBadge(item.action)}
                 {getStatusBadge(item.status)}
               </div>
-              <span className="font-mono text-[10px] text-slate-500">
+              <span className="font-mono text-xs text-slate-500">
                 ID: {item.id || 'N/A'}
               </span>
             </div>
@@ -174,14 +174,14 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
           <div className="grid grid-cols-1 gap-3 rounded-lg border border-border/60 bg-obsidian-950 p-3.5 sm:grid-cols-2">
             {/* Timestamp */}
             <div className="space-y-1">
-              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400">
+              <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-slate-400">
                 <Calendar className="h-3 w-3 text-flame" />
                 Timestamp &amp; Age
               </span>
               <div className="text-slate-200 font-semibold">
                 {item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : '-'}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-xs text-slate-500">
                 {item.timestamp ? `${timeAgo(item.timestamp)} (${item.timestamp})` : '-'}
               </div>
             </div>
@@ -189,7 +189,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
             {/* Account Node */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400">
+                <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-slate-400">
                   <User className="h-3 w-3 text-sky-400" />
                   Account Node
                 </span>
@@ -197,7 +197,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCopy(item.accountName || '', 'Account')}
-                    className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
+                    className="text-xs text-slate-400 hover:text-white flex items-center gap-1"
                   >
                     {copiedField === 'Account' ? (
                       <Check className="h-3 w-3 text-emerald-400" />
@@ -212,7 +212,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
                 {item.accountName || item.accountId || 'System'}
               </div>
               {item.accountId && (
-                <div className="text-[10px] text-slate-500">Node ID: {item.accountId}</div>
+                <div className="text-xs text-slate-500">Node ID: {item.accountId}</div>
               )}
             </div>
           </div>
@@ -220,7 +220,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
           {/* Target Tweet URL */}
           <div className="rounded-lg border border-border/60 bg-obsidian-950 p-3.5 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400">
+              <span className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-slate-400">
                 <Activity className="h-3 w-3 text-emerald-400" />
                 Target Tweet / Post URL
               </span>
@@ -229,7 +229,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCopy(item.tweetUrl, 'Tweet URL')}
-                    className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
+                    className="text-xs text-slate-400 hover:text-white flex items-center gap-1"
                   >
                     {copiedField === 'Tweet URL' ? (
                       <Check className="h-3 w-3 text-emerald-400" />
@@ -242,7 +242,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
                     href={item.tweetUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[10px] text-flame hover:underline flex items-center gap-1"
+                    className="text-xs text-flame hover:underline flex items-center gap-1"
                   >
                     <ExternalLink className="h-3 w-3" />
                     <span>Open in X</span>
@@ -258,14 +258,14 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
           {/* Message / Payload Content */}
           <div className="rounded-lg border border-border/60 bg-obsidian-950 p-3.5 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-wider text-slate-400">
+              <span className="text-xs uppercase tracking-wider text-slate-400">
                 Execution Payload &amp; Message Details
               </span>
               {rawDetails && (
                 <button
                   type="button"
                   onClick={() => handleCopy(rawDetails, 'Payload')}
-                  className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
+                  className="text-xs text-slate-400 hover:text-white flex items-center gap-1"
                 >
                   {copiedField === 'Payload' ? (
                     <Check className="h-3 w-3 text-emerald-400" />
@@ -288,7 +288,7 @@ export const AuditDetailModal: React.FC<AuditDetailModalProps> = ({
                 <AlertTriangle className="h-4 w-4 text-rose-400" />
                 <span>Forensic Diagnosis: {diagnostic.title}</span>
               </div>
-              <p className="text-[11px] text-rose-200/90 leading-relaxed">
+              <p className="text-xs text-rose-200/90 leading-relaxed">
                 {diagnostic.remedy}
               </p>
             </div>

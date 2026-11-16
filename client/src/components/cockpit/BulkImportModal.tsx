@@ -117,12 +117,12 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClos
               <button
                 type="button"
                 onClick={() => setRawText(sampleFormat)}
-                className="cursor-pointer text-[10px] text-cyan-400 underline hover:text-cyan-200"
+                className="cursor-pointer text-xs text-cyan-400 underline hover:text-cyan-200"
               >
                 + Load Sample Format
               </button>
             </div>
-            <div className="text-[11px] leading-relaxed text-slate-400">
+            <div className="text-xs leading-relaxed text-slate-400">
               <code>auth_token:ct0:proxy:label</code> or{' '}
               <code>auth_token:ct0:user:pass@ip:port:label</code>
             </div>
@@ -134,7 +134,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({ isOpen, onClos
               <label className="font-mono text-xs font-bold text-slate-300">
                 RAW ACCOUNTS DATA
               </label>
-              <Badge variant="secondary" className="font-mono text-[10px]">
+              <Badge variant="secondary" className="font-mono text-xs">
                 {validLinesCount} NODES DETECTED
               </Badge>
             </div>

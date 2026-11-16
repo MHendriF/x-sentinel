@@ -58,7 +58,7 @@ export const AuditStatsHUD: React.FC<AuditStatsHUDProps> = ({
     <div className="grid grid-cols-2 gap-3 rounded-lg border border-border/80 bg-obsidian-950/80 p-3 sm:grid-cols-4">
       {/* 1. Success Rate KPI */}
       <div className="flex flex-col justify-between rounded-md border border-border/60 bg-obsidian-900/90 p-2.5">
-        <div className="flex items-center justify-between text-[11px] font-medium text-slate-400">
+        <div className="flex items-center justify-between text-xs font-medium text-slate-400">
           <span className="flex items-center gap-1 font-mono uppercase tracking-wider text-slate-400">
             <Percent className="h-3.5 w-3.5 text-flame" />
             Success Ratio
@@ -72,7 +72,7 @@ export const AuditStatsHUD: React.FC<AuditStatsHUDProps> = ({
             {successCount}
             <span className="text-xs text-slate-500">/{totalCount}</span>
           </span>
-          <span className="text-[10px] text-slate-400">deliveries OK</span>
+          <span className="text-xs text-slate-400">deliveries OK</span>
         </div>
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
           <div
@@ -84,48 +84,48 @@ export const AuditStatsHUD: React.FC<AuditStatsHUDProps> = ({
 
       {/* 2. Action Vectors Breakdown */}
       <div className="flex flex-col justify-between rounded-md border border-border/60 bg-obsidian-900/90 p-2.5">
-        <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-slate-400">
+        <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-slate-400">
           <span>Vectors Logged</span>
-          <span className="text-[10px] text-slate-500">{totalCount} total</span>
+          <span className="text-xs text-slate-500">{totalCount} total</span>
         </div>
         <div className="mt-1.5 grid grid-cols-2 gap-1 font-mono text-xs">
           <div className="flex items-center gap-1 text-slate-300">
             <Heart className="h-3 w-3 text-rose-400" />
-            <span className="text-[11px] font-bold text-white">{likeCount}</span>
-            <span className="text-[10px] text-slate-500">likes</span>
+            <span className="text-xs font-bold text-white">{likeCount}</span>
+            <span className="text-xs text-slate-500">likes</span>
           </div>
           <div className="flex items-center gap-1 text-slate-300">
             <Repeat className="h-3 w-3 text-emerald-400" />
-            <span className="text-[11px] font-bold text-white">{retweetCount}</span>
-            <span className="text-[10px] text-slate-500">reposts</span>
+            <span className="text-xs font-bold text-white">{retweetCount}</span>
+            <span className="text-xs text-slate-500">reposts</span>
           </div>
           <div className="flex items-center gap-1 text-slate-300">
             <MessageSquare className="h-3 w-3 text-sky-400" />
-            <span className="text-[11px] font-bold text-white">{commentCount}</span>
-            <span className="text-[10px] text-slate-500">replies</span>
+            <span className="text-xs font-bold text-white">{commentCount}</span>
+            <span className="text-xs text-slate-500">replies</span>
           </div>
           <div className="flex items-center gap-1 text-slate-300">
             <Send className="h-3 w-3 text-amber-400" />
-            <span className="text-[11px] font-bold text-white">{postCount}</span>
-            <span className="text-[10px] text-slate-500">posts</span>
+            <span className="text-xs font-bold text-white">{postCount}</span>
+            <span className="text-xs text-slate-500">posts</span>
           </div>
         </div>
       </div>
 
       {/* 3. Engaged Nodes */}
       <div className="flex flex-col justify-between rounded-md border border-border/60 bg-obsidian-900/90 p-2.5">
-        <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-slate-400">
+        <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-slate-400">
           <span className="flex items-center gap-1">
             <Users className="h-3.5 w-3.5 text-sky-400" />
             Nodes Involved
           </span>
-          <span className="text-[10px] text-slate-500">fleet scope</span>
+          <span className="text-xs text-slate-500">fleet scope</span>
         </div>
         <div className="mt-1.5 flex items-baseline gap-2 font-mono">
           <span className="text-xl font-bold text-white">{activeAccountsCount}</span>
           <span className="text-xs text-slate-400">active accounts</span>
         </div>
-        <div className="mt-1 flex items-center gap-1 font-mono text-[10px] text-slate-400">
+        <div className="mt-1 flex items-center gap-1 font-mono text-xs text-slate-400">
           <CheckCircle2 className="h-3 w-3 text-emerald-400" />
           <span>Distributed node telemetry</span>
         </div>
@@ -146,7 +146,7 @@ export const AuditStatsHUD: React.FC<AuditStatsHUDProps> = ({
         }}
         title={failedCount > 0 ? 'Click to filter FAILED logs immediately' : 'Fleet nominal'}
       >
-        <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider">
+        <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider">
           <span
             className={cn(
               'flex items-center gap-1 font-semibold',
@@ -154,7 +154,7 @@ export const AuditStatsHUD: React.FC<AuditStatsHUDProps> = ({
             )}
           >
             {failedCount > 0 ? (
-              <AlertTriangle className="h-3.5 w-3.5 animate-pulse text-rose-400" />
+              <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
             ) : (
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             )}
@@ -174,7 +174,7 @@ export const AuditStatsHUD: React.FC<AuditStatsHUDProps> = ({
             </>
           )}
         </div>
-        <div className="mt-1 font-mono text-[10px]">
+        <div className="mt-1 font-mono text-xs">
           {failedCount > 0 ? (
             <span className="text-rose-300 underline underline-offset-2">
               ⚡ Click to isolate failed logs

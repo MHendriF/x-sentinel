@@ -143,7 +143,7 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
           </CardTitle>
           <Badge
             variant={isRunning ? 'success' : lastMission ? 'secondary' : 'outline'}
-            className="font-mono text-[10px]"
+            className="font-mono text-xs"
           >
             {isRunning ? '● ACTIVE STREAM' : lastMission ? '✓ COMPLETED' : '○ IDLE'}
           </Badge>
@@ -181,7 +181,7 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
         {/* Action Metrics Breakdown */}
         <div className="grid grid-cols-3 gap-2 text-center font-mono">
           <div className="rounded-lg border border-slate-800 bg-obsidian-950/60 p-2.5">
-            <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px]">
+            <div className="flex items-center justify-center gap-1 text-slate-400 text-xs">
               <CheckCircle2 className="h-3 w-3 text-emerald-400" />
               <span>SUCCESSFUL</span>
             </div>
@@ -190,7 +190,7 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
             </div>
           </div>
           <div className="rounded-lg border border-slate-800 bg-obsidian-950/60 p-2.5">
-            <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px]">
+            <div className="flex items-center justify-center gap-1 text-slate-400 text-xs">
               <AlertTriangle className="h-3 w-3 text-red-400" />
               <span>FAILED / SKIP</span>
             </div>
@@ -199,7 +199,7 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
             </div>
           </div>
           <div className="rounded-lg border border-slate-800 bg-obsidian-950/60 p-2.5">
-            <div className="flex items-center justify-center gap-1 text-slate-400 text-[10px]">
+            <div className="flex items-center justify-center gap-1 text-slate-400 text-xs">
               <Layers className="h-3 w-3 text-blue-400" />
               <span>TOTAL ACTIONS</span>
             </div>
@@ -213,7 +213,7 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
         <div className="flex-1 space-y-2 overflow-hidden">
           <div className="flex items-center justify-between font-mono text-xs font-semibold text-slate-300">
             <span>RECENT EXECUTION TRAIL</span>
-            <span className="text-[10px] text-slate-500">REALTIME DISPATCH</span>
+            <span className="text-xs text-slate-500">REALTIME DISPATCH</span>
           </div>
 
           <div className="h-[260px] overflow-y-auto space-y-2 rounded-lg border border-border/60 bg-obsidian-950/80 p-2.5 custom-scrollbar">
@@ -232,7 +232,7 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
               batchHistory.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between rounded-md border border-slate-800 bg-obsidian-900/80 px-2.5 py-1.5 font-mono text-[11px] transition-colors hover:border-slate-700"
+                  className="flex items-center justify-between rounded-md border border-slate-800 bg-obsidian-900/80 px-2.5 py-1.5 font-mono text-xs transition-colors hover:border-slate-700"
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
                     {item.action === 'LIKE' ? (
@@ -245,16 +245,16 @@ export const MissionMonitorDeck: React.FC<MissionMonitorDeckProps> = ({
                     <span className="font-bold text-slate-300 truncate">
                       @{item.accountName || 'node'}
                     </span>
-                    <span className="text-slate-500 truncate text-[10px]">
+                    <span className="text-slate-500 truncate text-xs">
                       {item.action}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] text-slate-500">{item.timeFormatted}</span>
+                    <span className="text-xs text-slate-500">{item.timeFormatted}</span>
                     <Badge
                       variant={item.status === 'SUCCESS' ? 'success' : 'destructive'}
-                      className="h-4 px-1 text-[9px]"
+                      className="h-4 px-1 text-xs"
                     >
                       {item.status}
                     </Badge>

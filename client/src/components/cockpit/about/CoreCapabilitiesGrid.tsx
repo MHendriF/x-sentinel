@@ -91,8 +91,8 @@ const CAPABILITIES_DATA: CapabilityItem[] = [
     id: 'ai-engine',
     title: '3. AI Engine & Webhooks',
     desc: 'Contextual tweet replies & real-time webhook alerts to Telegram/Discord.',
-    icon: <Bot className="h-5 w-5 text-purple-400" />,
-    borderClass: 'border-purple-500/30',
+    icon: <Bot className="h-5 w-5 text-blue-400" />,
+    borderClass: 'border-blue-500/30',
     tabId: 'tab-ai',
     actionLabel: 'Open AI Studio',
     bullets: [
@@ -197,7 +197,7 @@ const CAPABILITIES_DATA: CapabilityItem[] = [
     id: 'audit-ledger',
     title: '8. Audit Ledger & Maintenance',
     desc: 'Immutable event logs, custom date filtering, CSV export, & maintenance.',
-    icon: <FileSpreadsheet className="h-5 w-5 text-indigo-400" />,
+    icon: <FileSpreadsheet className="h-5 w-5 text-cyan-400" />,
     tabId: 'tab-history',
     actionLabel: 'Open Audit Ledger',
     bullets: [

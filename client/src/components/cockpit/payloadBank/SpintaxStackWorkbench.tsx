@@ -135,7 +135,7 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
         <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <div>
-              <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+              <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
                 <Layers className="h-3.5 w-3.5" />
                 GLOBAL FALLBACK POOL
               </div>
@@ -164,7 +164,7 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
               ) : (
                 templates.map((tmpl, idx) => (
                   <div key={idx} className="flex items-start gap-2">
-                    <span className="mt-2 font-mono text-[10px] text-slate-500">{idx + 1}.</span>
+                    <span className="mt-2 font-mono text-xs text-slate-500">{idx + 1}.</span>
                     <Textarea
                       rows={2}
                       value={tmpl}
@@ -217,13 +217,13 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
         <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+              <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
                 <Sliders className="h-3.5 w-3.5" />
                 SYNTAX &amp; ENTROPY VALIDATOR
               </div>
               <Badge
                 variant="outline"
-                className={`font-mono text-[9px] ${
+                className={`font-mono text-xs ${
                   spintaxStats.isBalanced
                     ? 'border-emerald-500/50 text-emerald-300'
                     : 'border-red-500/50 text-red-300'
@@ -244,7 +244,7 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
                 <label className="font-mono text-xs font-bold text-slate-300">
                   SAMPLE SPINTAX PATTERN
                 </label>
-                <span className="font-mono text-[10px] text-slate-500">
+                <span className="font-mono text-xs text-slate-500">
                   {testInput.length} chars
                 </span>
               </div>
@@ -263,7 +263,7 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
             {/* Linter & Capacity Barometer */}
             <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-800 bg-obsidian-950 p-2.5 sm:grid-cols-3">
               <div className="space-y-0.5">
-                <span className="font-mono text-[9px] uppercase text-slate-500">Syntax Check</span>
+                <span className="font-mono text-xs uppercase text-slate-500">Syntax Check</span>
                 <div className="flex items-center gap-1 font-mono text-xs font-semibold">
                   {spintaxStats.isBalanced ? (
                     <span className="flex items-center gap-1 text-emerald-400">
@@ -279,7 +279,7 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
               </div>
 
               <div className="space-y-0.5">
-                <span className="font-mono text-[9px] uppercase text-slate-500">
+                <span className="font-mono text-xs uppercase text-slate-500">
                   Variable Slots
                 </span>
                 <div className="font-mono text-xs font-semibold text-amber-300">
@@ -288,7 +288,7 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
               </div>
 
               <div className="col-span-2 space-y-0.5 sm:col-span-1">
-                <span className="font-mono text-[9px] uppercase text-slate-500">Total Entropy</span>
+                <span className="font-mono text-xs uppercase text-slate-500">Total Entropy</span>
                 <div className="flex items-center gap-1 font-mono text-xs font-bold text-flame">
                   <Calculator className="h-3 w-3" />
                   {spintaxStats.isBalanced
@@ -311,7 +311,7 @@ export const SpintaxStackWorkbench: React.FC<SpintaxStackWorkbenchProps> = ({
 
             {variations.length > 0 && (
               <div className="space-y-2 rounded-lg border border-border/80 bg-obsidian-950 p-3">
-                <div className="flex items-center justify-between font-mono text-[10px] font-bold text-flame">
+                <div className="flex items-center justify-between font-mono text-xs font-bold text-flame">
                   <span>GENERATED SAMPLES:</span>
                   <span className="text-slate-400">{variations.length} sampled</span>
                 </div>

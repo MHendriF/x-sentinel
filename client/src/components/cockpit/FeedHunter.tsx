@@ -280,17 +280,17 @@ export const FeedHunter: React.FC = () => {
         isActive={isRunning}
         badge={isRunning ? '● SWEEPING FEED' : '○ STANDBY'}
         title="Feed Hunter & Lead Radar"
-        description="Autonomous keyword, topic, and competitor radar sweeping X feeds for high-intent conversations with multi-node engagement vectors."
+        description="Automated keyword, topic, and competitor radar scanning X feeds for relevant conversations across accounts."
         actions={
           <div className="flex items-center gap-2 font-mono text-xs">
             <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-slate-300">
-              <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
-              <span className="text-[10px] uppercase text-slate-500">Radar Stations:</span>
+              <Radio className={`h-3.5 w-3.5 text-cyan-400 ${isRunning ? 'animate-pulse' : ''}`} />
+              <span className="text-xs uppercase text-slate-500">Radar Stations:</span>
               <span className="font-bold text-cyan-400">{activeRadarStationsCount} Active</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-slate-300">
               <Layers className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-[10px] uppercase text-slate-500">Fleet:</span>
+              <span className="text-xs uppercase text-slate-500">Fleet:</span>
               <span className="font-bold text-emerald-400">{effectiveAccounts.length} Nodes</span>
             </div>
           </div>
@@ -309,7 +309,7 @@ export const FeedHunter: React.FC = () => {
                 </CardTitle>
                 <Badge
                   variant={isRunning ? 'success' : 'secondary'}
-                  className="font-mono text-[10px]"
+                  className="font-mono text-xs"
                 >
                   {isRunning ? 'RADAR ACTIVE' : 'READY'}
                 </Badge>
@@ -324,7 +324,7 @@ export const FeedHunter: React.FC = () => {
               <div className="space-y-1.5">
                 <label className="flex items-center justify-between font-mono text-xs font-bold text-slate-300">
                   <span>TRENDING TOPIC PRESETS</span>
-                  <span className="text-[10px] text-muted-foreground">1-CLICK QUERY</span>
+                  <span className="text-xs text-muted-foreground">1-CLICK QUERY</span>
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {PRESET_NICHE_CHIPS.map((chip, idx) => (
@@ -332,7 +332,7 @@ export const FeedHunter: React.FC = () => {
                       key={idx}
                       type="button"
                       onClick={() => setRawKeyword(chip.query)}
-                      className="inline-flex cursor-pointer items-center rounded-md border border-slate-800 bg-obsidian-950 px-2.5 py-1 font-mono text-[11px] text-slate-300 transition-all hover:border-cyan-500/50 hover:bg-cyan-950/20 hover:text-cyan-300 active:scale-95"
+                      className="inline-flex cursor-pointer items-center rounded-md border border-slate-800 bg-obsidian-950 px-2.5 py-1 font-mono text-xs text-slate-300 transition-all hover:border-cyan-500/50 hover:bg-cyan-950/20 hover:text-cyan-300 active:scale-95"
                     >
                       {chip.label}
                     </button>
@@ -350,7 +350,7 @@ export const FeedHunter: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setRawKeyword('')}
-                      className="cursor-pointer font-mono text-[10px] text-slate-500 hover:text-red-400"
+                      className="cursor-pointer font-mono text-xs text-slate-500 hover:text-red-400"
                     >
                       Clear
                     </button>
@@ -372,7 +372,7 @@ export const FeedHunter: React.FC = () => {
                     <Filter className="h-3.5 w-3.5 text-cyan-400" />
                     TARGET QUALITY FILTERS
                   </span>
-                  <span className="text-[10px] text-cyan-400">SMART FILTERS</span>
+                  <span className="text-xs text-cyan-400">SMART FILTERS</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5 font-mono text-xs">
@@ -384,16 +384,16 @@ export const FeedHunter: React.FC = () => {
                       onChange={(e) => setExcludeRetweets(e.target.checked)}
                       className="h-3.5 w-3.5 rounded border-slate-700 bg-obsidian-950 text-cyan-500"
                     />
-                    <span className="text-[11px]">Original Tweets Only</span>
+                    <span className="text-xs">Original Tweets Only</span>
                   </label>
 
                   {/* Filter: Min Likes */}
                   <div className="flex items-center justify-between rounded border border-border/60 bg-obsidian-900 px-2 py-1.5">
-                    <span className="text-[11px] text-slate-300">Min Likes:</span>
+                    <span className="text-xs text-slate-300">Min Likes:</span>
                     <select
                       value={minLikesFilter}
                       onChange={(e) => setMinLikesFilter(e.target.value as any)}
-                      className="bg-transparent font-mono text-[11px] text-cyan-300 focus:outline-none"
+                      className="bg-transparent font-mono text-xs text-cyan-300 focus:outline-none"
                     >
                       <option value="none" className="bg-obsidian-900 text-slate-300">Any</option>
                       <option value="10" className="bg-obsidian-900 text-slate-300">≥ 10 Likes</option>
@@ -405,7 +405,7 @@ export const FeedHunter: React.FC = () => {
 
                 {/* Live Query String Preview */}
                 {effectiveQuery && (
-                  <div className="rounded border border-slate-800/80 bg-obsidian-950 p-2 font-mono text-[10.5px] text-slate-400 flex items-start gap-1.5 overflow-x-auto">
+                  <div className="rounded border border-slate-800/80 bg-obsidian-950 p-2 font-mono text-xs text-slate-400 flex items-start gap-1.5 overflow-x-auto">
                     <span className="text-cyan-400 font-bold shrink-0">X Query:</span>
                     <span className="text-slate-200 truncate">{effectiveQuery}</span>
                   </div>
@@ -422,7 +422,7 @@ export const FeedHunter: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setIsNodeModalOpen(true)}
-                        className="cursor-pointer text-[10px] text-emerald-400 hover:underline flex items-center gap-0.5"
+                        className="cursor-pointer text-xs text-emerald-400 hover:underline flex items-center gap-0.5"
                       >
                         <Sliders className="h-2.5 w-2.5" />
                         ({customAccountIds.length})
@@ -556,14 +556,14 @@ export const FeedHunter: React.FC = () => {
                     {!customComment.trim() ? (
                       <Badge
                         variant="outline"
-                        className="animate-pulse border-purple-500/50 bg-purple-500/15 font-mono text-[9px] text-purple-300"
+                        className="border-blue-500/50 bg-blue-500/15 font-mono text-xs text-blue-300"
                       >
                         🤖 Auto AI Contextual Reply
                       </Badge>
                     ) : (
                       <Badge
                         variant="outline"
-                        className="border-blue-500/50 bg-blue-500/15 font-mono text-[9px] text-blue-300"
+                        className="border-blue-500/50 bg-blue-500/15 font-mono text-xs text-blue-300"
                       >
                         ⚡ Custom Text / Spintax
                       </Badge>
@@ -584,7 +584,7 @@ export const FeedHunter: React.FC = () => {
                   {/* Spintax Test Preview */}
                   {spintaxSample && (
                     <div className="rounded border border-amber-500/40 bg-amber-950/20 p-2 font-mono text-xs text-amber-200">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-amber-400 pb-0.5">
+                      <div className="flex items-center justify-between text-xs font-bold text-amber-400 pb-0.5">
                         <span>🎲 SPINTAX SAMPLE</span>
                         <button
                           type="button"
@@ -599,7 +599,7 @@ export const FeedHunter: React.FC = () => {
                   )}
 
                   {/* Reply Toolbar */}
-                  <div className="flex items-center justify-between pt-1 font-mono text-[10px]">
+                  <div className="flex items-center justify-between pt-1 font-mono text-xs">
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
@@ -639,24 +639,24 @@ export const FeedHunter: React.FC = () => {
               {/* Telemetry HUD */}
               <div className="rounded-lg border border-slate-800 bg-obsidian-950/80 p-3 font-mono text-xs space-y-2">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-slate-300">
+                  <span className="flex items-center gap-1 text-xs font-bold text-slate-300">
                     <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
                     RADAR MISSION ESTIMATE
                   </span>
-                  <span className="text-[10px] text-slate-500">FLEET SWARM</span>
+                  <span className="text-xs text-slate-500">FLEET SWARM</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="rounded border border-slate-800/80 bg-obsidian-900/60 p-1.5">
-                    <div className="text-[10px] text-slate-500">TARGETS</div>
+                    <div className="text-xs text-slate-500">TARGETS</div>
                     <div className="font-bold text-white text-sm">Top {count}</div>
                   </div>
                   <div className="rounded border border-slate-800/80 bg-obsidian-900/60 p-1.5">
-                    <div className="text-[10px] text-slate-500">TOTAL ACTIONS</div>
+                    <div className="text-xs text-slate-500">TOTAL ACTIONS</div>
                     <div className="font-bold text-cyan-400 text-sm">{totalOperations}</div>
                   </div>
                   <div className="rounded border border-slate-800/80 bg-obsidian-900/60 p-1.5">
-                    <div className="text-[10px] text-slate-500">EST. DURATION</div>
+                    <div className="text-xs text-slate-500">EST. DURATION</div>
                     <div className="font-bold text-amber-400 text-sm">~{estMinMinutes}-{estMaxMinutes}m</div>
                   </div>
                 </div>
@@ -792,7 +792,7 @@ export const FeedHunter: React.FC = () => {
             </div>
 
             {isRunning && (
-              <Badge variant="success" className="animate-pulse font-mono text-[9px]">
+              <Badge variant="success" className="animate-pulse font-mono text-xs">
                 ● SWEEPING
               </Badge>
             )}
@@ -816,7 +816,7 @@ export const FeedHunter: React.FC = () => {
                       <Activity className="h-4 w-4 text-emerald-400" />
                       Recent Surveillance Trail
                     </CardTitle>
-                    <Badge variant="outline" className="font-mono text-[10px]">
+                    <Badge variant="outline" className="font-mono text-xs">
                       {recentHunterLeads.length} Captured
                     </Badge>
                   </div>
@@ -844,15 +844,15 @@ export const FeedHunter: React.FC = () => {
                           <span className="font-bold text-slate-200 truncate">
                             @{item.accountName || 'node'}
                           </span>
-                          <span className="text-slate-500 text-[10px] truncate max-w-[120px]">
+                          <span className="text-slate-500 text-xs truncate max-w-[120px]">
                             {item.tweetUrl}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] text-slate-500">{item.timeFormatted}</span>
+                          <span className="text-xs text-slate-500">{item.timeFormatted}</span>
                           <Badge
                             variant={item.status === 'SUCCESS' ? 'success' : 'destructive'}
-                            className="h-4 px-1 text-[9px]"
+                            className="h-4 px-1 text-xs"
                           >
                             {item.status}
                           </Badge>

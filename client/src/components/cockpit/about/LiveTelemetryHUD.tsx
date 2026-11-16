@@ -83,7 +83,7 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
     <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
       <CardHeader className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-emerald-400">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-emerald-400">
             <Activity className="h-3.5 w-3.5" />
             REALTIME SYSTEM TELEMETRY &amp; ENVIRONMENT
           </div>
@@ -125,16 +125,16 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
           {/* 1. Server Uptime */}
           <div className="space-y-1.5 rounded-lg border border-slate-800 bg-obsidian-950 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-slate-400">
+              <span className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-slate-400">
                 <Clock className="h-3.5 w-3.5 text-amber-400" />
                 Server Uptime
               </span>
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
             </div>
             <div className="font-mono text-lg font-black text-white">
               {formatUptime(health.uptime)}
             </div>
-            <div className="font-mono text-[10px] text-slate-500">
+            <div className="font-mono text-xs text-slate-500">
               PID: {health.pid} · Online
             </div>
           </div>
@@ -142,11 +142,11 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
           {/* 2. Runtime Environment */}
           <div className="space-y-1.5 rounded-lg border border-slate-800 bg-obsidian-950 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-slate-400">
+              <span className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-slate-400">
                 <Server className="h-3.5 w-3.5 text-blue-400" />
                 Runtime OS
               </span>
-              <Badge variant="outline" className="border-blue-500/30 font-mono text-[9px] text-blue-300">
+              <Badge variant="outline" className="border-blue-500/30 font-mono text-xs text-blue-300">
                 {health.arch}
               </Badge>
             </div>
@@ -155,7 +155,7 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
                 ? `Rust · Axum v${health.rustVersion || '1.3.5'}`
                 : health.nodeVersion || 'Engine Active'}
             </div>
-            <div className="font-mono text-[10px] text-slate-500">
+            <div className="font-mono text-xs text-slate-500">
               {platformLabel} ({health.arch})
             </div>
           </div>
@@ -163,11 +163,11 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
           {/* 3. Memory Heap Footprint */}
           <div className="space-y-1.5 rounded-lg border border-slate-800 bg-obsidian-950 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-slate-400">
-                <Cpu className="h-3.5 w-3.5 text-purple-400" />
+              <span className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-slate-400">
+                <Cpu className="h-3.5 w-3.5 text-blue-400" />
                 Memory Heap
               </span>
-              <span className="font-mono text-[10px] font-semibold text-purple-300">
+              <span className="font-mono text-xs font-semibold text-blue-300">
                 {heapPercent}%
               </span>
             </div>
@@ -177,11 +177,11 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
             {/* Progress bar */}
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
               <div
-                className="h-full bg-gradient-to-r from-purple-500 to-flame transition-all"
+                className="h-full bg-gradient-to-r from-blue-500 to-flame transition-all"
                 style={{ width: `${heapPercent}%` }}
               />
             </div>
-            <div className="font-mono text-[10px] text-slate-500">
+            <div className="font-mono text-xs text-slate-500">
               RSS: {rssMb} MB
             </div>
           </div>
@@ -189,13 +189,13 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
           {/* 4. Fleet & Engine State */}
           <div className="space-y-1.5 rounded-lg border border-slate-800 bg-obsidian-950 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase text-slate-400">
+              <span className="flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-slate-400">
                 <Layers className="h-3.5 w-3.5 text-flame" />
                 Fleet &amp; Engine
               </span>
               <Badge
                 variant="outline"
-                className={`font-mono text-[9px] ${
+                className={`font-mono text-xs ${
                   health.botRunning
                     ? 'border-emerald-500/50 text-emerald-300'
                     : 'border-slate-700 text-slate-400'
@@ -207,7 +207,7 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
             <div className="font-mono text-base font-bold text-white">
               {health.fleet.active} <span className="text-xs font-normal text-slate-400">/ {health.fleet.total} Nodes Active</span>
             </div>
-            <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400">
+            <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
               <span>AI: <strong className="text-amber-300">{health.aiProvider.toUpperCase()}</strong></span>
               <span>·</span>
               <span>Browser: <strong className="text-cyan-300">{health.browserEngine}</strong></span>
@@ -222,34 +222,34 @@ export const LiveTelemetryHUD: React.FC<LiveTelemetryHUDProps> = ({
               <HardDrive className="h-4 w-4 text-emerald-400" />
               <span>Zero-Dependency Local Storage Footprint (`data/`)</span>
             </div>
-            <span className="font-mono text-[10px] text-emerald-400">
+            <span className="font-mono text-xs text-emerald-400">
               ✓ 100% On-Premise Sovereign Storage
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 font-mono text-xs">
             <div className="space-y-0.5 rounded border border-slate-800/60 bg-obsidian-900/80 p-2.5">
-              <div className="text-[10px] text-slate-500">accounts.json</div>
+              <div className="text-xs text-slate-500">accounts.json</div>
               <div className="font-bold text-white">{health.storage.accountsCount} accounts</div>
-              <div className="text-[10px] text-slate-400">{formatBytes(health.storage.accountsSizeBytes)}</div>
+              <div className="text-xs text-slate-400">{formatBytes(health.storage.accountsSizeBytes)}</div>
             </div>
 
             <div className="space-y-0.5 rounded border border-slate-800/60 bg-obsidian-900/80 p-2.5">
-              <div className="text-[10px] text-slate-500">history.json</div>
+              <div className="text-xs text-slate-500">history.json</div>
               <div className="font-bold text-white">{health.storage.historyCount} audit logs</div>
-              <div className="text-[10px] text-slate-400">{formatBytes(health.storage.historySizeBytes)}</div>
+              <div className="text-xs text-slate-400">{formatBytes(health.storage.historySizeBytes)}</div>
             </div>
 
             <div className="space-y-0.5 rounded border border-slate-800/60 bg-obsidian-900/80 p-2.5">
-              <div className="text-[10px] text-slate-500">data/comments/</div>
+              <div className="text-xs text-slate-500">data/comments/</div>
               <div className="font-bold text-white">{health.storage.commentsFilesCount} payload files</div>
-              <div className="text-[10px] text-slate-400">Dedicated JSON pools</div>
+              <div className="text-xs text-slate-400">Dedicated JSON pools</div>
             </div>
 
             <div className="space-y-0.5 rounded border border-slate-800/60 bg-obsidian-900/80 p-2.5">
-              <div className="text-[10px] text-slate-500">x-sentinel.log</div>
+              <div className="text-xs text-slate-500">x-sentinel.log</div>
               <div className="font-bold text-white">Runtime Log</div>
-              <div className="text-[10px] text-slate-400">{formatBytes(health.storage.logFileSizeBytes)}</div>
+              <div className="text-xs text-slate-400">{formatBytes(health.storage.logFileSizeBytes)}</div>
             </div>
           </div>
         </div>

@@ -55,7 +55,7 @@ export const FleetDispatcherPanel: React.FC<FleetDispatcherPanelProps> = ({
             type="button"
             onClick={() => setTargetMode('single')}
             className={cn(
-              'rounded px-3 py-1 font-mono text-[11px] font-semibold transition-all',
+              'rounded px-3 py-1 font-mono text-xs font-semibold transition-all',
               targetMode === 'single'
                 ? 'bg-flame text-obsidian-950 shadow-sm'
                 : 'text-slate-400 hover:text-white'
@@ -67,9 +67,9 @@ export const FleetDispatcherPanel: React.FC<FleetDispatcherPanelProps> = ({
             type="button"
             onClick={() => setTargetMode('fleet')}
             className={cn(
-              'rounded px-3 py-1 font-mono text-[11px] font-semibold transition-all',
+              'rounded px-3 py-1 font-mono text-xs font-semibold transition-all',
               targetMode === 'fleet'
-                ? 'bg-purple-600 text-white shadow-sm'
+                ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white'
             )}
           >
@@ -81,7 +81,7 @@ export const FleetDispatcherPanel: React.FC<FleetDispatcherPanelProps> = ({
       {/* Mode Specific Controls */}
       {targetMode === 'single' ? (
         <div className="flex items-center gap-2 pt-1">
-          <label className="font-mono text-[11px] text-slate-400">Node Account:</label>
+          <label className="font-mono text-xs text-slate-400">Node Account:</label>
           <select
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
@@ -104,7 +104,7 @@ export const FleetDispatcherPanel: React.FC<FleetDispatcherPanelProps> = ({
                 <Clock className="h-3.5 w-3.5 text-amber-400" />
                 Staggered Node Delay:
               </span>
-              <p className="font-mono text-[10px] text-slate-500">
+              <p className="font-mono text-xs text-slate-500">
                 Natural wait time between consecutive account publications.
               </p>
             </div>
@@ -128,21 +128,21 @@ export const FleetDispatcherPanel: React.FC<FleetDispatcherPanelProps> = ({
               type="checkbox"
               checked={isRoundRobin}
               onChange={(e) => setIsRoundRobin(e.target.checked)}
-              className="mt-0.5 rounded border-slate-700 bg-obsidian-900 text-purple-600 focus:ring-0"
+              className="mt-0.5 rounded border-slate-700 bg-obsidian-900 text-blue-600 focus:ring-0"
             />
             <div>
               <span className="flex items-center gap-1 font-medium text-slate-200">
-                <Shuffle className="h-3 w-3 text-purple-400" />
+                <Shuffle className="h-3 w-3 text-blue-400" />
                 Round-Robin Draft Variation Distribution
               </span>
-              <p className="font-mono text-[10px] text-slate-400">
+              <p className="font-mono text-xs text-slate-400">
                 Distributes different variations among fleet nodes to prevent identical timeline spam.
               </p>
             </div>
           </label>
 
           {/* Telemetry info */}
-          <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 font-mono text-[10px] text-slate-400">
+          <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 font-mono text-xs text-slate-400">
             <span>Estimated fleet runtime:</span>
             <span className="font-bold text-amber-300">~{timeString} total</span>
           </div>
@@ -169,8 +169,8 @@ export const FleetDispatcherPanel: React.FC<FleetDispatcherPanelProps> = ({
           className={cn(
             'gap-2 font-heading text-xs font-bold shadow-lg transition-all',
             targetMode === 'single'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:brightness-110'
-              : 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 text-white hover:brightness-110'
+              ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:brightness-110'
+              : 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white hover:brightness-110'
           )}
         >
           {isPublishing ? (

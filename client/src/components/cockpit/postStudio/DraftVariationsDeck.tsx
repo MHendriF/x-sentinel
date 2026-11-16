@@ -81,7 +81,7 @@ export const DraftVariationsDeck: React.FC<DraftVariationsDeckProps> = ({
           <span>2. Generated Post Variations</span>
         </div>
         {activeProviderUsed && (
-          <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-300">
+          <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-xs font-semibold text-emerald-300">
             Engine: {activeProviderUsed}
           </span>
         )}
@@ -95,7 +95,7 @@ export const DraftVariationsDeck: React.FC<DraftVariationsDeckProps> = ({
           <div className="font-heading text-xs font-semibold text-slate-300">
             No Drafts Generated Yet
           </div>
-          <p className="max-w-sm text-[11px] text-slate-500">
+          <p className="max-w-sm text-xs text-slate-500">
             Enter a keyword topic on the left and click{' '}
             <strong className="text-slate-300">&quot;Generate AI Post Drafts&quot;</strong>.
           </p>
@@ -120,11 +120,11 @@ export const DraftVariationsDeck: React.FC<DraftVariationsDeckProps> = ({
                 {/* Header row with badges and actions */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <span className="rounded bg-flame/10 px-2 py-0.5 font-mono text-[10px] font-bold text-flame">
+                    <span className="rounded bg-flame/10 px-2 py-0.5 font-mono text-xs font-bold text-flame">
                       Variation #{idx + 1}
                     </span>
                     {stashed && (
-                      <span className="flex items-center gap-0.5 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.2 font-mono text-[9px] font-bold text-amber-300">
+                      <span className="flex items-center gap-0.5 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.2 font-mono text-xs font-bold text-amber-300">
                         <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
                         Stashed
                       </span>
@@ -135,7 +135,7 @@ export const DraftVariationsDeck: React.FC<DraftVariationsDeckProps> = ({
                     {/* Character counter */}
                     <span
                       className={cn(
-                        'rounded px-1.5 font-mono text-[10px] font-bold',
+                        'rounded px-1.5 font-mono text-xs font-bold',
                         count <= 240
                           ? 'bg-emerald-500/10 text-emerald-300'
                           : count <= 280
@@ -205,7 +205,7 @@ export const DraftVariationsDeck: React.FC<DraftVariationsDeckProps> = ({
                     <button
                       type="button"
                       onClick={() => handleStripSlop(draft, idx)}
-                      className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-0.5 font-mono text-[10px] text-slate-400 transition-colors hover:bg-obsidian-800 hover:text-emerald-300"
+                      className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-0.5 font-mono text-xs text-slate-400 transition-colors hover:bg-obsidian-800 hover:text-emerald-300"
                       title="Strip hashtags and double quotes"
                     >
                       <ShieldCheck className="h-3 w-3 text-emerald-400" />
@@ -216,7 +216,7 @@ export const DraftVariationsDeck: React.FC<DraftVariationsDeckProps> = ({
                     <button
                       type="button"
                       onClick={() => handleMakePunchy(draft, idx)}
-                      className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-0.5 font-mono text-[10px] text-slate-400 transition-colors hover:bg-obsidian-800 hover:text-amber-300"
+                      className="flex items-center gap-1 rounded bg-obsidian-900 px-2 py-0.5 font-mono text-xs text-slate-400 transition-colors hover:bg-obsidian-800 hover:text-amber-300"
                       title="Condense into punchy core"
                     >
                       <Zap className="h-3 w-3 text-amber-400" />
@@ -232,7 +232,7 @@ export const DraftVariationsDeck: React.FC<DraftVariationsDeckProps> = ({
                       toast.info(`Variation #${idx + 1} loaded into Live Preview.`);
                     }}
                     className={cn(
-                      'flex items-center gap-1.5 rounded px-3 py-1 font-mono text-[11px] font-semibold transition-all',
+                      'flex items-center gap-1.5 rounded px-3 py-1 font-mono text-xs font-semibold transition-all',
                       isSelected
                         ? 'bg-flame font-bold text-obsidian-950 shadow-sm'
                         : 'border border-slate-700 bg-obsidian-800 text-slate-300 hover:bg-obsidian-750 hover:text-white'

@@ -46,7 +46,7 @@ export const STYLE_OPTIONS = [
     id: 'founder_story',
     label: '🛠️ Founder / Builder Raw',
     desc: 'Authentic building lessons, technical hurdles, transparent execution.',
-    color: 'border-purple-500 bg-purple-500/10 text-purple-300',
+    color: 'border-blue-500 bg-blue-500/10 text-blue-300',
   },
   {
     id: 'indo_community',
@@ -100,7 +100,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
           <Zap className="h-4 w-4 text-flame" />
           <span>1. Topic &amp; AI Directives</span>
         </div>
-        <span className="rounded bg-flame/10 px-2 py-0.5 font-mono text-[9px] font-bold text-flame">
+        <span className="rounded bg-flame/10 px-2 py-0.5 font-mono text-xs font-bold text-flame">
           STEP 1
         </span>
       </div>
@@ -109,7 +109,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
       <div className="flex flex-col gap-1.5">
         <label className="flex items-center justify-between font-mono text-xs font-semibold text-slate-200">
           <span>KEYWORD / POST TOPIC:</span>
-          <span className="text-[10px] text-flame">*Required</span>
+          <span className="text-xs text-flame">*Required</span>
         </label>
         <input
           type="text"
@@ -123,7 +123,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
 
       {/* Quick Keyword Presets */}
       <div className="flex flex-col gap-1.5">
-        <span className="flex items-center gap-1 font-mono text-[11px] font-semibold text-slate-400">
+        <span className="flex items-center gap-1 font-mono text-xs font-semibold text-slate-400">
           <Lightbulb className="h-3 w-3 text-amber-400" />
           QUICK TOPIC PRESETS:
         </span>
@@ -139,7 +139,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
                   setLanguage('id');
                 }
               }}
-              className="rounded border border-slate-800 bg-obsidian-950 px-2.5 py-1 font-mono text-[10px] text-slate-300 transition-colors hover:border-flame/40 hover:bg-flame/10 hover:text-white"
+              className="rounded border border-slate-800 bg-obsidian-950 px-2.5 py-1 font-mono text-xs text-slate-300 transition-colors hover:border-flame/40 hover:bg-flame/10 hover:text-white"
             >
               {item.label}
             </button>
@@ -174,7 +174,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
                   <span className="text-xs font-bold text-white">{style.label}</span>
                   {isSelected && <Check className="h-3.5 w-3.5 text-flame" />}
                 </div>
-                <span className="mt-0.5 text-[10px] text-slate-400">{style.desc}</span>
+                <span className="mt-0.5 text-xs text-slate-400">{style.desc}</span>
               </button>
             );
           })}
@@ -185,11 +185,11 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
       <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
         {/* Post Format Mode: Single vs Mini-Thread */}
         <div className="flex flex-col gap-1.5">
-          <label className="flex items-center gap-1 font-mono text-[11px] font-semibold text-slate-300">
+          <label className="flex items-center gap-1 font-mono text-xs font-semibold text-slate-300">
             <Layers className="h-3 w-3 text-slate-400" />
             CONTENT FORMAT:
           </label>
-          <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-800 bg-obsidian-950 p-1 text-[11px]">
+          <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-800 bg-obsidian-950 p-1 text-xs">
             <button
               type="button"
               onClick={() => setPostMode('single')}
@@ -208,7 +208,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
               className={cn(
                 'rounded py-1 font-mono font-medium transition-all',
                 postMode === 'thread'
-                  ? 'bg-purple-600 font-bold text-white shadow-sm'
+                  ? 'bg-blue-600 font-bold text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               )}
             >
@@ -219,11 +219,11 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
 
         {/* Language Selector */}
         <div className="flex flex-col gap-1.5">
-          <label className="flex items-center gap-1 font-mono text-[11px] font-semibold text-slate-300">
+          <label className="flex items-center gap-1 font-mono text-xs font-semibold text-slate-300">
             <Globe className="h-3 w-3 text-slate-400" />
             LANGUAGE:
           </label>
-          <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-800 bg-obsidian-950 p-1 text-[11px]">
+          <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-800 bg-obsidian-950 p-1 text-xs">
             <button
               type="button"
               onClick={() => setLanguage('en')}
@@ -254,7 +254,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
 
       {/* Variation Count */}
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between font-mono text-[11px] font-semibold text-slate-300">
+        <div className="flex items-center justify-between font-mono text-xs font-semibold text-slate-300">
           <span>VARIATION COUNT:</span>
           <span className="font-bold text-flame">{variationCount}x drafts</span>
         </div>
@@ -282,7 +282,7 @@ export const PostGeneratorForm: React.FC<PostGeneratorFormProps> = ({
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-slate-400 transition-colors hover:text-flame"
+          className="flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-400 transition-colors hover:text-flame"
         >
           <Sliders className="h-3 w-3 text-flame" />
           <span>

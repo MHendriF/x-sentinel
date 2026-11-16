@@ -154,7 +154,7 @@ export const AnalyticsToolbar: React.FC<AnalyticsToolbarProps> = ({
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-obsidian-900/80 p-3 shadow-inner backdrop-blur-sm">
       {/* Left: Timeframe Scope Buttons */}
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 flex items-center gap-1 font-mono text-[11px] font-semibold text-slate-400">
+        <span className="mr-1 flex items-center gap-1 font-mono text-xs font-semibold text-slate-400">
           <Clock className="h-3 w-3 text-flame" /> Scope:
         </span>
         <button

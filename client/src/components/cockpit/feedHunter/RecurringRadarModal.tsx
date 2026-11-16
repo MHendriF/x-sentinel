@@ -128,7 +128,7 @@ export const RecurringRadarModal: React.FC<RecurringRadarModalProps> = ({
             <Layers className="h-3.5 w-3.5 text-emerald-400" />
             <span>{nodeLabel}</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-cyan-300">
+          <div className="flex items-center gap-1 text-xs text-cyan-300">
             {[like && '❤️', retweet && '🔁', comment && '💬'].filter(Boolean).join(' ')}
           </div>
         </div>

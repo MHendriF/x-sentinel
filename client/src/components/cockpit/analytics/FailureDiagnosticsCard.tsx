@@ -21,7 +21,7 @@ export const FailureDiagnosticsCard: React.FC<FailureDiagnosticsCardProps> = ({
     <Card className="border-border/80 bg-obsidian-850">
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-rose-400">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-rose-400">
             {isHealthy ? (
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             ) : (
@@ -82,7 +82,7 @@ export const FailureDiagnosticsCard: React.FC<FailureDiagnosticsCardProps> = ({
                   >
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-semibold text-white">{cat.label}</span>
-                      <span className="font-mono text-[11px] text-slate-400">
+                      <span className="font-mono text-xs text-slate-400">
                         {cat.count}x ({cat.percentage}%)
                       </span>
                     </div>
@@ -124,14 +124,14 @@ export const FailureDiagnosticsCard: React.FC<FailureDiagnosticsCardProps> = ({
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className="border-rose-500/30 bg-rose-950/30 font-mono text-[10px] text-rose-300"
+                        className="border-rose-500/30 bg-rose-950/30 font-mono text-xs text-rose-300"
                       >
                         {node.failedCount} fails
                       </Badge>
                       {onSelectNode && (
                         <button
                           onClick={() => onSelectNode(node.accountId)}
-                          className="rounded px-1.5 py-0.5 font-mono text-[10px] text-cyan-400 hover:bg-cyan-950 hover:text-cyan-200"
+                          className="rounded px-1.5 py-0.5 font-mono text-xs text-cyan-400 hover:bg-cyan-950 hover:text-cyan-200"
                         >
                           Inspect
                         </button>

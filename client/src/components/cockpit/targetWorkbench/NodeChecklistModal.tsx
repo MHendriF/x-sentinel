@@ -88,7 +88,7 @@ export const NodeChecklistModal: React.FC<NodeChecklistModalProps> = ({
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-emerald-400" />
             <h3 className="font-heading text-sm font-bold text-white">Custom Fleet Selection</h3>
-            <Badge variant="outline" className="border-emerald-500/40 font-mono text-[10px] text-emerald-400">
+            <Badge variant="outline" className="border-emerald-500/40 font-mono text-xs text-emerald-400">
               {tempSelected.length} / {activeAccounts.length} Selected
             </Badge>
           </div>
@@ -114,12 +114,12 @@ export const NodeChecklistModal: React.FC<NodeChecklistModalProps> = ({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
             <Button
               variant="outline"
               size="sm"
               onClick={handleSelectAll}
-              className="h-6 px-2 py-0 text-[10px]"
+              className="h-6 px-2 py-0 text-xs"
             >
               Select All
             </Button>
@@ -127,7 +127,7 @@ export const NodeChecklistModal: React.FC<NodeChecklistModalProps> = ({
               variant="outline"
               size="sm"
               onClick={handleSelectHealthyOnly}
-              className="h-6 border-emerald-500/30 bg-emerald-500/10 px-2 py-0 text-[10px] text-emerald-300 hover:bg-emerald-500/20"
+              className="h-6 border-emerald-500/30 bg-emerald-500/10 px-2 py-0 text-xs text-emerald-300 hover:bg-emerald-500/20"
             >
               <CheckCircle2 className="mr-1 h-2.5 w-2.5 text-emerald-400" />
               Healthy Only
@@ -136,7 +136,7 @@ export const NodeChecklistModal: React.FC<NodeChecklistModalProps> = ({
               variant="ghost"
               size="sm"
               onClick={handleDeselectAll}
-              className="h-6 px-2 py-0 text-[10px] text-slate-400 hover:text-red-400"
+              className="h-6 px-2 py-0 text-xs text-slate-400 hover:text-red-400"
             >
               Deselect All
             </Button>
@@ -190,7 +190,7 @@ export const NodeChecklistModal: React.FC<NodeChecklistModalProps> = ({
                       <div className="truncate font-heading text-xs font-semibold text-slate-100">
                         {acc.label}
                       </div>
-                      <div className="truncate font-mono text-[10px] text-slate-400">
+                      <div className="truncate font-mono text-xs text-slate-400">
                         @{acc.username || 'unknown'}
                       </div>
                     </div>
@@ -198,26 +198,26 @@ export const NodeChecklistModal: React.FC<NodeChecklistModalProps> = ({
 
                   <div className="flex shrink-0 items-center gap-1.5">
                     {isHealthy ? (
-                      <Badge variant="success" className="h-4.5 px-1 font-mono text-[9px]">
+                      <Badge variant="success" className="h-4.5 px-1 font-mono text-xs">
                         <CheckCircle2 className="mr-0.5 h-2 w-2" />
                         Healthy
                       </Badge>
                     ) : isExpired ? (
-                      <Badge variant="destructive" className="h-4.5 px-1 font-mono text-[9px]">
+                      <Badge variant="destructive" className="h-4.5 px-1 font-mono text-xs">
                         <AlertTriangle className="mr-0.5 h-2 w-2" />
                         Expired
                       </Badge>
                     ) : isProxyDead ? (
-                      <Badge variant="destructive" className="h-4.5 px-1 font-mono text-[9px]">
+                      <Badge variant="destructive" className="h-4.5 px-1 font-mono text-xs">
                         <WifiOff className="mr-0.5 h-2 w-2" />
                         Proxy Dead
                       </Badge>
                     ) : acc.isValid ? (
-                      <Badge variant="success" className="h-4.5 px-1 font-mono text-[9px]">
+                      <Badge variant="success" className="h-4.5 px-1 font-mono text-xs">
                         Valid
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="h-4.5 px-1 font-mono text-[9px] text-slate-400">
+                      <Badge variant="secondary" className="h-4.5 px-1 font-mono text-xs text-slate-400">
                         <HelpCircle className="mr-0.5 h-2 w-2" />
                         Unchecked
                       </Badge>

@@ -79,7 +79,7 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
           {setSortOption && (
             <div className="flex items-center gap-1.5 rounded-md border border-border/70 bg-obsidian-900 px-2 py-1 font-mono text-xs text-slate-300">
               <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
-              <span className="text-[11px] text-slate-500">Sort:</span>
+              <span className="text-xs text-slate-500">Sort:</span>
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as NodeSortOption)}
@@ -151,7 +151,7 @@ export const NodesFilterBar: React.FC<NodesFilterBarProps> = ({
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`rounded px-1 font-mono text-[10px] leading-tight ${
+                  className={`rounded px-1 font-mono text-xs leading-tight ${
                     isActive ? 'bg-flame/30 font-bold text-flame' : 'bg-obsidian-950 text-slate-400'
                   }`}
                 >

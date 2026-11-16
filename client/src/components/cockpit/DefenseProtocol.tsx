@@ -294,16 +294,16 @@ export const DefenseProtocol: React.FC = () => {
   return (
     <div className="animate-in fade-in space-y-6">
       {/* Quick AI Link Banner */}
-      <div className="flex items-center justify-between gap-3 rounded-lg border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-obsidian-900 to-obsidian-950 p-3.5 shadow-md">
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-500/30 bg-gradient-to-r from-blue-950/40 via-obsidian-900 to-obsidian-950 p-3.5 shadow-md">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-purple-500/40 bg-purple-500/20 text-purple-400">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-blue-500/40 bg-blue-500/20 text-blue-400">
             <Bot className="h-4 w-4" />
           </div>
           <div>
             <div className="font-heading text-xs font-bold text-white">
               AI Provider &amp; Model Configuration
             </div>
-            <div className="text-[11px] text-slate-400">
+            <div className="text-xs text-slate-400">
               Konfigurasi 9router, OpenRouter, Groq, model LLM, dan persona sistem terpusat di AI Studio.
             </div>
           </div>
@@ -314,10 +314,10 @@ export const DefenseProtocol: React.FC = () => {
           size="sm"
           variant="outline"
           onClick={() => setActiveTab('tab-ai')}
-          className="shrink-0 gap-1.5 border-purple-500/40 font-mono text-xs text-purple-300 hover:bg-purple-500/10"
+          className="shrink-0 gap-1.5 border-blue-500/40 font-mono text-xs text-blue-300 hover:bg-blue-500/10"
         >
           <span>Open AI Studio</span>
-          <ArrowRight className="h-3 w-3 text-purple-400" />
+          <ArrowRight className="h-3 w-3 text-blue-400" />
         </Button>
       </div>
 
@@ -331,8 +331,8 @@ export const DefenseProtocol: React.FC = () => {
         actions={
           <div className="flex items-center gap-2">
             {isDirty && (
-              <span className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-950/40 px-2.5 py-1 font-mono text-[10px] font-bold text-amber-400">
-                <span className="h-1.5 w-1.5 animate-ping rounded-full bg-amber-400" />
+              <span className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-950/40 px-2.5 py-1 font-mono text-xs font-bold text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
                 Unsaved Changes
               </span>
             )}
@@ -379,7 +379,7 @@ export const DefenseProtocol: React.FC = () => {
       {/* 3. Action Timing & Rate Limit Protection Card */}
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
         <CardHeader className="pb-3">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
             <Clock className="h-3.5 w-3.5" />
             TIMING JITTER &amp; RATE LIMIT QUOTAS
           </div>
@@ -455,7 +455,7 @@ export const DefenseProtocol: React.FC = () => {
                   <Sliders className="h-3.5 w-3.5 text-emerald-400" />
                   HOURLY MAX QUOTA / NODE
                 </span>
-                <span className="rounded bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] text-emerald-400">
+                <span className="rounded bg-emerald-950/40 px-1.5 py-0.5 font-mono text-xs text-emerald-400">
                   {hourlyLimit} aksi / jam
                 </span>
               </label>
@@ -467,7 +467,7 @@ export const DefenseProtocol: React.FC = () => {
                 max={200}
                 className="font-mono text-xs"
               />
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 Membatasi eksekusi pada rolling window 1 jam untuk mencegah trigger rate limit X.
               </p>
             </div>
@@ -478,7 +478,7 @@ export const DefenseProtocol: React.FC = () => {
                   <Sliders className="h-3.5 w-3.5 text-blue-400" />
                   DAILY MAX QUOTA / NODE
                 </span>
-                <span className="rounded bg-blue-950/40 px-1.5 py-0.5 font-mono text-[10px] text-blue-400">
+                <span className="rounded bg-blue-950/40 px-1.5 py-0.5 font-mono text-xs text-blue-400">
                   {dailyLimit} aksi / hari
                 </span>
               </label>
@@ -490,7 +490,7 @@ export const DefenseProtocol: React.FC = () => {
                 max={1000}
                 className="font-mono text-xs"
               />
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 Batas akumulasi aksi maksimal per node dalam 24 jam sebelum node diistirahatkan.
               </p>
             </div>
@@ -516,7 +516,7 @@ export const DefenseProtocol: React.FC = () => {
               onChange={(e) => setTypingDelay(Number(e.target.value))}
               className="w-full accent-amber-500"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+            <div className="flex justify-between text-xs text-slate-500 font-mono">
               <span>⚡ Fast (25ms)</span>
               <span>⚖️ Human Natural (~65ms)</span>
               <span>🐢 Casual Stealth (150ms)</span>
@@ -530,7 +530,7 @@ export const DefenseProtocol: React.FC = () => {
                 <Cpu className="h-4 w-4 text-blue-400" />
                 <div>
                   <div className="text-xs font-semibold text-white">Headless Mode (Background)</div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     Jalankan browser tanpa jendela grafis GUI untuk menghemat RAM dan CPU.
                   </div>
                 </div>
@@ -550,7 +550,7 @@ export const DefenseProtocol: React.FC = () => {
                   <div className="text-xs font-semibold text-white">
                     Humanized Scroll &amp; Mouse Simulation
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     Simulasikan scrolling acak dan gerak kurva mouse sebelum berinteraksi dengan tweet target.
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export const DefenseProtocol: React.FC = () => {
                   <div className="text-xs font-semibold text-white">
                     Cross-Node Target Lock (Anti-Collision)
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     Cegah benturan antar node pada target tweet yang sama dalam jendela waktu. Matikan jika ingin multi-node raid/engagement pod.
                   </div>
                 </div>
@@ -590,7 +590,7 @@ export const DefenseProtocol: React.FC = () => {
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-blue-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-blue-400">
               <Globe className="h-3.5 w-3.5" />
               BROWSER ENGINE &amp; ANTI-DETECT RUNTIME
             </div>
@@ -637,11 +637,11 @@ export const DefenseProtocol: React.FC = () => {
                   <Globe className={`h-4 w-4 ${browserEngine === 'chromium' ? 'text-blue-400' : 'text-slate-400'}`} />
                   <span className="text-xs font-bold text-white">Chromium Core</span>
                 </div>
-                <span className="rounded bg-blue-500/20 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-blue-300">
+                <span className="rounded bg-blue-500/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-300">
                   DEFAULT
                 </span>
               </div>
-              <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
                 Engine Playwright standar dilengkapi skrip penyamaran navigator.webdriver, hardware concurrency, dan WebGL mocking.
               </p>
             </button>
@@ -663,11 +663,11 @@ export const DefenseProtocol: React.FC = () => {
                   <Flame className={`h-4 w-4 ${browserEngine === 'camoufox' ? 'text-amber-400' : 'text-slate-400'}`} />
                   <span className="text-xs font-bold text-white">Camoufox Stealth (Anti-Detect)</span>
                 </div>
-                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-amber-300">
+                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-amber-300">
                   ANTI-DETECT
                 </span>
               </div>
-              <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
                 Build C++ Firefox khusus anti-deteksi dengan hardware spoofing sejati, kurva gerak mouse Bezier, dan proteksi WebRTC leak.
               </p>
             </button>
@@ -692,7 +692,7 @@ export const DefenseProtocol: React.FC = () => {
               </div>
 
               {browserTestReport.stealth && (
-                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-emerald-500/20 pt-2 text-[11px] text-slate-300 sm:grid-cols-4">
+                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-emerald-500/20 pt-2 text-xs text-slate-300 sm:grid-cols-4">
                   <div>
                     <span className="text-slate-500">Engine:</span>{' '}
                     <span className="text-white font-bold">{browserTestReport.engine}</span>
@@ -723,7 +723,7 @@ export const DefenseProtocol: React.FC = () => {
       {/* 5. Webhook & Instant Notifications Card */}
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
         <CardHeader className="pb-3">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-cyan-400">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-cyan-400">
             <Bell className="h-3.5 w-3.5 text-cyan-400" />
             REALTIME ALERT &amp; NOTIFICATIONS
           </div>
@@ -790,7 +790,7 @@ export const DefenseProtocol: React.FC = () => {
             {telegramEnabled && (
               <div className="animate-in fade-in grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="font-mono text-[11px] text-slate-400">TELEGRAM BOT TOKEN</label>
+                  <label className="font-mono text-xs text-slate-400">TELEGRAM BOT TOKEN</label>
                   <Input
                     type="password"
                     value={telegramBotToken}
@@ -801,7 +801,7 @@ export const DefenseProtocol: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-mono text-[11px] text-slate-400">CHAT ID / USER ID</label>
+                  <label className="font-mono text-xs text-slate-400">CHAT ID / USER ID</label>
                   <Input
                     type="text"
                     value={telegramChatId}
@@ -838,7 +838,7 @@ export const DefenseProtocol: React.FC = () => {
           <div className="space-y-3 rounded-lg border border-border/80 bg-obsidian-950 p-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bot className="h-4 w-4 text-purple-400" />
+                <Bot className="h-4 w-4 text-blue-400" />
                 <span className="text-xs font-bold text-white">Discord Channel Webhook</span>
               </div>
               <input
@@ -852,7 +852,7 @@ export const DefenseProtocol: React.FC = () => {
             {discordEnabled && (
               <div className="animate-in fade-in space-y-3 pt-2">
                 <div className="space-y-1">
-                  <label className="font-mono text-[11px] text-slate-400">
+                  <label className="font-mono text-xs text-slate-400">
                     DISCORD WEBHOOK URL
                   </label>
                   <Input
@@ -871,7 +871,7 @@ export const DefenseProtocol: React.FC = () => {
                     variant="outline"
                     onClick={() => handleTestWebhook('discord')}
                     disabled={isTestingWebhook === 'discord' || !discordWebhookUrl}
-                    className="gap-1.5 border-purple-500/40 font-mono text-xs text-purple-300 hover:bg-purple-500/10"
+                    className="gap-1.5 border-blue-500/40 font-mono text-xs text-blue-300 hover:bg-blue-500/10"
                   >
                     {isTestingWebhook === 'discord' ? (
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />

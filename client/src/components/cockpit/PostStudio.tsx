@@ -444,7 +444,7 @@ export const PostStudio: React.FC = () => {
             >
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
               Saved Stash
-              <span className="rounded bg-black/30 px-1 py-0.5 text-[9px] text-muted-foreground">
+              <span className="rounded bg-black/30 px-1 py-0.5 text-xs text-muted-foreground">
                 {stashedDrafts.length}
               </span>
             </button>
@@ -460,7 +460,7 @@ export const PostStudio: React.FC = () => {
             >
               <Calendar className="h-3.5 w-3.5 text-amber-400" />
               Queue
-              <span className="rounded bg-black/30 px-1 py-0.5 text-[9px] text-muted-foreground">
+              <span className="rounded bg-black/30 px-1 py-0.5 text-xs text-muted-foreground">
                 {schedules.length}
               </span>
             </button>
@@ -515,7 +515,7 @@ export const PostStudio: React.FC = () => {
                   <Sliders className="h-4 w-4 text-blue-400" />
                   <span>3. Live Tweet Editor &amp; Fleet Dispatcher</span>
                 </div>
-                <span className="rounded bg-blue-500/10 px-2 py-0.5 font-mono text-[9px] font-bold text-blue-300">
+                <span className="rounded bg-blue-500/10 px-2 py-0.5 font-mono text-xs font-bold text-blue-300">
                   STEP 3
                 </span>
               </div>

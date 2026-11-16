@@ -114,7 +114,7 @@ export const DocsCatalogCard: React.FC = () => {
   return (
     <Card className="border-border/80 bg-obsidian-850">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-cyan-400">
+        <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-cyan-400">
           <BookOpen className="h-4 w-4" />
           ENGINEERING DOCUMENTATION CATALOG
         </div>
@@ -136,11 +136,11 @@ export const DocsCatalogCard: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-mono text-xs font-bold text-slate-200">{doc.file}</span>
-                  <Badge variant="outline" className="border-cyan-500/30 font-mono text-[9px] text-cyan-300">
+                  <Badge variant="outline" className="border-cyan-500/30 font-mono text-xs text-cyan-300">
                     {doc.badge}
                   </Badge>
                 </div>
-                <div className="mt-1.5 text-[11px] leading-relaxed text-slate-400">{doc.desc}</div>
+                <div className="mt-1.5 text-xs leading-relaxed text-slate-400">{doc.desc}</div>
               </div>
 
               <div className="mt-3 border-t border-slate-800/80 pt-2">
@@ -148,7 +148,7 @@ export const DocsCatalogCard: React.FC = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => setActiveDoc(doc)}
-                  className="w-full justify-between border-slate-800 bg-obsidian-950 font-mono text-[11px] text-slate-300 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-white"
+                  className="w-full justify-between border-slate-800 bg-obsidian-950 font-mono text-xs text-slate-300 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-white"
                 >
                   <span>Quick Read</span>
                   <ArrowRight className="h-3 w-3 text-cyan-400" />
@@ -163,7 +163,7 @@ export const DocsCatalogCard: React.FC = () => {
       <Dialog open={Boolean(activeDoc)} onOpenChange={(open) => !open && setActiveDoc(null)}>
         <DialogContent className="max-w-xl border-border/80 bg-obsidian-950 text-slate-100 shadow-2xl">
           <DialogHeader>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-cyan-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-cyan-400">
               <FileText className="h-3.5 w-3.5" />
               DOCUMENTATION QUICK READER
             </div>
@@ -177,7 +177,7 @@ export const DocsCatalogCard: React.FC = () => {
 
           <div className="space-y-4 py-2">
             <div className="rounded-lg border border-slate-800 bg-obsidian-900/80 p-3.5">
-              <div className="font-mono text-[11px] font-bold text-cyan-300 uppercase tracking-wider">
+              <div className="font-mono text-xs font-bold text-cyan-300 uppercase tracking-wider">
                 Executive Summary
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-300">
@@ -186,7 +186,7 @@ export const DocsCatalogCard: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <div className="font-mono text-[11px] font-bold text-flame uppercase tracking-wider">
+              <div className="font-mono text-xs font-bold text-flame uppercase tracking-wider">
                 Core Architectural Highlights
               </div>
               <ul className="space-y-2 font-mono text-xs text-slate-300">

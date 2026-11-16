@@ -58,7 +58,7 @@ export const ResetCamoufoxDialog: React.FC = () => {
     >
       <DialogContent className="max-w-md border-orange-500/30 bg-obsidian-900 shadow-2xl">
         <DialogHeader className="border-b-orange-500/20">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-orange-400">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-orange-400">
             <span className="text-base">🦊</span>
             PENGATURAN SESI · HAPUS PROFIL CAMOUFOX
           </div>
@@ -83,12 +83,12 @@ export const ResetCamoufoxDialog: React.FC = () => {
             />
             <div className="min-w-0 flex-1 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <h4 className="truncate font-heading text-sm font-bold text-white">
+                <h3 className="truncate font-heading text-sm font-bold text-white">
                   {resetCamoufoxAccount.label}
-                </h4>
+                </h3>
                 <Badge
                   variant="outline"
-                  className="h-5 gap-1 border-orange-500/40 bg-orange-500/10 px-1.5 text-[9px] font-mono text-orange-300"
+                  className="h-5 gap-1 border-orange-500/40 bg-orange-500/10 px-1.5 text-xs font-mono text-orange-300"
                 >
                   🦊 Native Active
                 </Badge>
@@ -100,16 +100,16 @@ export const ResetCamoufoxDialog: React.FC = () => {
 
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 {cleanProxy ? (
-                  <Badge variant="purple" className="max-w-[170px] gap-1 truncate text-[10px]">
+                  <Badge variant="purple" className="max-w-[170px] gap-1 truncate text-xs">
                     <Globe className="h-2.5 w-2.5" /> {cleanProxy}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] text-slate-500">
+                  <Badge variant="outline" className="text-xs text-slate-500">
                     DIRECT IP
                   </Badge>
                 )}
 
-                <span className="font-mono text-[10px] text-slate-400">
+                <span className="font-mono text-xs text-slate-400">
                   Login Terakhir: {lastLoginFormatted}
                 </span>
               </div>
@@ -117,12 +117,12 @@ export const ResetCamoufoxDialog: React.FC = () => {
           </div>
 
           {/* Directory Info Box */}
-          <div className="rounded-md border border-slate-800 bg-obsidian-950/60 p-2.5 font-mono text-[11px] text-slate-400">
+          <div className="rounded-md border border-slate-800 bg-obsidian-950/60 p-2.5 font-mono text-xs text-slate-400">
             <div className="flex items-center gap-1.5 text-slate-300 font-semibold mb-1">
               <FolderX className="h-3.5 w-3.5 text-orange-400" />
               <span>Direktori yang akan dibersihkan:</span>
             </div>
-            <div className="truncate text-[10px] text-slate-500 select-all">
+            <div className="truncate text-xs text-slate-500 select-all">
               data/camoufox_profiles/{resetCamoufoxAccount.id}
             </div>
           </div>

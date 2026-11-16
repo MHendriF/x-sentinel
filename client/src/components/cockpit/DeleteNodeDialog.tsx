@@ -52,8 +52,8 @@ export const DeleteNodeDialog: React.FC = () => {
     <Dialog open={isDeleteModalOpen} onOpenChange={(open) => !open && closeDeleteModal()}>
       <DialogContent className="max-w-md border-red-500/30 bg-obsidian-900 shadow-2xl">
         <DialogHeader className="border-b-red-500/20">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-red-400">
-            <ShieldAlert className="h-4 w-4 animate-pulse text-red-500" />
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-red-400">
+            <ShieldAlert className="h-4 w-4 text-red-500" />
             CRITICAL SYSTEM ACTION · DECOMMISSION NODE
           </div>
           <DialogTitle className="font-heading text-lg text-white">
@@ -77,15 +77,15 @@ export const DeleteNodeDialog: React.FC = () => {
             />
             <div className="min-w-0 flex-1 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <h4 className="truncate font-heading text-sm font-bold text-white">
+                <h3 className="truncate font-heading text-sm font-bold text-white">
                   {deletingAccount.label}
-                </h4>
+                </h3>
                 {deletingAccount.isValid ? (
-                  <Badge variant="success" className="h-5 gap-1 px-1.5 text-[9px]">
+                  <Badge variant="success" className="h-5 gap-1 px-1.5 text-xs">
                     <CheckCircle2 className="h-2.5 w-2.5" /> VALID
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="h-5 px-1.5 text-[9px] text-slate-400">
+                  <Badge variant="secondary" className="h-5 px-1.5 text-xs text-slate-400">
                     <HelpCircle className="h-2.5 w-2.5" /> UNVERIFIED
                   </Badge>
                 )}
@@ -97,16 +97,16 @@ export const DeleteNodeDialog: React.FC = () => {
 
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 {cleanProxy ? (
-                  <Badge variant="purple" className="max-w-[170px] gap-1 truncate text-[10px]">
+                  <Badge variant="purple" className="max-w-[170px] gap-1 truncate text-xs">
                     <Globe className="h-2.5 w-2.5" /> {cleanProxy}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] text-slate-500">
+                  <Badge variant="outline" className="text-xs text-slate-500">
                     DIRECT IP
                   </Badge>
                 )}
 
-                <Badge variant="default" className="gap-1 text-[10px]">
+                <Badge variant="default" className="gap-1 text-xs">
                   <MessageSquare className="h-2.5 w-2.5" /> {deletingAccount.commentsCount ?? 3}{' '}
                   Payloads
                 </Badge>

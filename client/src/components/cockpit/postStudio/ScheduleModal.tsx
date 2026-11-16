@@ -102,7 +102,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
             />
           </div>
 
-          <div className="rounded-lg border border-border/80 bg-obsidian-900/60 p-3 font-mono text-[11px] text-slate-400">
+          <div className="rounded-lg border border-border/80 bg-obsidian-900/60 p-3 font-mono text-xs text-slate-400">
             <div className="flex justify-between">
               <span>Target:</span>
               <span className="font-bold text-white">

@@ -53,13 +53,13 @@ export const VelocityChart: React.FC<VelocityChartProps> = ({ data }) => {
     <Card className="border-border/80 bg-obsidian-850">
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
             <TrendingUp className="h-3.5 w-3.5" />
             INTERACTION VELOCITY
           </div>
 
           {/* Series Toggle Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
             <button
               onClick={() => toggleSeries('likes')}
               className={`flex items-center gap-1 rounded-md px-2 py-0.5 transition-all ${

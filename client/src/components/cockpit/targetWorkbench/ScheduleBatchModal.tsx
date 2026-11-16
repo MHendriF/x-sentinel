@@ -141,7 +141,7 @@ export const ScheduleBatchModal: React.FC<ScheduleBatchModalProps> = ({
             <Layers className="h-3.5 w-3.5 text-emerald-400" />
             <span>{nodeLabel}</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-amber-300">
+          <div className="flex items-center gap-1 text-xs text-amber-300">
             {[like && '❤️', retweet && '🔁', comment && '💬'].filter(Boolean).join(' ')}
           </div>
         </div>
@@ -187,7 +187,7 @@ export const ScheduleBatchModal: React.FC<ScheduleBatchModalProps> = ({
               <label className="font-mono text-xs font-semibold text-slate-300">
                 ROTATION DELAY (SECONDS)
               </label>
-              <span className="font-mono text-[10px] text-slate-400">{delaySeconds}s</span>
+              <span className="font-mono text-xs text-slate-400">{delaySeconds}s</span>
             </div>
             <Input
               type="number"

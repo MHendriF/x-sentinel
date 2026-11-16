@@ -9,7 +9,7 @@ export const SecurityNotice: React.FC = () => {
         <strong className="block font-bold text-amber-300">
           Security &amp; Data Sovereignty Principles:
         </strong>
-        <p className="text-[11px] leading-relaxed text-slate-400">
+        <p className="text-xs leading-relaxed text-slate-400">
           All account data, authentication cookies, and engagement logs are stored exclusively
           on your local machine in the <code>data/</code> folder. X-SENTINEL never transmits
           your credentials or bot activity history to any external third-party server.

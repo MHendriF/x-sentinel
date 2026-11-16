@@ -149,7 +149,7 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                       <div className="font-heading text-xs font-bold text-white">
                         {account.label || 'Node'}
                       </div>
-                      <div className="text-[11px] text-flame">
+                      <div className="text-xs text-flame">
                         @{account.username || 'unverified'}
                       </div>
                     </div>
@@ -160,7 +160,7 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                 <td className="px-3 py-2.5">
                   <button
                     onClick={() => handleToggle(account)}
-                    className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-[10px] font-bold transition-all ${
+                    className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-xs font-bold transition-all ${
                       account.enabled !== false
                         ? 'border border-emerald-500/40 bg-emerald-950/30 text-emerald-400'
                         : 'border border-slate-700 bg-obsidian-950 text-slate-500'
@@ -174,22 +174,22 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                 {/* Health Status Badge */}
                 <td className="px-3 py-2.5">
                   {account.healthStatus === 'HEALTHY' ? (
-                    <Badge variant="success" className="gap-1 px-2 py-0.5 text-[10px]">
+                    <Badge variant="success" className="gap-1 px-2 py-0.5 text-xs">
                       <CheckCircle2 className="h-3 w-3" />
                       Healthy
                     </Badge>
                   ) : account.healthStatus === 'EXPIRED' ? (
-                    <Badge variant="destructive" className="gap-1 px-2 py-0.5 text-[10px]">
+                    <Badge variant="destructive" className="gap-1 px-2 py-0.5 text-xs">
                       <AlertTriangle className="h-3 w-3" />
                       Expired
                     </Badge>
                   ) : account.healthStatus === 'PROXY_DEAD' ? (
-                    <Badge variant="destructive" className="gap-1 px-2 py-0.5 text-[10px]">
+                    <Badge variant="destructive" className="gap-1 px-2 py-0.5 text-xs">
                       <WifiOff className="h-3 w-3" />
                       Proxy Dead
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-[10px] text-slate-400">
+                    <Badge variant="secondary" className="gap-1 px-2 py-0.5 text-xs text-slate-400">
                       <HelpCircle className="h-3 w-3" />
                       Unchecked
                     </Badge>
@@ -200,12 +200,12 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                 <td className="px-3 py-2.5">
                   {cleanProxy ? (
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-1 text-[11px] text-purple-300">
-                        <Globe className="h-3 w-3 text-purple-400 shrink-0" />
+                      <div className="flex items-center gap-1 text-xs text-blue-300">
+                        <Globe className="h-3 w-3 text-blue-400 shrink-0" />
                         <span className="truncate max-w-[140px]">{cleanProxy}</span>
                       </div>
                       {proxyTest && (
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-xs text-slate-400">
                           {proxyTest.success ? (
                             <span className="text-emerald-400">
                               {proxyTest.latency}ms · {proxyTest.countryCode || 'OK'}
@@ -217,7 +217,7 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                       )}
                     </div>
                   ) : (
-                    <span className="text-[11px] text-slate-500">Direct IP</span>
+                    <span className="text-xs text-slate-500">Direct IP</span>
                   )}
                 </td>
 
@@ -245,7 +245,7 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                     <Button
                       size="sm"
                       variant="secondary"
-                      className="h-6 px-1.5 text-[10px]"
+                      className="h-6 px-1.5 text-xs"
                       onClick={() => handleVerify(account)}
                       title="Health check node"
                     >
@@ -260,7 +260,7 @@ export const NodesTableView: React.FC<NodesTableViewProps> = ({
                         onClick={() => openResetCamoufoxModal(account)}
                         title="Hapus Sesi & Reset Profil Camoufox"
                       >
-                        <span className="text-[10px]">🦊</span>
+                        <span className="text-xs">🦊</span>
                       </Button>
                     )}
 

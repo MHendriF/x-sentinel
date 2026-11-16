@@ -37,7 +37,7 @@ export const NodeShareChart: React.FC<NodeShareChartProps> = ({
       {/* Donut Chart: Cluster Workload Share */}
       <Card className="border-border/80 bg-obsidian-850">
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-purple-400">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-blue-400">
             <PieIcon className="h-3.5 w-3.5" />
             WORKLOAD PROPORTION
           </div>
@@ -87,11 +87,11 @@ export const NodeShareChart: React.FC<NodeShareChartProps> = ({
       <Card className="border-border/80 bg-obsidian-850">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-emerald-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-emerald-400">
               <Users className="h-3.5 w-3.5" />
               FLEET LEADERBOARD
             </div>
-            <span className="font-mono text-[10px] text-slate-500">
+            <span className="font-mono text-xs text-slate-500">
               {onSelectNode ? '💡 Klik baris node untuk drill-down' : ''}
             </span>
           </div>
@@ -155,12 +155,12 @@ export const NodeShareChart: React.FC<NodeShareChartProps> = ({
                             {node.name}
                           </span>
                           {isSelected && (
-                            <span className="flex items-center rounded bg-cyan-500/20 px-1.5 py-0.2 font-mono text-[9px] font-bold text-cyan-400">
+                            <span className="flex items-center rounded bg-cyan-500/20 px-1.5 py-0.2 font-mono text-xs font-bold text-cyan-400">
                               <Check className="mr-0.5 h-2.5 w-2.5" /> FILTERED
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 font-mono text-[10px] text-slate-400">
+                        <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
                           <span>{node.username}</span>
                           {node.healthStatus === 'HEALTHY' ? (
                             <span className="flex items-center text-emerald-400">
@@ -177,7 +177,7 @@ export const NodeShareChart: React.FC<NodeShareChartProps> = ({
 
                     {/* Vector breakdown mini tags & Total Actions */}
                     <div className="flex items-center gap-2.5">
-                      <div className="hidden items-center gap-1.5 font-mono text-[10px] text-slate-400 sm:flex">
+                      <div className="hidden items-center gap-1.5 font-mono text-xs text-slate-400 sm:flex">
                         <span className="flex items-center text-red-400/80" title="Likes">
                           <Heart className="mr-0.5 h-2.5 w-2.5" /> {node.likes}
                         </span>

@@ -67,6 +67,10 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      fontSize: {
+        '2xs': ['11px', { lineHeight: '1.35' }],
+        xs: ['12px', { lineHeight: '1.45' }],
+      },
       fontFamily: {
         heading: ['Space Grotesk', 'sans-serif'],
         body: ['Plus Jakarta Sans', 'sans-serif'],

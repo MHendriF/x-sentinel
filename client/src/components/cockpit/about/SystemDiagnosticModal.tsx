@@ -87,7 +87,7 @@ export const SystemDiagnosticModal: React.FC<SystemDiagnosticModalProps> = ({
       case 'browser_engine':
         return <Cpu className="h-4 w-4 text-cyan-400" />;
       case 'ai_gateway':
-        return <Bot className="h-4 w-4 text-purple-400" />;
+        return <Bot className="h-4 w-4 text-blue-400" />;
       case 'fleet_readiness':
         return <Layers className="h-4 w-4 text-flame" />;
       case 'stealth_cadence':
@@ -103,7 +103,7 @@ export const SystemDiagnosticModal: React.FC<SystemDiagnosticModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl border-border/80 bg-obsidian-950 text-slate-100 shadow-2xl">
         <DialogHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
             <Activity className="h-3.5 w-3.5" />
             6-PILLAR SYSTEM SELF-DIAGNOSTIC AUDIT
           </div>
@@ -134,7 +134,7 @@ export const SystemDiagnosticModal: React.FC<SystemDiagnosticModalProps> = ({
               <div className="font-heading text-xs font-semibold text-slate-300">
                 Auditing System Health Pillars...
               </div>
-              <p className="font-mono text-[10px] text-slate-500">
+              <p className="font-mono text-xs text-slate-500">
                 Testing storage I/O latency, stealth driver integrity, and daemon status.
               </p>
             </div>
@@ -160,7 +160,7 @@ export const SystemDiagnosticModal: React.FC<SystemDiagnosticModalProps> = ({
                         </span>
                         <Badge
                           variant="outline"
-                          className={`font-mono text-[9px] ${
+                          className={`font-mono text-xs ${
                             pillar.passed
                               ? 'border-emerald-500/40 text-emerald-400'
                               : 'border-amber-500/40 text-amber-400'
@@ -169,7 +169,7 @@ export const SystemDiagnosticModal: React.FC<SystemDiagnosticModalProps> = ({
                           {pillar.status}
                         </Badge>
                       </div>
-                      <p className="mt-0.5 font-mono text-[11px] text-slate-400">
+                      <p className="mt-0.5 font-mono text-xs text-slate-400">
                         {pillar.message}
                       </p>
                     </div>

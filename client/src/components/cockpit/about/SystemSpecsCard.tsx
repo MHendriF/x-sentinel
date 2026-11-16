@@ -6,7 +6,7 @@ export const SystemSpecsCard: React.FC = () => {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="font-mono text-[10px] font-bold tracking-wider text-flame">
+        <div className="font-mono text-xs font-bold tracking-wider text-flame">
           SYSTEM SPECIFICATIONS
         </div>
         <CardTitle className="text-lg">Technology Stack &amp; Architectural Foundations</CardTitle>
@@ -34,8 +34,8 @@ export const SystemSpecsCard: React.FC = () => {
           </div>
 
           <div className="space-y-2 rounded-lg border border-slate-800 bg-obsidian-850 p-4">
-            <div className="flex items-center gap-2 font-heading text-sm font-bold text-purple-400">
-              <Cpu className="h-4 w-4 text-purple-400" />
+            <div className="flex items-center gap-2 font-heading text-sm font-bold text-blue-400">
+              <Cpu className="h-4 w-4 text-blue-400" />
               Automation Backend
             </div>
             <div className="space-y-1 font-mono text-xs text-slate-400">

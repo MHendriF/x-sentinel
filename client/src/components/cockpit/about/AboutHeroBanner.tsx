@@ -6,38 +6,35 @@ import { Shield, Sparkles, Bot, Terminal, ShieldCheck } from 'lucide-react';
 export const AboutHeroBanner: React.FC = () => {
   return (
     <Card className="relative overflow-hidden border-flame/40 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-obsidian-950 shadow-2xl">
-      <div className="pointer-events-none absolute right-0 top-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-flame/10 blur-3xl"></div>
-      <div className="pointer-events-none absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-purple-500/5 blur-3xl"></div>
-
       <CardContent className="relative z-10 space-y-4 p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="default"
-            className="gap-1.5 bg-flame px-3 py-1 font-mono text-[11px] font-bold text-obsidian-950 shadow-md"
+            className="gap-1.5 bg-flame px-3 py-1 font-mono text-xs font-bold text-obsidian-950 shadow-md"
           >
             <Shield className="h-3.5 w-3.5" />
             X-SENTINEL CORE v1.3.4
           </Badge>
           <Badge
             variant="outline"
-            className="border-slate-700 bg-obsidian-900/60 font-mono text-[11px] text-slate-300"
+            className="border-slate-700 bg-obsidian-900/60 font-mono text-xs text-slate-300"
           >
-            DUAL ENGINE (CHROMIUM &amp; CAMOUFOX) · REACT 19 · AI POST STUDIO · MULTI-NODE FLEET
+            DUAL ENGINE (CHROMIUM &amp; CAMOUFOX) · REACT 19 · POST STUDIO · MULTI-NODE FLEET
           </Badge>
         </div>
 
         <div className="max-w-3xl space-y-2">
           <h2 className="font-heading text-2xl font-black tracking-tight text-white sm:text-3xl">
-            Autonomous Multi-Node Fleet Cockpit &amp; Growth Studio for X
+            Local Multi-Node Orchestration &amp; Automation Workbench
           </h2>
           <p className="text-sm leading-relaxed text-slate-300">
-            <strong>X-SENTINEL</strong> is an enterprise-grade autonomous engagement and publishing
-            cockpit for the <strong>X (Twitter)</strong> platform. It unites a modular multi-account
-            rotation architecture, dedicated proxy tunnel isolation, AI-powered generation
+            <strong>X-SENTINEL</strong> is a self-hosted engagement and scheduling console
+            for the <strong>X (Twitter)</strong> platform. It unites a modular multi-account
+            rotation architecture, dedicated proxy tunnel isolation, AI-assisted drafting
             (*AI Post Studio*), contextual auto-replies (*OpenRouter, Groq, OpenAI, Gemini, Ollama*),
-            keyword radar surveillance (*Feed Hunter*), bulk fleet onboarding (*Bulk Fleet Manager*),
-            a multi-niche spintax library, live telemetry SSE streams, and interactive visual
-            analytics with zero external database dependencies.
+            keyword radar scanning (*Feed Hunter*), bulk fleet onboarding (*Bulk Fleet Manager*),
+            a multi-niche spintax library, live SSE streams, and visual activity charts
+            with zero external database dependencies.
           </p>
         </div>
 
@@ -47,19 +44,19 @@ export const AboutHeroBanner: React.FC = () => {
             <span>AI Post Studio &amp; Fleet Dispatcher</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-3 py-1.5">
-            <Bot className="h-4 w-4 text-purple-400" />
+            <Bot className="h-4 w-4 text-blue-400" />
             <span>Multi-Provider AI Context Engine</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-3 py-1.5">
             <Terminal className="h-4 w-4 text-flame" />
-            <span>Realtime SSE Telemetry Stream</span>
+            <span>Realtime SSE Stream</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-3 py-1.5">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span>Hardened Stealth &amp; Evasion</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-amber-300">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-amber-400" />
             <span>Camoufox Anti-Detect Firefox Engine</span>
           </div>
         </div>

@@ -76,10 +76,10 @@ const TAG_COLORS: Record<
     glow: 'shadow-flame/20',
   },
   purple: {
-    text: 'text-purple-400',
-    bg: 'bg-purple-400',
-    border: 'border-purple-500/40',
-    glow: 'shadow-purple-500/20',
+    text: 'text-blue-400',
+    bg: 'bg-blue-400',
+    border: 'border-blue-500/40',
+    glow: 'shadow-blue-500/20',
   },
   emerald: {
     text: 'text-emerald-400',
@@ -117,7 +117,7 @@ const ACCENT_STYLES: Record<NonNullable<DeckHeaderProps['accent']>, string> = {
   none: 'border-border/80 bg-obsidian-900/90 shadow-xl',
   flame: 'border-flame/40 bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-flame-950/20 shadow-xl',
   purple:
-    'border-purple-500/40 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-purple-950/20 shadow-2xl',
+    'border-blue-500/40 bg-gradient-to-br from-obsidian-850 via-obsidian-900 to-blue-950/20 shadow-2xl',
   emerald:
     'border-emerald-500/30 bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-emerald-950/20 shadow-xl',
   cyan: 'border-cyan-500/30 bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-cyan-950/20 shadow-xl',
@@ -195,35 +195,17 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
   const headerContent = (
     <>
       <div className="flex items-start gap-4">
-        {/* HUD Cyber Pod with State-Aware Rotating Reticle Ring */}
+        {/* HUD Pod */}
         {icon && (
           <div className="relative flex shrink-0 items-center justify-center pt-0.5">
-            {/* Ambient Neon Backlight Aura */}
-            <div
-              className={cn(
-                'absolute -inset-1 rounded-xl opacity-20 blur-md pointer-events-none transition-all duration-500',
-                colorMap.bg,
-                isActive
-                  ? 'opacity-60 blur-lg animate-pulse'
-                  : 'group-hover:opacity-45 group-hover:blur-md'
-              )}
-            />
-
-            {/* Rotating Reticle Tech Ring (Outer Orbit) */}
-            {iconAnimation !== 'none' && (
+            {iconAnimation !== 'none' && isActive && (
               <div
-                className={cn(
-                  'pointer-events-none absolute -inset-1.5 flex items-center justify-center transition-all duration-500',
-                  isActive
-                    ? 'opacity-85 animate-reticle-active'
-                    : 'opacity-25 group-hover:opacity-75 group-hover:animate-reticle-spin'
-                )}
+                className="pointer-events-none absolute -inset-1.5 flex items-center justify-center opacity-80"
               >
                 <div
                   className={cn(
                     'h-full w-full rounded-xl border border-dashed transition-colors duration-300',
-                    colorMap.border,
-                    isActive ? 'border-current' : 'group-hover:border-current'
+                    colorMap.border
                   )}
                 />
               </div>
@@ -282,22 +264,24 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
           {/* Top Tag Overline */}
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
-              <span
-                className={cn(
-                  'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
-                  colorMap.bg
-                )}
-              />
+              {isActive && (
+                <span
+                  className={cn(
+                    'absolute inline-flex h-full w-full animate-pulse rounded-full opacity-75',
+                    colorMap.bg
+                  )}
+                />
+              )}
               <span className={cn('relative inline-flex h-2 w-2 rounded-full', colorMap.bg)} />
             </span>
 
-            <span className={cn('font-mono text-[10px] font-bold tracking-widest uppercase', colorMap.text)}>
+            <span className={cn('font-mono text-2xs font-bold tracking-widest uppercase', colorMap.text)}>
               {tag}
             </span>
 
             {badge &&
               (typeof badge === 'string' ? (
-                <span className="rounded border border-slate-700/80 bg-obsidian-950 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-400">
+                <span className="rounded border border-slate-700/80 bg-obsidian-950 px-2 py-0.5 font-mono text-2xs uppercase tracking-wider text-slate-400">
                   {badge}
                 </span>
               ) : (

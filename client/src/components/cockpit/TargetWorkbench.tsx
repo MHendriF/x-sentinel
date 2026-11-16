@@ -400,7 +400,7 @@ export const TargetWorkbench: React.FC = () => {
         title="Target Engagement Workbench"
         titleBadges={
           isRunning ? (
-            <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[11px] font-bold text-amber-400">
+            <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-xs font-bold text-amber-400">
               {progressPct}% ({completed}/{total})
             </span>
           ) : undefined
@@ -410,11 +410,11 @@ export const TargetWorkbench: React.FC = () => {
           <div className="flex items-center gap-2 font-mono text-xs">
             <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-slate-300">
               <Layers className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-[10px] uppercase text-slate-500">Fleet:</span>
+              <span className="text-xs uppercase text-slate-500">Fleet:</span>
               <span className="font-bold text-emerald-400">{effectiveAccounts.length} Nodes</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-md border border-slate-800 bg-obsidian-950/80 px-2.5 py-1.5 text-slate-300">
-              <span className="text-[10px] uppercase text-slate-500">Delays:</span>
+              <span className="text-xs uppercase text-slate-500">Delays:</span>
               <span className="font-bold text-slate-200">
                 {minDelay}s - {maxDelay}s
               </span>
@@ -435,7 +435,7 @@ export const TargetWorkbench: React.FC = () => {
                 </CardTitle>
                 <Badge
                   variant={isRunning ? 'success' : 'secondary'}
-                  className="font-mono text-[10px]"
+                  className="font-mono text-xs"
                 >
                   {isRunning ? 'EXECUTING' : 'READY'}
                 </Badge>
@@ -454,7 +454,7 @@ export const TargetWorkbench: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsNodeModalOpen(true)}
-                      className="cursor-pointer text-[10px] text-emerald-400 hover:underline flex items-center gap-1"
+                      className="cursor-pointer text-xs text-emerald-400 hover:underline flex items-center gap-1"
                     >
                       <Sliders className="h-3 w-3" />
                       Configure Selection ({customAccountIds.length})
@@ -502,17 +502,17 @@ export const TargetWorkbench: React.FC = () => {
                   </label>
                   <div className="flex items-center gap-1.5">
                     {urlAnalysis.validUrls.length > 0 && (
-                      <Badge variant="success" className="font-mono text-[9.5px]">
+                      <Badge variant="success" className="font-mono text-xs">
                         {urlAnalysis.validUrls.length} VALID
                       </Badge>
                     )}
                     {urlAnalysis.duplicateCount > 0 && (
-                      <Badge variant="outline" className="border-amber-500/40 text-amber-300 font-mono text-[9.5px]">
+                      <Badge variant="outline" className="border-amber-500/40 text-amber-300 font-mono text-xs">
                         {urlAnalysis.duplicateCount} DUPLICATE
                       </Badge>
                     )}
                     {urlAnalysis.invalidCount > 0 && (
-                      <Badge variant="destructive" className="font-mono text-[9.5px]">
+                      <Badge variant="destructive" className="font-mono text-xs">
                         {urlAnalysis.invalidCount} INVALID
                       </Badge>
                     )}
@@ -530,14 +530,14 @@ export const TargetWorkbench: React.FC = () => {
 
                 {/* URL Quick Action Bar */}
                 <div className="flex flex-wrap items-center justify-between gap-1.5 pt-0.5">
-                  <div className="flex flex-wrap items-center gap-1 font-mono text-[10px]">
+                  <div className="flex flex-wrap items-center gap-1 font-mono text-xs">
                     <Button
                       id="btn-paste-clipboard"
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={handlePasteClipboard}
-                      className="h-6 px-2 text-[10px]"
+                      className="h-6 px-2 text-xs"
                     >
                       <ClipboardPaste className="mr-1 h-2.5 w-2.5 text-blue-400" />
                       Paste Clipboard
@@ -549,7 +549,7 @@ export const TargetWorkbench: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={handleDeduplicate}
-                        className="h-6 border-amber-500/40 bg-amber-500/10 px-2 text-[10px] text-amber-300 hover:bg-amber-500/20"
+                        className="h-6 border-amber-500/40 bg-amber-500/10 px-2 text-xs text-amber-300 hover:bg-amber-500/20"
                       >
                         <Sparkles className="mr-1 h-2.5 w-2.5 text-amber-400" />
                         Clean &amp; Deduplicate ({urlAnalysis.duplicateCount})
@@ -562,7 +562,7 @@ export const TargetWorkbench: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={handleLoadSample}
-                        className="h-6 px-2 text-[10px] text-slate-400 hover:text-white"
+                        className="h-6 px-2 text-xs text-slate-400 hover:text-white"
                       >
                         <Zap className="mr-1 h-2.5 w-2.5 text-amber-400" />
                         Load Samples
@@ -574,7 +574,7 @@ export const TargetWorkbench: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setUrlsText('')}
-                      className="cursor-pointer font-mono text-[10px] text-slate-500 hover:text-red-400 flex items-center gap-0.5"
+                      className="cursor-pointer font-mono text-xs text-slate-500 hover:text-red-400 flex items-center gap-0.5"
                     >
                       <Trash2 className="h-2.5 w-2.5" />
                       Clear
@@ -680,9 +680,9 @@ export const TargetWorkbench: React.FC = () => {
                           return (
                             <Badge
                               variant="outline"
-                              className="flex animate-pulse items-center gap-1 border-purple-500/50 bg-purple-500/15 font-mono text-[9px] text-purple-300"
+                              className="flex items-center gap-1 border-blue-500/50 bg-blue-500/15 font-mono text-xs text-blue-300"
                             >
-                              <Bot className="h-3 w-3 text-purple-400" />
+                              <Bot className="h-3 w-3 text-blue-400" />
                               🤖 Auto AI ({settings.aiProvider.toUpperCase()})
                             </Badge>
                           );
@@ -690,7 +690,7 @@ export const TargetWorkbench: React.FC = () => {
                         return (
                           <Badge
                             variant="outline"
-                            className="border-slate-700 bg-slate-900/60 font-mono text-[9px] text-slate-400"
+                            className="border-slate-700 bg-slate-900/60 font-mono text-xs text-slate-400"
                           >
                             📦 Node Spintax Pool Default
                           </Badge>
@@ -707,7 +707,7 @@ export const TargetWorkbench: React.FC = () => {
                           return (
                             <Badge
                               variant="outline"
-                              className="animate-pulse border-emerald-500/50 bg-emerald-500/15 font-mono text-[9px] text-emerald-300"
+                              className="border-emerald-500/50 bg-emerald-500/15 font-mono text-xs text-emerald-300"
                             >
                               🟢 JSON Matrix: {count} Replies
                             </Badge>
@@ -717,7 +717,7 @@ export const TargetWorkbench: React.FC = () => {
                       return (
                         <Badge
                           variant="outline"
-                          className="border-blue-500/50 bg-blue-500/15 font-mono text-[9px] text-blue-300"
+                          className="border-blue-500/50 bg-blue-500/15 font-mono text-xs text-blue-300"
                         >
                           ⚡ Custom Spintax / Text
                         </Badge>
@@ -727,16 +727,16 @@ export const TargetWorkbench: React.FC = () => {
 
                   {/* Informative AI Banner */}
                   {!customComment.trim() && (
-                    <div className="animate-in fade-in flex items-start gap-2.5 rounded-md border border-purple-500/30 bg-purple-950/30 p-2.5 font-mono text-xs text-purple-200">
-                      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-purple-400" />
+                    <div className="animate-in fade-in flex items-start gap-2.5 rounded-md border border-blue-500/30 bg-blue-950/30 p-2.5 font-mono text-xs text-blue-200">
+                      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
                       <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-purple-100">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-blue-100">
                           <span>🤖 Contextual AI Auto-Replies Active</span>
-                          <span className="rounded border border-purple-500/30 bg-purple-500/20 px-1.5 py-0.2 text-[10px] font-normal text-purple-300">
+                          <span className="rounded border border-blue-500/30 bg-blue-500/20 px-1.5 py-0.5 text-xs font-normal text-blue-300">
                             Empty Payload
                           </span>
                         </div>
-                        <p className="font-sans text-[11px] leading-relaxed text-slate-300">
+                        <p className="font-sans text-xs leading-relaxed text-slate-300">
                           The bot will automatically read each target tweet and synthesize a natural,
                           contextual response via AI (
                           {settings?.aiProvider && settings.aiProvider !== 'none'
@@ -760,7 +760,7 @@ export const TargetWorkbench: React.FC = () => {
                       className="min-h-[140px] resize-y border-blue-500/30 bg-obsidian-950/90 font-mono text-xs font-medium leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-blue-400"
                     />
                     {customComment.length > 0 && (
-                      <div className="flex justify-end font-mono text-[10px] text-slate-400 pr-1">
+                      <div className="flex justify-end font-mono text-xs text-slate-400 pr-1">
                         <span>{customComment.length.toLocaleString()} chars</span>
                       </div>
                     )}
@@ -769,7 +769,7 @@ export const TargetWorkbench: React.FC = () => {
                   {/* Spintax Permutation Live Preview Box */}
                   {spintaxSample && (
                     <div className="animate-in fade-in rounded-md border border-amber-500/40 bg-amber-950/20 p-2.5 font-mono text-xs text-amber-200">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-amber-400 pb-1">
+                      <div className="flex items-center justify-between text-xs font-bold text-amber-400 pb-1">
                         <span>🎲 SPINTAX RANDOM SAMPLE PREVIEW</span>
                         <button
                           type="button"
@@ -791,7 +791,7 @@ export const TargetWorkbench: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setIsPresetModalOpen(true)}
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-blue-500/40 bg-blue-500/20 px-2.5 py-1 font-mono text-[11px] font-medium text-blue-300 shadow-sm transition-all hover:border-blue-400 hover:bg-blue-500/30 active:scale-95"
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-blue-500/40 bg-blue-500/20 px-2.5 py-1 font-mono text-xs font-medium text-blue-300 shadow-sm transition-all hover:border-blue-400 hover:bg-blue-500/30 active:scale-95"
                       >
                         <BookOpen className="h-3 w-3 text-blue-400" />
                         <span>📚 Preset Library...</span>
@@ -802,7 +802,7 @@ export const TargetWorkbench: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleTestSpintax}
-                          className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/20 px-2 py-1 font-mono text-[11px] font-medium text-amber-300 transition-all hover:bg-amber-500/30 active:scale-95"
+                          className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/20 px-2 py-1 font-mono text-xs font-medium text-amber-300 transition-all hover:bg-amber-500/30 active:scale-95"
                         >
                           <Dice5 className="h-3 w-3 text-amber-400" />
                           <span>Test Spintax</span>
@@ -829,7 +829,7 @@ export const TargetWorkbench: React.FC = () => {
                           );
                           toast.success('Sample JSON Multi-Node Matrix loaded!');
                         }}
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-700 bg-slate-800/60 px-2 py-1 font-mono text-[11px] font-medium text-slate-300 transition-all hover:bg-slate-800 active:scale-95"
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-700 bg-slate-800/60 px-2 py-1 font-mono text-xs font-medium text-slate-300 transition-all hover:bg-slate-800 active:scale-95"
                       >
                         <Braces className="h-3 w-3 text-slate-400" />
                         <span>+ JSON Matrix</span>
@@ -844,7 +844,7 @@ export const TargetWorkbench: React.FC = () => {
                           setSpintaxSample(null);
                           toast.info('Reply input cleared');
                         }}
-                        className="cursor-pointer font-mono text-[10px] text-slate-500 hover:text-red-400"
+                        className="cursor-pointer font-mono text-xs text-slate-500 hover:text-red-400"
                       >
                         Clear
                       </button>
@@ -857,26 +857,26 @@ export const TargetWorkbench: React.FC = () => {
               {targetCount > 0 && (
                 <div className="rounded-lg border border-slate-800 bg-obsidian-950/80 p-3 font-mono text-xs space-y-2">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="flex items-center gap-1 text-[11px] font-bold text-slate-300">
+                    <span className="flex items-center gap-1 text-xs font-bold text-slate-300">
                       <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
                       MISSION TELEMETRY ESTIMATE
                     </span>
-                    <span className="text-[10px] text-slate-500">DYNAMIC MODEL</span>
+                    <span className="text-xs text-slate-500">DYNAMIC MODEL</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="rounded border border-slate-800/80 bg-obsidian-900/60 p-1.5">
-                      <div className="text-[10px] text-slate-500">TOTAL ACTIONS</div>
+                      <div className="text-xs text-slate-500">TOTAL ACTIONS</div>
                       <div className="font-bold text-white text-sm">{totalOperations}</div>
                     </div>
                     <div className="rounded border border-slate-800/80 bg-obsidian-900/60 p-1.5">
-                      <div className="text-[10px] text-slate-500">EST. DURATION</div>
+                      <div className="text-xs text-slate-500">EST. DURATION</div>
                       <div className="font-bold text-amber-400 text-sm">
                         ~{estMinMinutes}-{estMaxMinutes}m
                       </div>
                     </div>
                     <div className="rounded border border-slate-800/80 bg-obsidian-900/60 p-1.5">
-                      <div className="text-[10px] text-slate-500">ROTATION DELAY</div>
+                      <div className="text-xs text-slate-500">ROTATION DELAY</div>
                       <div className="font-bold text-emerald-400 text-sm">~{Math.round(avgDelaySec)}s</div>
                     </div>
                   </div>
@@ -944,16 +944,16 @@ export const TargetWorkbench: React.FC = () => {
                     <div className="font-heading text-xs font-semibold text-white flex items-center gap-1.5">
                       Cross-Node Target Lock
                       {crossNodeTargetLock ? (
-                        <span className="font-mono text-[9px] text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">
+                        <span className="font-mono text-xs text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">
                           ON (Anti-Collision)
                         </span>
                       ) : (
-                        <span className="font-mono text-[9px] text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded">
+                        <span className="font-mono text-xs text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded">
                           OFF (Multi-Node Raid)
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-400">
+                    <div className="text-xs text-slate-400">
                       {crossNodeTargetLock
                         ? 'Cegah node lain menargetkan tweet yang sama dalam jendela waktu (Safety)'
                         : 'Seluruh armada bebas menargetkan tweet yang sama (Raid/Engagement Pod)'}
@@ -1103,11 +1103,11 @@ export const TargetWorkbench: React.FC = () => {
               </Button>
               {isRunning && (
                 currentTask?.isPaused ? (
-                  <Badge variant="outline" className="border-amber-500/60 bg-amber-500/20 text-amber-300 font-mono text-[9px] animate-pulse">
+                  <Badge variant="outline" className="border-amber-500/60 bg-amber-500/20 text-amber-300 font-mono text-xs animate-pulse">
                     ⏸ PAUSED
                   </Badge>
                 ) : (
-                  <Badge variant="success" className="animate-pulse font-mono text-[9px]">
+                  <Badge variant="success" className="animate-pulse font-mono text-xs">
                     ● STREAMING
                   </Badge>
                 )

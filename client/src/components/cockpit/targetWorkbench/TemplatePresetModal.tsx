@@ -25,7 +25,7 @@ interface TemplatePresetModalProps {
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   Coins: <Coins className="h-4 w-4 text-amber-400" />,
-  Bot: <Bot className="h-4 w-4 text-purple-400" />,
+  Bot: <Bot className="h-4 w-4 text-blue-400" />,
   Code2: <Code2 className="h-4 w-4 text-blue-400" />,
   MessageCircle: <MessageCircle className="h-4 w-4 text-emerald-400" />,
 };
@@ -76,7 +76,7 @@ export const TemplatePresetModal: React.FC<TemplatePresetModalProps> = ({
           <div className="flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-blue-400" />
             <h3 className="font-heading text-sm font-bold text-white">Preset Template Library</h3>
-            <Badge variant="outline" className="border-blue-500/40 font-mono text-[10px] text-blue-300">
+            <Badge variant="outline" className="border-blue-500/40 font-mono text-xs text-blue-300">
               {filteredTemplates.length} Templates
             </Badge>
           </div>
@@ -102,7 +102,7 @@ export const TemplatePresetModal: React.FC<TemplatePresetModalProps> = ({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
             <button
               type="button"
               onClick={() => setSelectedCategory('all')}
@@ -160,10 +160,10 @@ export const TemplatePresetModal: React.FC<TemplatePresetModalProps> = ({
                 className="group flex flex-col justify-between gap-2.5 rounded-lg border border-border/70 bg-obsidian-950/70 p-3.5 transition-all hover:border-blue-500/50 hover:bg-obsidian-850"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] font-semibold text-blue-400">
+                  <span className="font-mono text-xs font-semibold text-blue-400">
                     {item.categoryName}
                   </span>
-                  <Badge variant="outline" className="border-slate-700 font-mono text-[9px] text-slate-400">
+                  <Badge variant="outline" className="border-slate-700 font-mono text-xs text-slate-400">
                     {item.badge}
                   </Badge>
                 </div>
@@ -178,7 +178,7 @@ export const TemplatePresetModal: React.FC<TemplatePresetModalProps> = ({
                       onSelectTemplate(item.template);
                       onClose();
                     }}
-                    className="h-7 border-blue-500/40 font-mono text-[11px] text-blue-300 hover:border-blue-400 hover:bg-blue-500/20"
+                    className="h-7 border-blue-500/40 font-mono text-xs text-blue-300 hover:border-blue-400 hover:bg-blue-500/20"
                   >
                     <Check className="mr-1 h-3 w-3" />
                     Use This Template

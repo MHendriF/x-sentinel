@@ -6,7 +6,7 @@ export const ModularArchitectureCard: React.FC = () => {
   return (
     <Card className="border-border/80 bg-obsidian-850">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+        <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
           <FolderKanban className="h-4 w-4" />
           MODULAR CODEBASE ARCHITECTURE
         </div>
@@ -24,7 +24,7 @@ export const ModularArchitectureCard: React.FC = () => {
               <Bot className="h-4 w-4" />
               <span>Backend Core Bot (`server/automation/bot/`)</span>
             </div>
-            <ul className="space-y-1 font-mono text-[11px] text-slate-400">
+            <ul className="space-y-1 font-mono text-xs text-slate-400">
               <li>
                 • <code>humanCadence.js</code>: Jitter, scrolling, typing delays
               </li>
@@ -49,7 +49,7 @@ export const ModularArchitectureCard: React.FC = () => {
               <FileCode2 className="h-4 w-4" />
               <span>Express API Routers (`server/routes/`)</span>
             </div>
-            <ul className="space-y-1 font-mono text-[11px] text-slate-400">
+            <ul className="space-y-1 font-mono text-xs text-slate-400">
               <li>
                 • <code>accountsRouter.js</code>: Fleet CRUD &amp; bulk operations
               </li>
@@ -74,7 +74,7 @@ export const ModularArchitectureCard: React.FC = () => {
               <Code2 className="h-4 w-4" />
               <span>Frontend Surfaces (`client/src/components/`)</span>
             </div>
-            <ul className="space-y-1 font-mono text-[11px] text-slate-400">
+            <ul className="space-y-1 font-mono text-xs text-slate-400">
               <li>
                 • <code>postStudio/</code>: Mockup, dropzone, schedule modal
               </li>

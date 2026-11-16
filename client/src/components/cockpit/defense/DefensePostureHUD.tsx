@@ -91,7 +91,7 @@ export const DefensePostureHUD: React.FC<DefensePostureHUDProps> = ({
           <div
             className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border font-mono text-lg font-black shadow-inner ${
               isOptimal
-                ? 'border-purple-500/40 bg-purple-950/40 text-purple-300'
+                ? 'border-cyan-500/40 bg-cyan-950/40 text-cyan-300'
                 : isBalanced
                   ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300'
                   : 'border-rose-500/40 bg-rose-950/40 text-rose-300'
@@ -106,9 +106,9 @@ export const DefensePostureHUD: React.FC<DefensePostureHUDProps> = ({
                 DEFENSIVE POSTURE INDEX
               </span>
               <span
-                className={`rounded border px-2 py-0.5 font-mono text-[10px] font-bold ${
+                className={`rounded border px-2 py-0.5 font-mono text-xs font-bold ${
                   isOptimal
-                    ? 'border-purple-500/40 bg-purple-950/40 text-purple-300'
+                    ? 'border-cyan-500/40 bg-cyan-950/40 text-cyan-300'
                     : isBalanced
                       ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300'
                       : 'border-rose-500/40 bg-rose-950/40 text-rose-300'
@@ -127,7 +127,7 @@ export const DefensePostureHUD: React.FC<DefensePostureHUDProps> = ({
         </div>
 
         {/* Right: Quick Spec Badges */}
-        <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
           <div className="flex items-center gap-1 rounded-md border border-border/70 bg-obsidian-950 px-2.5 py-1 text-slate-300">
             <Activity className="h-3 w-3 text-cyan-400" />
             <span>Jitter:</span>

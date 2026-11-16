@@ -135,12 +135,12 @@ export const NavDeck: React.FC = () => {
               <div className="animate-in fade-in duration-200">
                 <div className="flex items-center gap-1.5 font-heading text-base font-bold tracking-tight text-white">
                   X-SENTINEL
-                  <span className="font-mono text-[10px] font-normal tracking-wide text-slate-500">
+                  <span className="font-mono text-2xs font-normal tracking-wide text-slate-500">
                     v{__APP_VERSION__}
                   </span>
                 </div>
-                <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                  Autonomous Fleet Control
+                <div className="font-mono text-2xs tracking-wide text-muted-foreground whitespace-nowrap">
+                  Fleet Orchestrator
                 </div>
               </div>
             )}
@@ -178,15 +178,17 @@ export const NavDeck: React.FC = () => {
           <div className="rounded-md border border-border/70 bg-obsidian-800 p-3 animate-in fade-in duration-200">
             <div className="mb-2.5 flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
-                <span
-                  className={`absolute inline-flex h-full w-full ${apiOnline ? 'animate-ping opacity-75' : ''} rounded-full ${coreStatus.dot}`}
-                ></span>
+                {apiOnline && isRunning && (
+                  <span
+                    className={`absolute inline-flex h-full w-full animate-pulse rounded-full ${coreStatus.dot}`}
+                  ></span>
+                )}
                 <span
                   className={`relative inline-flex h-2.5 w-2.5 rounded-full ${coreStatus.dot}`}
                 ></span>
               </span>
               <span
-                className={`font-mono text-[11px] font-bold tracking-wide ${coreStatus.color}`}
+                className={`font-mono text-xs font-bold tracking-wide ${coreStatus.color}`}
                 aria-live="polite"
               >
                 {coreStatus.label}
@@ -195,15 +197,15 @@ export const NavDeck: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-1.5 rounded border border-border/40 bg-obsidian-900/90 p-2 text-center">
               <div>
-                <div className="font-mono text-[9px] text-muted-foreground">NODES</div>
+                <div className="font-mono text-2xs text-muted-foreground">NODES</div>
                 <div className="font-mono text-xs font-bold text-white">{totalAccounts}</div>
               </div>
               <div>
-                <div className="font-mono text-[9px] text-muted-foreground">ACTIVE</div>
+                <div className="font-mono text-2xs text-muted-foreground">ACTIVE</div>
                 <div className="font-mono text-xs font-bold text-flame">{activeAccounts}</div>
               </div>
               <div>
-                <div className="font-mono text-[9px] text-muted-foreground">TUNNEL</div>
+                <div className="font-mono text-2xs text-muted-foreground">TUNNEL</div>
                 <div className="font-mono text-xs font-bold text-blue-400">
                   {activeAccounts > 0 ? `${activeAccounts}x` : 'IDLE'}
                 </div>
@@ -217,14 +219,16 @@ export const NavDeck: React.FC = () => {
             title={`${coreStatus.label} — ${totalAccounts} Nodes (${activeAccounts} Active)`}
           >
             <span className="relative flex h-2.5 w-2.5">
-              <span
-                className={`absolute inline-flex h-full w-full ${apiOnline ? 'animate-ping opacity-75' : ''} rounded-full ${coreStatus.dot}`}
-              ></span>
+              {apiOnline && isRunning && (
+                <span
+                  className={`absolute inline-flex h-full w-full animate-pulse rounded-full ${coreStatus.dot}`}
+                ></span>
+              )}
               <span
                 className={`relative inline-flex h-2.5 w-2.5 rounded-full ${coreStatus.dot}`}
               ></span>
             </span>
-            <div className="mt-1 font-mono text-[9px] font-bold text-flame">
+            <div className="mt-1 font-mono text-2xs font-bold text-flame">
               {activeAccounts}
             </div>
           </div>
@@ -239,7 +243,7 @@ export const NavDeck: React.FC = () => {
               <React.Fragment key={item.id}>
                 {item.section && (
                   !isSidebarCollapsed ? (
-                    <div className="px-2.5 pb-1 pt-3 font-mono text-[10px] font-semibold tracking-wider text-slate-400">
+                    <div className="px-2.5 pb-1 pt-3 font-mono text-2xs font-semibold tracking-wider text-slate-400">
                       {item.section}
                     </div>
                   ) : (
@@ -285,7 +289,7 @@ export const NavDeck: React.FC = () => {
         </nav>
 
         {/* Deck Footer */}
-        <div className="flex flex-col gap-2 border-t border-border/60 pt-3 font-mono text-[11px] text-muted-foreground">
+        <div className="flex flex-col gap-2 border-t border-border/60 pt-3 font-mono text-xs text-muted-foreground">
           <button
             id="sentinel-logout-btn"
             type="button"
@@ -294,32 +298,32 @@ export const NavDeck: React.FC = () => {
               'group flex items-center rounded-md border border-slate-800 bg-obsidian-950/80 text-slate-400 transition-all hover:border-red-500/40 hover:bg-red-950/20 hover:text-red-300',
               isSidebarCollapsed
                 ? 'justify-center p-2'
-                : 'w-full justify-between px-2.5 py-1.5'
+                : 'w-full justify-between px-2.5 py-2'
             )}
-            title="Terminate session and lock cockpit"
+            title="Terminate session and lock console"
           >
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider">
+            <span className="flex items-center gap-1.5 text-2xs font-semibold tracking-wider">
               <LogOut className="h-3.5 w-3.5 text-slate-500 transition-colors group-hover:text-red-400" />
-              {!isSidebarCollapsed && 'LOCK COCKPIT'}
+              {!isSidebarCollapsed && 'LOCK CONSOLE'}
             </span>
             {!isSidebarCollapsed && (
-              <span className="text-[9px] text-slate-600 transition-colors group-hover:text-red-400/80">
-                DISCONNECT
+              <span className="text-2xs text-slate-500 transition-colors group-hover:text-red-400/80">
+                SIGN OUT
               </span>
             )}
           </button>
 
           {!isSidebarCollapsed ? (
-            <div className="flex items-center justify-between pt-0.5 text-[10px]">
+            <div className="flex items-center justify-between pt-0.5 text-2xs">
               <div className="flex items-center gap-1.5">
-                <Radio className="h-3 w-3 animate-pulse text-blue-400" />
+                <Radio className={cn('h-3 w-3', isRunning ? 'animate-pulse text-flame' : 'text-blue-400')} />
                 <span>Rust · Axum</span>
               </div>
               <span className="text-slate-500">v{__APP_VERSION__}</span>
             </div>
           ) : (
             <div className="flex justify-center pt-0.5" title="HTTP/2 Stealth Active">
-              <Radio className="h-3 w-3 animate-pulse text-blue-400" />
+              <Radio className={cn('h-3 w-3', isRunning ? 'animate-pulse text-flame' : 'text-blue-400')} />
             </div>
           )}
         </div>

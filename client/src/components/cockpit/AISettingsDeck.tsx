@@ -182,7 +182,7 @@ export const AISettingsDeck: React.FC = () => {
         tag="AI INTELLIGENCE SUITE"
         tagColor="purple"
         accent="purple"
-        icon={<Bot className="h-5 w-5 text-purple-400" />}
+        icon={<Bot className="h-5 w-5 text-blue-400" />}
         contextAnimation="bot"
         isActive={isSaving}
         title="AI Gateway & Engine Studio"
@@ -191,9 +191,9 @@ export const AISettingsDeck: React.FC = () => {
             <Badge
               variant="outline"
               className={cn(
-                'font-mono text-[10px]',
+                'font-mono text-xs',
                 aiProvider !== 'none'
-                  ? 'border-purple-500/60 bg-purple-500/10 text-purple-300'
+                  ? 'border-blue-500/60 bg-blue-500/10 text-blue-300'
                   : 'border-slate-700 text-slate-400'
               )}
             >
@@ -201,13 +201,13 @@ export const AISettingsDeck: React.FC = () => {
             </Badge>
 
             {aiModel && aiProvider !== 'none' && (
-              <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2 py-0.5 font-mono text-[10px] text-slate-300">
+              <span className="rounded-md border border-slate-700/80 bg-obsidian-950 px-2 py-0.5 font-mono text-xs text-slate-300">
                 {aiModel}
               </span>
             )}
 
             {isDirty && (
-              <span className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-950/40 px-2 py-0.5 font-mono text-[10px] text-amber-300 animate-pulse">
+              <span className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-950/40 px-2.5 py-0.5 font-mono text-xs text-amber-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
                 Unsaved Changes
               </span>
@@ -242,8 +242,8 @@ export const AISettingsDeck: React.FC = () => {
               className={cn(
                 'h-8 gap-1.5 font-mono text-xs font-bold transition-all',
                 isDirty
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-950/50 animate-pulse'
-                  : 'bg-purple-600 hover:bg-purple-700 text-white'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-950/50'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
               )}
             >
               <Save className="h-3.5 w-3.5" />
@@ -262,11 +262,11 @@ export const AISettingsDeck: React.FC = () => {
             className={cn(
               'flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs font-semibold transition-all',
               activeTab === 'engine'
-                ? 'border border-purple-500/50 bg-purple-500/15 text-purple-200 shadow-sm'
+                ? 'border border-blue-500/50 bg-blue-500/15 text-blue-200 shadow-sm'
                 : 'border border-transparent text-slate-400 hover:border-slate-800 hover:bg-obsidian-900 hover:text-slate-200'
             )}
           >
-            <Cpu className="h-3.5 w-3.5 text-purple-400" />
+            <Cpu className="h-3.5 w-3.5 text-blue-400" />
             <span>1. Engine &amp; Gateway</span>
           </button>
 
@@ -276,7 +276,7 @@ export const AISettingsDeck: React.FC = () => {
             className={cn(
               'flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs font-semibold transition-all',
               activeTab === 'persona'
-                ? 'border border-purple-500/50 bg-purple-500/15 text-purple-200 shadow-sm'
+                ? 'border border-blue-500/50 bg-blue-500/15 text-blue-200 shadow-sm'
                 : 'border border-transparent text-slate-400 hover:border-slate-800 hover:bg-obsidian-900 hover:text-slate-200'
             )}
           >
@@ -290,7 +290,7 @@ export const AISettingsDeck: React.FC = () => {
             className={cn(
               'flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs font-semibold transition-all',
               activeTab === 'sandbox'
-                ? 'border border-purple-500/50 bg-purple-500/15 text-purple-200 shadow-sm'
+                ? 'border border-blue-500/50 bg-blue-500/15 text-blue-200 shadow-sm'
                 : 'border border-transparent text-slate-400 hover:border-slate-800 hover:bg-obsidian-900 hover:text-slate-200'
             )}
           >
@@ -299,7 +299,7 @@ export const AISettingsDeck: React.FC = () => {
           </button>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-slate-400">
+        <div className="hidden sm:flex items-center gap-2 font-mono text-xs text-slate-400">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
           <span>Prompt Quality Guardrails Active</span>
         </div>

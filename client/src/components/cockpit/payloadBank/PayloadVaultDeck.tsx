@@ -166,7 +166,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
       <Card className="border-border/80 bg-obsidian-900/90 shadow-xl">
         <CardHeader className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-amber-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-amber-400">
               <FolderOpen className="h-3.5 w-3.5" />
               SERVER REPOSITORIES &amp; VAULT
             </div>
@@ -211,7 +211,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                   ? 'No .json files saved in comments directory yet.'
                   : 'No files match your search query.'}
               </div>
-              <p className="mt-1 text-[11px] text-slate-500">
+              <p className="mt-1 text-xs text-slate-500">
                 Generate new reply sets in AI Generator or save templates to populate this directory.
               </p>
             </div>
@@ -233,12 +233,12 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                       </span>
                       <Badge
                         variant="outline"
-                        className="shrink-0 border-amber-500/30 bg-amber-500/10 font-mono text-[9px] text-amber-300"
+                        className="shrink-0 border-amber-500/30 bg-amber-500/10 font-mono text-xs text-amber-300"
                       >
                         {f.count} replies
                       </Badge>
                     </div>
-                    <div className="font-mono text-[10px] text-slate-500">
+                    <div className="font-mono text-xs text-slate-500">
                       {Math.max(1, Math.round(f.sizeBytes / 1024))} KB · {f.filePath}
                     </div>
 
@@ -246,7 +246,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                     {accounts.length > 0 && (
                       <div className="pt-1">
                         <select
-                          className="w-full rounded border border-slate-800 bg-obsidian-900 px-2 py-1 font-mono text-[10px] text-slate-300 focus:outline-none hover:border-slate-700"
+                          className="w-full rounded border border-slate-800 bg-obsidian-900 px-2 py-1 font-mono text-xs text-slate-300 focus:outline-none hover:border-slate-700"
                           onChange={(e) => {
                             if (e.target.value) {
                               handleDeployFileToAccount(f.fileName, e.target.value);
@@ -272,7 +272,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                     <button
                       type="button"
                       onClick={() => handleInspectFile(f.fileName)}
-                      className="flex items-center gap-1 font-mono text-[10px] text-slate-400 transition-colors hover:text-white"
+                      className="flex items-center gap-1 font-mono text-xs text-slate-400 transition-colors hover:text-white"
                       title="Inspect content"
                     >
                       <Eye className="h-3 w-3 text-cyan-400" />
@@ -286,7 +286,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                           navigator.clipboard.writeText(f.filePath);
                           toast.success(`Copied path: ${f.filePath}`);
                         }}
-                        className="rounded px-1.5 py-0.5 font-mono text-[10px] text-slate-400 hover:bg-slate-800 hover:text-white"
+                        className="rounded px-1.5 py-0.5 font-mono text-xs text-slate-400 hover:bg-slate-800 hover:text-white"
                         title="Copy file path"
                       >
                         Copy Path
@@ -313,13 +313,13 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
       <Card className="border-amber-500/30 bg-obsidian-900/90 shadow-xl shadow-amber-950/10">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-amber-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-amber-400">
               <BookOpen className="h-3.5 w-3.5" />
               CURATED TEMPLATE VAULT
             </div>
             <Badge
               variant="outline"
-              className="border-amber-500/50 bg-amber-500/10 font-mono text-[9px] text-amber-300"
+              className="border-amber-500/50 bg-amber-500/10 font-mono text-xs text-amber-300"
             >
               5 INDUSTRY NICHES READY
             </Badge>
@@ -349,7 +349,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                   <span>{preset.name}</span>
                   <Badge
                     variant="outline"
-                    className="border-current px-1 py-0 text-[9px] opacity-70"
+                    className="border-current px-1 py-0 text-xs opacity-70"
                   >
                     {preset.templates.length}
                   </Badge>
@@ -364,7 +364,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
               <div>
                 <div className="flex items-center gap-2 font-heading text-sm font-bold text-white">
                   {activePreset.name}
-                  <Badge variant="outline" className="border-purple-500/50 bg-purple-500/10 font-mono text-[10px] text-purple-300">
+                  <Badge variant="outline" className="border-blue-500/50 bg-blue-500/10 font-mono text-xs text-blue-300">
                     {activePreset.badge}
                   </Badge>
                 </div>
@@ -378,7 +378,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                     value={presetSearchQuery}
                     onChange={(e) => setPresetSearchQuery(e.target.value)}
                     placeholder="Filter templates..."
-                    className="h-7 border-slate-800 bg-obsidian-900 pl-7 font-mono text-[11px] text-slate-200"
+                    className="h-7 border-slate-800 bg-obsidian-900 pl-7 font-mono text-xs text-slate-200"
                   />
                 </div>
                 <Button
@@ -441,7 +441,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
       <Dialog open={inspectModalOpen} onOpenChange={(open) => !open && setInspectModalOpen(false)}>
         <DialogContent className="max-w-2xl border-border/80 bg-obsidian-950 text-slate-100 shadow-2xl">
           <DialogHeader>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-cyan-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-cyan-400">
               <Eye className="h-3.5 w-3.5" />
               PAYLOAD FILE INSPECTOR
             </div>
@@ -503,7 +503,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
                       key={idx}
                       className="group flex items-start gap-2.5 rounded border border-slate-800/60 bg-obsidian-950/80 p-2 transition-colors hover:border-slate-700"
                     >
-                      <span className="flex h-5 w-5 shrink-0 select-none items-center justify-center rounded bg-slate-800 font-mono text-[10px] font-bold text-amber-400">
+                      <span className="flex h-5 w-5 shrink-0 select-none items-center justify-center rounded bg-slate-800 font-mono text-xs font-bold text-amber-400">
                         {idx + 1}
                       </span>
                       <p className="flex-1 font-mono text-xs leading-relaxed text-slate-200 select-all">
@@ -543,7 +543,7 @@ export const PayloadVaultDeck: React.FC<PayloadVaultDeckProps> = ({
       <Dialog open={Boolean(fileToDelete)} onOpenChange={(open) => !open && setFileToDelete(null)}>
         <DialogContent className="max-w-md border-border/80 bg-obsidian-950 text-slate-100 shadow-2xl">
           <DialogHeader>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-red-400">
+            <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-red-400">
               <AlertCircle className="h-3.5 w-3.5" />
               CONFIRM DELETION
             </div>

@@ -88,7 +88,7 @@ export const PayloadBank: React.FC = () => {
             >
               <Sparkles className="h-3.5 w-3.5" />
               AI Generator
-              <span className="rounded bg-black/30 px-1 py-0.5 text-[9px]">from Post</span>
+              <span className="rounded bg-black/30 px-1 py-0.5 text-xs">from Post</span>
             </button>
 
             <button
@@ -102,7 +102,7 @@ export const PayloadBank: React.FC = () => {
             >
               <Sliders className="h-3.5 w-3.5" />
               Spintax Stack
-              <span className="rounded bg-black/30 px-1 py-0.5 text-[9px] text-muted-foreground">
+              <span className="rounded bg-black/30 px-1 py-0.5 text-xs text-muted-foreground">
                 {templates.length}
               </span>
             </button>
@@ -121,7 +121,7 @@ export const PayloadBank: React.FC = () => {
             >
               <BookOpen className="h-3.5 w-3.5" />
               Vault &amp; JSON Files
-              <span className="rounded bg-black/30 px-1 py-0.5 text-[9px] text-muted-foreground">
+              <span className="rounded bg-black/30 px-1 py-0.5 text-xs text-muted-foreground">
                 {savedFiles.length}
               </span>
             </button>

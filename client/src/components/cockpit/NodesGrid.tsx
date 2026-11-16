@@ -417,7 +417,7 @@ export const NodesGrid: React.FC = () => {
               {accounts.length} {accounts.length === 1 ? 'Node' : 'Nodes'}
             </span>
             {accounts.length > 0 && (
-              <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+              <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-300">
                 {accounts.filter((a) => a.enabled !== false).length} Active
               </span>
             )}
@@ -449,13 +449,13 @@ export const NodesGrid: React.FC = () => {
               size="sm"
               onClick={handlePingAllProxies}
               disabled={isPingingAllProxies}
-              className="h-8 shrink-0 gap-1.5 border-purple-500/30 bg-purple-950/20 px-2.5 font-mono text-xs font-semibold text-purple-300 transition-colors hover:border-purple-500/60 hover:bg-purple-900/30 hover:text-purple-200"
+              className="h-8 shrink-0 gap-1.5 border-blue-500/30 bg-blue-950/20 px-2.5 font-mono text-xs font-semibold text-blue-300 transition-colors hover:border-blue-500/60 hover:bg-blue-900/30 hover:text-blue-200"
               title="Ping latency and verify GeoIP for all proxies concurrently"
             >
               {isPingingAllProxies ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-purple-400" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-400" />
               ) : (
-                <Activity className="h-3.5 w-3.5 text-purple-400" />
+                <Activity className="h-3.5 w-3.5 text-blue-400" />
               )}
               <span>{isPingingAllProxies ? 'Pinging...' : 'Ping Proxies'}</span>
             </Button>
@@ -632,7 +632,7 @@ export const NodesGrid: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 shrink-0 px-2.5 font-mono text-[11px]"
+                      className="h-7 shrink-0 px-2.5 font-mono text-xs"
                       onClick={step.action}
                     >
                       {step.actionLabel}
@@ -646,7 +646,7 @@ export const NodesGrid: React.FC = () => {
       ) : paginatedAccounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-obsidian-850/50 p-8 text-center">
           <SearchX className="mb-2 h-8 w-8 text-slate-500" />
-          <h4 className="text-sm font-semibold text-slate-300">No matching nodes found</h4>
+          <h3 className="text-sm font-semibold text-slate-300">No matching nodes found</h3>
           <p className="mt-1 text-xs text-slate-500">
             Tidak ada akun yang sesuai dengan pencarian atau filter status yang dipilih.
           </p>

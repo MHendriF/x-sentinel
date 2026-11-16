@@ -70,8 +70,8 @@ export const TelemetryRibbon: React.FC = () => {
     settings,
   } = useStore();
   const meta = TAB_TITLES[activeTab] ?? {
-    title: 'X-SENTINEL Cockpit',
-    subtitle: 'Autonomous Fleet Control',
+    title: 'X-SENTINEL Console',
+    subtitle: 'Local Fleet Orchestrator',
   };
 
   const taskLabel = TASK_LABELS[currentTask?.type] ?? 'AUTOMATION TASK';
@@ -105,7 +105,7 @@ export const TelemetryRibbon: React.FC = () => {
               type="button"
               onClick={() => setActiveTab('tab-safety')}
               title={`Browser Engine: ${settings?.browserEngine === 'camoufox' ? 'Camoufox Stealth' : 'Chromium Core'} (Click to configure)`}
-              className={`hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors ${
+              className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-2xs font-semibold transition-colors ${
                 settings?.browserEngine === 'camoufox'
                   ? 'border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
                   : 'border border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20'
@@ -113,7 +113,11 @@ export const TelemetryRibbon: React.FC = () => {
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
-                  settings?.browserEngine === 'camoufox' ? 'bg-amber-400 animate-pulse' : 'bg-blue-400'
+                  settings?.browserEngine === 'camoufox'
+                    ? isRunning
+                      ? 'bg-amber-400 animate-pulse'
+                      : 'bg-amber-400'
+                    : 'bg-blue-400'
                 }`}
               />
               {settings?.browserEngine === 'camoufox' ? '🦊 Camoufox' : '⚡ Chromium'}
@@ -137,7 +141,7 @@ export const TelemetryRibbon: React.FC = () => {
             <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalLikes ?? 0}
             </div>
-            <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
+            <div className="mt-0.5 font-mono text-2xs tracking-wider text-muted-foreground">
               LIKES
             </div>
           </div>
@@ -155,7 +159,7 @@ export const TelemetryRibbon: React.FC = () => {
             <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalRetweets ?? 0}
             </div>
-            <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
+            <div className="mt-0.5 font-mono text-2xs tracking-wider text-muted-foreground">
               REPOSTS
             </div>
           </div>
@@ -173,7 +177,7 @@ export const TelemetryRibbon: React.FC = () => {
             <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalComments ?? 0}
             </div>
-            <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
+            <div className="mt-0.5 font-mono text-2xs tracking-wider text-muted-foreground">
               REPLIES
             </div>
           </div>
@@ -191,7 +195,7 @@ export const TelemetryRibbon: React.FC = () => {
             <div className="font-mono text-sm font-bold leading-none text-white tabular-nums lg:text-base">
               {stats?.totalPosts ?? 0}
             </div>
-            <div className="mt-0.5 font-mono text-[9px] tracking-wider text-muted-foreground">
+            <div className="mt-0.5 font-mono text-2xs tracking-wider text-muted-foreground">
               POSTS
             </div>
           </div>
@@ -213,14 +217,14 @@ export const TelemetryRibbon: React.FC = () => {
           >
             <div className="flex items-center justify-between gap-3">
               <span
-                className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wide text-flame"
+                className="flex items-center gap-2 font-mono text-xs font-bold tracking-wide text-flame"
                 aria-live="polite"
               >
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 {taskLabel} IN PROGRESS
               </span>
               {progressTotal > 0 && (
-                <span className="font-mono text-[11px] text-slate-300 tabular-nums">
+                <span className="font-mono text-xs text-slate-300 tabular-nums">
                   {progressDone}/{progressTotal} completed
                   {progressFailed > 0 ? ` · ${progressFailed} failed` : ''}
                 </span>

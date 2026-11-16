@@ -47,11 +47,11 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           >
             <div>
               <div className="font-semibold text-slate-200">Prune Logs &gt; 30 Days</div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-xs text-slate-500">
                 Remove audit records older than 30 days
               </div>
             </div>
-            <span className="font-mono text-[11px] text-flame">&gt; 30 Days</span>
+            <span className="font-mono text-xs text-flame">&gt; 30 Days</span>
           </button>
 
           <button
@@ -62,11 +62,11 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           >
             <div>
               <div className="font-semibold text-slate-200">Prune Logs &gt; 7 Days</div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-xs text-slate-500">
                 Remove audit records older than 7 days
               </div>
             </div>
-            <span className="font-mono text-[11px] text-amber-400">&gt; 7 Days</span>
+            <span className="font-mono text-xs text-amber-400">&gt; 7 Days</span>
           </button>
 
           <button
@@ -77,11 +77,11 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           >
             <div>
               <div className="font-semibold text-rose-300">Prune Failed (FAILED) Logs Only</div>
-              <div className="text-[10px] text-slate-400">
+              <div className="text-xs text-slate-400">
                 Clear all failed interaction records
               </div>
             </div>
-            <span className="font-mono text-[11px] font-bold text-rose-400">FAILED ONLY</span>
+            <span className="font-mono text-xs font-bold text-rose-400">FAILED ONLY</span>
           </button>
 
           <button
@@ -100,11 +100,11 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
           >
             <div>
               <div className="font-semibold text-rose-200">Clear Entire Audit Ledger (Reset)</div>
-              <div className="text-[10px] text-rose-400/80">
+              <div className="text-xs text-rose-400/80">
                 Purge 100% of audit history logs from the database
               </div>
             </div>
-            <span className="font-mono text-[11px] font-bold text-rose-300">CLEAR ALL</span>
+            <span className="font-mono text-xs font-bold text-rose-300">CLEAR ALL</span>
           </button>
         </div>
 

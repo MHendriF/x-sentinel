@@ -86,7 +86,7 @@ export const SavePayloadModal: React.FC<SavePayloadModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md border-border/80 bg-obsidian-950 text-slate-100 shadow-2xl">
         <DialogHeader>
-          <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-wider text-flame">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-flame">
             <FileJson className="h-3.5 w-3.5" />
             SAVE PAYLOAD TO VAULT
           </div>
@@ -112,7 +112,7 @@ export const SavePayloadModal: React.FC<SavePayloadModalProps> = ({
               placeholder="e.g. post_replies_15.json"
               className="border-slate-800 bg-obsidian-900 font-mono text-xs text-slate-200 focus-visible:border-flame/50"
             />
-            <span className="font-mono text-[10px] text-slate-500">
+            <span className="font-mono text-xs text-slate-500">
               Target path: <code>data/comments/{saveFileName || '*.json'}</code>
             </span>
           </div>
@@ -134,7 +134,7 @@ export const SavePayloadModal: React.FC<SavePayloadModalProps> = ({
                 </option>
               ))}
             </select>
-            <span className="font-mono text-[10px] text-slate-500">
+            <span className="font-mono text-xs text-slate-500">
               Directly loads this payload into the selected node for instant execution.
             </span>
           </div>
@@ -151,7 +151,7 @@ export const SavePayloadModal: React.FC<SavePayloadModalProps> = ({
               <span className="font-medium text-slate-200">
                 Also inject into Global Fallback Pool
               </span>
-              <p className="mt-0.5 font-mono text-[10px] text-slate-400">
+              <p className="mt-0.5 font-mono text-xs text-slate-400">
                 Appends replies to <code>templates.json</code> for nodes without dedicated files.
               </p>
             </div>
