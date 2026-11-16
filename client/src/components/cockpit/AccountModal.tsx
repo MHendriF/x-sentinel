@@ -28,7 +28,6 @@ import {
   AlertTriangle,
   Sparkles,
   Trash2,
-  RotateCcw,
 } from 'lucide-react';
 
 export const AccountModal: React.FC = () => {

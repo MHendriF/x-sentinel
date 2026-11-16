@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Clock, X, Loader2, Crosshair, Layers, Timer } from 'lucide-react';
+import { Calendar, Clock, X, Loader2, Crosshair, Layers } from 'lucide-react';
 import { apiClient } from '@/services/apiClient';
 import { toast } from 'sonner';
 

@@ -9,13 +9,10 @@ import {
   ShieldCheck,
   KeyRound,
   User,
-  Lock,
   Smartphone,
   LogOut,
-  RefreshCw,
   Copy,
   Check,
-  AlertTriangle,
   Loader2,
   Clock,
 } from 'lucide-react';

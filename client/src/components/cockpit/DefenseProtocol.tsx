@@ -24,7 +24,6 @@ import {
   Flame,
   Activity,
   Keyboard,
-  Check,
   Zap,
 } from 'lucide-react';
 import { DefenseProfilePresets, DefenseProfile, DEFENSE_PROFILES } from './defense/DefenseProfilePresets';

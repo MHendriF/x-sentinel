@@ -1,14 +1,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  CheckSquare,
   Power,
   PowerOff,
   Activity,
   Trash2,
   X,
-  Loader2,
-  CheckCheck,
 } from 'lucide-react';
 
 interface NodesBulkActionBarProps {

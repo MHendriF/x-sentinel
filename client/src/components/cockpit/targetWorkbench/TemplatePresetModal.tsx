@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { PRESET_LIBRARY, PresetCategory } from '@/lib/presetLibrary';
+import React, { useState } from 'react';
+import { PRESET_LIBRARY } from '@/lib/presetLibrary';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,6 @@ import {
   Bot,
   Code2,
   MessageCircle,
-  HelpCircle,
 } from 'lucide-react';
 
 interface TemplatePresetModalProps {

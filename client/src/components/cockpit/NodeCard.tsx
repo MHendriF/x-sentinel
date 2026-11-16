@@ -20,7 +20,6 @@ import {
   HelpCircle,
   Power,
   Activity,
-  Wifi,
   WifiOff,
   Flame,
   AlertTriangle,
@@ -48,7 +47,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({
   } = useStore();
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPingingProxy, setIsPingingProxy] = useState(false);
-  const [isWarmingUp, setIsWarmingUp] = useState(false);
+  const [, setIsWarmingUp] = useState(false);
   const [isLoggingInCamoufox, setIsLoggingInCamoufox] = useState(false);
   const [proxyTest, setProxyTest] = useState<ProxyTestResult | null>(null);
 

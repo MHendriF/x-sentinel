@@ -177,7 +177,7 @@ export const resolveTabFromUrl = (): string => {
   return 'tab-accounts';
 };
 
-export const useStore = create<AppState>((set, get) => ({
+export const useStore = create<AppState>((set) => ({
   activeTab: resolveTabFromUrl(),
   setActiveTab: (activeTab) => {
     if (typeof window !== 'undefined') {

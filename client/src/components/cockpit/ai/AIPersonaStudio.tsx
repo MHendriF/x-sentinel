@@ -11,9 +11,6 @@ import {
   Plus,
   Trash2,
   Check,
-  RotateCcw,
-  SlidersHorizontal,
-  Flame,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

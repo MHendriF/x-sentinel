@@ -21,15 +21,11 @@ import {
   FileJson,
   Braces,
   Bot,
-  Clock,
   ClipboardPaste,
   Trash2,
-  CheckCircle2,
-  AlertTriangle,
   Dice5,
   BookOpen,
   Calendar,
-  Activity,
   Sliders,
   ShieldCheck,
   Zap,
@@ -380,7 +376,6 @@ export const TargetWorkbench: React.FC = () => {
   const maxDelay = settings?.maxDelaySeconds ?? 90;
   const switchDelay = settings?.accountSwitchDelaySec ?? 10;
   const avgDelaySec = (minDelay + maxDelay) / 2 + switchDelay;
-  const estTotalSeconds = targetCount * nodeCount * avgDelaySec;
   const estMinMinutes = Math.max(1, Math.round((targetCount * nodeCount * (minDelay + switchDelay)) / 60));
   const estMaxMinutes = Math.max(1, Math.round((targetCount * nodeCount * (maxDelay + switchDelay)) / 60));
 

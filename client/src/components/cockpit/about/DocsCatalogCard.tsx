@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, FileText, ArrowRight, ExternalLink } from 'lucide-react';
+import { BookOpen, FileText, ArrowRight } from 'lucide-react';
 
 interface DocItem {
   id: string;

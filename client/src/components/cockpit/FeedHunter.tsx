@@ -22,21 +22,14 @@ import {
   Pause,
   Play,
   Square,
-  Sparkles,
   Sliders,
   Layers,
-  Clock,
   Bot,
   Filter,
   Dice5,
   BookOpen,
-  Calendar,
   ShieldCheck,
-  Zap,
   Activity,
-  CheckCircle2,
-  Trash2,
-  Globe,
   Radio,
 } from 'lucide-react';
 
@@ -89,10 +82,9 @@ export const FeedHunter: React.FC = () => {
   const [spintaxSample, setSpintaxSample] = useState<string | null>(null);
 
   // Search Filters
-  const [feedType, setFeedType] = useState<'live' | 'top'>('live');
   const [excludeRetweets, setExcludeRetweets] = useState(true);
   const [minLikesFilter, setMinLikesFilter] = useState<'none' | '10' | '25' | '50'>('none');
-  const [langFilter, setLangFilter] = useState<'all' | 'en' | 'id'>('all');
+  const [langFilter] = useState<'all' | 'en' | 'id'>('all');
 
   // Modals state
   const [isNodeModalOpen, setIsNodeModalOpen] = useState(false);

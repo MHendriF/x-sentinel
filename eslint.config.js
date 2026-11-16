@@ -2,7 +2,7 @@ const js = require('@eslint/js');
 
 module.exports = [
   {
-    ignores: ['client/**', 'public/**', 'data/**', 'node_modules/**', '**/*.min.js'],
+    ignores: ['client/**', 'data/**', 'target/**', 'node_modules/**', '**/*.min.js'],
   },
   js.configs.recommended,
   {
@@ -24,7 +24,7 @@ module.exports = [
     },
   },
   {
-    files: ['server/**/*.js', 'test/**/*.js', 'eslint.config.js'],
+    files: ['worker/**/*.js', 'server/**/*.js', 'test/**/*.js', 'eslint.config.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'commonjs',

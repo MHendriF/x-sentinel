@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Account } from '@/services/apiClient';
 import { cn } from '@/lib/utils';
-import { Send, Calendar, Clock, RefreshCw, Shuffle, ShieldAlert } from 'lucide-react';
+import { Send, Calendar, Clock, RefreshCw, Shuffle } from 'lucide-react';
 
 interface FleetDispatcherPanelProps {
   targetMode: 'single' | 'fleet';

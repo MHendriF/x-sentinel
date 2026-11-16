@@ -17,10 +17,7 @@ import {
   CheckCircle2,
   HelpCircle,
   Power,
-  Activity,
-  Wifi,
   WifiOff,
-  Flame,
   AlertTriangle,
   HeartPulse,
 } from 'lucide-react';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/services/apiClient';
-import { Sparkles, Bot, Layers, Star, Calendar, Sliders } from 'lucide-react';
+import { Sparkles, Star, Calendar, Sliders } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeckHeader } from './DeckHeader';
 import { PostGeneratorForm } from './postStudio/PostGeneratorForm';
@@ -13,7 +13,7 @@ import { ScheduleModal } from './postStudio/ScheduleModal';
 import { ScheduledQueueDeck } from './postStudio/ScheduledQueueDeck';
 
 export const PostStudio: React.FC = () => {
-  const { accounts, settings, schedules, loadAccounts, loadSettings, loadSchedules, setActiveTab } =
+  const { accounts, schedules, loadAccounts, loadSettings, loadSchedules } =
     useStore();
 
   const [activeSubTab, setActiveSubTab] = useState<'studio' | 'stash' | 'queue'>('studio');

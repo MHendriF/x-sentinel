@@ -6,14 +6,11 @@ import { Button } from '@/components/ui/button';
 import {
   Activity,
   Cpu,
-  Database,
   RefreshCw,
   Server,
   Layers,
-  Bot,
   Clock,
   HardDrive,
-  CheckCircle2,
 } from 'lucide-react';
 
 interface LiveTelemetryHUDProps {

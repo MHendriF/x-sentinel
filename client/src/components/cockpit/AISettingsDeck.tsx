@@ -13,8 +13,6 @@ import {
   Save,
   RotateCcw,
   ShieldCheck,
-  CheckCircle2,
-  Radio,
 } from 'lucide-react';
 import { AI_PROVIDERS } from './ai/AIProviderSelector';
 import { AIProviderSelector } from './ai/AIProviderSelector';

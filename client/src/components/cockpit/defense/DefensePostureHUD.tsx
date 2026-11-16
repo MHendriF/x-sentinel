@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, ShieldCheck, AlertTriangle, Activity, Flame, Shield } from 'lucide-react';
+import { AlertTriangle, Activity, Flame } from 'lucide-react';
 
 interface DefensePostureHUDProps {
   minDelay: number;
@@ -15,7 +15,6 @@ interface DefensePostureHUDProps {
 export const DefensePostureHUD: React.FC<DefensePostureHUDProps> = ({
   minDelay,
   maxDelay,
-  switchDelay,
   hourlyLimit,
   dailyLimit,
   browserEngine,

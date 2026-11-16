@@ -16,12 +16,7 @@ import { toast } from 'sonner';
 import {
   UploadCloud,
   FileText,
-  CheckCircle2,
-  AlertCircle,
   Download,
-  Sparkles,
-  Layers,
-  HelpCircle,
 } from 'lucide-react';
 
 interface BulkImportModalProps {

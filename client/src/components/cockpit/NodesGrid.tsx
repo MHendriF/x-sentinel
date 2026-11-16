@@ -15,7 +15,6 @@ import {
   Server,
   Layers,
   UploadCloud,
-  Download,
   Stethoscope,
   Loader2,
   SearchX,

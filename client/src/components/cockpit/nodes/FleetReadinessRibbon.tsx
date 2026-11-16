@@ -1,6 +1,6 @@
 import React from 'react';
 import { AccountNode } from '@/services/apiClient';
-import { ShieldCheck, AlertTriangle, PowerOff, HelpCircle, Activity } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, PowerOff } from 'lucide-react';
 
 interface FleetReadinessRibbonProps {
   accounts: AccountNode[];

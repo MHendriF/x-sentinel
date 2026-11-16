@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { apiClient, HistoryItem } from '@/services/apiClient';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,13 +8,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import {
   RefreshCw,
-  Download,
   Trash2,
   FileSpreadsheet,
   FileJson,
   Radio,
   AlertOctagon,
-  RotateCcw,
   SlidersHorizontal,
 } from 'lucide-react';
 import { AuditFilters, StatusCounts } from './audit/AuditFilters';

@@ -14,10 +14,8 @@ import {
   RotateCcw,
   Bot,
   Globe,
-  Sliders,
-  Sparkles,
 } from 'lucide-react';
-import { AIProviderInfo, AI_PROVIDERS } from './AIProviderSelector';
+import { AIProviderInfo } from './AIProviderSelector';
 import { toast } from 'sonner';
 
 interface AIEngineConfigProps {

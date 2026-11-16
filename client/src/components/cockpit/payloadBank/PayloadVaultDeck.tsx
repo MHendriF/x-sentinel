@@ -21,11 +21,9 @@ import {
   Trash2,
   Copy,
   Check,
-  Download,
   BookOpen,
   ArrowRight,
   Sparkles,
-  Layers,
   FileJson,
   AlertCircle,
 } from 'lucide-react';

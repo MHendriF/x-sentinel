@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { Account } from '@/services/apiClient';
-import { Button } from '@/components/ui/button';
-import { Image as ImageIcon, Trash2, Copy, Sparkles, X, Loader2, Check } from 'lucide-react';
+import { Image as ImageIcon, Trash2, Sparkles, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -31,7 +30,6 @@ export const TweetMockupCard: React.FC<TweetMockupCardProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const charCount = activeDraftText.length;
   const remaining = 280 - charCount;
-  const isOverLimit = remaining < 0;
 
   const handleRemoveMedia = (index: number) => {
     setAttachedMedia((prev) => prev.filter((_, i) => i !== index));
