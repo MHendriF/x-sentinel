@@ -460,101 +460,42 @@ async fn media_schedules_history_and_system_routes_work() {
 }
 
 #[tokio::test]
-async fn ssr_login_and_all_ten_cockpit_tabs_render_cleanly() {
-    let (_tmp, state, app) = setup_test_app();
+async fn spa_healthz_and_security_headers_work() {
+    let (_tmp, _state, app) = setup_test_app();
 
-    // Unauthenticated GET / redirects to /login
-    let root_unauth = Request::builder().uri("/").body(Body::empty()).unwrap();
-    let unauth_resp = app.clone().oneshot(root_unauth).await.unwrap();
-    assert!(
-        unauth_resp.status().is_redirection(),
-        "Unauthenticated GET / must redirect to /login"
+    let health_req = Request::builder().uri("/healthz").body(Body::empty()).unwrap();
+    let health_resp = app.clone().oneshot(health_req).await.unwrap();
+    assert_eq!(health_resp.status(), StatusCode::OK);
+    assert_eq!(
+        health_resp
+            .headers()
+            .get(header::X_FRAME_OPTIONS)
+            .and_then(|v| v.to_str().ok()),
+        Some("DENY")
     );
-
-    // GET /login renders clean gate card with strict CSP and 0 inline <script>/<style>
-    let login_req = Request::builder().uri("/login").body(Body::empty()).unwrap();
-    let login_resp = app.clone().oneshot(login_req).await.unwrap();
-    assert_eq!(login_resp.status(), StatusCode::OK);
-    let csp = login_resp
+    let csp = health_resp
         .headers()
         .get(header::CONTENT_SECURITY_POLICY)
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
     assert!(csp.contains("script-src 'self'"));
     assert!(!csp.contains("unsafe-eval"));
-    let login_html = String::from_utf8(
-        login_resp
-            .into_body()
-            .collect()
-            .await
-            .unwrap()
-            .to_bytes()
-            .to_vec(),
-    )
-    .unwrap();
-    assert!(login_html.contains("Sign in to cockpit"));
-    assert!(!login_html.contains("style=\""));
 
-    let cookie = login_cookie(&app, &state.config.admin_password).await;
+    let (_, health_json) = read_json(health_resp).await;
+    assert_eq!(health_json["ok"], true);
+    assert_eq!(health_json["engine"], "axum");
 
-    let tabs = [
-        "accounts",
-        "composer",
-        "batch",
-        "hunter",
-        "analytics",
-        "ai",
-        "spintax",
-        "safety",
-        "history",
-        "about",
-    ];
-    for tab in tabs {
-        let req = Request::builder()
-            .uri(format!("/ui/{tab}"))
-            .header(header::COOKIE, &cookie)
-            .body(Body::empty())
-            .unwrap();
-        let resp = app.clone().oneshot(req).await.unwrap();
-        assert_eq!(resp.status(), StatusCode::OK, "Tab /ui/{tab} must return 200");
-        let html = String::from_utf8(
-            resp.into_body().collect().await.unwrap().to_bytes().to_vec(),
-        )
-        .unwrap();
-        assert!(html.contains(&format!("data-active-tab=\"{tab}\"")));
-        assert!(!html.contains("#a855f7"));
-        assert!(!html.contains("#8b5cf6"));
-        assert!(!html.contains("style=\""));
+    // Verify serving real client/dist SPA when root_dir points to workspace root
+    let spa_tmp = TempDir::new().expect("tempdir");
+    let cfg = AppConfig::with_paths(std::env::current_dir().unwrap(), spa_tmp.path(), &[]);
+    let spa_state = AppState::new(cfg).expect("init app state");
+    let spa_app = build_router(spa_state);
 
-        // HTMX partial swap also returns 200 with OOB telemetry ribbon
-        let part_req = Request::builder()
-            .uri(format!("/partials/tab/{tab}"))
-            .header(header::COOKIE, &cookie)
-            .body(Body::empty())
-            .unwrap();
-        let part_resp = app.clone().oneshot(part_req).await.unwrap();
-        assert_eq!(part_resp.status(), StatusCode::OK);
-        let part_html = String::from_utf8(
-            part_resp
-                .into_body()
-                .collect()
-                .await
-                .unwrap()
-                .to_bytes()
-                .to_vec(),
-        )
-        .unwrap();
-        assert!(part_html.contains("hx-swap-oob=\"outerHTML\""));
-    }
+    let root_req = Request::builder().uri("/").body(Body::empty()).unwrap();
+    let root_resp = spa_app.clone().oneshot(root_req).await.unwrap();
+    assert_eq!(root_resp.status(), StatusCode::OK);
 
-    // 404 returns clean SSR not_found page
-    let not_found_req = Request::builder()
-        .uri("/ui/nonexistent-tab")
-        .header(header::COOKIE, &cookie)
-        .body(Body::empty())
-        .unwrap();
-    assert_eq!(
-        app.clone().oneshot(not_found_req).await.unwrap().status(),
-        StatusCode::NOT_FOUND
-    );
+    let route_req = Request::builder().uri("/analytics").body(Body::empty()).unwrap();
+    let route_resp = spa_app.oneshot(route_req).await.unwrap();
+    assert_eq!(route_resp.status(), StatusCode::OK);
 }

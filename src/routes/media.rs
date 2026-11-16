@@ -96,7 +96,6 @@ pub async fn upload_media(
                 "Image size exceeds the {} MB limit.",
                 MAX_IMAGE_BYTES / (1024 * 1024)
             ),
-            is_htmx: false,
         });
     }
 

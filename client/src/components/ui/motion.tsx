@@ -10,13 +10,6 @@ export const SPRING_SNAPPY = {
   mass: 0.8,
 };
 
-export const SPRING_GENTLE = {
-  type: 'spring' as const,
-  stiffness: 280,
-  damping: 26,
-  mass: 0.9,
-};
-
 export const MotionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <MotionConfig reducedMotion="user">{children}</MotionConfig>
 );
@@ -37,45 +30,4 @@ export const MotionTabStage: React.FC<{
       {children}
     </motion.div>
   </AnimatePresence>
-);
-
-export const MotionStaggerGrid: React.FC<{
-  className?: string;
-  children: React.ReactNode;
-}> = ({ className, children }) => (
-  <motion.div
-    initial="hidden"
-    animate="show"
-    variants={{
-      hidden: {},
-      show: {
-        transition: {
-          staggerChildren: 0.035,
-        },
-      },
-    }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
-
-export const MotionStaggerItem: React.FC<{
-  className?: string;
-  children: React.ReactNode;
-}> = ({ className, children }) => (
-  <motion.div
-    variants={{
-      hidden: { opacity: 0, y: 10, scale: 0.99 },
-      show: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: { duration: 0.22, ease: TACTICAL_EASE },
-      },
-    }}
-    className={className}
-  >
-    {children}
-  </motion.div>
 );

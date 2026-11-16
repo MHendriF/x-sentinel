@@ -1,8 +1,8 @@
-//! Unified application error type mapping cleanly to JSON responses or HTMX alert partials.
+//! Unified application error type mapping cleanly to JSON responses.
 
 use axum::Json;
 use axum::http::StatusCode;
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{IntoResponse, Response};
 use serde_json::json;
 use thiserror::Error;
 
@@ -14,7 +14,6 @@ pub enum AppError {
         status: StatusCode,
         code: String,
         message: String,
-        is_htmx: bool,
     },
 
     #[error("Internal error: {0}")]
@@ -27,7 +26,6 @@ impl AppError {
             status: StatusCode::BAD_REQUEST,
             code: code.into(),
             message: message.into(),
-            is_htmx: false,
         }
     }
 
@@ -40,7 +38,6 @@ impl AppError {
             status: StatusCode::UNAUTHORIZED,
             code: "UNAUTHORIZED".to_string(),
             message: message.into(),
-            is_htmx: false,
         }
     }
 
@@ -49,7 +46,6 @@ impl AppError {
             status: StatusCode::FORBIDDEN,
             code: code.into(),
             message: message.into(),
-            is_htmx: false,
         }
     }
 
@@ -58,7 +54,6 @@ impl AppError {
             status: StatusCode::NOT_FOUND,
             code: code.into(),
             message: message.into(),
-            is_htmx: false,
         }
     }
 
@@ -67,24 +62,8 @@ impl AppError {
             status: StatusCode::TOO_MANY_REQUESTS,
             code: "TOO_MANY_ATTEMPTS".to_string(),
             message: message.into(),
-            is_htmx: false,
         }
     }
-
-    pub fn with_htmx(mut self, htmx: bool) -> Self {
-        if let Self::Http { is_htmx, .. } = &mut self {
-            *is_htmx = htmx;
-        }
-        self
-    }
-}
-
-fn escape_html(raw: &str) -> String {
-    raw.replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&#39;")
 }
 
 impl IntoResponse for AppError {
@@ -94,22 +73,13 @@ impl IntoResponse for AppError {
                 status,
                 code,
                 message,
-                is_htmx,
             } => {
-                if is_htmx {
-                    let html = format!(
-                        "<div class=\"alert alert--error\" role=\"alert\">{}</div>",
-                        escape_html(&message)
-                    );
-                    (status, Html(html)).into_response()
-                } else {
-                    let body = Json(json!({
-                        "success": false,
-                        "error": code,
-                        "message": message,
-                    }));
-                    (status, body).into_response()
-                }
+                let body = Json(json!({
+                    "success": false,
+                    "error": code,
+                    "message": message,
+                }));
+                (status, body).into_response()
             }
             AppError::Internal(err) => {
                 tracing::error!(error = %err, "Internal server error");

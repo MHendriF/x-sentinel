@@ -439,7 +439,6 @@ pub async fn generate_ai_test(
             status: axum::http::StatusCode::UNPROCESSABLE_ENTITY,
             code: "AI_NO_REPLY".to_string(),
             message: "AI did not generate a reply. Check provider, API key, or prompt.".to_string(),
-            is_htmx: false,
         }),
     }
 }

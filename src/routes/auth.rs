@@ -4,7 +4,7 @@ use axum::Json;
 use axum::extract::{Query, Request, State};
 use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::middleware::Next;
-use axum::response::{IntoResponse, Redirect, Response};
+use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
 use serde_json::json;
 use std::collections::HashMap;
@@ -80,23 +80,6 @@ pub async fn require_api_auth(
         })),
     )
         .into_response()
-}
-
-pub async fn require_ui_auth(
-    State(state): State<Arc<AppState>>,
-    req: Request,
-    next: Next,
-) -> Response {
-    if is_request_authenticated(&state, &req) {
-        return next.run(req).await;
-    }
-    if req.headers().contains_key("hx-request") {
-        let mut resp = (StatusCode::UNAUTHORIZED, "").into_response();
-        resp.headers_mut()
-            .insert("hx-redirect", HeaderValue::from_static("/login"));
-        return resp;
-    }
-    Redirect::to("/login").into_response()
 }
 
 fn client_ip(headers: &HeaderMap) -> String {
@@ -204,7 +187,6 @@ pub async fn post_login(
                 status: StatusCode::UNAUTHORIZED,
                 code: "INVALID_TOTP".to_string(),
                 message: "Invalid 6-digit Authenticator code.".to_string(),
-                is_htmx: false,
             });
         }
     }
@@ -283,7 +265,6 @@ pub async fn put_credentials(
             status: StatusCode::UNAUTHORIZED,
             code: "INVALID_CURRENT_PASSWORD".to_string(),
             message: "Incorrect current password.".to_string(),
-            is_htmx: false,
         });
     }
 
@@ -402,7 +383,6 @@ pub async fn post_2fa_disable(
             status: StatusCode::UNAUTHORIZED,
             code: "INVALID_PASSWORD".to_string(),
             message: "Valid password required to disable 2FA.".to_string(),
-            is_htmx: false,
         });
     }
 

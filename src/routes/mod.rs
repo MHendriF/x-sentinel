@@ -1,15 +1,15 @@
-//! Top-level Axum router wiring security headers, origin guard, auth gates, API endpoints, and SSR/HTMX UI routes.
+//! Top-level Axum router wiring security headers, origin guard, auth gates, API endpoints, and React SPA serving.
 
 use axum::Json;
 use axum::Router;
 use axum::extract::{DefaultBodyLimit, Request};
 use axum::http::{HeaderValue, Method, StatusCode, Uri, header};
 use axum::middleware::{self, Next};
-use axum::response::{IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{delete, get, post, put};
 use serde_json::json;
 use std::sync::Arc;
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::services::ServeDir;
 
 use crate::security::origin_guard_middleware;
 use crate::state::AppState;
@@ -23,7 +23,6 @@ pub mod schedules;
 pub mod settings;
 pub mod system;
 pub mod tasks;
-pub mod ui;
 
 const ONE_MB: usize = 1024 * 1024;
 const TWENTY_FIVE_MB: usize = 25 * 1024 * 1024;
@@ -72,6 +71,39 @@ async fn api_not_found(method: Method, uri: Uri) -> Response {
         })),
     )
         .into_response()
+}
+
+async fn healthz() -> impl IntoResponse {
+    (StatusCode::OK, Json(json!({ "ok": true, "engine": "axum" })))
+}
+
+async fn fallback_missing_dist() -> impl IntoResponse {
+    (
+        StatusCode::NOT_FOUND,
+        Html(
+            "<h1>Frontend build missing</h1><p>Run <code>npm run client:build</code> inside <code>client/</code> to generate <code>client/dist/</code>.</p>",
+        ),
+    )
+}
+
+async fn serve_spa_index(
+    axum::extract::State(state): axum::extract::State<Arc<AppState>>,
+) -> Response {
+    let index_path = state
+        .config
+        .root_dir
+        .join("client")
+        .join("dist")
+        .join("index.html");
+    match tokio::fs::read(&index_path).await {
+        Ok(bytes) => (
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+            bytes,
+        )
+            .into_response(),
+        Err(_) => fallback_missing_dist().await.into_response(),
+    }
 }
 
 pub fn build_router(state: Arc<AppState>) -> Router {
@@ -223,98 +255,20 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .fallback(api_not_found)
         .layer(middleware::from_fn(api_no_store_middleware));
 
-    // Authenticated SSR pages & HTMX fragments
-    let protected_ui_pages = Router::new()
-        .route("/", get(ui::index_page))
-        .route("/ui/{tab}", get(ui::tab_page))
-        .layer(middleware::from_fn_with_state(
-            Arc::clone(&state),
-            auth::require_ui_auth,
-        ));
-
-    let partials_router = Router::new()
-        .route("/tab/{tab}", get(ui::partial_tab))
-        .route("/task-ribbon", get(ui::partial_task_ribbon))
-        .route("/task-monitor", get(ui::partial_task_monitor))
-        .route("/nodes", get(ui::partial_nodes_list))
-        .route("/modals/account/{id}", get(ui::partial_node_modal))
-        .route("/modals/bulk-import", get(ui::partial_bulk_import_modal))
-        .route("/modals/comments/{id}", get(ui::partial_comments_modal))
-        .route("/modals/diagnostics", get(ui::partial_diagnostics_modal))
-        .route("/accounts/create", post(ui::partial_create_account))
-        .route("/accounts/{id}/update", post(ui::partial_update_account))
-        .route("/accounts/bulk-import", post(ui::partial_bulk_import_accounts))
-        .route("/accounts/batch-toggle", post(ui::partial_batch_toggle_accounts))
-        .route("/accounts/batch-delete", post(ui::partial_batch_delete_accounts))
-        .route("/accounts/check-health", post(ui::partial_check_fleet_health))
-        .route("/accounts/test-proxies", post(ui::partial_test_proxies))
-        .route("/accounts/{id}/toggle", post(ui::partial_toggle_account))
-        .route("/accounts/{id}", delete(ui::partial_delete_account))
-        .route("/accounts/{id}/check-health", post(ui::partial_check_account_health))
-        .route("/accounts/{id}/warmup", post(ui::partial_start_warmup))
-        .route("/accounts/{id}/camoufox-login", post(ui::partial_camoufox_login))
-        .route("/accounts/{id}/comments", post(ui::partial_save_account_comments))
-        .route("/composer/generate", post(ui::partial_composer_generate))
-        .route("/composer/dispatch", post(ui::partial_composer_dispatch))
-        .route("/schedules", get(ui::partial_schedules_list))
-        .route("/schedules/{id}/toggle", post(ui::partial_toggle_schedule))
-        .route("/schedules/{id}", delete(ui::partial_delete_schedule))
-        .route("/tasks/batch", post(ui::partial_start_batch))
-        .route("/tasks/hunter", post(ui::partial_start_hunter))
-        .route("/tasks/pause", post(ui::partial_pause_task))
-        .route("/tasks/resume", post(ui::partial_resume_task))
-        .route("/tasks/stop", post(ui::partial_stop_task))
-        .route("/tasks/clear-locks", post(ui::partial_clear_locks))
-        .route("/analytics", get(ui::partial_analytics_body))
-        .route("/ai/settings", post(ui::partial_save_ai_settings))
-        .route("/ai/test", post(ui::partial_test_ai_connection))
-        .route("/ai/sandbox", post(ui::partial_ai_sandbox))
-        .route("/spintax/fetch-tweet", post(ui::partial_spintax_fetch_tweet))
-        .route("/spintax/generate", post(ui::partial_spintax_generate))
-        .route("/spintax/save-vault", post(ui::partial_spintax_save_vault))
-        .route("/spintax/save-templates", post(ui::partial_spintax_save_templates))
-        .route("/spintax/preview", post(ui::partial_spintax_preview))
-        .route("/spintax/vault", get(ui::partial_spintax_vault_list))
-        .route(
-            "/spintax/vault/{filename}",
-            get(ui::partial_spintax_vault_inspect).delete(ui::partial_spintax_vault_delete),
-        )
-        .route("/safety/settings", post(ui::partial_save_safety_settings))
-        .route("/safety/test-browser", post(ui::partial_test_browser))
-        .route("/safety/test-webhook", post(ui::partial_test_webhook))
-        .route("/safety/credentials", post(ui::partial_update_credentials))
-        .route("/safety/2fa-setup", post(ui::partial_2fa_setup))
-        .route("/safety/2fa-enable", post(ui::partial_2fa_enable))
-        .route("/history/table", get(ui::partial_audit_table))
-        .route("/history/detail/{id}", get(ui::partial_audit_detail))
-        .route("/history/prune", post(ui::partial_prune_history))
-        .route("/history/clear", post(ui::partial_clear_history))
-        .route("/history/export-csv", get(ui::partial_history_export_csv))
-        .layer(DefaultBodyLimit::max(ONE_MB))
-        .layer(middleware::from_fn_with_state(
-            Arc::clone(&state),
-            auth::require_api_auth,
-        ));
-
-    let static_dir = state.config.root_dir.join("static");
     let client_dist_dir = state.config.root_dir.join("client").join("dist");
+    let client_assets_dir = client_dist_dir.join("assets");
     let client_index = client_dist_dir.join("index.html");
 
     let base_router = Router::new()
-        .route("/healthz", get(ui::healthz))
-        .nest("/api", api_router)
-        .nest_service("/static", ServeDir::new(static_dir));
+        .route("/healthz", get(healthz))
+        .nest("/api", api_router);
 
     let app_router = if client_index.exists() {
-        let spa_service =
-            ServeDir::new(&client_dist_dir).not_found_service(ServeFile::new(client_index));
-        base_router.fallback_service(spa_service)
-    } else {
         base_router
-            .route("/login", get(ui::login_page))
-            .merge(protected_ui_pages)
-            .nest("/partials", partials_router)
-            .fallback(ui::fallback_not_found)
+            .nest_service("/assets", ServeDir::new(client_assets_dir))
+            .fallback(serve_spa_index)
+    } else {
+        base_router.fallback(fallback_missing_dist)
     };
 
     app_router

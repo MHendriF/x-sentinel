@@ -1,7 +1,6 @@
 //! Pure domain services and data models.
 
 pub mod ai_service;
-pub mod analytics;
 pub mod models;
 pub mod notifier;
 pub mod proxy;
