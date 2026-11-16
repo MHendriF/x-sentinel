@@ -1,0 +1,213 @@
+<div class="stack-lg" x-data="svgChartTooltip">
+  <div id="chart-hover-tooltip" class="chart-tooltip" x-show="visible">
+    <strong x-text="title"></strong>
+    <div x-text="detail"></div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-label">Total likes</span>
+      <span class="kpi-value">{{ view.total_likes }}</span>
+      <span class="kpi-delta">+{{ view.today_likes }} today</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Total reposts</span>
+      <span class="kpi-value">{{ view.total_retweets }}</span>
+      <span class="kpi-delta">+{{ view.today_retweets }} today</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Total replies</span>
+      <span class="kpi-value">{{ view.total_comments }}</span>
+      <span class="kpi-delta">+{{ view.today_comments }} today</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Posts &amp; success rate</span>
+      <span class="kpi-value">{{ view.total_posts }}</span>
+      <span class="kpi-delta">{{ view.success_rate }}% success · {{ view.total_actions }} actions</span>
+    </div>
+  </div>
+
+  <div class="grid-12">
+    <div class="card span-6 stack-md">
+      <div class="row-between">
+        <div>
+          <h2>Engagement velocity</h2>
+          <p class="card-subtitle">Successful actions across {{ view.selected_node_label }} ({{ view.timeframe }}).</p>
+        </div>
+        <span class="mono text-muted">Peak bucket: {{ view.velocity_svg.max_val }}</span>
+      </div>
+
+      {% if view.velocity_svg.has_data %}
+      <div class="chart-wrap">
+        <svg class="chart-svg" viewBox="0 0 640 220" role="img" aria-label="Engagement velocity area chart">
+          <line class="chart-gridline" x1="44" y1="18" x2="620" y2="18" />
+          <line class="chart-gridline" x1="44" y1="99" x2="620" y2="99" />
+          <line class="chart-gridline" x1="44" y1="180" x2="620" y2="180" />
+          <text class="chart-axis-text" x="4" y="23">{{ view.velocity_svg.max_val }}</text>
+          <text class="chart-axis-text" x="4" y="183">0</text>
+          <path d="{{ view.velocity_svg.area_path }}" fill="#f59e0b" fill-opacity="0.14" />
+          <polyline points="{{ view.velocity_svg.polyline_points }}" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+          {% for pt in view.velocity_svg.points %}
+          <circle cx="{{ pt.x }}" cy="{{ pt.y_total }}" r="3.5" fill="#f59e0b" />
+          <rect x="{{ pt.hit_x }}" y="14" width="{{ pt.hit_w }}" height="170" fill="transparent"
+                data-tip-title="{{ pt.label }}"
+                data-tip-detail="Total {{ pt.total }} (L:{{ pt.likes }} RT:{{ pt.retweets }} R:{{ pt.comments }} P:{{ pt.posts }})"
+                @mouseenter="showTip" @mousemove="showTip" @mouseleave="hideTip" />
+          {% endfor %}
+        </svg>
+      </div>
+      {% else %}
+      <p class="empty-state">No chronological history recorded in the selected window.</p>
+      {% endif %}
+    </div>
+
+    <div class="card span-6 stack-md">
+      <div class="row-between">
+        <div>
+          <h2>24-hour density</h2>
+          <p class="card-subtitle">Hourly distribution highlighting peak output hour ({{ view.peak_hour_label }}).</p>
+        </div>
+        <span class="mono text-muted">Peak: {{ view.peak_hour_count }} actions</span>
+      </div>
+
+      <div class="chart-wrap">
+        <svg class="chart-svg" viewBox="0 0 640 220" role="img" aria-label="24 hour activity histogram">
+          <line class="chart-gridline" x1="44" y1="18" x2="620" y2="18" />
+          <line class="chart-gridline" x1="44" y1="99" x2="620" y2="99" />
+          <line class="chart-gridline" x1="44" y1="180" x2="620" y2="180" />
+          {% for bar in view.hourly_bars %}
+          <rect x="{{ bar.x }}"
+                y="{{ bar.y }}"
+                width="{{ bar.width }}"
+                height="{{ bar.height }}"
+                rx="2"
+                fill="{% if bar.is_peak %}#f59e0b{% else %}#3b82f6{% endif %}"
+                fill-opacity="{% if bar.total == 0 %}0.22{% else %}0.85{% endif %}"
+                data-tip-title="{{ bar.hour_label }}:00 local"
+                data-tip-detail="{{ bar.total }} ok · {{ bar.failures }} failed"
+                @mouseenter="showTip" @mousemove="showTip" @mouseleave="hideTip" />
+          {% if bar.failures > 0 %}
+          <rect x="{{ bar.x }}" y="182" width="{{ bar.width }}" height="3" fill="#ef4444" />
+          {% endif %}
+          {% if loop.index0 % 4 == 0 %}
+          <text class="chart-axis-text" x="{{ bar.x }}" y="206">{{ bar.hour_label }}</text>
+          {% endif %}
+          {% endfor %}
+        </svg>
+      </div>
+    </div>
+
+    <div class="card span-5 stack-md">
+      <div>
+        <h2>Node workload share</h2>
+        <p class="card-subtitle">Action distribution across active fleet accounts.</p>
+      </div>
+
+      {% if view.donut_slices.is_empty() %}
+      <p class="empty-state">Run automation actions to populate node share.</p>
+      {% else %}
+      <div class="row-wrap">
+        <svg width="200" height="200" viewBox="0 0 220 220" role="img" aria-label="Node share donut chart">
+          <circle cx="110" cy="110" r="72" fill="none" stroke="rgba(241,243,247,0.08)" stroke-width="22" />
+          {% for s in view.donut_slices %}
+          <circle cx="110"
+                  cy="110"
+                  r="72"
+                  fill="none"
+                  stroke="{{ s.color }}"
+                  stroke-width="22"
+                  stroke-dasharray="{{ s.dash_array }}"
+                  stroke-dashoffset="{{ s.dash_offset }}"
+                  transform="rotate(-90 110 110)"
+                  data-tip-title="{{ s.name }}"
+                  data-tip-detail="{{ s.count }} actions ({{ s.percent }}%)"
+                  @mouseenter="showTip" @mousemove="showTip" @mouseleave="hideTip" />
+          {% endfor %}
+          <text x="110" y="106" text-anchor="middle" fill="#f1f3f7" font-size="22" font-weight="700" font-family="Space Grotesk, sans-serif">{{ view.total_actions }}</text>
+          <text x="110" y="128" text-anchor="middle" fill="#949dab" font-size="13">actions</text>
+        </svg>
+
+        <div class="stack-sm">
+          {% for s in view.donut_slices %}
+          <div class="row-wrap">
+            <svg width="10" height="10" aria-hidden="true"><rect width="10" height="10" rx="2" fill="{{ s.color }}" /></svg>
+            <span class="text-soft">{{ s.name }}</span>
+            <span class="mono text-muted">{{ s.percent }}% ({{ s.count }})</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card span-7 stack-md">
+      <div class="row-between">
+        <div>
+          <h2>Node leaderboard</h2>
+          <p class="card-subtitle">Select any node row to scope metrics to that node.</p>
+        </div>
+        {% if view.failure_count > 0 %}
+        <span class="pill pill--warn">{{ view.failure_count }} failure(s)</span>
+        {% else %}
+        <span class="pill pill--ok">0 failures</span>
+        {% endif %}
+      </div>
+
+      {% if view.leaderboard.is_empty() %}
+      <p class="empty-state">No nodes registered yet.</p>
+      {% else %}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Node</th>
+              <th>Health</th>
+              <th>Likes</th>
+              <th>Reposts</th>
+              <th>Replies</th>
+              <th>Posts</th>
+              <th>Success</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in view.leaderboard %}
+            <tr class="is-clickable"
+                hx-get="/partials/analytics?timeframe={{ view.timeframe }}&node={{ row.id }}"
+                hx-target="#analytics-body-slot"
+                hx-swap="innerHTML">
+              <td>
+                <div class="row-wrap">
+                  <svg width="10" height="10" aria-hidden="true"><rect width="10" height="10" rx="2" fill="{{ row.color }}" /></svg>
+                  <span>{% if !row.username.is_empty() %}@{{ row.username }}{% else %}{{ row.name }}{% endif %}</span>
+                </div>
+              </td>
+              <td class="mono">{{ row.health_status }}</td>
+              <td class="mono">{{ row.likes }}</td>
+              <td class="mono">{{ row.retweets }}</td>
+              <td class="mono">{{ row.comments }}</td>
+              <td class="mono">{{ row.posts }}</td>
+              <td class="mono">{{ row.success_rate }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      {% if !view.failure_categories.is_empty() %}
+      <div class="frag stack-sm">
+        <span class="field-label">Failure diagnostics</span>
+        {% for f in view.failure_categories %}
+        <div class="row-between">
+          <div class="row-wrap">
+            <svg width="10" height="10" aria-hidden="true"><rect width="10" height="10" rx="2" fill="{{ f.color }}" /></svg>
+            <span class="text-soft">{{ f.label }}</span>
+          </div>
+          <span class="mono">{{ f.count }} ({{ f.percentage }}%)</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

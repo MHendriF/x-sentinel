@@ -1,0 +1,91 @@
+<section data-active-tab="accounts" x-data="nodesDeck" class="stack-lg">
+  <div class="tab-header">
+    <div>
+      <h1>Nodes &amp; proxy fleet</h1>
+      <p class="tab-lead">Manage authenticated X sessions, proxy tunnels, warmup counters, and Camoufox browser profiles.</p>
+    </div>
+    <div class="tab-actions">
+      <button type="button" class="btn btn--primary"
+              hx-get="/partials/modals/account/new"
+              hx-target="#modal-portal"
+              hx-swap="innerHTML">Add node</button>
+      <button type="button" class="btn btn--ghost"
+              hx-get="/partials/modals/bulk-import"
+              hx-target="#modal-portal"
+              hx-swap="innerHTML">Bulk import</button>
+      <button type="button" class="btn btn--ghost"
+              hx-post="/partials/accounts/test-proxies"
+              hx-target="#nodes-list"
+              hx-swap="innerHTML">Test proxies</button>
+      <button type="button" class="btn btn--ghost"
+              hx-post="/partials/accounts/check-health"
+              hx-target="#nodes-list"
+              hx-swap="innerHTML">Check fleet health</button>
+      <a href="/api/accounts/export" class="btn btn--ghost">Export JSON</a>
+      <a href="/api/accounts/export-csv" class="btn btn--ghost">Export CSV</a>
+    </div>
+  </div>
+
+  <div class="card card--compact">
+    <form class="row-between"
+          hx-get="/partials/nodes"
+          hx-target="#nodes-list"
+          hx-swap="innerHTML"
+          hx-trigger="submit, change, input delay:200ms">
+      <div class="row-wrap">
+        <label for="node-search" class="sr-only">Search nodes</label>
+        <input id="node-search"
+               name="q"
+               type="search"
+               value="{{ query }}"
+               placeholder="Filter by label, @handle, proxy (Press /)"
+               class="control" />
+
+        <label for="node-status-filter" class="sr-only">Status filter</label>
+        <select id="node-status-filter" name="status" class="select">
+          <option value="all" {% if status == "all" %}selected{% endif %}>All statuses</option>
+          <option value="healthy" {% if status == "healthy" %}selected{% endif %}>Healthy</option>
+          <option value="paused" {% if status == "paused" %}selected{% endif %}>Paused</option>
+          <option value="expired" {% if status == "expired" %}selected{% endif %}>Expired</option>
+          <option value="cooldown" {% if status == "cooldown" %}selected{% endif %}>Cooldown</option>
+        </select>
+
+        <label for="node-view-mode" class="sr-only">View layout</label>
+        <select id="node-view-mode" name="view" class="select">
+          <option value="grid" {% if view_mode == "grid" %}selected{% endif %}>Grid view</option>
+          <option value="table" {% if view_mode == "table" %}selected{% endif %}>Table view</option>
+        </select>
+      </div>
+
+      <span class="mono text-muted">{{ nodes.len() }} visible node(s)</span>
+    </form>
+  </div>
+
+  <div class="card card--compact row-between" x-show="hasSelection">
+    <span class="mono"><span x-text="selectedCount"></span> selected</span>
+    <div class="row-wrap">
+      <form hx-post="/partials/accounts/batch-toggle" hx-target="#nodes-list" hx-swap="innerHTML">
+        <input type="hidden" name="ids" :value="selectedCsv" />
+        <input type="hidden" name="enabled" value="true" />
+        <button type="submit" class="btn btn--ghost btn--sm">Enable selected</button>
+      </form>
+      <form hx-post="/partials/accounts/batch-toggle" hx-target="#nodes-list" hx-swap="innerHTML">
+        <input type="hidden" name="ids" :value="selectedCsv" />
+        <input type="hidden" name="enabled" value="false" />
+        <button type="submit" class="btn btn--ghost btn--sm">Pause selected</button>
+      </form>
+      <form hx-post="/partials/accounts/batch-delete"
+            hx-target="#nodes-list"
+            hx-swap="innerHTML"
+            hx-confirm="Delete selected nodes permanently?">
+        <input type="hidden" name="ids" :value="selectedCsv" />
+        <button type="submit" class="btn btn--danger btn--sm">Delete selected</button>
+      </form>
+      <button type="button" class="btn btn--ghost btn--sm" @click="clearSelection">Clear selection</button>
+    </div>
+  </div>
+
+  <div id="nodes-list">
+    {% include "partials/nodes_list.html" %}
+  </div>
+</section>

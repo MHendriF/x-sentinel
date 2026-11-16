@@ -1,0 +1,168 @@
+{% if nodes.is_empty() %}
+<div class="card">
+  <div class="empty-state stack-md">
+    <p>No X account nodes match the current filter.</p>
+  </div>
+</div>
+{% else %}
+  {% if view_mode == "table" %}
+  <div class="card card--compact">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" @change="toggleVisibleAll" aria-label="Select all visible nodes" /></th>
+            <th>Node</th>
+            <th>Status</th>
+            <th>Proxy tunnel</th>
+            <th>Warmup</th>
+            <th>Camoufox</th>
+            <th>Total actions</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for n in nodes %}
+          <tr>
+            <td>
+              <input type="checkbox"
+                     class="node-select-checkbox"
+                     data-node-id="{{ n.id }}"
+                     @change="toggleNodeId"
+                     aria-label="Select {{ n.label }}" />
+            </td>
+            <td>
+              <div class="stack-sm">
+                <strong>{{ n.label }}</strong>
+                <span class="mono text-muted">{% if !n.username.is_empty() %}@{{ n.username }}{% else %}Unverified handle{% endif %}</span>
+              </div>
+            </td>
+            <td>
+              <span class="pill {{ n.status_pill_class }}">
+                <span class="dot {{ n.status_dot_class }}"></span>
+                <span>{{ n.status_label }}</span>
+              </span>
+            </td>
+            <td class="mono">{{ n.masked_proxy }}</td>
+            <td class="mono">{{ n.warmup_label }}</td>
+            <td class="mono">{{ n.camoufox_label }}</td>
+            <td class="mono">{{ n.total_actions }}</td>
+            <td>
+              <div class="row-wrap">
+                <button type="button" class="btn btn--ghost btn--sm"
+                        hx-post="/partials/accounts/{{ n.id }}/toggle"
+                        hx-target="#nodes-list"
+                        hx-swap="innerHTML">
+                  {% if n.enabled %}Disable{% else %}Enable{% endif %}
+                </button>
+                <button type="button" class="btn btn--ghost btn--sm"
+                        hx-post="/partials/accounts/{{ n.id }}/check-health"
+                        hx-target="#nodes-list"
+                        hx-swap="innerHTML">Check</button>
+                <button type="button" class="btn btn--ghost btn--sm"
+                        hx-get="/partials/modals/account/{{ n.id }}"
+                        hx-target="#modal-portal"
+                        hx-swap="innerHTML">Edit</button>
+                <button type="button" class="btn btn--danger btn--sm"
+                        hx-delete="/partials/accounts/{{ n.id }}"
+                        hx-confirm="Remove node {{ n.label }}?"
+                        hx-target="#nodes-list"
+                        hx-swap="innerHTML">Delete</button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="cards-grid">
+    {% for n in nodes %}
+    <article class="card stack-md">
+      <div class="row-between">
+        <div class="row-wrap">
+          <input type="checkbox"
+                 class="node-select-checkbox"
+                 data-node-id="{{ n.id }}"
+                 @change="toggleNodeId"
+                 aria-label="Select {{ n.label }}" />
+          <div class="avatar">
+            {% if !n.avatar.is_empty() %}
+            <img src="{{ n.avatar }}" alt="{{ n.label }}" />
+            {% else %}
+            <span>{{ n.initial }}</span>
+            {% endif %}
+          </div>
+          <div class="stack-sm">
+            <h3>{{ n.label }}</h3>
+            <span class="mono text-muted">{% if !n.username.is_empty() %}@{{ n.username }}{% else %}Unverified session{% endif %}</span>
+          </div>
+        </div>
+        <span class="pill {{ n.status_pill_class }}">
+          <span class="dot {{ n.status_dot_class }}"></span>
+          <span>{{ n.status_label }}</span>
+        </span>
+      </div>
+
+      <div class="frag stack-sm">
+        <div class="row-between">
+          <span class="text-muted">Proxy</span>
+          <span class="mono">{{ n.masked_proxy }}</span>
+        </div>
+        <div class="row-between">
+          <span class="text-muted">Warmup</span>
+          <span class="mono">{{ n.warmup_label }}</span>
+        </div>
+        <div class="row-between">
+          <span class="text-muted">Camoufox profile</span>
+          <span class="mono">{{ n.camoufox_label }}</span>
+        </div>
+        <div class="row-between">
+          <span class="text-muted">Stats (L/RT/R/P)</span>
+          <span class="mono">{{ n.likes }}/{{ n.retweets }}/{{ n.comments }}/{{ n.posts }}</span>
+        </div>
+      </div>
+
+      {% if !n.health_message.is_empty() %}
+      <p class="field-hint">{{ n.health_message }}</p>
+      {% endif %}
+
+      <div class="row-wrap">
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-post="/partials/accounts/{{ n.id }}/toggle"
+                hx-target="#nodes-list"
+                hx-swap="innerHTML">
+          {% if n.enabled %}Pause{% else %}Enable{% endif %}
+        </button>
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-post="/partials/accounts/{{ n.id }}/check-health"
+                hx-target="#nodes-list"
+                hx-swap="innerHTML">Check health</button>
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-post="/partials/accounts/{{ n.id }}/warmup"
+                hx-target="#nodes-list"
+                hx-swap="innerHTML">Warmup</button>
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-post="/partials/accounts/{{ n.id }}/camoufox-login"
+                hx-target="#toast-region"
+                hx-swap="beforeend">Camoufox login</button>
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-get="/partials/modals/comments/{{ n.id }}"
+                hx-target="#modal-portal"
+                hx-swap="innerHTML">Replies</button>
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-get="/partials/modals/account/{{ n.id }}"
+                hx-target="#modal-portal"
+                hx-swap="innerHTML">Edit</button>
+        <button type="button" class="btn btn--danger btn--sm"
+                hx-delete="/partials/accounts/{{ n.id }}"
+                hx-confirm="Remove node {{ n.label }}?"
+                hx-target="#nodes-list"
+                hx-swap="innerHTML">Delete</button>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endif %}

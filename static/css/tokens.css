@@ -1,0 +1,194 @@
+/* Self-hosted font faces (Space Grotesk, Plus Jakarta Sans, JetBrains Mono) */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/space-grotesk-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/static/fonts/space-grotesk-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/static/fonts/space-grotesk-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/space-grotesk-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/static/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/static/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/static/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/static/fonts/jetbrains-mono-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/jetbrains-mono-latin-700-normal.woff2') format('woff2');
+}
+
+:root {
+  /* Obsidian surface hierarchy (strictly neutral, zero violet) */
+  --g-main: #070708;
+  --g-alt: #0e1014;
+  --card: #151517;
+  --frag: #1c1d21;
+  --input-bg: #0b0c0f;
+
+  /* Ink & contrast hierarchy (WCAG AA/AAA) */
+  --ink: #f1f3f7;
+  --ink-soft: #cdd3de;
+  --muted: #949dab;
+
+  /* Hairlines & 1px dark inner highlight */
+  --line: rgba(241, 243, 247, 0.10);
+  --line-strong: rgba(241, 243, 247, 0.22);
+  --hi-top: rgba(255, 255, 255, 0.05);
+
+  /* Single primary brand accent */
+  --action: #f59e0b;
+  --action-hov: #fbbf24;
+  --action-dim: rgba(245, 158, 11, 0.14);
+  --action-ink: #090b0f;
+
+  /* Functional semantic states (status indicators only) */
+  --st-ok: #10b981;
+  --st-ok-dim: rgba(16, 185, 129, 0.14);
+  --st-warn: #f59e0b;
+  --st-warn-dim: rgba(245, 158, 11, 0.14);
+  --st-err: #ef4444;
+  --st-err-dim: rgba(239, 68, 68, 0.14);
+  --st-info: #3b82f6;
+  --st-info-dim: rgba(59, 130, 246, 0.14);
+
+  /* Non-violet chart palette for server-rendered SVG analytics */
+  --chart-1: #f59e0b;
+  --chart-2: #3b82f6;
+  --chart-3: #10b981;
+  --chart-4: #06b6d4;
+  --chart-5: #f43f5e;
+  --chart-6: #84cc16;
+  --chart-7: #f97316;
+  --chart-8: #64748b;
+
+  /* Fonts */
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-text: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Type scale (strict 13px floor across every visible element) */
+  --t-label: 13px;
+  --t-small: 14px;
+  --t-body: 15px;
+  --t-lead: 17px;
+  --t-card: 18px;
+  --t-h2: 22px;
+  --t-h1: clamp(24px, 1.2vw + 18px, 30px);
+  --t-stat: clamp(24px, 0.9vw + 20px, 32px);
+
+  /* 4/8 spacing ladder */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  /* Radius scale */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-btn: 6px;
+
+  /* Target & shell geometry */
+  --btn-h: 44px;
+  --btn-h-sm: 38px;
+  --input-h: 44px;
+  --sidebar-w: 256px;
+  --sidebar-collapsed-w: 76px;
+  --wrap-max: 1360px;
+  --gut: 32px;
+
+  /* Motion timings */
+  --m-in: 150ms;
+  --m-out: 120ms;
+  --m-press: 90ms;
+  --m-panel: 200ms;
+  --m-slide: 240ms;
+  --m-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --m-ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --gut: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gut: 16px;
+    --btn-h-sm: 44px;
+  }
+}

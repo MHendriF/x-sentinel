@@ -1,0 +1,186 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ ribbon.tab_title }} — X-SENTINEL{% endblock %}
+
+{% block body %}
+<div x-data="cockpitShell" :class="shellClass">
+  <div :class="backdropClass" @click="closeDrawer" aria-hidden="true"></div>
+
+  <aside :class="drawerClass" aria-label="Primary navigation">
+    <div class="sidebar-top">
+      <div class="brand-row">
+        <a href="/ui/accounts" class="brand-mark">
+          <span class="brand-emblem">XS</span>
+          <span class="brand-meta">
+            <span class="brand-name">X-SENTINEL</span>
+            <span class="brand-sub">v{{ version }}</span>
+          </span>
+        </a>
+        <button type="button"
+                class="btn btn--ghost btn--icon"
+                @click="toggleSidebar"
+                :aria-label="collapseLabel"
+                title="Toggle sidebar ([)">
+          <svg class="icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-collapse"></use></svg>
+        </button>
+      </div>
+
+      <div class="sidebar-summary">
+        <span class="dot dot--ok"></span>
+        <span class="sidebar-summary-body mono">{{ active_nodes }}/{{ total_nodes }} active nodes</span>
+      </div>
+
+      <nav class="nav-group" aria-label="Operations">
+        <div class="nav-section-label">Operations</div>
+        <a href="/ui/accounts"
+           data-nav-tab="accounts"
+           hx-get="/partials/tab/accounts"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/accounts"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "accounts" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-nodes"></use></svg>
+          <span class="nav-item-text">Nodes &amp; proxy</span>
+          <span class="nav-key nav-item-text">1</span>
+        </a>
+        <a href="/ui/composer"
+           data-nav-tab="composer"
+           hx-get="/partials/tab/composer"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/composer"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "composer" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-composer"></use></svg>
+          <span class="nav-item-text">Post studio</span>
+          <span class="nav-key nav-item-text">2</span>
+        </a>
+        <a href="/ui/batch"
+           data-nav-tab="batch"
+           hx-get="/partials/tab/batch"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/batch"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "batch" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-target"></use></svg>
+          <span class="nav-item-text">Target workbench</span>
+          <span class="nav-key nav-item-text">3</span>
+        </a>
+        <a href="/ui/hunter"
+           data-nav-tab="hunter"
+           hx-get="/partials/tab/hunter"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/hunter"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "hunter" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-hunter"></use></svg>
+          <span class="nav-item-text">Feed hunter</span>
+          <span class="nav-key nav-item-text">4</span>
+        </a>
+        <a href="/ui/analytics"
+           data-nav-tab="analytics"
+           hx-get="/partials/tab/analytics"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/analytics"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "analytics" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-analytics"></use></svg>
+          <span class="nav-item-text">Analytics</span>
+          <span class="nav-key nav-item-text">5</span>
+        </a>
+      </nav>
+
+      <nav class="nav-group" aria-label="Configuration">
+        <div class="nav-section-label">Configuration</div>
+        <a href="/ui/ai"
+           data-nav-tab="ai"
+           hx-get="/partials/tab/ai"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/ai"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "ai" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-ai"></use></svg>
+          <span class="nav-item-text">AI providers</span>
+          <span class="nav-key nav-item-text">6</span>
+        </a>
+        <a href="/ui/spintax"
+           data-nav-tab="spintax"
+           hx-get="/partials/tab/spintax"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/spintax"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "spintax" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-spintax"></use></svg>
+          <span class="nav-item-text">Payload bank</span>
+          <span class="nav-key nav-item-text">7</span>
+        </a>
+        <a href="/ui/safety"
+           data-nav-tab="safety"
+           hx-get="/partials/tab/safety"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/safety"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "safety" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-safety"></use></svg>
+          <span class="nav-item-text">Defense protocol</span>
+          <span class="nav-key nav-item-text">8</span>
+        </a>
+        <a href="/ui/history"
+           data-nav-tab="history"
+           hx-get="/partials/tab/history"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/history"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "history" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-history"></use></svg>
+          <span class="nav-item-text">Audit ledger</span>
+          <span class="nav-key nav-item-text">9</span>
+        </a>
+      </nav>
+
+      <nav class="nav-group" aria-label="System">
+        <div class="nav-section-label">System</div>
+        <a href="/ui/about"
+           data-nav-tab="about"
+           hx-get="/partials/tab/about"
+           hx-target="#tab-stage"
+           hx-swap="innerHTML"
+           hx-push-url="/ui/about"
+           @click="closeDrawer"
+           class="nav-item {% if ribbon.active_tab == "about" %}is-active{% endif %}">
+          <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-about"></use></svg>
+          <span class="nav-item-text">About &amp; specs</span>
+          <span class="nav-key nav-item-text">0</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <button type="button" class="nav-item" @click="logout">
+        <svg class="nav-icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-lock"></use></svg>
+        <span class="sidebar-footer-label">Lock cockpit</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-column">
+    {% include "partials/telemetry_ribbon.html" %}
+    <main id="main-content" class="wrap">
+      <div id="tab-stage">
+        {{ tab_html|safe }}
+      </div>
+    </main>
+  </div>
+
+  <div id="modal-portal" aria-live="polite"></div>
+  <div id="toast-region" aria-live="polite"></div>
+</div>
+{% endblock %}

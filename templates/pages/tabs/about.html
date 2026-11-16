@@ -1,0 +1,90 @@
+<section data-active-tab="about" x-data="aboutDeck" class="stack-lg">
+  <div class="tab-header">
+    <div>
+      <h1>About &amp; specifications</h1>
+      <p class="tab-lead">Runtime architecture, host telemetry, 6-pillar health check, and local security boundaries for v{{ version }}.</p>
+    </div>
+    <div class="row-wrap">
+      <div class="seg-tabs" role="tablist" aria-label="About views">
+        <button type="button" role="tab" data-tab="overview" @click="setSubTab" :class="overviewTabClass">Overview</button>
+        <button type="button" role="tab" data-tab="telemetry" @click="setSubTab" :class="telemetryTabClass">Live telemetry</button>
+        <button type="button" role="tab" data-tab="docs" @click="setSubTab" :class="docsTabClass">Security &amp; shortcuts</button>
+      </div>
+      <button type="button" class="btn btn--primary"
+              hx-get="/partials/modals/diagnostics"
+              hx-target="#modal-portal"
+              hx-swap="innerHTML">Run 6-pillar audit</button>
+    </div>
+  </div>
+
+  <div class="grid-12" x-show="isOverview">
+    <div class="card span-6 stack-md">
+      <h2>Execution runtime</h2>
+      <p class="text-soft">Axum HTTP server binds exclusively to `127.0.0.1:{{ port }}` and orchestrates auth, atomic JSON persistence, pacing limits, target locks, AI gateway requests, and the 15-second background scheduler.</p>
+      <div class="frag stack-sm">
+        <div class="row-between"><span class="text-muted">HTTP runtime</span><span class="mono">Rust + Axum + Tokio</span></div>
+        <div class="row-between"><span class="text-muted">UI templates</span><span class="mono">Askama SSR + HTMX + Alpine CSP</span></div>
+        <div class="row-between"><span class="text-muted">Browser driver</span><span class="mono">Node stdio JSON-RPC (Chromium + Camoufox)</span></div>
+        <div class="row-between"><span class="text-muted">Storage</span><span class="mono">Atomic .tmp + fsync + rename (data/)</span></div>
+      </div>
+    </div>
+
+    <div class="card span-6 stack-md">
+      <h2>Fleet snapshot</h2>
+      <p class="text-soft">Live resource and state summary from local storage on this host.</p>
+      <div class="frag stack-sm">
+        <div class="row-between"><span class="text-muted">Fleet nodes</span><span class="mono">{{ active_nodes }} active / {{ total_nodes }} total</span></div>
+        <div class="row-between"><span class="text-muted">Default engine</span><span class="mono">{{ browser_engine }}</span></div>
+        <div class="row-between"><span class="text-muted">AI gateway</span><span class="mono">{{ ai_provider }}</span></div>
+        <div class="row-between"><span class="text-muted">Uptime</span><span class="mono">{{ uptime_secs }}s (PID {{ pid }})</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card stack-md" x-show="isTelemetry">
+    <h2>Host &amp; storage telemetry</h2>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Process RSS</span>
+        <span class="kpi-value">{{ rss_mb }} MB</span>
+        <span class="kpi-delta">PID {{ pid }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Process uptime</span>
+        <span class="kpi-value">{{ uptime_secs }}s</span>
+        <span class="kpi-delta">{{ platform }} / {{ arch }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Accounts footprint</span>
+        <span class="kpi-value">{{ accounts_kb }} KB</span>
+        <span class="kpi-delta">{{ total_nodes }} records</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">History footprint</span>
+        <span class="kpi-value">{{ history_kb }} KB</span>
+        <span class="kpi-delta">{{ history_count }} events</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-12" x-show="isDocs">
+    <div class="card span-6 stack-md">
+      <h2>Local security posture</h2>
+      <div class="frag stack-sm">
+        <div class="row-between"><span class="text-muted">Loopback binding</span><span class="mono">127.0.0.1 only</span></div>
+        <div class="row-between"><span class="text-muted">Cross-origin &amp; DNS guard</span><span class="mono">Origin / Referer / Host validated</span></div>
+        <div class="row-between"><span class="text-muted">Content Security Policy</span><span class="mono">script-src 'self' (zero eval)</span></div>
+        <div class="row-between"><span class="text-muted">Password hashing</span><span class="mono">scrypt N=16384 + TOTP RFC 6238</span></div>
+      </div>
+    </div>
+
+    <div class="card span-6 stack-md">
+      <h2>Keyboard shortcuts</h2>
+      <div class="frag stack-sm">
+        <div class="row-between"><span class="text-soft">Switch cockpit tab</span><span class="mono">Keys 1 .. 9, 0</span></div>
+        <div class="row-between"><span class="text-soft">Focus node search input</span><span class="mono">Key /</span></div>
+        <div class="row-between"><span class="text-soft">Collapse / expand sidebar</span><span class="mono">Key [</span></div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,19 @@
+<div class="stack-md"
+     {% if task_status.is_running %}
+     hx-get="/partials/task-monitor"
+     hx-trigger="every 2.5s"
+     hx-swap="outerHTML"
+     {% endif %}>
+  <div class="frag stack-sm">
+    <div class="row-between">
+      <span class="pill {% if task_status.is_paused %}pill--warn{% else if task_status.is_running %}pill--info{% else %}pill--ok{% endif %}">
+        <span>{% if task_status.is_paused %}Paused{% else if task_status.is_running %}Executing{% else %}Idle{% endif %}</span>
+      </span>
+      <span class="mono text-muted">{{ completed }}/{{ total }} items</span>
+    </div>
+    <p class="text-soft">{{ summary_text }}</p>
+    {% if task_status.is_running %}
+    <progress class="meter" value="{{ percent }}" max="100"></progress>
+    {% endif %}
+  </div>
+</div>

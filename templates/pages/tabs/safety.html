@@ -1,0 +1,205 @@
+<section data-active-tab="safety" x-data="safetyDeck" class="stack-lg">
+  <div class="tab-header">
+    <div>
+      <h1>Defense protocol &amp; security</h1>
+      <p class="tab-lead">Configure pacing limits, browser engines, target locks, webhook alerts, and cockpit access credentials.</p>
+    </div>
+    <button type="button" class="btn btn--ghost"
+            hx-post="/partials/tasks/clear-locks"
+            hx-swap="none">Clear active locks ({{ active_locks }})</button>
+  </div>
+
+  <div class="card stack-md">
+    <div>
+      <h2>Rate limit presets</h2>
+      <p class="card-subtitle">Apply baseline delay and quota profiles before saving.</p>
+    </div>
+
+    <div class="preset-grid">
+      <button type="button" class="frag stack-sm card--interactive" data-preset="turbo" @click="applyPreset">
+        <span class="pill pill--warn">Turbo velocity</span>
+        <span class="text-soft">5-12s delay · 40/hr · 200/day</span>
+      </button>
+      <button type="button" class="frag stack-sm card--interactive" data-preset="balanced" @click="applyPreset">
+        <span class="pill pill--ok">Balanced standard</span>
+        <span class="text-soft">15-40s delay · 25/hr · 150/day</span>
+      </button>
+      <button type="button" class="frag stack-sm card--interactive" data-preset="ghost" @click="applyPreset">
+        <span class="pill pill--info">Ghost stealth</span>
+        <span class="text-soft">35-90s delay · 12/hr · 60/day</span>
+      </button>
+      <button type="button" class="frag stack-sm card--interactive" data-preset="warmup" @click="applyPreset">
+        <span class="pill">Account warmup</span>
+        <span class="text-soft">25-60s delay · 10/hr · 30/day</span>
+      </button>
+    </div>
+  </div>
+
+  <form class="grid-12" hx-post="/partials/safety/settings" hx-target="#safety-feedback-slot" hx-swap="innerHTML">
+    <div class="card span-6 stack-md">
+      <h2>Pacing &amp; browser engine</h2>
+
+      <div class="form-grid-3">
+        <div class="field">
+          <label for="cfg-min-delay" class="field-label">Min delay (s)</label>
+          <input id="cfg-min-delay" name="min_delay_seconds" type="number" min="0" max="3600" value="{{ settings.min_delay_seconds }}" class="control control--mono" />
+        </div>
+        <div class="field">
+          <label for="cfg-max-delay" class="field-label">Max delay (s)</label>
+          <input id="cfg-max-delay" name="max_delay_seconds" type="number" min="1" max="7200" value="{{ settings.max_delay_seconds }}" class="control control--mono" />
+        </div>
+        <div class="field">
+          <label for="cfg-switch-delay" class="field-label">Node switch (s)</label>
+          <input id="cfg-switch-delay" name="account_switch_delay_sec" type="number" min="0" max="3600" value="{{ settings.account_switch_delay_sec }}" class="control control--mono" />
+        </div>
+      </div>
+
+      <div class="form-grid-3">
+        <div class="field">
+          <label for="cfg-hourly" class="field-label">Hourly cap</label>
+          <input id="cfg-hourly" name="hourly_limit" type="number" min="1" max="60" value="{{ settings.hourly_limit }}" class="control control--mono" />
+        </div>
+        <div class="field">
+          <label for="cfg-daily" class="field-label">Daily cap</label>
+          <input id="cfg-daily" name="daily_limit" type="number" min="1" max="300" value="{{ settings.daily_limit }}" class="control control--mono" />
+        </div>
+        <div class="field">
+          <label for="cfg-typing" class="field-label">Typing jitter (ms)</label>
+          <input id="cfg-typing" name="human_typing_delay_ms" type="number" min="10" max="1000" value="{{ settings.human_typing_delay_ms }}" class="control control--mono" />
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="field">
+          <label for="cfg-engine" class="field-label">Automation browser engine</label>
+          <select id="cfg-engine" name="browser_engine" class="select">
+            <option value="chromium" {% if settings.browser_engine == "chromium" %}selected{% endif %}>Playwright Chromium</option>
+            <option value="camoufox" {% if settings.browser_engine == "camoufox" %}selected{% endif %}>Camoufox C++ Anti-Detect</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="field-label">Diagnostic launch</span>
+          <button type="button" class="btn btn--ghost"
+                  hx-post="/partials/safety/test-browser"
+                  hx-include="#cfg-engine"
+                  hx-target="#safety-feedback-slot"
+                  hx-swap="innerHTML">Test browser launch</button>
+        </div>
+      </div>
+
+      <div class="stack-sm">
+        <label class="check-row"><input type="checkbox" name="headless" value="true" {% if settings.headless %}checked{% endif %} /> Run browsers headless</label>
+        <label class="check-row"><input type="checkbox" name="scroll_before_action" value="true" {% if settings.scroll_before_action %}checked{% endif %} /> Scroll naturally before action</label>
+        <label class="check-row"><input type="checkbox" name="enforce_warmup_gate" value="true" {% if settings.enforce_warmup_gate %}checked{% endif %} /> Enforce 7-day warmup progressive quota gate</label>
+        <label class="check-row"><input type="checkbox" name="cross_node_target_lock" value="true" {% if settings.cross_node_target_lock %}checked{% endif %} /> Enable cross-node duplicate target lock</label>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--mobile-full">Save defense settings</button>
+    </div>
+
+    <div class="card span-6 stack-md">
+      <h2>Webhook alerts</h2>
+
+      <label class="check-row"><input type="checkbox" name="telegram_enabled" value="true" {% if settings.telegram_enabled %}checked{% endif %} /> Enable Telegram Bot alerts</label>
+      <div class="form-grid-2">
+        <div class="field">
+          <label for="cfg-tg-token" class="field-label">Telegram Bot Token</label>
+          <input id="cfg-tg-token" name="telegram_bot_token" type="text" value="{{ masked_tg_token }}" class="control control--mono" />
+        </div>
+        <div class="field">
+          <label for="cfg-tg-chat" class="field-label">Telegram Chat ID</label>
+          <input id="cfg-tg-chat" name="telegram_chat_id" type="text" value="{{ settings.telegram_chat_id }}" class="control control--mono" />
+        </div>
+      </div>
+
+      <label class="check-row"><input type="checkbox" name="discord_enabled" value="true" {% if settings.discord_enabled %}checked{% endif %} /> Enable Discord Webhook alerts</label>
+      <div class="field">
+        <label for="cfg-discord-url" class="field-label">Discord Webhook URL</label>
+        <input id="cfg-discord-url" name="discord_webhook_url" type="text" value="{{ masked_discord_url }}" class="control control--mono" />
+      </div>
+
+      <div class="row-wrap">
+        <label class="check-row"><input type="checkbox" name="notify_on_task_complete" value="true" {% if settings.notify_on_task_complete %}checked{% endif %} /> On task complete</label>
+        <label class="check-row"><input type="checkbox" name="notify_on_rate_limit" value="true" {% if settings.notify_on_rate_limit %}checked{% endif %} /> On rate limit</label>
+        <label class="check-row"><input type="checkbox" name="notify_on_session_expire" value="true" {% if settings.notify_on_session_expire %}checked{% endif %} /> On session expire</label>
+      </div>
+
+      <div class="row-wrap">
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-post="/partials/safety/test-webhook?kind=telegram"
+                hx-include="closest form"
+                hx-target="#safety-feedback-slot"
+                hx-swap="innerHTML">Test Telegram</button>
+        <button type="button" class="btn btn--ghost btn--sm"
+                hx-post="/partials/safety/test-webhook?kind=discord"
+                hx-include="closest form"
+                hx-target="#safety-feedback-slot"
+                hx-swap="innerHTML">Test Discord</button>
+      </div>
+    </div>
+  </form>
+
+  <div id="safety-feedback-slot"></div>
+
+  <div class="grid-12">
+    <div class="card span-6 stack-md">
+      <div>
+        <h2>Cockpit operator credentials</h2>
+        <p class="card-subtitle">Updating username or password immediately rotates `sessionEpoch` and invalidates prior sessions.</p>
+      </div>
+
+      <form class="stack-md" hx-post="/partials/safety/credentials" hx-target="#safety-feedback-slot" hx-swap="innerHTML">
+        <div class="field">
+          <label for="sec-cur-pw" class="field-label">Current passcode</label>
+          <input id="sec-cur-pw" name="current_password" type="password" class="control" required />
+        </div>
+        <div class="form-grid-2">
+          <div class="field">
+            <label for="sec-new-user" class="field-label">New username (optional)</label>
+            <input id="sec-new-user" name="new_username" type="text" value="{{ auth_username }}" class="control" />
+          </div>
+          <div class="field">
+            <label for="sec-new-pw" class="field-label">New passcode (min 6 chars)</label>
+            <input id="sec-new-pw" name="new_password" type="password" class="control" />
+          </div>
+        </div>
+        <div class="row-wrap">
+          <button type="submit" class="btn btn--primary">Update credentials</button>
+          <button type="button" class="btn btn--danger" @click="revokeSessions">Revoke other sessions</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card span-6 stack-md">
+      <div class="row-between">
+        <div>
+          <h2>Two-factor authentication (TOTP)</h2>
+          <p class="card-subtitle">RFC 6238 authenticator codes verified offline on localhost.</p>
+        </div>
+        {% if totp_enabled %}
+        <span class="pill pill--ok">2FA Enabled</span>
+        {% else %}
+        <span class="pill">Disabled</span>
+        {% endif %}
+      </div>
+
+      {% if totp_enabled %}
+      <div class="stack-md">
+        <div class="field">
+          <label for="disable-totp-pw" class="field-label">Current passcode to disable 2FA</label>
+          <input id="disable-totp-pw" type="password" x-model="disablePw" class="control" />
+        </div>
+        <button type="button" class="btn btn--danger" @click="disable2fa">Disable 2FA</button>
+      </div>
+      {% else %}
+      <div class="stack-md">
+        <button type="button" class="btn btn--ghost"
+                hx-post="/partials/safety/2fa-setup"
+                hx-target="#totp-setup-slot"
+                hx-swap="innerHTML">Generate 2FA QR &amp; secret</button>
+        <div id="totp-setup-slot"></div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>

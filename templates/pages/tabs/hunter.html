@@ -1,0 +1,150 @@
+<section data-active-tab="hunter" x-data="feedHunter" class="stack-lg">
+  <div class="tab-header">
+    <div>
+      <h1>Feed hunter</h1>
+      <p class="tab-lead">Search recent X posts by keyword query, apply quality filters, and execute coordinated multi-node actions or recurring sweeps.</p>
+    </div>
+    <div class="tab-actions">
+      <button type="button" class="btn btn--ghost btn--sm" hx-post="/partials/tasks/pause?tab=hunter" hx-swap="none">Pause</button>
+      <button type="button" class="btn btn--danger btn--sm" hx-post="/partials/tasks/stop?tab=hunter" hx-swap="none">Stop</button>
+    </div>
+  </div>
+
+  <div class="grid-12">
+    <div class="card span-6 stack-md">
+      <form class="stack-md" hx-post="/partials/tasks/hunter" hx-swap="none">
+        <div class="field">
+          <label for="hunter-keyword" class="field-label">Search keyword or hashtag</label>
+          <input id="hunter-keyword" name="keyword" type="text" class="control" x-model="keyword" placeholder="e.g. rust axum OR decentralized compute" required />
+          <div class="row-wrap">
+            <button type="button" class="btn btn--ghost btn--sm" data-query="rust web backend" @click="applyNichePreset">Rust systems</button>
+            <button type="button" class="btn btn--ghost btn--sm" data-query="ai agents open source" @click="applyNichePreset">AI agents</button>
+            <button type="button" class="btn btn--ghost btn--sm" data-query="depin infrastructure" @click="applyNichePreset">Infra &amp; DePIN</button>
+          </div>
+        </div>
+
+        <div class="frag stack-sm">
+          <span class="field-label">Effective X search query</span>
+          <code class="mono text-soft" x-text="effectiveQuery"></code>
+          <input type="hidden" name="effective_query" :value="effectiveQuery" />
+        </div>
+
+        <div class="form-grid-3">
+          <div class="field">
+            <label for="hunter-sort" class="field-label">Feed sort</label>
+            <select id="hunter-sort" name="sort_mode" class="select" x-model="sortMode">
+              <option value="Latest">Latest</option>
+              <option value="Top">Top</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="hunter-min-likes" class="field-label">Min likes</label>
+            <input id="hunter-min-likes" name="min_likes" type="number" min="0" max="50000" class="control control--mono" x-model="minLikes" />
+          </div>
+          <div class="field">
+            <label for="hunter-lang" class="field-label">Language</label>
+            <select id="hunter-lang" name="lang" class="select" x-model="lang">
+              <option value="en">English (en)</option>
+              <option value="id">Indonesian (id)</option>
+              <option value="any">Any language</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field">
+            <label for="hunter-count" class="field-label">Max posts to collect (1-50)</label>
+            <input id="hunter-count" name="count" type="number" min="1" max="50" value="5" class="control control--mono" />
+          </div>
+          <div class="field">
+            <label for="hunter-nodes" class="field-label">Fleet nodes</label>
+            <select id="hunter-nodes" name="account_ids" class="select">
+              <option value="all">All active nodes ({{ active_nodes }})</option>
+              {% for acc in accounts %}
+              <option value="{{ acc.id }}">{{ acc.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="row-wrap">
+          <label class="check-row"><input type="checkbox" name="exclude_retweets" value="true" x-model="excludeRetweets" checked /> Exclude reposts</label>
+          <label class="check-row"><input type="checkbox" name="like" value="true" checked /> Like</label>
+          <label class="check-row"><input type="checkbox" name="retweet" value="true" /> Repost</label>
+          <label class="check-row"><input type="checkbox" name="comment" value="true" checked /> Reply</label>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field">
+            <label for="hunter-interval" class="field-label">Recurring interval (min, optional)</label>
+            <input id="hunter-interval" name="interval_minutes" type="number" min="1" max="10080" placeholder="Leave blank for immediate one-shot" class="control control--mono" />
+          </div>
+          <div class="field">
+            <label for="hunter-title" class="field-label">Station name (for recurring)</label>
+            <input id="hunter-title" name="title" type="text" placeholder="Rust Radar Station" class="control" />
+          </div>
+        </div>
+
+        <div class="row-wrap">
+          <button type="submit" name="mode" value="run" class="btn btn--primary btn--mobile-full">Start radar sweep</button>
+          <button type="submit" name="mode" value="schedule" class="btn btn--ghost btn--mobile-full">Save recurring station</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card span-6 stack-md">
+      <div class="row-between">
+        <h2>Radar output</h2>
+        <div class="seg-tabs" role="tablist">
+          <button type="button" role="tab" data-tab="stream" @click="setRightTab" :class="streamTabClass">Live stream</button>
+          <button type="button" role="tab" data-tab="stations" @click="setRightTab" :class="stationsTabClass">Stations ({{ hunter_schedules.len() }})</button>
+          <button type="button" role="tab" data-tab="leads" @click="setRightTab" :class="leadsTabClass">Recent leads</button>
+        </div>
+      </div>
+
+      <div x-show="isStreamTab">
+        {% include "partials/terminal_console.html" %}
+      </div>
+
+      <div id="hunter-stations-slot" x-show="isStationsTab">
+        {% let schedules = hunter_schedules %}
+        {% include "partials/schedules_list.html" %}
+      </div>
+
+      <div x-show="isLeadsTab">
+        {% if leads.is_empty() %}
+        <p class="empty-state">No discovered targets logged yet.</p>
+        {% else %}
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Node</th>
+                <th>Vector</th>
+                <th>Target</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for l in leads %}
+              <tr>
+                <td class="mono">{{ l.time_formatted }}</td>
+                <td>{{ l.node_label }}</td>
+                <td class="mono">{{ l.action }}</td>
+                <td class="mono">
+                  {% if !l.tweet_url.is_empty() %}
+                  <a href="{{ l.tweet_url }}" target="_blank" rel="noreferrer">{{ l.tweet_url }}</a>
+                  {% else %}
+                  {{ l.message }}
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>

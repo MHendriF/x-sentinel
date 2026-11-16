@@ -1,0 +1,118 @@
+<section data-active-tab="ai" x-data="aiSettings" class="stack-lg">
+  <div class="tab-header">
+    <div>
+      <h1>AI providers</h1>
+      <p class="tab-lead">Configure upstream model gateways, default models, multi-model 9Router lists, and reply prompts.</p>
+    </div>
+    <div class="seg-tabs" role="tablist" aria-label="AI settings views">
+      <button type="button" role="tab" data-tab="engine" @click="setSubTab" :class="engineTabClass">Engine</button>
+      <button type="button" role="tab" data-tab="persona" @click="setSubTab" :class="personaTabClass">Persona prompt</button>
+      <button type="button" role="tab" data-tab="sandbox" @click="setSubTab" :class="sandboxTabClass">Sandbox</button>
+    </div>
+  </div>
+
+  <form class="stack-lg" hx-post="/partials/ai/settings" hx-target="#ai-save-slot" hx-swap="innerHTML">
+    <div class="card stack-md" x-show="isEngine">
+      <div>
+        <h2>Gateway configuration</h2>
+        <p class="card-subtitle">API keys are redacted in responses and restored automatically when unchanged (`••••`).</p>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="field">
+          <label for="ai-provider" class="field-label">Provider engine</label>
+          <select id="ai-provider" name="ai_provider" class="select">
+            <option value="none" {% if settings.ai_provider == "none" %}selected{% endif %}>None (Spintax fallback only)</option>
+            <option value="9router" {% if settings.ai_provider == "9router" %}selected{% endif %}>9Router local/cloud</option>
+            <option value="openrouter" {% if settings.ai_provider == "openrouter" %}selected{% endif %}>OpenRouter</option>
+            <option value="openai" {% if settings.ai_provider == "openai" %}selected{% endif %}>OpenAI</option>
+            <option value="groq" {% if settings.ai_provider == "groq" %}selected{% endif %}>Groq</option>
+            <option value="gemini" {% if settings.ai_provider == "gemini" %}selected{% endif %}>Google Gemini</option>
+            <option value="ollama" {% if settings.ai_provider == "ollama" %}selected{% endif %}>Ollama (local)</option>
+            <option value="custom" {% if settings.ai_provider == "custom" %}selected{% endif %}>Custom OpenAI-compatible</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="ai-model" class="field-label">Active model identifier</label>
+          <input id="ai-model" name="ai_model" type="text" value="{{ ai_model }}" class="control control--mono" placeholder="openai/gpt-4o-mini" />
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="field">
+          <label for="ai-api-key" class="field-label">API key</label>
+          <div class="input-group">
+            <input id="ai-api-key" name="ai_api_key" :type="keyInputType" value="{{ masked_api_key }}" class="control control--mono" autocomplete="off" />
+            <button type="button" class="input-group-btn" @click="toggleKeyVisibility" aria-label="Toggle API key visibility">
+              <svg class="icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-eye"></use></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ai-base-url" class="field-label">Custom Base URL (optional)</label>
+          <input id="ai-base-url" name="ai_base_url" type="url" value="{{ ai_base_url }}" class="control control--mono" placeholder="http://127.0.0.1:20128/v1" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ai-ninerouter-models" class="field-label">9Router model list (one per line)</label>
+        <textarea id="ai-ninerouter-models" name="nine_router_models_text" class="textarea control--mono">{{ nine_router_models_text }}</textarea>
+      </div>
+
+      <div class="row-wrap">
+        <button type="submit" class="btn btn--primary btn--mobile-full">Save AI settings</button>
+        <button type="button" class="btn btn--ghost"
+                hx-post="/partials/ai/test"
+                hx-include="closest form"
+                hx-target="#ai-save-slot"
+                hx-swap="innerHTML">Test connection</button>
+      </div>
+    </div>
+
+    <div class="card stack-md" x-show="isPersona">
+      <div>
+        <h2>System prompt &amp; tone presets</h2>
+        <p class="card-subtitle">Controls contextual reply generation across Target Workbench, Feed Hunter, and Payload Bank.</p>
+      </div>
+
+      <div class="row-wrap">
+        <button type="button" class="btn btn--ghost btn--sm" data-prompt="Write a sharp, authentic 1-sentence peer reply with concrete technical insight and zero hashtags or generic praise." @click="applyPersonaPreset">Technical peer</button>
+        <button type="button" class="btn btn--ghost btn--sm" data-prompt="Reply in 1 concise sentence as an experienced builder highlighting a practical tradeoff from the tweet." @click="applyPersonaPreset">Founder concise</button>
+        <button type="button" class="btn btn--ghost btn--sm" data-prompt="Tulis balasan santai namun berbobot dalam Bahasa Indonesia, maksimal 1 kalimat, tanpa hashtag." @click="applyPersonaPreset">Indonesian native</button>
+      </div>
+
+      <div class="field">
+        <label for="ai-system-prompt" class="field-label">Active system prompt</label>
+        <textarea id="ai-system-prompt" name="ai_prompt" class="textarea">{{ settings.ai_prompt }}</textarea>
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn--primary btn--mobile-full">Save prompt settings</button>
+      </div>
+    </div>
+
+    <div id="ai-save-slot"></div>
+  </form>
+
+  <div class="card stack-md" x-show="isSandbox">
+    <div>
+      <h2>Live reply sandbox</h2>
+      <p class="card-subtitle">Test contextual reply generation against sample post copy before running live fleet tasks.</p>
+    </div>
+
+    <form class="stack-md"
+          hx-post="/partials/ai/sandbox"
+          hx-target="#ai-sandbox-slot"
+          hx-swap="innerHTML">
+      <div class="field">
+        <label for="sandbox-tweet" class="field-label">Sample target post text</label>
+        <textarea id="sandbox-tweet" name="tweet_text" class="textarea" placeholder="Paste target post content to generate a sample reply..." required>Atomic JSON storage with fsync and rename gives surprising durability for single-host automation daemons.</textarea>
+      </div>
+      <button type="submit" class="btn btn--primary btn--mobile-full">Run sandbox reply</button>
+    </form>
+
+    <div id="ai-sandbox-slot"></div>
+  </div>
+</section>

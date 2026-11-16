@@ -1,0 +1,41 @@
+<div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="diag-modal-title">
+  <div class="modal-panel modal-panel--wide stack-md">
+    <div class="row-between">
+      <div class="row-wrap">
+        <h2 id="diag-modal-title">6-pillar system diagnostic audit</h2>
+        <span class="pill {% if score >= 80 %}pill--ok{% else %}pill--warn{% endif %}">{{ score }}% ({{ passed_pillars }}/{{ total_pillars }} passed)</span>
+      </div>
+      <button type="button" class="btn btn--ghost btn--icon" @click="closeModal" aria-label="Close modal">
+        <svg class="icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-x"></use></svg>
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Subsystem</th>
+            <th>State</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pillars %}
+          <tr>
+            <td><strong>{{ p.name }}</strong></td>
+            <td>
+              <span class="pill {% if p.passed %}pill--ok{% else %}pill--warn{% endif %}">{{ p.status }}</span>
+            </td>
+            <td class="text-soft">{{ p.message }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row-between">
+      <span class="mono text-muted">Audited at {{ timestamp }}</span>
+      <button type="button" class="btn btn--ghost" @click="closeModal">Close</button>
+    </div>
+  </div>
+</div>

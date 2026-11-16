@@ -41,3 +41,7 @@ client/vite.config.js
 client/vite.config.d.ts
 client/tsconfig.node.tsbuildinfo
 client/*.tsbuildinfo
+
+# Rust build artifacts
+target/
+data/auth_config.json

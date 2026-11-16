@@ -1,0 +1,26 @@
+<div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="comments-modal-title">
+  <div class="modal-panel stack-md">
+    <div class="row-between">
+      <h2 id="comments-modal-title">Node replies — {{ label }}</h2>
+      <button type="button" class="btn btn--ghost btn--icon" @click="closeModal" aria-label="Close modal">
+        <svg class="icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-x"></use></svg>
+      </button>
+    </div>
+
+    <p class="text-soft">One reply template per line. Supports recursive `{a|b}` Spintax syntax stored in `{{ comments_file }}`.</p>
+
+    <form class="stack-md"
+          hx-post="/partials/accounts/{{ id }}/comments"
+          hx-target="#modal-portal"
+          hx-swap="innerHTML">
+      <div class="field">
+        <label for="node-comments-lines" class="field-label">Per-node reply templates ({{ count }} entries)</label>
+        <textarea id="node-comments-lines" name="comments_text" class="textarea">{{ comments_text }}</textarea>
+      </div>
+      <div class="row-between">
+        <button type="button" class="btn btn--ghost" @click="closeModal">Close</button>
+        <button type="submit" class="btn btn--primary btn--mobile-full">Save reply templates</button>
+      </div>
+    </form>
+  </div>
+</div>

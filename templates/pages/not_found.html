@@ -1,0 +1,14 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}404 Not Found — X-SENTINEL{% endblock %}
+
+{% block body %}
+<main id="main-content" class="gate-viewport">
+  <section class="gate-card stack-md">
+    <span class="pill pill--warn">HTTP 404</span>
+    <h1>Route not found</h1>
+    <p class="text-soft">The requested view does not exist on this local X-SENTINEL instance.</p>
+    <a href="/ui/accounts" class="btn btn--primary btn--block">Return to cockpit</a>
+  </section>
+</main>
+{% endblock %}

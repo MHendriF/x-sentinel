@@ -1,0 +1,116 @@
+<section data-active-tab="batch" x-data="targetWorkbench" class="stack-lg">
+  <div class="tab-header">
+    <div>
+      <h1>Target engagement workbench</h1>
+      <p class="tab-lead">Dispatch multi-node Like, Repost, and Reply campaigns across explicit tweet URLs.</p>
+    </div>
+    <div class="tab-actions">
+      <button type="button" class="btn btn--ghost btn--sm" hx-post="/partials/tasks/pause?tab=batch" hx-swap="none">Pause</button>
+      <button type="button" class="btn btn--ghost btn--sm" hx-post="/partials/tasks/resume?tab=batch" hx-swap="none">Resume</button>
+      <button type="button" class="btn btn--danger btn--sm" hx-post="/partials/tasks/stop?tab=batch" hx-swap="none">Stop</button>
+    </div>
+  </div>
+
+  <div class="grid-12">
+    <div class="card span-6 stack-md">
+      <form class="stack-md" hx-post="/partials/tasks/batch" hx-swap="none">
+        <div class="field">
+          <label for="batch-urls" class="field-label">
+            <span>Target post URLs</span>
+            <span class="mono text-muted" x-text="urlSummary"></span>
+          </label>
+          <textarea id="batch-urls"
+                    name="urls_text"
+                    class="textarea control--mono"
+                    x-model="urlsText"
+                    placeholder="https://x.com/user/status/1234567890123456789"
+                    required></textarea>
+          <div class="row-wrap">
+            <button type="button" class="btn btn--ghost btn--sm" @click="dedupeUrls">Deduplicate &amp; validate</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Engagement vectors</span>
+          <div class="row-wrap">
+            <label class="check-row"><input type="checkbox" name="like" value="true" checked /> Like</label>
+            <label class="check-row"><input type="checkbox" name="retweet" value="true" /> Repost</label>
+            <label class="check-row"><input type="checkbox" name="comment" value="true" /> Reply</label>
+            <label class="check-row"><input type="checkbox" name="cross_node_target_lock" value="true" {% if settings.cross_node_target_lock %}checked{% endif %} /> Cross-node lock</label>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field">
+            <label for="batch-nodes" class="field-label">Fleet scope</label>
+            <select id="batch-nodes" name="account_ids" class="select">
+              <option value="all">All active nodes ({{ active_nodes }})</option>
+              <option value="healthy">Healthy nodes only</option>
+              {% for acc in accounts %}
+              <option value="{{ acc.id }}">{{ acc.label }}{% if !acc.username.is_empty() %} (@{{ acc.username }}){% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="batch-reply-mode" class="field-label">Reply payload source</label>
+            <select id="batch-reply-mode" name="reply_mode" class="select" x-model="replyMode">
+              <option value="node">Per-node / global templates</option>
+              <option value="ai">AI contextual generator</option>
+              <option value="spintax">Custom Spintax override</option>
+              <option value="custom">Single literal reply text</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" x-show="showCustomReply">
+          <label for="batch-custom-text" class="field-label">Literal reply text</label>
+          <textarea id="batch-custom-text" name="comment_text" class="textarea" placeholder="Write reply or Spintax text..."></textarea>
+        </div>
+
+        <div class="frag stack-sm" x-show="showSpintaxPanel">
+          <label for="batch-spintax-text" class="field-label">Spintax reply template</label>
+          <textarea id="batch-spintax-text" name="spintax_text" class="textarea" x-model="spintaxSample"></textarea>
+          <div class="row-wrap">
+            <button type="button" class="btn btn--ghost btn--sm" @click="runSpintaxPreview">Preview 3 permutations</button>
+          </div>
+          <div class="stack-sm" x-show="hasPreviews">
+            <template x-for="p in spintaxPreviews" :key="p">
+              <div class="mono text-soft" x-text="p"></div>
+            </template>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="field">
+            <label for="batch-min-delay" class="field-label">Min delay (sec)</label>
+            <input id="batch-min-delay" name="min_delay" type="number" min="0" max="3600" value="{{ settings.min_delay_seconds }}" class="control control--mono" />
+          </div>
+          <div class="field">
+            <label for="batch-max-delay" class="field-label">Max delay (sec)</label>
+            <input id="batch-max-delay" name="max_delay" type="number" min="1" max="7200" value="{{ settings.max_delay_seconds }}" class="control control--mono" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--mobile-full">Start engagement batch</button>
+      </form>
+    </div>
+
+    <div class="card span-6 stack-md">
+      <div class="row-between">
+        <h2>Execution output</h2>
+        <div class="seg-tabs" role="tablist">
+          <button type="button" role="tab" data-tab="stream" @click="setRightTab" :class="streamTabClass">Live stream</button>
+          <button type="button" role="tab" data-tab="monitor" @click="setRightTab" :class="monitorTabClass">Mission monitor</button>
+        </div>
+      </div>
+
+      <div x-show="isStreamTab">
+        {% include "partials/terminal_console.html" %}
+      </div>
+
+      <div x-show="isMonitorTab">
+        {% include "partials/task_monitor.html" %}
+      </div>
+    </div>
+  </div>
+</section>

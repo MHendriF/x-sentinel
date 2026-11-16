@@ -1,0 +1,43 @@
+{% if replies.is_empty() %}
+<p class="field-hint">No generated replies yet.</p>
+{% else %}
+<form class="stack-md"
+      hx-post="/partials/spintax/save-vault"
+      hx-target="#spintax-vault-slot"
+      hx-swap="innerHTML">
+  <div class="stack-sm">
+    {% for r in replies %}
+    <div class="frag stack-sm">
+      <div class="row-between">
+        <span class="mono text-muted">Reply {{ loop.index }}</span>
+        <span class="mono text-muted">{{ r.len() }}/280 chars</span>
+      </div>
+      <textarea name="replies" class="textarea">{{ r }}</textarea>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="form-grid-2">
+    <div class="field">
+      <label for="vault-filename" class="field-label">Save as filename (`data/comments/*.json`)</label>
+      <input id="vault-filename" name="file_name" type="text" class="control control--mono" placeholder="comments_campaign_01" required />
+    </div>
+    <div class="field">
+      <label for="vault-assign-node" class="field-label">Assign to node (optional)</label>
+      <select id="vault-assign-node" name="target_account_id" class="select">
+        <option value="">Do not bind to single node</option>
+        {% for acc in accounts %}
+        <option value="{{ acc.id }}">{{ acc.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <label class="check-row">
+    <input type="checkbox" name="save_to_templates" value="true" />
+    <span>Append to global fallback templates</span>
+  </label>
+
+  <button type="submit" class="btn btn--primary btn--mobile-full">Save reply payload file</button>
+</form>
+{% endif %}

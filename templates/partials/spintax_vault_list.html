@@ -1,0 +1,38 @@
+{% if files.is_empty() %}
+<p class="empty-state">No JSON comment vault files saved in `data/comments/`.</p>
+{% else %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Filename</th>
+        <th>Size</th>
+        <th>Updated</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in files %}
+      <tr>
+        <td class="mono">{{ f.filename }}</td>
+        <td class="mono">{{ f.size_bytes }} B</td>
+        <td class="mono">{{ f.modified_at }}</td>
+        <td>
+          <div class="row-wrap">
+            <button type="button" class="btn btn--ghost btn--sm"
+                    hx-get="/partials/spintax/vault/{{ f.filename }}"
+                    hx-target="#modal-portal"
+                    hx-swap="innerHTML">Inspect</button>
+            <button type="button" class="btn btn--danger btn--sm"
+                    hx-delete="/partials/spintax/vault/{{ f.filename }}"
+                    hx-confirm="Delete {{ f.filename }}?"
+                    hx-target="#spintax-vault-slot"
+                    hx-swap="innerHTML">Delete</button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}

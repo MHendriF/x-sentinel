@@ -1,0 +1,17 @@
+{% if drafts.is_empty() %}
+<p class="field-hint">No drafts generated yet. Enter a topic above and generate options.</p>
+{% else %}
+<div class="stack-sm">
+  {% for draft in drafts %}
+  <div class="frag stack-sm">
+    <p class="text-soft">{{ draft }}</p>
+    <div class="row-wrap">
+      <button type="button"
+              class="btn btn--ghost btn--sm"
+              data-draft-text="{{ draft }}"
+              @click="adoptDraftFromEl">Load in composer</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

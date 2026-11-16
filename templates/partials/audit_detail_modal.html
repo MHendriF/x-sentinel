@@ -1,0 +1,44 @@
+<div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="audit-detail-title">
+  <div class="modal-panel stack-md">
+    <div class="row-between">
+      <h2 id="audit-detail-title">Audit record detail</h2>
+      <button type="button" class="btn btn--ghost btn--icon" @click="closeModal" aria-label="Close modal">
+        <svg class="icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-x"></use></svg>
+      </button>
+    </div>
+
+    <div class="frag stack-sm">
+      <div class="row-between"><span class="text-muted">Event ID</span><span class="mono">{{ item.id }}</span></div>
+      <div class="row-between"><span class="text-muted">Timestamp</span><span class="mono">{{ item.timestamp }}</span></div>
+      <div class="row-between"><span class="text-muted">Node</span><span>{{ item.node_label }}</span></div>
+      <div class="row-between"><span class="text-muted">Vector</span><span class="mono">{{ item.action }}</span></div>
+      <div class="row-between"><span class="text-muted">Engine</span><span class="mono">{{ item.engine }}</span></div>
+      <div class="row-between"><span class="text-muted">Status</span><span class="pill {{ item.status_pill_class }}">{{ item.status }}</span></div>
+      {% if !item.tweet_url.is_empty() %}
+      <div class="row-between">
+        <span class="text-muted">Target URL</span>
+        <a href="{{ item.tweet_url }}" target="_blank" rel="noreferrer" class="mono">{{ item.tweet_url }}</a>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if !item.message.is_empty() %}
+    <div class="field">
+      <span class="field-label">Message</span>
+      <div class="frag text-soft">{{ item.message }}</div>
+    </div>
+    {% endif %}
+
+    {% if !item.details.is_empty() %}
+    <div class="field">
+      <span class="field-label">Details / reply text</span>
+      <div class="frag text-soft">{{ item.details }}</div>
+    </div>
+    {% endif %}
+
+    <div class="row-between">
+      <span></span>
+      <button type="button" class="btn btn--ghost" @click="closeModal">Close</button>
+    </div>
+  </div>
+</div>

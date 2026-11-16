@@ -1,0 +1,39 @@
+{% if rows.is_empty() %}
+<p class="empty-state">No audit history entries match the current filter.</p>
+{% else %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Node</th>
+        <th>Vector</th>
+        <th>Engine</th>
+        <th>Status</th>
+        <th>Target</th>
+        <th>Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr class="is-clickable"
+          hx-get="/partials/history/detail/{{ r.id }}"
+          hx-target="#modal-portal"
+          hx-swap="innerHTML">
+        <td class="mono">{{ r.time_label }}</td>
+        <td>{{ r.node_label }}</td>
+        <td class="mono">{{ r.action }}</td>
+        <td class="mono">{{ r.engine }}</td>
+        <td>
+          <span class="pill {{ r.status_pill_class }}">{{ r.status }}</span>
+        </td>
+        <td class="mono">{{ r.target_short }}</td>
+        <td>
+          <button type="button" class="btn btn--ghost btn--sm">Inspect</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}

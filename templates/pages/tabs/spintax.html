@@ -1,0 +1,121 @@
+<section data-active-tab="spintax" x-data="spintaxVault" class="stack-lg">
+  <div class="tab-header">
+    <div>
+      <h1>Payload bank &amp; Spintax</h1>
+      <p class="tab-lead">Fetch reference tweets, generate reply banks, test nested Spintax templates, and inspect comment vault files.</p>
+    </div>
+    <div class="seg-tabs" role="tablist" aria-label="Payload bank views">
+      <button type="button" role="tab" data-tab="generator" @click="setSubTab" :class="generatorTabClass">Reply generator</button>
+      <button type="button" role="tab" data-tab="workbench" @click="setSubTab" :class="workbenchTabClass">Spintax workbench</button>
+      <button type="button" role="tab" data-tab="vault" @click="setSubTab" :class="vaultTabClass">File vault ({{ files.len() }})</button>
+    </div>
+  </div>
+
+  <div class="card stack-md" x-show="isGenerator">
+    <div>
+      <h2>Contextual reply generator</h2>
+      <p class="card-subtitle">Paste target post URL to extract copy via FxTwitter/VxTwitter, or enter source text directly.</p>
+    </div>
+
+    <form class="row-wrap"
+          hx-post="/partials/spintax/fetch-tweet"
+          hx-target="#payload-source-slot"
+          hx-swap="outerHTML">
+      <label for="fetch-tweet-url" class="sr-only">Tweet URL</label>
+      <input id="fetch-tweet-url" name="url" type="url" class="control control--mono" placeholder="https://x.com/user/status/..." required />
+      <button type="submit" class="btn btn--ghost">Fetch post text</button>
+    </form>
+
+    <form class="stack-md"
+          hx-post="/partials/spintax/generate"
+          hx-target="#payload-replies-slot"
+          hx-swap="innerHTML">
+      <div id="payload-source-slot" class="field">
+        <label for="payload-post-text" class="field-label">Reference post content</label>
+        <textarea id="payload-post-text" name="post_text" class="textarea" placeholder="Paste tweet content here..." required></textarea>
+      </div>
+
+      <div class="form-grid-3">
+        <div class="field">
+          <label for="payload-count" class="field-label">Reply count (1-50)</label>
+          <input id="payload-count" name="count" type="number" min="1" max="50" value="5" class="control control--mono" />
+        </div>
+        <div class="field">
+          <label for="payload-tone" class="field-label">Tone</label>
+          <select id="payload-tone" name="tone" class="select">
+            <option value="Insightful & Friendly">Insightful &amp; Friendly</option>
+            <option value="Technical Builder">Technical Builder</option>
+            <option value="Direct Question">Direct Question</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="payload-lang" class="field-label">Language</label>
+          <select id="payload-lang" name="language" class="select">
+            <option value="en">English</option>
+            <option value="id">Indonesian</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--mobile-full">Generate replies</button>
+    </form>
+
+    <div id="payload-replies-slot"></div>
+  </div>
+
+  <div class="grid-12" x-show="isWorkbench">
+    <div class="card span-6 stack-md">
+      <div>
+        <h2>Global fallback templates</h2>
+        <p class="card-subtitle">One template per line. Supports recursive `{a|b|{c|d}}` Spintax.</p>
+      </div>
+
+      <form class="stack-md"
+            hx-post="/partials/spintax/save-templates"
+            hx-swap="none">
+        <div class="field">
+          <label for="global-templates-text" class="field-label">Templates ({{ templates.len() }} entries)</label>
+          <textarea id="global-templates-text" name="templates_text" class="textarea">{{ templates_text }}</textarea>
+        </div>
+        <button type="submit" class="btn btn--primary btn--mobile-full">Save global templates</button>
+      </form>
+    </div>
+
+    <div class="card span-6 stack-md">
+      <div>
+        <h2>Live Spintax tester</h2>
+        <p class="card-subtitle">Render 5 deterministic permutations from Rust `spintax::parse_spintax`.</p>
+      </div>
+
+      <form class="stack-md"
+            hx-post="/partials/spintax/preview"
+            hx-target="#spintax-preview-slot"
+            hx-swap="innerHTML">
+        <div class="field">
+          <label for="spintax-test-input" class="field-label">Spintax expression</label>
+          <textarea id="spintax-test-input" name="text" class="textarea" required>{Good breakdown|Useful comparison} — {latency stayed under 20ms|throughput held steady} on our test box.</textarea>
+        </div>
+        <button type="submit" class="btn btn--ghost">Render 5 variations</button>
+      </form>
+
+      <div id="spintax-preview-slot"></div>
+    </div>
+  </div>
+
+  <div class="card stack-md" x-show="isVault">
+    <div class="row-between">
+      <div>
+        <h2>Saved comment vault files</h2>
+        <p class="card-subtitle">All paths canonicalized strictly under `data/comments/`.</p>
+      </div>
+      <button type="button" class="btn btn--ghost btn--sm"
+              hx-get="/partials/spintax/vault"
+              hx-target="#spintax-vault-slot"
+              hx-swap="innerHTML">Refresh</button>
+    </div>
+
+    <div id="spintax-vault-slot">
+      {% include "partials/spintax_vault_list.html" %}
+    </div>
+  </div>
+</section>

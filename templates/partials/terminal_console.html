@@ -1,0 +1,23 @@
+<div class="stack-md" x-data="sseConsole">
+  <div class="row-between">
+    <span class="pill">
+      <span :class="statusDotClass"></span>
+      <span x-text="statusText"></span>
+    </span>
+    <div class="row-wrap">
+      <button type="button" class="btn btn--ghost btn--sm" @click="togglePause" x-text="pauseBtnLabel"></button>
+      <button type="button" class="btn btn--ghost btn--sm" @click="copyLines">Copy logs</button>
+      <button type="button" class="btn btn--ghost btn--sm" @click="clearLines">Clear</button>
+    </div>
+  </div>
+
+  <div id="sse-terminal-box" class="terminal-log" role="log" aria-live="polite" aria-label="Live automation output">
+    <p class="field-hint" x-show="noLines">No log events yet. Start a task or health check to stream output.</p>
+    <template x-for="entry in lines" :key="entry.id">
+      <div class="log-line">
+        <span class="log-time" x-text="entry.time"></span>
+        <span :class="entry.cls" x-text="entry.message"></span>
+      </div>
+    </template>
+  </div>
+</div>

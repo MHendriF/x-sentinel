@@ -1,0 +1,68 @@
+<header id="telemetry-ribbon" class="telemetry-ribbon"
+  {% if ribbon.is_running %}
+  hx-get="/partials/task-ribbon?tab={{ ribbon.active_tab }}"
+  hx-trigger="every 2.5s"
+  hx-swap="outerHTML"
+  {% endif %}>
+  <div class="telemetry-inner">
+    <div class="telemetry-heading">
+      <button type="button"
+              class="btn btn--ghost btn--icon drawer-toggle"
+              @click="openDrawer"
+              aria-label="Open navigation menu">
+        <svg class="icon" aria-hidden="true"><use href="/static/icons/sprite.svg#icon-menu"></use></svg>
+      </button>
+      <div>
+        <span class="brand-name">{{ ribbon.tab_title }}</span>
+      </div>
+      <span class="pill">
+        <span class="dot {% if ribbon.is_running %}dot--warn{% else %}dot--ok{% endif %}"></span>
+        <span>{{ ribbon.engine_label }}</span>
+      </span>
+    </div>
+
+    <div class="telemetry-metrics" aria-label="Daily engagement totals">
+      <div class="metric-chip">
+        <span class="metric-chip-label">Likes</span>
+        <span class="metric-chip-val">{{ ribbon.today_likes }}</span>
+      </div>
+      <div class="metric-chip">
+        <span class="metric-chip-label">Reposts</span>
+        <span class="metric-chip-val">{{ ribbon.today_retweets }}</span>
+      </div>
+      <div class="metric-chip">
+        <span class="metric-chip-label">Replies</span>
+        <span class="metric-chip-val">{{ ribbon.today_comments }}</span>
+      </div>
+      <div class="metric-chip">
+        <span class="metric-chip-label">Posts</span>
+        <span class="metric-chip-val">{{ ribbon.today_posts }}</span>
+      </div>
+    </div>
+  </div>
+
+  {% if ribbon.is_running %}
+  <div class="task-progress-strip">
+    <span class="pill {% if ribbon.is_paused %}pill--warn{% else %}pill--info{% endif %}">
+      <span class="dot {% if ribbon.is_paused %}dot--warn{% else %}dot--info{% endif %}"></span>
+      <span>{{ ribbon.task_state_text }}</span>
+    </span>
+    <span class="mono text-soft">{{ ribbon.task_progress_label }}</span>
+    <progress class="meter" value="{{ ribbon.task_percent }}" max="100" aria-label="Task progress"></progress>
+    <div class="row-wrap">
+      {% if ribbon.is_paused %}
+      <button type="button" class="btn btn--ok btn--sm"
+              hx-post="/partials/tasks/resume?tab={{ ribbon.active_tab }}"
+              hx-swap="none">Resume</button>
+      {% else %}
+      <button type="button" class="btn btn--ghost btn--sm"
+              hx-post="/partials/tasks/pause?tab={{ ribbon.active_tab }}"
+              hx-swap="none">Pause</button>
+      {% endif %}
+      <button type="button" class="btn btn--danger btn--sm"
+              hx-post="/partials/tasks/stop?tab={{ ribbon.active_tab }}"
+              hx-swap="none">Stop</button>
+    </div>
+  </div>
+  {% endif %}
+</header>
